@@ -4,13 +4,10 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List
 
-from ..database import get_db, engine, Base
+from ..database import get_db
 from ..models.patient import Patient
 
 router = APIRouter(prefix="/patients", tags=["patients"])
-
-# Create tables on import
-Base.metadata.create_all(bind=engine)
 
 
 class PatientCreate(BaseModel):
@@ -23,14 +20,13 @@ class PatientCreate(BaseModel):
 
 class PatientResponse(BaseModel):
     """Schema for patient response."""
+    model_config = {"from_attributes": True}
+    
     id: int
     name: str
     age: int
     gender: str
     contact: str | None = None
-
-    class Config:
-        from_attributes = True
 
 
 @router.post("", response_model=PatientResponse, status_code=201)
