@@ -13,7 +13,7 @@ const HomePage = () => {
           This is the starter dashboard for the Laboratory Information Management System.
         </p>
         <p>
-          <Link href="http://localhost:8000/health">Check API Health</Link>
+          <Link href={`${process.env.NEXT_PUBLIC_API_URL}/health`}>Check API Health</Link>
         </p>
       </main>
     </div>
