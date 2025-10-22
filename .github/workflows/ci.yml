@@ -21,7 +21,7 @@ jobs:
           pip install -r backend/requirements.txt
           pip install pytest
       - name: Run tests
-        run: pytest || true
+        run: pytest
 
   frontend:
     runs-on: ubuntu-latest
