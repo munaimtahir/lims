@@ -1,0 +1,4 @@
+test_name,low_critical,high_critical,units
+Hemoglobin,7.0,20.0,g/dL
+Potassium,2.5,6.5,mmol/L
+Glucose Fasting,40,400,mg/dL
