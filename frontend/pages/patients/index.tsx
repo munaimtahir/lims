@@ -26,6 +26,7 @@ const PatientsPage = () => {
 
   useEffect(() => {
     fetchPatients();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPatients = async () => {
@@ -48,7 +49,7 @@ const PatientsPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    
+
     try {
       const response = await fetch(`${apiBase}/patients`, {
         method: 'POST',
@@ -85,7 +86,9 @@ const PatientsPage = () => {
   };
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div
+      style={{ fontFamily: 'sans-serif', padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}
+    >
       <Head>
         <title>Patients - LIMS</title>
       </Head>
@@ -96,18 +99,27 @@ const PatientsPage = () => {
         </p>
 
         {error && (
-          <div style={{ 
-            padding: '1rem', 
-            backgroundColor: '#fee', 
-            border: '1px solid #fcc',
-            borderRadius: '4px',
-            marginBottom: '1rem'
-          }}>
+          <div
+            style={{
+              padding: '1rem',
+              backgroundColor: '#fee',
+              border: '1px solid #fcc',
+              borderRadius: '4px',
+              marginBottom: '1rem',
+            }}
+          >
             Error: {error}
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2rem' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '2rem',
+            marginTop: '2rem',
+          }}
+        >
           {/* Patient List */}
           <div>
             <h2>Patient List</h2>
@@ -144,9 +156,15 @@ const PatientsPage = () => {
           {/* Create Patient Form */}
           <div>
             <h2>Create New Patient</h2>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form
+              onSubmit={handleSubmit}
+              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
               <div>
-                <label htmlFor="name" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                <label
+                  htmlFor="name"
+                  style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}
+                >
                   Name *
                 </label>
                 <input
@@ -156,12 +174,21 @@ const PatientsPage = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  style={{ width: '100%', padding: '0.5rem', fontSize: '1rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    fontSize: '1rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                  }}
                 />
               </div>
 
               <div>
-                <label htmlFor="age" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                <label
+                  htmlFor="age"
+                  style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}
+                >
                   Age *
                 </label>
                 <input
@@ -173,12 +200,21 @@ const PatientsPage = () => {
                   required
                   min="0"
                   max="150"
-                  style={{ width: '100%', padding: '0.5rem', fontSize: '1rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    fontSize: '1rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                  }}
                 />
               </div>
 
               <div>
-                <label htmlFor="gender" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                <label
+                  htmlFor="gender"
+                  style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}
+                >
                   Gender *
                 </label>
                 <select
@@ -187,7 +223,13 @@ const PatientsPage = () => {
                   value={formData.gender}
                   onChange={handleChange}
                   required
-                  style={{ width: '100%', padding: '0.5rem', fontSize: '1rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    fontSize: '1rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                  }}
                 >
                   <option value="">Select gender</option>
                   <option value="Male">Male</option>
@@ -197,7 +239,10 @@ const PatientsPage = () => {
               </div>
 
               <div>
-                <label htmlFor="contact" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                <label
+                  htmlFor="contact"
+                  style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}
+                >
                   Contact
                 </label>
                 <input
@@ -206,7 +251,13 @@ const PatientsPage = () => {
                   name="contact"
                   value={formData.contact}
                   onChange={handleChange}
-                  style={{ width: '100%', padding: '0.5rem', fontSize: '1rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    fontSize: '1rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                  }}
                 />
               </div>
 

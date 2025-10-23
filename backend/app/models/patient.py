@@ -1,11 +1,13 @@
 """Patient model."""
+
 from sqlalchemy import Column, Integer, String
+
 from ..database import Base
 
 
 class Patient(Base):
     """Patient table model."""
-    
+
     __tablename__ = "patients"
 
     id = Column(Integer, primary_key=True, index=True)

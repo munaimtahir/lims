@@ -9,9 +9,7 @@ const HomePage = () => {
       </Head>
       <main>
         <h1>LIMS — Demo Dashboard</h1>
-        <p>
-          This is the starter dashboard for the Laboratory Information Management System.
-        </p>
+        <p>This is the starter dashboard for the Laboratory Information Management System.</p>
         <ul style={{ listStyle: 'none', padding: 0 }}>
           <li style={{ marginBottom: '0.5rem' }}>
             <Link href="/patients">
@@ -21,7 +19,7 @@ const HomePage = () => {
             </Link>
           </li>
           <li>
-            <a 
+            <a
               href={`${process.env.NEXT_PUBLIC_API_URL}/health`}
               target="_blank"
               rel="noopener noreferrer"

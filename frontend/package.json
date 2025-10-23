@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "dependencies": {
     "next": "^14.2.33",
@@ -15,6 +19,9 @@
   "devDependencies": {
     "typescript": "5.4.5",
     "@types/react": "18.2.0",
-    "@types/node": "20.12.7"
+    "@types/node": "20.12.7",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.33",
+    "prettier": "3.2.5"
   }
 }

@@ -28,6 +28,13 @@ ENV/
 env.bak/
 venv.bak/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment files
+.env
+.env.local
+.env.*.local
 
 # Node
 node_modules/
