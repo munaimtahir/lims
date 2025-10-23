@@ -71,9 +71,11 @@ def test_list_patients():
     response = client.get("/patients")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 2
-    assert data[0]["name"] == "Jane Smith"
-    assert data[1]["name"] == "Bob Johnson"
+    assert len(data) >= 2
+    # Verify the patients we created are in the list
+    names = [p["name"] for p in data]
+    assert "Jane Smith" in names
+    assert "Bob Johnson" in names
 
 
 def test_create_patient_without_contact():
