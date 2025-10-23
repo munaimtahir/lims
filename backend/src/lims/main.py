@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from lims.database import Base, engine
-from lims.routers import health, patients
+from lims.routers import health, patients, results, voice
 
 
 @asynccontextmanager
@@ -49,6 +49,8 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="")
 app.include_router(patients.router, prefix="")
+app.include_router(voice.router, prefix="")
+app.include_router(results.router, prefix="")
 
 
 @app.get("/")
