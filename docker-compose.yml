@@ -29,6 +29,7 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:8000
     volumes:
       - ./frontend/pages:/app/pages
+      - ./frontend/tsconfig.json:/app/tsconfig.json
     depends_on:
       - api
     ports:

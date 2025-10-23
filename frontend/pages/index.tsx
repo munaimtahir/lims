@@ -12,9 +12,25 @@ const HomePage = () => {
         <p>
           This is the starter dashboard for the Laboratory Information Management System.
         </p>
-        <p>
-          <Link href={`${process.env.NEXT_PUBLIC_API_URL}/health`}>Check API Health</Link>
-        </p>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          <li style={{ marginBottom: '0.5rem' }}>
+            <Link href="/patients">
+              <a style={{ color: '#007bff', textDecoration: 'none', fontSize: '1.1rem' }}>
+                → Patient Management
+              </a>
+            </Link>
+          </li>
+          <li>
+            <a 
+              href={`${process.env.NEXT_PUBLIC_API_URL}/health`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#007bff', textDecoration: 'none', fontSize: '1.1rem' }}
+            >
+              → Check API Health
+            </a>
+          </li>
+        </ul>
       </main>
     </div>
   );
