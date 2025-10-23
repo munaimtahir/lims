@@ -20,6 +20,13 @@ const HomePage = () => {
               </a>
             </Link>
           </li>
+          <li style={{ marginBottom: '0.5rem' }}>
+            <Link href="/voice-registration">
+              <a style={{ color: '#007bff', textDecoration: 'none', fontSize: '1.1rem' }}>
+                → Voice Registration (Stage B)
+              </a>
+            </Link>
+          </li>
           <li>
             <a 
               href={`${process.env.NEXT_PUBLIC_API_URL}/health`}

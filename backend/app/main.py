@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import time
-from .routers import health, patients
+from .routers import health, patients, voice, results
 from .database import engine, Base
 
 app = FastAPI(title="LIMS API", version="0.1.0")
@@ -39,6 +39,8 @@ async def startup_event():
 
 app.include_router(health.router, prefix="")
 app.include_router(patients.router, prefix="")
+app.include_router(voice.router, prefix="")
+app.include_router(results.router, prefix="")
 
 
 @app.get("/")
