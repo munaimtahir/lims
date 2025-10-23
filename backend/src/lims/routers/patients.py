@@ -1,17 +1,18 @@
 """Patients router."""
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import List
 
-from ..database import get_db
-from ..models.patient import Patient
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from lims.database import get_db
+from lims.models.patient import Patient
 
 router = APIRouter(prefix="/patients", tags=["patients"])
 
 
 class PatientCreate(BaseModel):
     """Schema for creating a patient."""
+
     name: str
     age: int
     gender: str
@@ -20,8 +21,9 @@ class PatientCreate(BaseModel):
 
 class PatientResponse(BaseModel):
     """Schema for patient response."""
+
     model_config = {"from_attributes": True}
-    
+
     id: int
     name: str
     age: int
@@ -39,7 +41,7 @@ async def create_patient(patient: PatientCreate, db: Session = Depends(get_db)):
     return db_patient
 
 
-@router.get("", response_model=List[PatientResponse])
+@router.get("", response_model=list[PatientResponse])
 async def list_patients(db: Session = Depends(get_db)):
     """List all patients."""
     patients = db.query(Patient).all()

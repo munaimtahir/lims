@@ -50,6 +50,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
         setError('Web Speech API not supported in this browser');
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]);
 
   const mapTranscript = async (text: string) => {

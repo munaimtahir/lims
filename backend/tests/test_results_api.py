@@ -1,9 +1,10 @@
 """Tests for results API endpoints."""
+
 from fastapi.testclient import TestClient
+from lims.database import Base, get_db
+from lims.main import app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.main import app
-from app.database import Base, get_db
 
 # Use in-memory SQLite database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_results.db"
@@ -32,14 +33,14 @@ def test_create_result_normal():
     # Clean up
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     # Create a patient first
     patient_response = client.post(
         "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male", "contact": "555-0000"}
+        json={"name": "Test Patient", "age": 45, "gender": "Male", "contact": "555-0000"},
     )
     patient_id = patient_response.json()["id"]
-    
+
     # Create result
     response = client.post(
         "/results",
@@ -48,10 +49,10 @@ def test_create_result_normal():
             "test_name": "Hemoglobin",
             "value": 15.0,
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
-    
+
     assert response.status_code == 201
     data = response.json()
     assert data["test_name"] == "Hemoglobin"
@@ -64,13 +65,12 @@ def test_create_result_out_of_range():
     """Test creating a result with out-of-range value."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     response = client.post(
         "/results",
         json={
@@ -78,10 +78,10 @@ def test_create_result_out_of_range():
             "test_name": "Hemoglobin",
             "value": 12.0,
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
-    
+
     assert response.status_code == 201
     data = response.json()
     assert len(data["qc_flags"]) > 0
@@ -93,13 +93,12 @@ def test_create_result_critical():
     """Test creating a result with critical value."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     response = client.post(
         "/results",
         json={
@@ -107,10 +106,10 @@ def test_create_result_critical():
             "test_name": "Hemoglobin",
             "value": 6.0,
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
-    
+
     assert response.status_code == 201
     data = response.json()
     assert len(data["qc_flags"]) > 0
@@ -122,13 +121,12 @@ def test_create_result_with_delta_check():
     """Test delta check between consecutive results."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     # Create first result
     client.post(
         "/results",
@@ -137,10 +135,10 @@ def test_create_result_with_delta_check():
             "test_name": "Hemoglobin",
             "value": 15.0,
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
-    
+
     # Create second result with large delta
     response = client.post(
         "/results",
@@ -150,10 +148,10 @@ def test_create_result_with_delta_check():
             "value": 12.0,
             "units": "g/dL",
             "performed_by": "tech_001",
-            "check_previous": True
-        }
+            "check_previous": True,
+        },
     )
-    
+
     assert response.status_code == 201
     data = response.json()
     assert len(data["qc_flags"]) > 0
@@ -165,13 +163,12 @@ def test_create_result_decimal_error():
     """Test detection of decimal point error."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     response = client.post(
         "/results",
         json={
@@ -179,10 +176,10 @@ def test_create_result_decimal_error():
             "test_name": "Hemoglobin",
             "value": 150.0,  # Likely meant 15.0
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
-    
+
     assert response.status_code == 201
     data = response.json()
     assert len(data["qc_flags"]) > 0
@@ -194,13 +191,12 @@ def test_list_results():
     """Test listing results."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     # Create multiple results
     for value in [15.0, 14.5, 15.2]:
         client.post(
@@ -210,10 +206,10 @@ def test_list_results():
                 "test_name": "Hemoglobin",
                 "value": value,
                 "units": "g/dL",
-                "performed_by": "tech_001"
-            }
+                "performed_by": "tech_001",
+            },
         )
-    
+
     # List all results
     response = client.get("/results")
     assert response.status_code == 200
@@ -225,13 +221,12 @@ def test_list_results_filtered():
     """Test listing results with filters."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     client.post(
         "/results",
         json={
@@ -239,10 +234,10 @@ def test_list_results_filtered():
             "test_name": "Hemoglobin",
             "value": 15.0,
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
-    
+
     # Filter by patient
     response = client.get(f"/results?patient_id={patient_id}")
     assert response.status_code == 200
@@ -254,13 +249,12 @@ def test_verify_result():
     """Test verifying a result."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     result_response = client.post(
         "/results",
         json={
@@ -268,11 +262,11 @@ def test_verify_result():
             "test_name": "Hemoglobin",
             "value": 15.0,
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
     result_id = result_response.json()["id"]
-    
+
     # Verify the result
     response = client.post(f"/results/{result_id}/verify?verified_by=supervisor_001")
     assert response.status_code == 200
@@ -283,13 +277,12 @@ def test_release_result_normal():
     """Test releasing a verified result with no critical flags."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     result_response = client.post(
         "/results",
         json={
@@ -297,14 +290,14 @@ def test_release_result_normal():
             "test_name": "Hemoglobin",
             "value": 15.0,
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
     result_id = result_response.json()["id"]
-    
+
     # Verify first
     client.post(f"/results/{result_id}/verify?verified_by=supervisor_001")
-    
+
     # Then release
     response = client.post(f"/results/{result_id}/release?released_by=pathologist_001")
     assert response.status_code == 200
@@ -315,13 +308,12 @@ def test_release_result_with_critical_flags():
     """Test that releasing a result with critical flags is blocked."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     result_response = client.post(
         "/results",
         json={
@@ -329,14 +321,14 @@ def test_release_result_with_critical_flags():
             "test_name": "Hemoglobin",
             "value": 6.0,  # Critical value
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
     result_id = result_response.json()["id"]
-    
+
     # Verify first
     client.post(f"/results/{result_id}/verify?verified_by=supervisor_001")
-    
+
     # Try to release - should fail
     response = client.post(f"/results/{result_id}/release?released_by=pathologist_001")
     assert response.status_code == 400
@@ -347,13 +339,12 @@ def test_release_result_not_verified():
     """Test that releasing an unverified result is blocked."""
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     patient_response = client.post(
-        "/patients",
-        json={"name": "Test Patient", "age": 45, "gender": "Male"}
+        "/patients", json={"name": "Test Patient", "age": 45, "gender": "Male"}
     )
     patient_id = patient_response.json()["id"]
-    
+
     result_response = client.post(
         "/results",
         json={
@@ -361,11 +352,11 @@ def test_release_result_not_verified():
             "test_name": "Hemoglobin",
             "value": 15.0,
             "units": "g/dL",
-            "performed_by": "tech_001"
-        }
+            "performed_by": "tech_001",
+        },
     )
     result_id = result_response.json()["id"]
-    
+
     # Try to release without verifying - should fail
     response = client.post(f"/results/{result_id}/release?released_by=pathologist_001")
     assert response.status_code == 400

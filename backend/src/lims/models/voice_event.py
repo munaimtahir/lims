@@ -1,12 +1,15 @@
 """Voice event model for audit trail."""
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text
+
 from datetime import datetime
-from ..database import Base
+
+from sqlalchemy import Column, DateTime, Integer, String, Text
+
+from lims.database import Base
 
 
 class VoiceEvent(Base):
     """Voice event audit table."""
-    
+
     __tablename__ = "voice_events"
 
     id = Column(Integer, primary_key=True, index=True)

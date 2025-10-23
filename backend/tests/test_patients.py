@@ -1,9 +1,10 @@
 """Tests for patients endpoint."""
+
 from fastapi.testclient import TestClient
+from lims.database import Base, get_db
+from lims.main import app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.main import app
-from app.database import Base, get_db
 
 # Use in-memory SQLite database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -32,15 +33,9 @@ def test_create_patient():
     # Clean up before test
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     response = client.post(
-        "/patients",
-        json={
-            "name": "John Doe",
-            "age": 35,
-            "gender": "Male",
-            "contact": "555-1234"
-        }
+        "/patients", json={"name": "John Doe", "age": 35, "gender": "Male", "contact": "555-1234"}
     )
     assert response.status_code == 201
     data = response.json()
@@ -56,17 +51,14 @@ def test_list_patients():
     # Clean up before test
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     # Create a couple of patients
     client.post(
         "/patients",
-        json={"name": "Jane Smith", "age": 28, "gender": "Female", "contact": "555-5678"}
+        json={"name": "Jane Smith", "age": 28, "gender": "Female", "contact": "555-5678"},
     )
-    client.post(
-        "/patients",
-        json={"name": "Bob Johnson", "age": 42, "gender": "Male"}
-    )
-    
+    client.post("/patients", json={"name": "Bob Johnson", "age": 42, "gender": "Male"})
+
     # Get the list
     response = client.get("/patients")
     assert response.status_code == 200
@@ -83,15 +75,8 @@ def test_create_patient_without_contact():
     # Clean up before test
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
-    response = client.post(
-        "/patients",
-        json={
-            "name": "Alice Brown",
-            "age": 30,
-            "gender": "Female"
-        }
-    )
+
+    response = client.post("/patients", json={"name": "Alice Brown", "age": 30, "gender": "Female"})
     assert response.status_code == 201
     data = response.json()
     assert data["name"] == "Alice Brown"
