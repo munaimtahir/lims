@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ..database import get_db
-from ..models.patient import Patient
+from lims.database import get_db
+from lims.models.patient import Patient
 
 router = APIRouter(prefix="/patients", tags=["patients"])
 

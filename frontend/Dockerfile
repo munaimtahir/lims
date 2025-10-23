@@ -12,7 +12,8 @@ RUN npm ci --production --loglevel=error || npm install --production --loglevel=
 
 # Copy pre-built application
 COPY .next ./.next
-COPY pages ./pages
+COPY src ./src
+COPY next.config.js ./
 COPY tsconfig.json ./
 
 # If dependencies didn't install, copy from host

@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import Base, engine
-from .routers import health, patients
+from lims.database import Base, engine
+from lims.routers import health, patients
 
 
 @asynccontextmanager

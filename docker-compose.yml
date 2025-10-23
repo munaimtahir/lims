@@ -16,8 +16,9 @@ services:
     build: ./backend
     environment:
       DATABASE_URL: postgresql://lims:lims@db:5432/lims
+      PYTHONPATH: /app/src
     volumes:
-      - ./backend/app:/app/app
+      - ./backend/src:/app/src
     depends_on:
       - db
     ports:
@@ -28,7 +29,8 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
     volumes:
-      - ./frontend/pages:/app/pages
+      - ./frontend/src:/app/src
+      - ./frontend/next.config.js:/app/next.config.js
       - ./frontend/tsconfig.json:/app/tsconfig.json
     depends_on:
       - api

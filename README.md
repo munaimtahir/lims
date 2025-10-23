@@ -19,11 +19,12 @@ This repository contains the initial scaffold for a Laboratory Information Manag
 ## Project Structure
 ```
 backend/              # FastAPI backend application
-  app/                # Application code
-    models/           # Database models
-    routers/          # API endpoints
-    main.py           # Application entry point
-    database.py       # Database configuration
+  src/                # Source code
+    lims/             # Main application package
+      models/         # Database models
+      routers/        # API endpoints
+      main.py         # Application entry point
+      database.py     # Database configuration
   tests/              # Backend tests
   requirements.txt    # Python dependencies
   pyproject.toml      # Python tooling configuration
@@ -31,7 +32,9 @@ backend/              # FastAPI backend application
   .env.example        # Environment variables template
 
 frontend/             # Next.js frontend application
-  pages/              # Next.js pages
+  src/                # Source code
+    pages/            # Next.js pages
+  next.config.js      # Next.js configuration
   package.json        # Node.js dependencies
   tsconfig.json       # TypeScript configuration
   .eslintrc.json      # ESLint configuration

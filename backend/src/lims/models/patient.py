@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, Integer, String
 
-from ..database import Base
+from lims.database import Base
 
 
 class Patient(Base):

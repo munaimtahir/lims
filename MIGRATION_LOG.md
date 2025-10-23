@@ -2,11 +2,59 @@
 
 **Date**: 2025-10-23  
 **Branch**: `copilot/cleanup-repo-structure`  
-**Status**: ✅ Complete
+**Status**: ✅ Complete (Updated with src/ structure)
+
+## Update: Phase 2 - Standardized Directory Structure
+
+**Date**: 2025-10-23
+
+### Additional Structural Changes
+
+Following user feedback, the repository has been further restructured to follow industry-standard `src/` patterns for both backend and frontend.
+
+#### Backend Restructure: `backend/app/` → `backend/src/lims/`
+
+**Rationale**: 
+- Follows Python packaging best practices with explicit `src/` layout
+- Proper package naming (`lims`) for better import clarity
+- Separates source code from configuration and tests
+- Enables proper PYTHONPATH configuration
+
+**Changes Made**:
+1. Moved all code from `backend/app/` to `backend/src/lims/`
+2. Updated all imports from relative (`from .module`) to absolute (`from lims.module`)
+3. Updated `backend/Dockerfile` to copy `src/` directory
+4. Updated `docker-compose.yml` with PYTHONPATH environment variable
+5. Updated `backend/pyproject.toml` to include `pythonpath = ["src"]` in pytest config
+6. Updated `backend/tests/test_health.py` to import from `lims.main`
+
+**Import Changes**:
+- `from app.main import app` → `from lims.main import app`
+- `from .database import Base` → `from lims.database import Base`
+- `from ..models.patient import Patient` → `from lims.models.patient import Patient`
+
+#### Frontend Restructure: `frontend/pages/` → `frontend/src/pages/`
+
+**Rationale**:
+- Follows Next.js best practices for project organization
+- Separates source code from configuration
+- Allows for future addition of other directories in `src/` (components, lib, hooks, etc.)
+- Standard pattern in modern Next.js projects
+
+**Changes Made**:
+1. Moved `frontend/pages/` to `frontend/src/pages/`
+2. Created `frontend/next.config.js` for Next.js configuration
+3. Updated `frontend/Dockerfile` to copy `src/` directory and config
+4. Updated `docker-compose.yml` to mount `src/` and config
+
+**New Files**:
+- `frontend/next.config.js` - Next.js configuration for proper src/ handling
 
 ## Overview
 
 This migration standardized the repository structure, added comprehensive tooling configurations, fixed deprecations, and ensured all quality checks pass.
+
+**Phase 2 Update**: Further restructured to use industry-standard `src/` directory patterns for both backend and frontend, improving project organization and following Python/Next.js best practices.
 
 ## Changes Summary
 
@@ -102,12 +150,26 @@ Updated `.github/workflows/ci.yml`:
 
 ## File Moves & Renames
 
+### Phase 1 (Initial Cleanup)
 | Original Path | New Path | Reason |
 |--------------|----------|--------|
 | `lims-content/` | `data/` | More standard naming convention |
 | `lims-content/reference_ranges.csv` | `data/reference_ranges.csv` | Follows directory rename |
 | `lims-content/critical_values.csv` | `data/critical_values.csv` | Follows directory rename |
 | `lims-content/delta_rules.csv` | `data/delta_rules.csv` | Follows directory rename |
+
+### Phase 2 (Standardized src/ Structure)
+| Original Path | New Path | Reason |
+|--------------|----------|--------|
+| `backend/app/` | `backend/src/lims/` | Industry-standard src/ pattern with proper package name |
+| `backend/app/__init__.py` | `backend/src/lims/__init__.py` | Follows directory restructure |
+| `backend/app/main.py` | `backend/src/lims/main.py` | Follows directory restructure |
+| `backend/app/database.py` | `backend/src/lims/database.py` | Follows directory restructure |
+| `backend/app/models/*` | `backend/src/lims/models/*` | Follows directory restructure |
+| `backend/app/routers/*` | `backend/src/lims/routers/*` | Follows directory restructure |
+| `frontend/pages/` | `frontend/src/pages/` | Next.js standard src/ pattern |
+| `frontend/pages/index.tsx` | `frontend/src/pages/index.tsx` | Follows directory restructure |
+| `frontend/pages/patients/index.tsx` | `frontend/src/pages/patients/index.tsx` | Follows directory restructure |
 
 ## New Files Created
 
