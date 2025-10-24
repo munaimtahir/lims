@@ -26,3 +26,5 @@ dist/
 # Misc
 .coverage
 .pytest_cache/
+*.db
+next-env.d.ts
