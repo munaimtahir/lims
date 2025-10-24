@@ -1,0 +1,6 @@
+# Require review from the owner for all changes by default
+* @munaimtahir
+
+# Optionally add code owners for specific areas
+# backend/ @munaimtahir
+# frontend/ @munaimtahir
