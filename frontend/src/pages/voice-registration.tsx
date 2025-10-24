@@ -39,7 +39,7 @@ const VoiceRegistrationPage = () => {
 
   const handleMappingReceived = (data: any) => {
     setMapping(data);
-    
+
     // Auto-fill form with extracted fields
     if (data.fields) {
       setFormData({
@@ -62,7 +62,7 @@ const VoiceRegistrationPage = () => {
     e.preventDefault();
     setSubmitting(true);
     setSuccess(false);
-    
+
     try {
       const response = await fetch(`${apiBase}/patients`, {
         method: 'POST',
@@ -86,7 +86,7 @@ const VoiceRegistrationPage = () => {
       setMapping(null);
       setTranscript('');
       setSuccess(true);
-      
+
       // Hide success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -97,7 +97,9 @@ const VoiceRegistrationPage = () => {
   };
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
+    <div
+      style={{ fontFamily: 'sans-serif', padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}
+    >
       <Head>
         <title>Voice Registration - LIMS</title>
       </Head>
@@ -108,19 +110,28 @@ const VoiceRegistrationPage = () => {
         </p>
 
         {success && (
-          <div style={{ 
-            padding: '1rem', 
-            backgroundColor: '#d4edda', 
-            border: '1px solid #c3e6cb',
-            borderRadius: '4px',
-            marginBottom: '1rem',
-            color: '#155724'
-          }}>
+          <div
+            style={{
+              padding: '1rem',
+              backgroundColor: '#d4edda',
+              border: '1px solid #c3e6cb',
+              borderRadius: '4px',
+              marginBottom: '1rem',
+              color: '#155724',
+            }}
+          >
             ✓ Patient registered successfully!
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2rem' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '2rem',
+            marginTop: '2rem',
+          }}
+        >
           {/* Voice Input Panel */}
           <div>
             <VoiceInput
@@ -135,7 +146,7 @@ const VoiceRegistrationPage = () => {
                 {Object.keys(mapping.confidences || {}).map((field) => {
                   const conf = mapping.confidences[field];
                   const level = getConfidenceLevel(conf);
-                  
+
                   return (
                     <div
                       key={field}
@@ -147,7 +158,7 @@ const VoiceRegistrationPage = () => {
                         marginBottom: '0.5rem',
                         backgroundColor: '#fff',
                         border: '1px solid #ddd',
-                        borderRadius: '4px'
+                        borderRadius: '4px',
                       }}
                     >
                       <span style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
@@ -160,7 +171,7 @@ const VoiceRegistrationPage = () => {
                           fontSize: '0.85rem',
                           fontWeight: 'bold',
                           backgroundColor: level.color,
-                          color: 'white'
+                          color: 'white',
                         }}
                       >
                         {level.label} ({(conf * 100).toFixed(0)}%)
@@ -168,15 +179,18 @@ const VoiceRegistrationPage = () => {
                     </div>
                   );
                 })}
-                
-                <div style={{ 
-                  marginTop: '1rem', 
-                  padding: '0.75rem', 
-                  backgroundColor: '#e7f3ff',
-                  border: '1px solid #b3d9ff',
-                  borderRadius: '4px'
-                }}>
-                  <strong>Overall Confidence:</strong> {(mapping.overall_confidence * 100).toFixed(0)}%
+
+                <div
+                  style={{
+                    marginTop: '1rem',
+                    padding: '0.75rem',
+                    backgroundColor: '#e7f3ff',
+                    border: '1px solid #b3d9ff',
+                    borderRadius: '4px',
+                  }}
+                >
+                  <strong>Overall Confidence:</strong>{' '}
+                  {(mapping.overall_confidence * 100).toFixed(0)}%
                   {mapping.requires_confirmation && (
                     <p style={{ marginTop: '0.5rem', marginBottom: 0, fontSize: '0.9rem' }}>
                       ⚠️ Please confirm the extracted fields before submitting.
@@ -195,9 +209,15 @@ const VoiceRegistrationPage = () => {
           {/* Patient Form */}
           <div>
             <h2>Patient Information</h2>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form
+              onSubmit={handleSubmit}
+              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
               <div>
-                <label htmlFor="name" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                <label
+                  htmlFor="name"
+                  style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}
+                >
                   Name *
                 </label>
                 <input
@@ -207,19 +227,22 @@ const VoiceRegistrationPage = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.5rem', 
-                    fontSize: '1rem', 
-                    border: '1px solid #ccc', 
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    fontSize: '1rem',
+                    border: '1px solid #ccc',
                     borderRadius: '4px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
 
               <div>
-                <label htmlFor="age" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                <label
+                  htmlFor="age"
+                  style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}
+                >
                   Age *
                 </label>
                 <input
@@ -231,19 +254,22 @@ const VoiceRegistrationPage = () => {
                   required
                   min="0"
                   max="150"
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.5rem', 
-                    fontSize: '1rem', 
-                    border: '1px solid #ccc', 
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    fontSize: '1rem',
+                    border: '1px solid #ccc',
                     borderRadius: '4px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
 
               <div>
-                <label htmlFor="gender" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                <label
+                  htmlFor="gender"
+                  style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}
+                >
                   Gender *
                 </label>
                 <select
@@ -252,13 +278,13 @@ const VoiceRegistrationPage = () => {
                   value={formData.gender}
                   onChange={handleChange}
                   required
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.5rem', 
-                    fontSize: '1rem', 
-                    border: '1px solid #ccc', 
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    fontSize: '1rem',
+                    border: '1px solid #ccc',
                     borderRadius: '4px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
                   }}
                 >
                   <option value="">Select gender</option>
@@ -269,7 +295,10 @@ const VoiceRegistrationPage = () => {
               </div>
 
               <div>
-                <label htmlFor="contact" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+                <label
+                  htmlFor="contact"
+                  style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}
+                >
                   Contact
                 </label>
                 <input
@@ -278,13 +307,13 @@ const VoiceRegistrationPage = () => {
                   name="contact"
                   value={formData.contact}
                   onChange={handleChange}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.5rem', 
-                    fontSize: '1rem', 
-                    border: '1px solid #ccc', 
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    fontSize: '1rem',
+                    border: '1px solid #ccc',
                     borderRadius: '4px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>

@@ -6,10 +6,10 @@ interface VoiceInputProps {
   language?: string;
 }
 
-const VoiceInput: React.FC<VoiceInputProps> = ({ 
-  onTranscriptReceived, 
+const VoiceInput: React.FC<VoiceInputProps> = ({
+  onTranscriptReceived,
   onMappingReceived,
-  language = 'en-US' 
+  language = 'en-US',
 }) => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -19,8 +19,9 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
   useEffect(() => {
     // Check if Web Speech API is available
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-      
+      const SpeechRecognition =
+        (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+
       if (SpeechRecognition) {
         const recognitionInstance = new SpeechRecognition();
         recognitionInstance.continuous = false;
@@ -31,7 +32,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
           const transcriptText = event.results[0][0].transcript;
           setTranscript(transcriptText);
           onTranscriptReceived(transcriptText);
-          
+
           // Send to backend for mapping
           mapTranscript(transcriptText);
         };
@@ -64,7 +65,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
         body: JSON.stringify({
           transcript: text,
           user: 'frontend_user',
-          action_type: 'registration'
+          action_type: 'registration',
         }),
       });
 
@@ -96,23 +97,27 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
   };
 
   return (
-    <div style={{ 
-      padding: '1rem', 
-      border: '1px solid #ddd', 
-      borderRadius: '8px',
-      backgroundColor: '#f9f9f9'
-    }}>
+    <div
+      style={{
+        padding: '1rem',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        backgroundColor: '#f9f9f9',
+      }}
+    >
       <h3 style={{ marginTop: 0 }}>Voice Input</h3>
-      
+
       {error && (
-        <div style={{ 
-          padding: '0.5rem', 
-          backgroundColor: '#fee', 
-          border: '1px solid #fcc',
-          borderRadius: '4px',
-          marginBottom: '1rem',
-          fontSize: '0.9rem'
-        }}>
+        <div
+          style={{
+            padding: '0.5rem',
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            borderRadius: '4px',
+            marginBottom: '1rem',
+            fontSize: '0.9rem',
+          }}
+        >
           {error}
         </div>
       )}
@@ -132,24 +137,24 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
             cursor: recognition ? 'pointer' : 'not-allowed',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.5rem',
           }}
         >
-          <span style={{ fontSize: '1.5rem' }}>
-            {isListening ? '⏹' : '🎤'}
-          </span>
+          <span style={{ fontSize: '1.5rem' }}>{isListening ? '⏹' : '🎤'}</span>
           {isListening ? 'Stop Recording' : 'Start Voice Input'}
         </button>
       </div>
 
       {transcript && (
-        <div style={{
-          padding: '1rem',
-          backgroundColor: '#fff',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          marginTop: '1rem'
-        }}>
+        <div
+          style={{
+            padding: '1rem',
+            backgroundColor: '#fff',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            marginTop: '1rem',
+          }}
+        >
           <strong>Transcript:</strong>
           <p style={{ marginTop: '0.5rem', marginBottom: 0 }}>{transcript}</p>
         </div>
