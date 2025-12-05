@@ -1,0 +1,131 @@
+name: "Registration Form — Bug & Improvement Report"
+description: "Report bugs or required changes in the patient registration form"
+title: "[Registration Form] "
+labels: ["bug", "frontend", "backend", "UI/UX"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Registration Form Issues / Improvements
+        Use this form to report bugs or changes required in the patient registration module.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Issue Summary
+      description: Briefly describe the issue or enhancement required.
+      placeholder: "Example: Age field not editable..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Issue Category
+      options:
+        - Age & DOB Logic
+        - CNIC Field
+        - Mobile Number Search
+        - Test Selection Autocomplete
+        - Cash Calculation
+        - Save / Save & Print Error
+        - UI/UX
+        - Backend API
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: age_related
+    attributes:
+      label: Age & DOB Issues (select all that apply)
+      description: Leave blank if not related to age/DOB.
+      options:
+        - label: Age field not editable
+        - label: DOB does not update when Age is entered
+        - label: Age does not update when DOB is entered
+        - label: Need 3 fields (Years / Months / Days)
+        - label: At least one age field must be required
+        - label: Blank fields should be treated as zero
+
+  - type: checkboxes
+    id: cnic
+    attributes:
+      label: CNIC Field
+      description: Mark if the issue is related to CNIC behavior.
+      options:
+        - label: CNIC should be optional
+        - label: Empty CNIC should send null to API
+
+  - type: checkboxes
+    id: mobile_search
+    attributes:
+      label: Mobile Number Search
+      options:
+        - label: System should search existing MR numbers when mobile is entered
+        - label: No search results appear
+        - label: Search results appear too slowly
+
+  - type: checkboxes
+    id: test_autocomplete
+    attributes:
+      label: Test Selection Autocomplete
+      options:
+        - label: Suggestions do not appear while typing
+        - label: Need real-time suggestions on each letter
+        - label: Must type full name to search
+
+  - type: checkboxes
+    id: cash
+    attributes:
+      label: Cash Calculation
+      options:
+        - label: Total cost shows NaN for multiple tests
+        - label: Amount resets only after deleting extra tests
+        - label: Calculation mismatch
+
+  - type: checkboxes
+    id: order_save
+    attributes:
+      label: Save & Save+Print Errors
+      options:
+        - label: Shows "Failed to create new order"
+        - label: API parameters missing/incorrect
+        - label: Mandatory fields blocking submission
+        - label: Optional fields should send null
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Explain how to reproduce the issue.
+      placeholder: "1. Open form → 2. Add test → 3. Click Save → Error appears..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behaviour
+      placeholder: "Describe how the system should behave."
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Logs
+      description: Paste screenshots, console logs, or network errors.
+      placeholder: "Upload screenshots or paste log output here."
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any extra detail that may help developers.
+    validations:
+      required: false

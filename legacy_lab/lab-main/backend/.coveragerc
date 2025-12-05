@@ -1,0 +1,19 @@
+[coverage:run]
+source = .
+omit = 
+    */migrations/*
+    */tests.py
+    */test_*.py
+    */__init__.py
+    */venv/*
+    */manage.py
+    */apps.py
+    */admin.py
+    */asgi.py
+    */wsgi.py
+    */models.py
+
+[coverage:report]
+precision = 2
+skip_covered = False
+show_missing = True

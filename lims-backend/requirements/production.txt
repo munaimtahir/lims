@@ -1,0 +1,8 @@
+# Production requirements
+-r base.txt
+
+# Static files
+whitenoise==6.6.0
+
+# WSGI Server
+gunicorn==21.2.0

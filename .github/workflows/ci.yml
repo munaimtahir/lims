@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: lims_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        working-directory: lims-backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/development.txt
+
+      - name: Run linting
+        working-directory: lims-backend
+        run: |
+          flake8 apps/ --max-line-length=120 --exclude=migrations
+
+      - name: Run tests with coverage
+        working-directory: lims-backend
+        env:
+          DB_ENGINE: django.db.backends.sqlite3
+          DB_NAME: test.db
+          SECRET_KEY: test-secret-key
+          DEBUG: 'True'
+        run: |
+          coverage run -m pytest apps/ -v
+          coverage report --fail-under=70
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run linting
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  docker-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: [backend-tests, frontend-tests]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend Docker image
+        working-directory: lims-backend
+        run: |
+          docker build -t lims-backend .
+
+      - name: Build frontend Docker image
+        working-directory: frontend
+        run: |
+          docker build -t lims-frontend .

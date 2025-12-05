@@ -1,0 +1,181 @@
+name: "LIMS Migration Checklist"
+description: "Track migration of features from lab-main (old LIMS) to LIMS_new-main (new LIMS)"
+title: "[LIMS Migration] "
+labels:
+  - lims
+  - migration
+  - backend
+  - frontend
+assignees: []  # You can put default usernames here if you want
+
+body:
+  - type: input
+    id: owner
+    attributes:
+      label: Main owner for this migration task
+      description: GitHub username of the person mainly responsible.
+      placeholder: e.g. @munaimtahir
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Main area
+      description: Which area does this issue mostly cover?
+      options:
+        - Backend
+        - Frontend
+        - Full stack
+        - DevOps
+    validations:
+      required: false
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope / Notes
+      description: Describe what part of the migration this issue covers (e.g. Phase 2–3 only, or full migration).
+      placeholder: Short free-text description…
+    validations:
+      required: false
+
+  # PHASE 0 – PREPARE
+  - type: checkboxes
+    id: phase0_prepare
+    attributes:
+      label: Phase 0 – Prepare
+      description: Basic setup before migration.
+      options:
+        - label: Clone both repos (lab-main and LIMS_new-main) locally
+        - label: Create a new branch in LIMS_new-main (e.g. feature/migration-phase1)
+        - label: Confirm Repo B backend runs locally
+        - label: Confirm Repo B frontend runs locally
+        - label: Backup real master Excel files and any real data
+
+  # PHASE 1 – SCOPE P1
+  - type: checkboxes
+    id: phase1_scope
+    attributes:
+      label: Phase 1 – Define P1 Scope
+      description: Decide what is included in the first migration phase (P1 MVP).
+      options:
+        - label: Confirm P1 includes master catalog import (Excel → DB)
+        - label: Confirm P1 includes reference ranges and quick texts
+        - label: Confirm P1 includes core workflow (Patient → Order → Sample → Result → Verification → Report)
+        - label: Decide if workflow settings/role permissions are included in P1 or later
+        - label: Mark advanced dashboards and analyzer integration as later phases
+
+  # PHASE 2 – MODELS & DB LAYER
+  - type: checkboxes
+    id: phase2_models
+    attributes:
+      label: Phase 2 – Models & Database Layer
+      description: Align models between old and new repos.
+      options:
+        - label: Map old models (Parameter, ReferenceRange, ParameterQuickText, Result, Sample) to new models
+        - label: Decide final model names in Repo B (keep B naming where possible)
+        - label: Add missing models to apps/laboratory in Repo B (ReferenceRange, QuickText, etc.)
+        - label: Run makemigrations for new laboratory models
+        - label: Run migrate and confirm DB schema is correct
+
+  # PHASE 3 – MASTER DATA IMPORT
+  - type: checkboxes
+    id: phase3_import
+    attributes:
+      label: Phase 3 – Master Data Import (Excel → DB)
+      description: Port the import_lims_master command from old repo to new repo.
+      options:
+        - label: Copy import_lims_master command from lab-main to apps/laboratory/management/commands in Repo B
+        - label: Update imports and model names inside the command to match Repo B
+        - label: Run import_lims_master with a dry-run in Repo B
+        - label: Fix any errors and run a real import on test data
+        - label: Confirm tests, parameters, and reference ranges are correctly populated in Repo B
+
+  # PHASE 4 – WORKFLOW & BUSINESS LOGIC
+  - type: checkboxes
+    id: phase4_workflow
+    attributes:
+      label: Phase 4 – Workflow & Business Logic
+      description: Align order, sample, and result flows.
+      options:
+        - label: Compare order/sample/result models between lab-main and LIMS_new-main
+        - label: Ensure status fields and choices in Repo B cover basic lab workflow
+        - label: Implement simple result entry flow (enter result → mark as entered)
+        - label: Implement simple verification flow (verify result → lock result)
+        - label: Decide whether WorkflowSettings-style dynamic config is P1 or later
+
+  # PHASE 5 – API & FRONTEND WIRING
+  - type: checkboxes
+    id: phase5_api_frontend
+    attributes:
+      label: Phase 5 – API & Frontend Wiring
+      description: Make sure backend endpoints and frontend pages talk correctly.
+      options:
+        - label: Confirm core API endpoints exist (auth, patients, laboratory, orders, samples, results, reports, payments)
+        - label: Test each core endpoint manually (Postman / curl)
+        - label: Wire login page to Repo B auth endpoints
+        - label: Wire patient list/create pages to Repo B patients API
+        - label: Wire order creation page to orders API
+        - label: Wire sample collection page to samples API
+        - label: Wire worklist/result entry pages to results API
+        - label: Wire verification queue page to verification/approve endpoints
+        - label: Wire basic dashboard and payments pages to respective APIs
+
+  # PHASE 6 – PDF REPORT TEMPLATE
+  - type: checkboxes
+    id: phase6_pdf
+    attributes:
+      label: Phase 6 – PDF Report Template
+      description: Implement the standard Al Shifa report layout in Repo B.
+      options:
+        - label: Create a PDF generator service in apps/reports (or similar)
+        - label: Implement standard Al Shifa header with logo and lab details
+        - label: Implement demographics block (Ref #, MR #, Patient, Age/Gender, etc.)
+        - label: Implement results table (Test, Result, Unit, Reference Range)
+        - label: Add impression and disclaimer text from standard template
+        - label: Add authorized signatories to the PDF
+        - label: Expose a report PDF endpoint (e.g. GET /api/v1/reports/{order_id}/pdf/)
+        - label: Connect frontend “Print / Download” button to PDF endpoint
+
+  # PHASE 7 – AUDIT & BILLING (P1 LEVEL)
+  - type: checkboxes
+    id: phase7_audit_billing
+    attributes:
+      label: Phase 7 – Audit & Billing (Basic)
+      description: Connect key events to audit logs and basic payments.
+      options:
+        - label: Write audit log entries for key events (order created, result changed, verified, report printed)
+        - label: Confirm Payment model in Repo B links correctly to orders
+        - label: Implement basic "mark order as paid/unpaid" flow
+        - label: Ensure payments are visible on the payments page
+        - label: Ensure audit logs are visible on audit logs page
+
+  # PHASE 8 – END-TO-END TESTING
+  - type: checkboxes
+    id: phase8_e2e
+    attributes:
+      label: Phase 8 – End-to-End Testing (P1 Flow)
+      description: Test the full lab workflow on Repo B.
+      options:
+        - label: Import real or sample test catalog via import_lims_master
+        - label: Create test patients using the UI
+        - label: Create sample orders with common tests (e.g. CBC, LFT)
+        - label: Move orders through full life cycle (register → collect → result entry → verify → report → payment)
+        - label: Verify results display correctly with units and reference ranges
+        - label: Verify reports print correctly using the standard template
+        - label: Verify audit entries and payments are recorded correctly
+        - label: Log and fix any blocking issues before deployment
+
+  # PHASE 9 – DEPLOYMENT PLANNING
+  - type: checkboxes
+    id: phase9_deploy
+    attributes:
+      label: Phase 9 – Deployment Planning
+      description: Prepare for staging/production deployment.
+      options:
+        - label: Choose final docker-compose and web server strategy (Caddy or Nginx)
+        - label: Port useful CI workflows from old repo into new repo (backend tests, frontend build, Docker build)
+        - label: Deploy a staging instance on VPS and test full workflow
+        - label: Prepare environment variables and secrets for production
+        - label: Plan final rollout for Al Shifa lab (go-live checklist)

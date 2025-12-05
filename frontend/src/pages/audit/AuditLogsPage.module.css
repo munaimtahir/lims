@@ -1,0 +1,214 @@
+.container {
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  margin: 0 0 8px 0;
+  color: #1e293b;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterGroup label {
+  font-weight: 500;
+  color: #475569;
+  font-size: 14px;
+}
+
+.select {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.searchFilter {
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.loading,
+.error,
+.noData {
+  text-align: center;
+  padding: 48px;
+  color: #64748b;
+}
+
+.error {
+  color: #ef4444;
+}
+
+.logsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logEntry {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.logHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.logMeta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.actionBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.actionCreate {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.actionUpdate {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.actionDelete {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.actionApprove {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.actionReject {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.actionDefault {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.tableName {
+  font-weight: 500;
+  color: #475569;
+  font-size: 14px;
+}
+
+.objectId {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.timestamp {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.logDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailRow {
+  display: flex;
+  gap: 8px;
+}
+
+.label {
+  font-weight: 500;
+  color: #475569;
+  min-width: 100px;
+}
+
+.value {
+  color: #64748b;
+}
+
+.changes {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.changeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.changeSection strong {
+  color: #475569;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.jsonValue {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  color: #1e293b;
+  overflow-x: auto;
+  margin: 0;
+}

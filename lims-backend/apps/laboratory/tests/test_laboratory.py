@@ -1,0 +1,225 @@
+"""
+Tests for the laboratory app.
+"""
+import pytest
+from decimal import Decimal
+from rest_framework import status
+from rest_framework.test import APIClient
+from apps.accounts.models import User
+from apps.laboratory.models import TestCategory, Test, TestParameter, TestPanel
+
+
+@pytest.fixture
+def api_client():
+    """Return an API client for making requests."""
+    return APIClient()
+
+
+@pytest.fixture
+def admin_user(db):
+    """Create and return an admin user."""
+    user = User.objects.create_user(
+        username='admin',
+        email='admin@test.com',
+        password='adminpass123',
+        full_name='Admin User',
+        role='Admin'
+    )
+    return user
+
+
+@pytest.fixture
+def authenticated_client(api_client, admin_user):
+    """Return an authenticated API client with admin user."""
+    api_client.force_authenticate(user=admin_user)
+    return api_client
+
+
+@pytest.fixture
+def test_category(db):
+    """Create and return a test category."""
+    return TestCategory.objects.create(
+        name='Hematology',
+        description='Blood tests'
+    )
+
+
+@pytest.fixture
+def test_instance(db, test_category):
+    """Create and return a test."""
+    return Test.objects.create(
+        category=test_category,
+        test_code='CBC',
+        test_name='Complete Blood Count',
+        loinc_code='58410-2',
+        sample_type='EDTA Blood',
+        sample_volume='3-5 mL',
+        price=Decimal('800.00'),
+        turnaround_time=4
+    )
+
+
+@pytest.fixture
+def test_parameter(db, test_instance):
+    """Create and return a test parameter."""
+    return TestParameter.objects.create(
+        test=test_instance,
+        parameter_name='Hemoglobin',
+        loinc_code='718-7',
+        unit='g/dL',
+        reference_min_male=Decimal('13.5'),
+        reference_max_male=Decimal('17.5'),
+        reference_min_female=Decimal('12.0'),
+        reference_max_female=Decimal('15.5'),
+        critical_low=Decimal('7.0'),
+        critical_high=Decimal('20.0'),
+        display_order=1
+    )
+
+
+@pytest.fixture
+def test_panel(db, test_category, test_instance):
+    """Create and return a test panel."""
+    panel = TestPanel.objects.create(
+        panel_code='CBC_PANEL',
+        panel_name='CBC Panel',
+        category=test_category,
+        sample_type='EDTA Blood',
+        price=Decimal('700.00'),
+        turnaround_time=4
+    )
+    panel.tests.add(test_instance)
+    return panel
+
+
+@pytest.mark.django_db
+class TestTestCategoryModel:
+    """Tests for the TestCategory model."""
+
+    def test_create_category(self):
+        """Test creating a test category."""
+        category = TestCategory.objects.create(
+            name='Chemistry',
+            description='Chemical tests'
+        )
+        assert category.name == 'Chemistry'
+        assert str(category) == 'Chemistry'
+
+
+@pytest.mark.django_db
+class TestTestModel:
+    """Tests for the Test model."""
+
+    def test_create_test(self, test_category):
+        """Test creating a test."""
+        test = Test.objects.create(
+            category=test_category,
+            test_code='LFT',
+            test_name='Liver Function Test',
+            sample_type='Serum',
+            price=Decimal('1200.00'),
+            turnaround_time=4
+        )
+        assert test.test_code == 'LFT'
+        assert test.price == Decimal('1200.00')
+        assert 'LFT' in str(test)
+
+
+@pytest.mark.django_db
+class TestTestParameterModel:
+    """Tests for the TestParameter model."""
+
+    def test_create_parameter(self, test_instance):
+        """Test creating a test parameter."""
+        param = TestParameter.objects.create(
+            test=test_instance,
+            parameter_name='WBC',
+            unit='x10^9/L',
+            reference_min_male=Decimal('4.0'),
+            reference_max_male=Decimal('11.0'),
+            reference_min_female=Decimal('4.0'),
+            reference_max_female=Decimal('11.0')
+        )
+        assert param.parameter_name == 'WBC'
+        assert param.test == test_instance
+
+
+@pytest.mark.django_db
+class TestTestPanelModel:
+    """Tests for the TestPanel model."""
+
+    def test_create_panel(self, test_category, test_instance):
+        """Test creating a test panel."""
+        panel = TestPanel.objects.create(
+            panel_code='LFT_PANEL',
+            panel_name='LFT Panel',
+            category=test_category,
+            sample_type='Serum',
+            price=Decimal('1000.00'),
+            turnaround_time=4
+        )
+        panel.tests.add(test_instance)
+        assert panel.panel_code == 'LFT_PANEL'
+        assert panel.tests.count() == 1
+
+
+@pytest.mark.django_db
+class TestTestCategoryViewSet:
+    """Tests for the TestCategory ViewSet."""
+
+    def test_list_categories(self, authenticated_client, test_category):
+        """Test listing test categories."""
+        response = authenticated_client.get('/api/v1/laboratory/categories/')
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_create_category(self, authenticated_client):
+        """Test creating a test category."""
+        response = authenticated_client.post('/api/v1/laboratory/categories/', {
+            'name': 'Microbiology',
+            'description': 'Microbiology tests'
+        })
+        assert response.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.django_db
+class TestTestViewSet:
+    """Tests for the Test ViewSet."""
+
+    def test_list_tests(self, authenticated_client, test_instance):
+        """Test listing tests."""
+        response = authenticated_client.get('/api/v1/laboratory/tests/')
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_retrieve_test_with_parameters(self, authenticated_client, test_instance, test_parameter):
+        """Test retrieving a test with its parameters."""
+        response = authenticated_client.get(f'/api/v1/laboratory/tests/{test_instance.id}/')
+        assert response.status_code == status.HTTP_200_OK
+        assert 'parameters' in response.data
+
+    def test_create_test(self, authenticated_client, test_category):
+        """Test creating a test."""
+        response = authenticated_client.post('/api/v1/laboratory/tests/', {
+            'category': test_category.id,
+            'test_code': 'GLU',
+            'test_name': 'Glucose',
+            'sample_type': 'Serum',
+            'price': '250.00',
+            'turnaround_time': 2
+        })
+        assert response.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.django_db
+class TestTestPanelViewSet:
+    """Tests for the TestPanel ViewSet."""
+
+    def test_list_panels(self, authenticated_client, test_panel):
+        """Test listing test panels."""
+        response = authenticated_client.get('/api/v1/laboratory/panels/')
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_retrieve_panel_with_tests(self, authenticated_client, test_panel):
+        """Test retrieving a panel with its tests."""
+        response = authenticated_client.get(f'/api/v1/laboratory/panels/{test_panel.id}/')
+        assert response.status_code == status.HTTP_200_OK
+        assert 'tests' in response.data
