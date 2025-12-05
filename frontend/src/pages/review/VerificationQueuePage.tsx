@@ -6,7 +6,7 @@ import styles from './VerificationQueuePage.module.css';
 
 export default function VerificationQueuePage() {
   const queryClient = useQueryClient();
-  const [selectedResult, setSelectedResult] = useState<TestResult | null>(null);
+  const [, setSelectedResult] = useState<TestResult | null>(null);
 
   const { data: queueData, isLoading, error } = useQuery({
     queryKey: ['verification-queue'],

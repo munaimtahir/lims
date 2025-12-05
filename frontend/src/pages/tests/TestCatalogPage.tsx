@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { laboratoryApi } from '../../api/services';
-import type { TestCategory, LabTest, TestPanel } from '../../types';
 import styles from './TestCatalogPage.module.css';
 
 export default function TestCatalogPage() {

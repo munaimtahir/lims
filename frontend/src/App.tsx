@@ -72,19 +72,4 @@ function App() {
   );
 }
 
-// Placeholder component for routes not yet implemented
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div style={{
-      background: 'white',
-      borderRadius: '12px',
-      padding: '32px',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-    }}>
-      <h2 style={{ marginBottom: '16px', color: '#1e293b' }}>{title}</h2>
-      <p style={{ color: '#64748b' }}>This page is under development.</p>
-    </div>
-  );
-}
-
 export default App;

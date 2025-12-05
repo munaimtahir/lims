@@ -3,6 +3,34 @@ import { useAuth } from '../../contexts/AuthContext';
 import { dashboardApi } from '../../api/services';
 import styles from './DashboardHome.module.css';
 
+interface DashboardStatistics {
+  today?: {
+    orders?: number;
+    samples?: number;
+    results?: number;
+    reports?: number;
+    revenue?: number;
+  };
+  totals?: {
+    patients?: number;
+    orders?: number;
+    results?: number;
+  };
+  pending?: {
+    collections?: number;
+    results?: number;
+    verifications?: number;
+  };
+  revenue?: {
+    total?: number;
+    unpaid?: number;
+    today?: number;
+  };
+  orders?: {
+    status_breakdown?: Array<{ status: string; count: number }>;
+  };
+}
+
 export default function DashboardHome() {
   const { user } = useAuth();
   
@@ -55,7 +83,7 @@ export default function DashboardHome() {
   );
 }
 
-function AdminDashboard({ statistics }: { statistics?: YourDashboardStatisticsType }) {
+function AdminDashboard({ statistics }: { statistics?: DashboardStatistics }) {
   return (
     <div className={styles.statsGrid}>
       <StatCard title="Total Patients" value={statistics?.totals?.patients || '0'} icon="👥" />
@@ -66,7 +94,7 @@ function AdminDashboard({ statistics }: { statistics?: YourDashboardStatisticsTy
   );
 }
 
-function ReceptionDashboard({ statistics }: { statistics?: any }) {
+function ReceptionDashboard({ statistics }: { statistics?: DashboardStatistics }) {
   return (
     <div className={styles.statsGrid}>
       <StatCard title="Orders Created Today" value={statistics?.today?.orders || '0'} icon="📋" />
@@ -76,17 +104,17 @@ function ReceptionDashboard({ statistics }: { statistics?: any }) {
   );
 }
 
-function CashierDashboard({ statistics }: { statistics?: any }) {
+function CashierDashboard({ statistics }: { statistics?: DashboardStatistics }) {
   return (
     <div className={styles.statsGrid}>
       <StatCard title="Payments Today" value={statistics?.today?.revenue ? `$${statistics.today.revenue}` : '$0'} icon="💵" />
-      <StatCard title="Pending Orders" value={statistics?.orders?.status_breakdown?.find((s: any) => s.status === 'pending')?.count || '0'} icon="📋" />
+      <StatCard title="Pending Orders" value={statistics?.orders?.status_breakdown?.find((s) => s.status === 'pending')?.count || '0'} icon="📋" />
       <StatCard title="Total Revenue" value={statistics?.revenue?.total ? `$${statistics.revenue.total}` : '$0'} icon="💰" />
     </div>
   );
 }
 
-function PhlebotomistDashboard({ statistics }: { statistics?: any }) {
+function PhlebotomistDashboard({ statistics }: { statistics?: DashboardStatistics }) {
   return (
     <div className={styles.statsGrid}>
       <StatCard title="Pending Collection" value={statistics?.pending?.collections || '0'} icon="💉" />
@@ -95,7 +123,7 @@ function PhlebotomistDashboard({ statistics }: { statistics?: any }) {
   );
 }
 
-function TechnicianDashboard({ statistics }: { statistics?: any }) {
+function TechnicianDashboard({ statistics }: { statistics?: DashboardStatistics }) {
   return (
     <div className={styles.statsGrid}>
       <StatCard title="Results to Enter" value={statistics?.pending?.results || '0'} icon="📝" />
@@ -104,7 +132,7 @@ function TechnicianDashboard({ statistics }: { statistics?: any }) {
   );
 }
 
-function PathologistDashboard({ statistics }: { statistics?: any }) {
+function PathologistDashboard({ statistics }: { statistics?: DashboardStatistics }) {
   return (
     <div className={styles.statsGrid}>
       <StatCard title="Pending Review" value={statistics?.pending?.verifications || '0'} icon="🔍" />
@@ -114,7 +142,7 @@ function PathologistDashboard({ statistics }: { statistics?: any }) {
   );
 }
 
-function ManagerDashboard({ statistics }: { statistics?: any }) {
+function ManagerDashboard({ statistics }: { statistics?: DashboardStatistics }) {
   return (
     <div className={styles.statsGrid}>
       <StatCard title="Total Orders" value={statistics?.totals?.orders || '0'} icon="📋" />
@@ -134,7 +162,7 @@ function DefaultDashboard() {
 
 interface StatCardProps {
   title: string;
-  value: string;
+  value: string | number;
   icon: string;
 }
 

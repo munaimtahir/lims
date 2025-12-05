@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sampleApi } from '../../api/services';
-import type { SampleCollection } from '../../types';
 import styles from './CollectionWorklistPage.module.css';
 
 export default function CollectionWorklistPage() {
