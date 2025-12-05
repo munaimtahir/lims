@@ -9,18 +9,32 @@ class SampleCollectionSerializer(serializers.ModelSerializer):
 
     Includes read-only fields for collected_by_name, patient_name, and order_id.
     """
-    collected_by_name = serializers.CharField(source='collected_by.full_name', read_only=True)
-    patient_name = serializers.CharField(source='order.patient.get_full_name', read_only=True)
-    order_id = serializers.CharField(source='order.order_id', read_only=True)
+
+    collected_by_name = serializers.CharField(
+        source="collected_by.full_name", read_only=True
+    )
+    patient_name = serializers.CharField(
+        source="order.patient.get_full_name", read_only=True
+    )
+    order_id = serializers.CharField(source="order.order_id", read_only=True)
 
     class Meta:
         model = SampleCollection
         fields = [
-            'id', 'order', 'order_id', 'patient_name', 'order_items',
-            'sample_type', 'barcode', 'status',
-            'collected_at', 'collected_by', 'collected_by_name', 'notes'
+            "id",
+            "order",
+            "order_id",
+            "patient_name",
+            "order_items",
+            "sample_type",
+            "barcode",
+            "status",
+            "collected_at",
+            "collected_by",
+            "collected_by_name",
+            "notes",
         ]
-        read_only_fields = ['collected_at', 'collected_by']
+        read_only_fields = ["collected_at", "collected_by"]
 
     def update(self, instance, validated_data):
         """
@@ -34,10 +48,13 @@ class SampleCollectionSerializer(serializers.ModelSerializer):
         Returns:
             SampleCollection: The updated sample collection instance.
         """
-        if validated_data.get('status') == 'collected' and instance.status != 'collected':
-            validated_data['collected_at'] = timezone.now()
-            request = self.context.get('request')
-            if request and hasattr(request, 'user'):
-                validated_data['collected_by'] = request.user
+        if (
+            validated_data.get("status") == "collected"
+            and instance.status != "collected"
+        ):
+            validated_data["collected_at"] = timezone.now()
+            request = self.context.get("request")
+            if request and hasattr(request, "user"):
+                validated_data["collected_by"] = request.user
 
         return super().update(instance, validated_data)

@@ -28,19 +28,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
 
     ROLE_CHOICES = [
-        ('Admin', 'Administrator'),
-        ('Receptionist', 'Receptionist'),
-        ('Cashier', 'Cashier'),
-        ('Phlebotomist', 'Phlebotomist'),
-        ('Lab Technician', 'Lab Technician'),
-        ('Pathologist', 'Pathologist'),
-        ('Manager', 'Manager'),
+        ("Admin", "Administrator"),
+        ("Receptionist", "Receptionist"),
+        ("Cashier", "Cashier"),
+        ("Phlebotomist", "Phlebotomist"),
+        ("Lab Technician", "Lab Technician"),
+        ("Pathologist", "Pathologist"),
+        ("Manager", "Manager"),
     ]
 
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Receptionist')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="Receptionist")
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -51,14 +51,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'full_name']
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email", "full_name"]
 
     class Meta:
-        db_table = 'users'
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
-        ordering = ['-date_joined']
+        db_table = "users"
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+        ordering = ["-date_joined"]
 
     def __str__(self):
         """
@@ -77,7 +77,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Returns:
             bool: True if the user has the 'Admin' role or is a superuser, False otherwise.
         """
-        return self.role == 'Admin' or self.is_superuser
+        return self.role == "Admin" or self.is_superuser
 
     @property
     def is_receptionist(self):
@@ -87,7 +87,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Returns:
             bool: True if the user has the 'Receptionist' role, False otherwise.
         """
-        return self.role == 'Receptionist'
+        return self.role == "Receptionist"
 
     @property
     def is_cashier(self):
@@ -97,7 +97,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Returns:
             bool: True if the user has the 'Cashier' role, False otherwise.
         """
-        return self.role == 'Cashier'
+        return self.role == "Cashier"
 
     @property
     def is_phlebotomist(self):
@@ -107,7 +107,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Returns:
             bool: True if the user has the 'Phlebotomist' role, False otherwise.
         """
-        return self.role == 'Phlebotomist'
+        return self.role == "Phlebotomist"
 
     @property
     def is_lab_technician(self):
@@ -117,7 +117,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Returns:
             bool: True if the user has the 'Lab Technician' role, False otherwise.
         """
-        return self.role == 'Lab Technician'
+        return self.role == "Lab Technician"
 
     @property
     def is_pathologist(self):
@@ -127,7 +127,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Returns:
             bool: True if the user has the 'Pathologist' role, False otherwise.
         """
-        return self.role == 'Pathologist'
+        return self.role == "Pathologist"
 
     @property
     def is_manager(self):
@@ -137,4 +137,4 @@ class User(AbstractBaseUser, PermissionsMixin):
         Returns:
             bool: True if the user has the 'Manager' role, False otherwise.
         """
-        return self.role == 'Manager'
+        return self.role == "Manager"

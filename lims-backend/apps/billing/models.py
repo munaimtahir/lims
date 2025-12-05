@@ -16,24 +16,27 @@ class Payment(models.Model):
         recorded_by (User): The user who recorded the payment.
         notes (str, optional): Any notes related to the payment.
     """
+
     PAYMENT_METHODS = [
-        ('cash', 'Cash'),
-        ('card', 'Credit/Debit Card'),
-        ('bank_transfer', 'Bank Transfer'),
-        ('mobile_money', 'Mobile Money'),
-        ('insurance', 'Insurance'),
+        ("cash", "Cash"),
+        ("card", "Credit/Debit Card"),
+        ("bank_transfer", "Bank Transfer"),
+        ("mobile_money", "Mobile Money"),
+        ("insurance", "Insurance"),
     ]
 
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='payments')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="payments")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
     payment_date = models.DateTimeField(auto_now_add=True)
-    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    recorded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
+    )
     notes = models.TextField(blank=True)
 
     class Meta:
-        ordering = ['-payment_date']
+        ordering = ["-payment_date"]
 
     def __str__(self):
         """

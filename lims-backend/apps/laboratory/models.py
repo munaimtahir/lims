@@ -17,16 +17,17 @@ class TestCategory(models.Model):
         is_active (bool): Whether the category is currently in use.
         created_at (datetime): The timestamp of when the category was created.
     """
+
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'test_categories'
-        verbose_name = 'Test Category'
-        verbose_name_plural = 'Test Categories'
-        ordering = ['name']
+        db_table = "test_categories"
+        verbose_name = "Test Category"
+        verbose_name_plural = "Test Categories"
+        ordering = ["name"]
 
     def __str__(self):
         """
@@ -56,7 +57,10 @@ class Test(models.Model):
         created_at (datetime): The timestamp of when the test was created.
         updated_at (datetime): The timestamp of the last update.
     """
-    category = models.ForeignKey(TestCategory, on_delete=models.PROTECT, related_name='tests')
+
+    category = models.ForeignKey(
+        TestCategory, on_delete=models.PROTECT, related_name="tests"
+    )
     test_code = models.CharField(max_length=20, unique=True, db_index=True)
     test_name = models.CharField(max_length=200)
     loinc_code = models.CharField(max_length=20, blank=True, null=True)
@@ -77,13 +81,13 @@ class Test(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'tests'
-        verbose_name = 'Test'
-        verbose_name_plural = 'Tests'
-        ordering = ['test_code']
+        db_table = "tests"
+        verbose_name = "Test"
+        verbose_name_plural = "Tests"
+        ordering = ["test_code"]
         indexes = [
-            models.Index(fields=['test_code']),
-            models.Index(fields=['category', 'is_active']),
+            models.Index(fields=["test_code"]),
+            models.Index(fields=["category", "is_active"]),
         ]
 
     def __str__(self):
@@ -116,30 +120,43 @@ class TestParameter(models.Model):
         decimal_places (int): The number of decimal places to display for the result.
         display_order (int): The order in which to display the parameter.
     """
-    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='parameters')
+
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="parameters")
     parameter_name = models.CharField(max_length=200)
     loinc_code = models.CharField(max_length=20, blank=True, null=True)
     unit = models.CharField(max_length=50)
 
     # Reference ranges (gender-specific)
-    reference_min_male = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    reference_max_male = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    reference_min_female = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    reference_max_female = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    reference_min_male = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    reference_max_male = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    reference_min_female = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    reference_max_female = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
 
     # Critical values
-    critical_low = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    critical_high = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    critical_low = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    critical_high = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
 
     # Display settings
     decimal_places = models.IntegerField(default=2)
     display_order = models.IntegerField(default=0)
 
     class Meta:
-        db_table = 'test_parameters'
-        verbose_name = 'Test Parameter'
-        verbose_name_plural = 'Test Parameters'
-        ordering = ['test', 'display_order', 'parameter_name']
+        db_table = "test_parameters"
+        verbose_name = "Test Parameter"
+        verbose_name_plural = "Test Parameters"
+        ordering = ["test", "display_order", "parameter_name"]
 
     def __str__(self):
         """
@@ -169,9 +186,12 @@ class TestPanel(models.Model):
         created_at (datetime): The timestamp of when the panel was created.
         updated_at (datetime): The timestamp of the last update.
     """
+
     panel_code = models.CharField(max_length=20, unique=True, db_index=True)
     panel_name = models.CharField(max_length=200)
-    category = models.ForeignKey(TestCategory, on_delete=models.PROTECT, related_name='panels')
+    category = models.ForeignKey(
+        TestCategory, on_delete=models.PROTECT, related_name="panels"
+    )
 
     # Sample requirements
     sample_type = models.CharField(max_length=100)
@@ -182,7 +202,7 @@ class TestPanel(models.Model):
     turnaround_time = models.IntegerField(help_text="Turnaround time in hours")
 
     # Panel composition
-    tests = models.ManyToManyField(Test, related_name='panels')
+    tests = models.ManyToManyField(Test, related_name="panels")
 
     # Additional info
     description = models.TextField(blank=True, null=True)
@@ -192,13 +212,13 @@ class TestPanel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'test_panels'
-        verbose_name = 'Test Panel'
-        verbose_name_plural = 'Test Panels'
-        ordering = ['panel_code']
+        db_table = "test_panels"
+        verbose_name = "Test Panel"
+        verbose_name_plural = "Test Panels"
+        ordering = ["panel_code"]
         indexes = [
-            models.Index(fields=['panel_code']),
-            models.Index(fields=['category', 'is_active']),
+            models.Index(fields=["panel_code"]),
+            models.Index(fields=["category", "is_active"]),
         ]
 
     def __str__(self):

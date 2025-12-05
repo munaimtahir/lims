@@ -8,30 +8,53 @@ class OrderItemSerializer(serializers.ModelSerializer):
     """
     Serializer for the OrderItem model.
     """
-    test_name = serializers.CharField(source='test.test_name', read_only=True)
-    panel_name = serializers.CharField(source='panel.panel_name', read_only=True)
-    test_code = serializers.CharField(source='test.test_code', read_only=True)
-    panel_code = serializers.CharField(source='panel.panel_code', read_only=True)
+
+    test_name = serializers.CharField(source="test.test_name", read_only=True)
+    panel_name = serializers.CharField(source="panel.panel_name", read_only=True)
+    test_code = serializers.CharField(source="test.test_code", read_only=True)
+    panel_code = serializers.CharField(source="panel.panel_code", read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'test', 'panel', 'price', 'status', 'test_name', 'panel_name', 'test_code', 'panel_code']
-        read_only_fields = ['price', 'status']
+        fields = [
+            "id",
+            "test",
+            "panel",
+            "price",
+            "status",
+            "test_name",
+            "panel_name",
+            "test_code",
+            "panel_code",
+        ]
+        read_only_fields = ["price", "status"]
 
 
 class OrderListSerializer(serializers.ModelSerializer):
     """
     Lightweight serializer for listing orders.
     """
-    patient_name = serializers.CharField(source='patient.get_full_name', read_only=True)
-    patient_id_display = serializers.CharField(source='patient.patient_id', read_only=True)
+
+    patient_name = serializers.CharField(source="patient.get_full_name", read_only=True)
+    patient_id_display = serializers.CharField(
+        source="patient.patient_id", read_only=True
+    )
     item_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = [
-            'id', 'order_id', 'patient', 'patient_name', 'patient_id_display',
-            'created_at', 'status', 'total_amount', 'net_amount', 'is_paid', 'item_count'
+            "id",
+            "order_id",
+            "patient",
+            "patient_name",
+            "patient_id_display",
+            "created_at",
+            "status",
+            "total_amount",
+            "net_amount",
+            "is_paid",
+            "item_count",
         ]
         read_only_fields = fields
 
@@ -46,9 +69,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
     Includes nested serialization for order items and write-only fields for creating orders with tests and panels.
     """
+
     items = OrderItemSerializer(many=True, read_only=True)
-    patient_name = serializers.CharField(source='patient.get_full_name', read_only=True)
-    ordered_by_name = serializers.CharField(source='ordered_by.full_name', read_only=True)
+    patient_name = serializers.CharField(source="patient.get_full_name", read_only=True)
+    ordered_by_name = serializers.CharField(
+        source="ordered_by.full_name", read_only=True
+    )
 
     # Write-only fields for creating items
     test_ids = serializers.ListField(
@@ -61,12 +87,32 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', 'order_id', 'patient', 'patient_name', 'ordered_by', 'ordered_by_name',
-            'created_at', 'updated_at', 'status', 'notes',
-            'total_amount', 'discount', 'net_amount', 'is_paid',
-            'items', 'test_ids', 'panel_ids'
+            "id",
+            "order_id",
+            "patient",
+            "patient_name",
+            "ordered_by",
+            "ordered_by_name",
+            "created_at",
+            "updated_at",
+            "status",
+            "notes",
+            "total_amount",
+            "discount",
+            "net_amount",
+            "is_paid",
+            "items",
+            "test_ids",
+            "panel_ids",
         ]
-        read_only_fields = ['order_id', 'created_at', 'updated_at', 'total_amount', 'net_amount', 'ordered_by']
+        read_only_fields = [
+            "order_id",
+            "created_at",
+            "updated_at",
+            "total_amount",
+            "net_amount",
+            "ordered_by",
+        ]
 
     def create(self, validated_data):
         """
@@ -81,13 +127,13 @@ class OrderSerializer(serializers.ModelSerializer):
         Returns:
             Order: The newly created order instance.
         """
-        test_ids = validated_data.pop('test_ids', [])
-        panel_ids = validated_data.pop('panel_ids', [])
+        test_ids = validated_data.pop("test_ids", [])
+        panel_ids = validated_data.pop("panel_ids", [])
 
         # Get current user from context
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            validated_data['ordered_by'] = request.user
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            validated_data["ordered_by"] = request.user
 
         with transaction.atomic():
             order = Order.objects.create(**validated_data)
@@ -96,11 +142,7 @@ class OrderSerializer(serializers.ModelSerializer):
             for test_id in test_ids:
                 try:
                     test = Test.objects.get(id=test_id)
-                    OrderItem.objects.create(
-                        order=order,
-                        test=test,
-                        price=test.price
-                    )
+                    OrderItem.objects.create(order=order, test=test, price=test.price)
                 except Test.DoesNotExist:
                     pass
 
@@ -109,9 +151,7 @@ class OrderSerializer(serializers.ModelSerializer):
                 try:
                     panel = TestPanel.objects.get(id=panel_id)
                     OrderItem.objects.create(
-                        order=order,
-                        panel=panel,
-                        price=panel.price
+                        order=order, panel=panel, price=panel.price
                     )
                 except TestPanel.DoesNotExist:
                     pass

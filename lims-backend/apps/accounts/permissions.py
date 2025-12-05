@@ -12,6 +12,7 @@ class IsAdmin(permissions.BasePermission):
     """
     Custom permission to only allow admin users to access an endpoint.
     """
+
     def has_permission(self, request, view):
         """
         Check if the user is authenticated and is an admin.
@@ -30,6 +31,7 @@ class IsReceptionist(permissions.BasePermission):
     """
     Custom permission to allow receptionist and admin users.
     """
+
     def has_permission(self, request, view):
         """
         Check if the user is a receptionist or an admin.
@@ -41,8 +43,10 @@ class IsReceptionist(permissions.BasePermission):
         Returns:
             bool: True if the user is a receptionist or admin, False otherwise.
         """
-        return request.user and request.user.is_authenticated and (
-            request.user.is_receptionist or request.user.is_admin
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (request.user.is_receptionist or request.user.is_admin)
         )
 
 
@@ -50,6 +54,7 @@ class IsCashier(permissions.BasePermission):
     """
     Custom permission to allow cashier and admin users.
     """
+
     def has_permission(self, request, view):
         """
         Check if the user is a cashier or an admin.
@@ -61,8 +66,10 @@ class IsCashier(permissions.BasePermission):
         Returns:
             bool: True if the user is a cashier or admin, False otherwise.
         """
-        return request.user and request.user.is_authenticated and (
-            request.user.is_cashier or request.user.is_admin
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (request.user.is_cashier or request.user.is_admin)
         )
 
 
@@ -70,6 +77,7 @@ class IsPhlebotomist(permissions.BasePermission):
     """
     Custom permission to allow phlebotomist and admin users.
     """
+
     def has_permission(self, request, view):
         """
         Check if the user is a phlebotomist or an admin.
@@ -81,8 +89,10 @@ class IsPhlebotomist(permissions.BasePermission):
         Returns:
             bool: True if the user is a phlebotomist or admin, False otherwise.
         """
-        return request.user and request.user.is_authenticated and (
-            request.user.is_phlebotomist or request.user.is_admin
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (request.user.is_phlebotomist or request.user.is_admin)
         )
 
 
@@ -90,6 +100,7 @@ class IsLabTechnician(permissions.BasePermission):
     """
     Custom permission to allow lab technician and admin users.
     """
+
     def has_permission(self, request, view):
         """
         Check if the user is a lab technician or an admin.
@@ -101,8 +112,10 @@ class IsLabTechnician(permissions.BasePermission):
         Returns:
             bool: True if the user is a lab technician or admin, False otherwise.
         """
-        return request.user and request.user.is_authenticated and (
-            request.user.is_lab_technician or request.user.is_admin
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (request.user.is_lab_technician or request.user.is_admin)
         )
 
 
@@ -110,6 +123,7 @@ class IsPathologist(permissions.BasePermission):
     """
     Custom permission to allow pathologist and admin users.
     """
+
     def has_permission(self, request, view):
         """
         Check if the user is a pathologist or an admin.
@@ -121,8 +135,10 @@ class IsPathologist(permissions.BasePermission):
         Returns:
             bool: True if the user is a pathologist or admin, False otherwise.
         """
-        return request.user and request.user.is_authenticated and (
-            request.user.is_pathologist or request.user.is_admin
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (request.user.is_pathologist or request.user.is_admin)
         )
 
 
@@ -130,6 +146,7 @@ class IsManager(permissions.BasePermission):
     """
     Custom permission to allow manager and admin users.
     """
+
     def has_permission(self, request, view):
         """
         Check if the user is a manager or an admin.
@@ -141,8 +158,10 @@ class IsManager(permissions.BasePermission):
         Returns:
             bool: True if the user is a manager or admin, False otherwise.
         """
-        return request.user and request.user.is_authenticated and (
-            request.user.is_manager or request.user.is_admin
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (request.user.is_manager or request.user.is_admin)
         )
 
 
@@ -151,6 +170,7 @@ class IsManagerOrAdmin(permissions.BasePermission):
     Custom permission to allow manager and admin users.
     Combined class for use where OR operator is needed.
     """
+
     def has_permission(self, request, view):
         """
         Check if the user is a manager or an admin.
@@ -162,8 +182,10 @@ class IsManagerOrAdmin(permissions.BasePermission):
         Returns:
             bool: True if the user is a manager or admin, False otherwise.
         """
-        return request.user and request.user.is_authenticated and (
-            request.user.is_manager or request.user.is_admin
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (request.user.is_manager or request.user.is_admin)
         )
 
 
@@ -172,6 +194,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
     Custom permission to allow read-only access for authenticated users,
     but write access only for admin users.
     """
+
     def has_permission(self, request, view):
         """
         Check permissions for read-only or write access.

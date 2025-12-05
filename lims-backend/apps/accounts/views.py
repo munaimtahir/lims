@@ -10,7 +10,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import logout
 
 from .models import User
-from .serializers import UserSerializer, UserCreateSerializer, LoginSerializer, ChangePasswordSerializer
+from .serializers import (
+    UserSerializer,
+    UserCreateSerializer,
+    LoginSerializer,
+    ChangePasswordSerializer,
+)
 from .permissions import IsAdmin
 
 
@@ -20,6 +25,7 @@ class AuthViewSet(viewsets.GenericViewSet):
 
     Provides `login`, `logout`, and `me` endpoints.
     """
+
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer
 
@@ -30,11 +36,11 @@ class AuthViewSet(viewsets.GenericViewSet):
         - login: AllowAny
         - logout, me: IsAuthenticated
         """
-        if self.action in ['logout', 'me']:
+        if self.action in ["logout", "me"]:
             return [IsAuthenticated()]
         return [AllowAny()]
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def login(self, request):
         """
         Authenticate a user and return JWT tokens.
@@ -47,22 +53,25 @@ class AuthViewSet(viewsets.GenericViewSet):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
+        user = serializer.validated_data["user"]
 
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
 
-        return Response({
-            'success': True,
-            'data': {
-                'user': UserSerializer(user).data,
-                'access_token': str(refresh.access_token),
-                'refresh_token': str(refresh),
+        return Response(
+            {
+                "success": True,
+                "data": {
+                    "user": UserSerializer(user).data,
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh),
+                },
+                "message": "Login successful",
             },
-            'message': 'Login successful'
-        }, status=status.HTTP_200_OK)
+            status=status.HTTP_200_OK,
+        )
 
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated])
     def logout(self, request):
         """
         Log out a user by blacklisting their refresh token.
@@ -74,22 +83,22 @@ class AuthViewSet(viewsets.GenericViewSet):
             Response: A success or failure message.
         """
         try:
-            refresh_token = request.data.get('refresh_token')
+            refresh_token = request.data.get("refresh_token")
             if refresh_token:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             logout(request)
-            return Response({
-                'success': True,
-                'message': 'Logout successful'
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "message": "Logout successful"},
+                status=status.HTTP_200_OK,
+            )
         except Exception:
-            return Response({
-                'success': False,
-                'message': 'Invalid token'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "Invalid token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def me(self, request):
         """
         Retrieve the profile of the currently authenticated user.
@@ -100,10 +109,10 @@ class AuthViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A response object with the current user's data.
         """
-        return Response({
-            'success': True,
-            'data': UserSerializer(request.user).data
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": UserSerializer(request.user).data},
+            status=status.HTTP_200_OK,
+        )
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -113,12 +122,13 @@ class UserViewSet(viewsets.ModelViewSet):
     This ViewSet is restricted to admin users. It allows for creating,
     retrieving, updating, and deleting users.
     """
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
-    filterset_fields = ['role', 'is_active']
-    search_fields = ['username', 'email', 'full_name']
-    ordering_fields = ['date_joined', 'username']
+    filterset_fields = ["role", "is_active"]
+    search_fields = ["username", "email", "full_name"]
+    ordering_fields = ["date_joined", "username"]
 
     def get_serializer_class(self):
         """
@@ -130,7 +140,7 @@ class UserViewSet(viewsets.ModelViewSet):
         Returns:
             Serializer: The serializer class for the current action.
         """
-        if self.action == 'create':
+        if self.action == "create":
             return UserCreateSerializer
         return UserSerializer
 
@@ -150,11 +160,14 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        return Response({
-            'success': True,
-            'data': UserSerializer(user).data,
-            'message': 'User created successfully'
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "success": True,
+                "data": UserSerializer(user).data,
+                "message": "User created successfully",
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
     def update(self, request, *args, **kwargs):
         """
@@ -168,19 +181,22 @@ class UserViewSet(viewsets.ModelViewSet):
         Returns:
             Response: A response object with the updated user data.
         """
-        partial = kwargs.pop('partial', False)
+        partial = kwargs.pop("partial", False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        return Response({
-            'success': True,
-            'data': UserSerializer(user).data,
-            'message': 'User updated successfully'
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "success": True,
+                "data": UserSerializer(user).data,
+                "message": "User updated successfully",
+            },
+            status=status.HTTP_200_OK,
+        )
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def change_password(self, request, pk=None):
         """
         Change a user's password.
@@ -197,17 +213,17 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         # Check old password
-        if not user.check_password(serializer.validated_data['old_password']):
-            return Response({
-                'success': False,
-                'message': 'Old password is incorrect'
-            }, status=status.HTTP_400_BAD_REQUEST)
+        if not user.check_password(serializer.validated_data["old_password"]):
+            return Response(
+                {"success": False, "message": "Old password is incorrect"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Set new password
-        user.set_password(serializer.validated_data['new_password'])
+        user.set_password(serializer.validated_data["new_password"])
         user.save()
 
-        return Response({
-            'success': True,
-            'message': 'Password changed successfully'
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "message": "Password changed successfully"},
+            status=status.HTTP_200_OK,
+        )

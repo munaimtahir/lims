@@ -23,11 +23,11 @@ def api_client():
 def admin_user(db):
     """Create and return an admin user."""
     return User.objects.create_user(
-        username='admin',
-        email='admin@test.com',
-        password='adminpass123',
-        full_name='Admin User',
-        role='Admin'
+        username="admin",
+        email="admin@test.com",
+        password="adminpass123",
+        full_name="Admin User",
+        role="Admin",
     )
 
 
@@ -35,11 +35,11 @@ def admin_user(db):
 def phlebotomist_user(db):
     """Create and return a phlebotomist user."""
     return User.objects.create_user(
-        username='phlebotomist',
-        email='phlebotomist@test.com',
-        password='phlebopass123',
-        full_name='Phlebotomist User',
-        role='Phlebotomist'
+        username="phlebotomist",
+        email="phlebotomist@test.com",
+        password="phlebopass123",
+        full_name="Phlebotomist User",
+        role="Phlebotomist",
     )
 
 
@@ -54,19 +54,19 @@ def authenticated_client(api_client, admin_user):
 def patient(db, admin_user):
     """Create and return a patient."""
     return Patient.objects.create(
-        first_name='John',
-        last_name='Doe',
+        first_name="John",
+        last_name="Doe",
         date_of_birth=date(1990, 5, 15),
-        gender='Male',
-        phone='03001234567',
-        created_by=admin_user
+        gender="Male",
+        phone="03001234567",
+        created_by=admin_user,
     )
 
 
 @pytest.fixture
 def test_category(db):
     """Create and return a test category."""
-    return TestCategory.objects.create(name='Hematology')
+    return TestCategory.objects.create(name="Hematology")
 
 
 @pytest.fixture
@@ -74,11 +74,11 @@ def test_instance(db, test_category):
     """Create and return a test."""
     return Test.objects.create(
         category=test_category,
-        test_code='CBC',
-        test_name='Complete Blood Count',
-        sample_type='EDTA Blood',
-        price=Decimal('800.00'),
-        turnaround_time=4
+        test_code="CBC",
+        test_name="Complete Blood Count",
+        sample_type="EDTA Blood",
+        price=Decimal("800.00"),
+        turnaround_time=4,
     )
 
 
@@ -86,15 +86,9 @@ def test_instance(db, test_category):
 def order(db, patient, admin_user, test_instance):
     """Create and return an order."""
     order = Order.objects.create(
-        patient=patient,
-        ordered_by=admin_user,
-        status='pending'
+        patient=patient, ordered_by=admin_user, status="pending"
     )
-    OrderItem.objects.create(
-        order=order,
-        test=test_instance,
-        price=test_instance.price
-    )
+    OrderItem.objects.create(order=order, test=test_instance, price=test_instance.price)
     order.calculate_total()
     return order
 
@@ -103,10 +97,7 @@ def order(db, patient, admin_user, test_instance):
 def sample(db, order, phlebotomist_user):
     """Create and return a sample collection."""
     sample = SampleCollection.objects.create(
-        order=order,
-        sample_type='EDTA Blood',
-        barcode='BC-001',
-        status='pending'
+        order=order, sample_type="EDTA Blood", barcode="BC-001", status="pending"
     )
     sample.order_items.set(order.items.all())
     return sample
@@ -119,16 +110,14 @@ class TestSampleCollectionModel:
     def test_create_sample(self, order):
         """Test creating a sample collection."""
         sample = SampleCollection.objects.create(
-            order=order,
-            sample_type='EDTA Blood',
-            barcode='BC-002'
+            order=order, sample_type="EDTA Blood", barcode="BC-002"
         )
-        assert sample.status == 'pending'
+        assert sample.status == "pending"
         assert sample.order == order
 
     def test_sample_str(self, sample):
         """Test sample string representation."""
-        assert 'BC-001' in str(sample) or str(sample.id) in str(sample)
+        assert "BC-001" in str(sample) or str(sample.id) in str(sample)
 
 
 @pytest.mark.django_db
@@ -137,34 +126,39 @@ class TestSampleCollectionViewSet:
 
     def test_list_samples(self, authenticated_client, sample):
         """Test listing samples."""
-        response = authenticated_client.get('/api/v1/samples/')
+        response = authenticated_client.get("/api/v1/samples/")
         assert response.status_code == status.HTTP_200_OK
 
     def test_create_sample(self, authenticated_client, order):
         """Test creating a sample collection."""
-        response = authenticated_client.post('/api/v1/samples/', {
-            'order': order.id,
-            'sample_type': 'Serum',
-            'barcode': 'BC-003',
-            'order_items': [item.id for item in order.items.all()]
-        })
+        response = authenticated_client.post(
+            "/api/v1/samples/",
+            {
+                "order": order.id,
+                "sample_type": "Serum",
+                "barcode": "BC-003",
+                "order_items": [item.id for item in order.items.all()],
+            },
+        )
         assert response.status_code == status.HTTP_201_CREATED
 
-    def test_update_sample_to_collected(self, authenticated_client, sample, phlebotomist_user):
+    def test_update_sample_to_collected(
+        self, authenticated_client, sample, phlebotomist_user
+    ):
         """Test updating sample status to collected."""
         api_client = APIClient()
         api_client.force_authenticate(user=phlebotomist_user)
 
-        response = api_client.patch(f'/api/v1/samples/{sample.id}/', {
-            'status': 'collected'
-        })
+        response = api_client.patch(
+            f"/api/v1/samples/{sample.id}/", {"status": "collected"}
+        )
         assert response.status_code == status.HTTP_200_OK
         sample.refresh_from_db()
-        assert sample.status == 'collected'
+        assert sample.status == "collected"
         assert sample.collected_by == phlebotomist_user
         assert sample.collected_at is not None
 
     def test_filter_samples_by_status(self, authenticated_client, sample):
         """Test filtering samples by status."""
-        response = authenticated_client.get('/api/v1/samples/', {'status': 'pending'})
+        response = authenticated_client.get("/api/v1/samples/", {"status": "pending"})
         assert response.status_code == status.HTTP_200_OK

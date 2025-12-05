@@ -25,15 +25,16 @@ class AuditLog(models.Model):
         user_agent (str): The user agent string of the client.
         notes (str): Additional notes about the action.
     """
+
     ACTION_CHOICES = [
-        ('CREATE', 'Create'),
-        ('UPDATE', 'Update'),
-        ('DELETE', 'Delete'),
-        ('LOGIN', 'Login'),
-        ('LOGOUT', 'Logout'),
-        ('VERIFY', 'Verify'),
-        ('APPROVE', 'Approve'),
-        ('REJECT', 'Reject'),
+        ("CREATE", "Create"),
+        ("UPDATE", "Update"),
+        ("DELETE", "Delete"),
+        ("LOGIN", "Login"),
+        ("LOGOUT", "Logout"),
+        ("VERIFY", "Verify"),
+        ("APPROVE", "Approve"),
+        ("REJECT", "Reject"),
     ]
 
     user = models.ForeignKey(
@@ -41,19 +42,16 @@ class AuditLog(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='audit_logs'
+        related_name="audit_logs",
     )
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
 
     # Generic relation to any model
     content_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
+        ContentType, on_delete=models.SET_NULL, null=True, blank=True
     )
     object_id = models.CharField(max_length=255, null=True, blank=True)
-    content_object = GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey("content_type", "object_id")
 
     # Denormalized for easier querying
     table_name = models.CharField(max_length=100, db_index=True)
@@ -69,14 +67,14 @@ class AuditLog(models.Model):
     notes = models.TextField(null=True, blank=True)
 
     class Meta:
-        db_table = 'audit_logs'
-        verbose_name = 'Audit Log'
-        verbose_name_plural = 'Audit Logs'
-        ordering = ['-timestamp']
+        db_table = "audit_logs"
+        verbose_name = "Audit Log"
+        verbose_name_plural = "Audit Logs"
+        ordering = ["-timestamp"]
         indexes = [
-            models.Index(fields=['table_name', 'timestamp']),
-            models.Index(fields=['user', 'timestamp']),
-            models.Index(fields=['action', 'timestamp']),
+            models.Index(fields=["table_name", "timestamp"]),
+            models.Index(fields=["user", "timestamp"]),
+            models.Index(fields=["action", "timestamp"]),
         ]
 
     def __str__(self):
@@ -86,5 +84,5 @@ class AuditLog(models.Model):
         Returns:
             str: A string describing the action.
         """
-        user_name = self.user.full_name if self.user else 'System'
+        user_name = self.user.full_name if self.user else "System"
         return f"{user_name} - {self.action} on {self.table_name} at {self.timestamp}"

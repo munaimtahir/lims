@@ -25,38 +25,51 @@ class Order(models.Model):
         net_amount (Decimal): The final amount after discount.
         is_paid (bool): Whether the order has been paid for.
     """
-    ORDER_ID_PREFIX = 'ORD'
+
+    ORDER_ID_PREFIX = "ORD"
 
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('in_progress', 'In Progress'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled'),
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
     ]
 
-    order_id = models.CharField(max_length=20, unique=True, editable=False, db_index=True)
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='orders')
+    order_id = models.CharField(
+        max_length=20, unique=True, editable=False, db_index=True
+    )
+    patient = models.ForeignKey(
+        Patient, on_delete=models.CASCADE, related_name="orders"
+    )
     ordered_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
-        null=True, related_name='orders_created'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="orders_created",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     notes = models.TextField(blank=True)
 
     # Financials
-    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
-    discount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
-    net_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    total_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, default=Decimal("0.00")
+    )
+    discount = models.DecimalField(
+        max_digits=12, decimal_places=2, default=Decimal("0.00")
+    )
+    net_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, default=Decimal("0.00")
+    )
     is_paid = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['order_id']),
-            models.Index(fields=['status']),
-            models.Index(fields=['created_at']),
+            models.Index(fields=["order_id"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["created_at"]),
         ]
 
     def __str__(self):
@@ -80,7 +93,7 @@ class Order(models.Model):
             self.order_id = self.generate_order_id()
 
         # Calculate net amount
-        self.net_amount = max(self.total_amount - self.discount, Decimal('0.00'))
+        self.net_amount = max(self.total_amount - self.discount, Decimal("0.00"))
 
         super().save(*args, **kwargs)
 
@@ -94,11 +107,15 @@ class Order(models.Model):
         current_year = timezone.now().year
         prefix = f"{self.ORDER_ID_PREFIX}-{current_year}-"
 
-        last_order = Order.objects.filter(order_id__startswith=prefix).order_by('order_id').last()
+        last_order = (
+            Order.objects.filter(order_id__startswith=prefix)
+            .order_by("order_id")
+            .last()
+        )
 
         if last_order:
             try:
-                last_number = int(last_order.order_id.split('-')[-1])
+                last_number = int(last_order.order_id.split("-")[-1])
                 new_number = last_number + 1
             except ValueError:
                 new_number = 1
@@ -127,19 +144,22 @@ class OrderItem(models.Model):
         price (Decimal): The price of the item.
         status (str): The status of the item's result.
     """
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
 
     # Can be a single test or a panel
     test = models.ForeignKey(Test, on_delete=models.PROTECT, null=True, blank=True)
-    panel = models.ForeignKey(TestPanel, on_delete=models.PROTECT, null=True, blank=True)
+    panel = models.ForeignKey(
+        TestPanel, on_delete=models.PROTECT, null=True, blank=True
+    )
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     # Result tracking (simplified for now, will link to detailed results later)
-    status = models.CharField(max_length=20, default='pending')
+    status = models.CharField(max_length=20, default="pending")
 
     class Meta:
-        unique_together = ('order', 'test', 'panel')
+        unique_together = ("order", "test", "panel")
 
     def __str__(self):
         """
@@ -148,7 +168,11 @@ class OrderItem(models.Model):
         Returns:
             str: A string in the format "item_name for order_id".
         """
-        item_name = self.test.test_name if self.test else (self.panel.panel_name if self.panel else "Unknown")
+        item_name = (
+            self.test.test_name
+            if self.test
+            else (self.panel.panel_name if self.panel else "Unknown")
+        )
         return f"{item_name} for {self.order.order_id}"
 
     def save(self, *args, **kwargs):

@@ -30,13 +30,15 @@ class Patient(models.Model):
     """
 
     GENDER_CHOICES = [
-        ('Male', 'Male'),
-        ('Female', 'Female'),
-        ('Other', 'Other'),
+        ("Male", "Male"),
+        ("Female", "Female"),
+        ("Other", "Other"),
     ]
 
     # Auto-generated unique ID
-    patient_id = models.CharField(max_length=20, unique=True, editable=False, db_index=True)
+    patient_id = models.CharField(
+        max_length=20, unique=True, editable=False, db_index=True
+    )
 
     # Demographics
     first_name = models.CharField(max_length=100)
@@ -58,19 +60,21 @@ class Patient(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
-        'accounts.User', on_delete=models.SET_NULL,
-        null=True, related_name='patients_created'
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="patients_created",
     )
 
     class Meta:
-        db_table = 'patients'
-        verbose_name = 'Patient'
-        verbose_name_plural = 'Patients'
-        ordering = ['-created_at']
+        db_table = "patients"
+        verbose_name = "Patient"
+        verbose_name_plural = "Patients"
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['phone']),
-            models.Index(fields=['national_id']),
-            models.Index(fields=['created_at']),
+            models.Index(fields=["phone"]),
+            models.Index(fields=["national_id"]),
+            models.Index(fields=["created_at"]),
         ]
 
     def __str__(self):
@@ -108,12 +112,14 @@ class Patient(models.Model):
         prefix = f"P-{current_year}-"
 
         # Get the last patient ID for this year
-        last_patient = Patient.objects.filter(
-            patient_id__startswith=prefix
-        ).order_by('patient_id').last()
+        last_patient = (
+            Patient.objects.filter(patient_id__startswith=prefix)
+            .order_by("patient_id")
+            .last()
+        )
 
         if last_patient:
-            last_number = int(last_patient.patient_id.split('-')[-1])
+            last_number = int(last_patient.patient_id.split("-")[-1])
             new_number = last_number + 1
         else:
             new_number = 1
@@ -140,7 +146,8 @@ class Patient(models.Model):
         today = date.today()
         age = today.year - self.date_of_birth.year
         if today.month < self.date_of_birth.month or (
-            today.month == self.date_of_birth.month and today.day < self.date_of_birth.day
+            today.month == self.date_of_birth.month
+            and today.day < self.date_of_birth.day
         ):
             age -= 1
         return age
@@ -163,5 +170,5 @@ class Patient(models.Model):
         Returns:
             date: The date of the last order, or None if the patient has no orders.
         """
-        last_order = self.orders.order_by('-created_at').first()
+        last_order = self.orders.order_by("-created_at").first()
         return last_order.created_at if last_order else None
