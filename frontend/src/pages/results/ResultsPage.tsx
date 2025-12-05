@@ -79,7 +79,26 @@ export default function ResultsPage() {
   }
 
   const test = orderItemData?.items?.find((item: OrderItem) => item.id === selectedOrderItem);
-  const testParameters: TestParameter[] = (test as { test?: { parameters?: TestParameter[] }; panel?: { tests?: { parameters: TestParameter[] }[] } })?.test?.parameters || (test as { panel?: { tests?: { parameters: TestParameter[] }[] } })?.panel?.tests?.flatMap((t) => t.parameters) || [];
+  
+  // Extract test parameters from test or panel
+  const getTestParameters = (): TestParameter[] => {
+    const testData = test as { 
+      test?: { parameters?: TestParameter[] }; 
+      panel?: { tests?: { parameters: TestParameter[] }[] } 
+    };
+    
+    if (testData?.test?.parameters) {
+      return testData.test.parameters;
+    }
+    
+    if (testData?.panel?.tests) {
+      return testData.panel.tests.flatMap((t) => t.parameters || []);
+    }
+    
+    return [];
+  };
+  
+  const testParameters = getTestParameters();
 
   const handleResultChange = (paramId: number, value: string) => {
     setResults((prev) => ({ ...prev, [paramId]: value }));
