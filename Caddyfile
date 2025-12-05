@@ -1,0 +1,42 @@
+# LIMS Application
+# Caddy configuration for reverse proxy
+
+{
+    # Global options
+    admin off
+}
+
+:80 {
+    # Frontend
+    @frontend {
+        not path /api/* /admin/* /static/* /media/*
+    }
+    handle @frontend {
+        reverse_proxy frontend:80
+    }
+
+    # Backend API
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+
+    # Django Admin
+    handle /admin/* {
+        reverse_proxy backend:8000
+    }
+
+    # Static files
+    handle /static/* {
+        root * /srv
+        file_server
+    }
+
+    # Media files
+    handle /media/* {
+        root * /srv
+        file_server
+    }
+
+    # Enable compression
+    encode gzip
+}
