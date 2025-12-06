@@ -17,11 +17,11 @@ def get_client_ip(request):
     """
     if request is None:
         return None
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0].strip()
+        ip = x_forwarded_for.split(",")[0].strip()
     else:
-        ip = request.META.get('REMOTE_ADDR')
+        ip = request.META.get("REMOTE_ADDR")
     return ip
 
 
@@ -37,10 +37,12 @@ def get_user_agent(request):
     """
     if request is None:
         return None
-    return request.META.get('HTTP_USER_AGENT', '')
+    return request.META.get("HTTP_USER_AGENT", "")
 
 
-def log_action(user, action, instance, old_data=None, new_data=None, request=None, notes=None):
+def log_action(
+    user, action, instance, old_data=None, new_data=None, request=None, notes=None
+):
     """
     Create an audit log entry for an action.
 
@@ -68,7 +70,7 @@ def log_action(user, action, instance, old_data=None, new_data=None, request=Non
         new_value=new_data,
         ip_address=get_client_ip(request),
         user_agent=get_user_agent(request),
-        notes=notes
+        notes=notes,
     )
     return audit_log
 
@@ -87,7 +89,9 @@ def log_create(user, instance, request=None, notes=None):
         AuditLog: The created audit log entry.
     """
     new_data = model_to_dict_safe(instance)
-    return log_action(user, 'CREATE', instance, new_data=new_data, request=request, notes=notes)
+    return log_action(
+        user, "CREATE", instance, new_data=new_data, request=request, notes=notes
+    )
 
 
 def log_update(user, instance, old_data, request=None, notes=None):
@@ -105,7 +109,15 @@ def log_update(user, instance, old_data, request=None, notes=None):
         AuditLog: The created audit log entry.
     """
     new_data = model_to_dict_safe(instance)
-    return log_action(user, 'UPDATE', instance, old_data=old_data, new_data=new_data, request=request, notes=notes)
+    return log_action(
+        user,
+        "UPDATE",
+        instance,
+        old_data=old_data,
+        new_data=new_data,
+        request=request,
+        notes=notes,
+    )
 
 
 def log_delete(user, instance, request=None, notes=None):
@@ -122,7 +134,9 @@ def log_delete(user, instance, request=None, notes=None):
         AuditLog: The created audit log entry.
     """
     old_data = model_to_dict_safe(instance)
-    return log_action(user, 'DELETE', instance, old_data=old_data, request=request, notes=notes)
+    return log_action(
+        user, "DELETE", instance, old_data=old_data, request=request, notes=notes
+    )
 
 
 def model_to_dict_safe(instance):
@@ -149,7 +163,7 @@ def model_to_dict_safe(instance):
             value = value.isoformat()
         elif isinstance(value, Decimal):
             value = str(value)
-        elif hasattr(value, 'pk'):  # Foreign key
+        elif hasattr(value, "pk"):  # Foreign key
             value = value.pk
 
         result[field.name] = value

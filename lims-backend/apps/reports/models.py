@@ -18,23 +18,38 @@ class Report(models.Model):
         verified_by (User, optional): The pathologist who verified the report.
         verified_at (datetime, optional): When the report was verified.
     """
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='reports')
-    report_file = models.FileField(upload_to='reports/%Y/%m/%d/')
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="reports")
+    report_file = models.FileField(upload_to="reports/%Y/%m/%d/")
     generated_at = models.DateTimeField(auto_now_add=True)
-    generated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='reports_generated')
-    
+    generated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="reports_generated",
+    )
+
     is_final = models.BooleanField(default=True)
-    
+
     # Digital signatures
-    pathologist_signature = models.FileField(upload_to='signatures/pathologist/%Y/%m/%d/', blank=True, null=True)
-    technician_signature = models.FileField(upload_to='signatures/technician/%Y/%m/%d/', blank=True, null=True)
-    
+    pathologist_signature = models.FileField(
+        upload_to="signatures/pathologist/%Y/%m/%d/", blank=True, null=True
+    )
+    technician_signature = models.FileField(
+        upload_to="signatures/technician/%Y/%m/%d/", blank=True, null=True
+    )
+
     # Verification
-    verified_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='reports_verified')
+    verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="reports_verified",
+    )
     verified_at = models.DateTimeField(blank=True, null=True)
-    
+
     class Meta:
-        ordering = ['-generated_at']
+        ordering = ["-generated_at"]
 
     def __str__(self):
         """

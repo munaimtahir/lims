@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sampleApi } from '../../api/services';
-import type { SampleCollection } from '../../types';
 import styles from './SamplesPage.module.css';
 
 export default function SamplesPage() {

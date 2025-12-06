@@ -22,11 +22,11 @@ def api_client():
 def admin_user(db):
     """Create and return an admin user."""
     user = User.objects.create_user(
-        username='admin',
-        email='admin@test.com',
-        password='adminpass123',
-        full_name='Admin User',
-        role='Admin'
+        username="admin",
+        email="admin@test.com",
+        password="adminpass123",
+        full_name="Admin User",
+        role="Admin",
     )
     return user
 
@@ -35,11 +35,11 @@ def admin_user(db):
 def receptionist_user(db):
     """Create and return a receptionist user."""
     user = User.objects.create_user(
-        username='receptionist',
-        email='receptionist@test.com',
-        password='receppass123',
-        full_name='Reception User',
-        role='Receptionist'
+        username="receptionist",
+        email="receptionist@test.com",
+        password="receppass123",
+        full_name="Reception User",
+        role="Receptionist",
     )
     return user
 
@@ -55,19 +55,19 @@ def authenticated_client(api_client, admin_user):
 def patient(db, receptionist_user):
     """Create and return a patient."""
     return Patient.objects.create(
-        first_name='John',
-        last_name='Doe',
+        first_name="John",
+        last_name="Doe",
         date_of_birth=date(1990, 5, 15),
-        gender='Male',
-        phone='03001234567',
-        created_by=receptionist_user
+        gender="Male",
+        phone="03001234567",
+        created_by=receptionist_user,
     )
 
 
 @pytest.fixture
 def test_category(db):
     """Create and return a test category."""
-    return TestCategory.objects.create(name='Hematology')
+    return TestCategory.objects.create(name="Hematology")
 
 
 @pytest.fixture
@@ -75,11 +75,11 @@ def test_instance(db, test_category):
     """Create and return a test."""
     return Test.objects.create(
         category=test_category,
-        test_code='CBC',
-        test_name='Complete Blood Count',
-        sample_type='EDTA Blood',
-        price=Decimal('800.00'),
-        turnaround_time=4
+        test_code="CBC",
+        test_name="Complete Blood Count",
+        sample_type="EDTA Blood",
+        price=Decimal("800.00"),
+        turnaround_time=4,
     )
 
 
@@ -87,12 +87,12 @@ def test_instance(db, test_category):
 def test_panel(db, test_category, test_instance):
     """Create and return a test panel."""
     panel = TestPanel.objects.create(
-        panel_code='CBC_PANEL',
-        panel_name='CBC Panel',
+        panel_code="CBC_PANEL",
+        panel_name="CBC Panel",
         category=test_category,
-        sample_type='EDTA Blood',
-        price=Decimal('700.00'),
-        turnaround_time=4
+        sample_type="EDTA Blood",
+        price=Decimal("700.00"),
+        turnaround_time=4,
     )
     panel.tests.add(test_instance)
     return panel
@@ -102,15 +102,9 @@ def test_panel(db, test_category, test_instance):
 def order(db, patient, receptionist_user, test_instance):
     """Create and return an order."""
     order = Order.objects.create(
-        patient=patient,
-        ordered_by=receptionist_user,
-        status='pending'
+        patient=patient, ordered_by=receptionist_user, status="pending"
     )
-    OrderItem.objects.create(
-        order=order,
-        test=test_instance,
-        price=test_instance.price
-    )
+    OrderItem.objects.create(order=order, test=test_instance, price=test_instance.price)
     order.calculate_total()
     return order
 
@@ -121,13 +115,10 @@ class TestOrderModel:
 
     def test_create_order(self, patient, receptionist_user):
         """Test creating an order."""
-        order = Order.objects.create(
-            patient=patient,
-            ordered_by=receptionist_user
-        )
+        order = Order.objects.create(patient=patient, ordered_by=receptionist_user)
         assert order.order_id is not None
-        assert order.order_id.startswith('ORD-')
-        assert order.status == 'pending'
+        assert order.order_id.startswith("ORD-")
+        assert order.status == "pending"
 
     def test_order_id_generation(self, patient, receptionist_user):
         """Test auto-generation of order ID."""
@@ -144,19 +135,15 @@ class TestOrderModel:
     def test_order_with_discount(self, patient, receptionist_user, test_instance):
         """Test order with discount."""
         order = Order.objects.create(
-            patient=patient,
-            ordered_by=receptionist_user,
-            discount=Decimal('100.00')
+            patient=patient, ordered_by=receptionist_user, discount=Decimal("100.00")
         )
         OrderItem.objects.create(
-            order=order,
-            test=test_instance,
-            price=test_instance.price
+            order=order, test=test_instance, price=test_instance.price
         )
         order.calculate_total()
 
-        assert order.total_amount == Decimal('800.00')
-        assert order.net_amount == Decimal('700.00')
+        assert order.total_amount == Decimal("800.00")
+        assert order.net_amount == Decimal("700.00")
 
 
 @pytest.mark.django_db
@@ -171,14 +158,9 @@ class TestOrderItemModel:
 
     def test_create_order_item_with_panel(self, patient, receptionist_user, test_panel):
         """Test creating an order item with a panel."""
-        order = Order.objects.create(
-            patient=patient,
-            ordered_by=receptionist_user
-        )
+        order = Order.objects.create(patient=patient, ordered_by=receptionist_user)
         item = OrderItem.objects.create(
-            order=order,
-            panel=test_panel,
-            price=test_panel.price
+            order=order, panel=test_panel, price=test_panel.price
         )
         assert item.panel == test_panel
         assert item.price == test_panel.price
@@ -190,43 +172,52 @@ class TestOrderViewSet:
 
     def test_list_orders(self, authenticated_client, order):
         """Test listing orders."""
-        response = authenticated_client.get('/api/v1/orders/orders/')
+        response = authenticated_client.get("/api/v1/orders/orders/")
         assert response.status_code == status.HTTP_200_OK
 
-    def test_create_order_with_tests(self, authenticated_client, patient, test_instance):
+    def test_create_order_with_tests(
+        self, authenticated_client, patient, test_instance
+    ):
         """Test creating an order with tests."""
-        response = authenticated_client.post('/api/v1/orders/orders/', {
-            'patient': patient.id,
-            'test_ids': [test_instance.id],
-            'notes': 'Test order'
-        })
+        response = authenticated_client.post(
+            "/api/v1/orders/orders/",
+            {
+                "patient": patient.id,
+                "test_ids": [test_instance.id],
+                "notes": "Test order",
+            },
+        )
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['order_id'] is not None
+        assert response.data["order_id"] is not None
 
     def test_create_order_with_panel(self, authenticated_client, patient, test_panel):
         """Test creating an order with a panel."""
-        response = authenticated_client.post('/api/v1/orders/orders/', {
-            'patient': patient.id,
-            'panel_ids': [test_panel.id]
-        })
+        response = authenticated_client.post(
+            "/api/v1/orders/orders/",
+            {"patient": patient.id, "panel_ids": [test_panel.id]},
+        )
         assert response.status_code == status.HTTP_201_CREATED
 
     def test_retrieve_order(self, authenticated_client, order):
         """Test retrieving an order."""
-        response = authenticated_client.get(f'/api/v1/orders/orders/{order.id}/')
+        response = authenticated_client.get(f"/api/v1/orders/orders/{order.id}/")
         assert response.status_code == status.HTTP_200_OK
-        assert 'items' in response.data
+        assert "items" in response.data
 
     def test_cancel_order(self, authenticated_client, order):
         """Test canceling an order."""
-        response = authenticated_client.post(f'/api/v1/orders/orders/{order.id}/cancel/')
+        response = authenticated_client.post(
+            f"/api/v1/orders/orders/{order.id}/cancel/"
+        )
         assert response.status_code == status.HTTP_200_OK
         order.refresh_from_db()
-        assert order.status == 'cancelled'
+        assert order.status == "cancelled"
 
     def test_cancel_completed_order_fails(self, authenticated_client, order):
         """Test that canceling a completed order fails."""
-        order.status = 'completed'
+        order.status = "completed"
         order.save()
-        response = authenticated_client.post(f'/api/v1/orders/orders/{order.id}/cancel/')
+        response = authenticated_client.post(
+            f"/api/v1/orders/orders/{order.id}/cancel/"
+        )
         assert response.status_code == status.HTTP_400_BAD_REQUEST

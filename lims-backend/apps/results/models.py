@@ -20,48 +20,57 @@ class TestResult(models.Model):
         verified_at (datetime, optional): The timestamp of when the result was verified.
         remarks (str, optional): Any remarks about the result.
     """
+
     FLAG_CHOICES = [
-        ('normal', 'Normal'),
-        ('low', 'Low'),
-        ('high', 'High'),
-        ('critical_low', 'Critical Low'),
-        ('critical_high', 'Critical High'),
-        ('abnormal', 'Abnormal'),  # For non-numeric
+        ("normal", "Normal"),
+        ("low", "Low"),
+        ("high", "High"),
+        ("critical_low", "Critical Low"),
+        ("critical_high", "Critical High"),
+        ("abnormal", "Abnormal"),  # For non-numeric
     ]
 
-    order_item = models.ForeignKey(OrderItem, on_delete=models.CASCADE, related_name='results')
+    order_item = models.ForeignKey(
+        OrderItem, on_delete=models.CASCADE, related_name="results"
+    )
     test_parameter = models.ForeignKey(TestParameter, on_delete=models.PROTECT)
 
     result_value = models.CharField(max_length=500)
 
     # Auto-calculated flag
-    flag = models.CharField(max_length=20, choices=FLAG_CHOICES, default='normal')
+    flag = models.CharField(max_length=20, choices=FLAG_CHOICES, default="normal")
 
     # Verification Status
     VERIFICATION_STATUS = [
-        ('pending', 'Pending'),
-        ('verified', 'Verified'),
-        ('rejected', 'Rejected'),
+        ("pending", "Pending"),
+        ("verified", "Verified"),
+        ("rejected", "Rejected"),
     ]
-    status = models.CharField(max_length=20, choices=VERIFICATION_STATUS, default='pending')
+    status = models.CharField(
+        max_length=20, choices=VERIFICATION_STATUS, default="pending"
+    )
 
     # Metadata
     entered_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
-        null=True, related_name='results_entered'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="results_entered",
     )
     entered_at = models.DateTimeField(auto_now_add=True)
     verified_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
-        null=True, related_name='results_verified'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="results_verified",
     )
     verified_at = models.DateTimeField(blank=True, null=True)
 
     remarks = models.TextField(blank=True)
 
     class Meta:
-        unique_together = ('order_item', 'test_parameter')
-        ordering = ['test_parameter__display_order']
+        unique_together = ("order_item", "test_parameter")
+        ordering = ["test_parameter__display_order"]
 
     def __str__(self):
         """
@@ -96,7 +105,7 @@ class TestResult(models.Model):
             gender = self.order_item.order.patient.gender
 
             # Get ranges
-            if gender == 'Male':
+            if gender == "Male":
                 ref_min = self.test_parameter.reference_min_male
                 ref_max = self.test_parameter.reference_max_male
             else:
@@ -108,16 +117,16 @@ class TestResult(models.Model):
 
             # Check criticals first
             if crit_low and value <= crit_low:
-                self.flag = 'critical_low'
+                self.flag = "critical_low"
             elif crit_high and value >= crit_high:
-                self.flag = 'critical_high'
+                self.flag = "critical_high"
             # Check normal ranges
             elif ref_min and value < ref_min:
-                self.flag = 'low'
+                self.flag = "low"
             elif ref_max and value > ref_max:
-                self.flag = 'high'
+                self.flag = "high"
             else:
-                self.flag = 'normal'
+                self.flag = "normal"
 
         except (ValueError, TypeError):
             # Non-numeric result, can't auto-flag easily unless we add logic for text results

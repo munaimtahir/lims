@@ -1,9 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { resultApi, orderApi } from '../../api/services';
-import type { TestResult, OrderItem } from '../../types';
+import type { OrderItem } from '../../types';
 import styles from './ResultsPage.module.css';
+
+interface TestParameter {
+  id: number;
+  parameter_name: string;
+  unit: string;
+  reference_range: string;
+  reference_min_male?: number;
+  reference_max_male?: number;
+  critical_low?: number;
+  critical_high?: number;
+}
+
+interface ExistingResult {
+  test_parameter: number;
+  result_value: string;
+}
 
 export default function ResultsPage() {
   const queryClient = useQueryClient();
@@ -22,7 +38,7 @@ export default function ResultsPage() {
     enabled: !!selectedOrderItem,
   });
 
-  const { data: existingResults } = useQuery({
+  useQuery<{ results: ExistingResult[] }>({
     queryKey: ['results', selectedOrderItem],
     queryFn: () => resultApi.getByOrderItem(selectedOrderItem!),
     enabled: !!selectedOrderItem,
@@ -51,16 +67,6 @@ export default function ResultsPage() {
     },
   });
 
-  useEffect(() => {
-    if (existingResults?.results) {
-      const existing = existingResults.results.reduce((acc, result) => {
-        acc[result.test_parameter] = result.result_value;
-        return acc;
-      }, {} as Record<number, string>);
-      setResults(existing);
-    }
-  }, [existingResults]);
-
   if (!selectedOrderItem) {
     return (
       <div className={styles.container}>
@@ -72,9 +78,27 @@ export default function ResultsPage() {
     );
   }
 
-  const order = orderData;
-  const test = orderItem?.items?.find((item: OrderItem) => item.id === selectedOrderItem);
-  const testParameters = test?.test?.parameters || test?.panel?.tests?.flatMap((t: any) => t.parameters) || [];
+  const test = orderItemData?.items?.find((item: OrderItem) => item.id === selectedOrderItem);
+  
+  // Extract test parameters from test or panel
+  const getTestParameters = (): TestParameter[] => {
+    const testData = test as { 
+      test?: { parameters?: TestParameter[] }; 
+      panel?: { tests?: { parameters: TestParameter[] }[] } 
+    };
+    
+    if (testData?.test?.parameters) {
+      return testData.test.parameters;
+    }
+    
+    if (testData?.panel?.tests) {
+      return testData.panel.tests.flatMap((t) => t.parameters || []);
+    }
+    
+    return [];
+  };
+  
+  const testParameters = getTestParameters();
 
   const handleResultChange = (paramId: number, value: string) => {
     setResults((prev) => ({ ...prev, [paramId]: value }));
@@ -84,7 +108,7 @@ export default function ResultsPage() {
     setRemarks((prev) => ({ ...prev, [paramId]: value }));
   };
 
-  const getFlagClass = (value: string, param: any) => {
+  const getFlagClass = (value: string, param: TestParameter) => {
     try {
       const numValue = parseFloat(value);
       // Simple flag calculation (would be done by backend)
@@ -115,7 +139,7 @@ export default function ResultsPage() {
         className={styles.form}
       >
         <div className={styles.resultsGrid}>
-          {testParameters.map((param: any) => (
+          {testParameters.map((param) => (
             <div key={param.id} className={styles.resultField}>
               <label className={styles.label}>
                 {param.parameter_name}

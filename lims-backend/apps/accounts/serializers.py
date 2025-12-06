@@ -13,10 +13,20 @@ class UserSerializer(serializers.ModelSerializer):
 
     Serializes all essential user fields for display.
     """
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'full_name', 'role', 'is_active', 'date_joined', 'last_login']
-        read_only_fields = ['id', 'date_joined', 'last_login']
+        fields = [
+            "id",
+            "username",
+            "email",
+            "full_name",
+            "role",
+            "is_active",
+            "date_joined",
+            "last_login",
+        ]
+        read_only_fields = ["id", "date_joined", "last_login"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -25,12 +35,24 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     Includes password confirmation and handles user creation.
     """
-    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
-    password_confirm = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+
+    password = serializers.CharField(
+        write_only=True, required=True, style={"input_type": "password"}
+    )
+    password_confirm = serializers.CharField(
+        write_only=True, required=True, style={"input_type": "password"}
+    )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'full_name', 'role', 'password', 'password_confirm']
+        fields = [
+            "username",
+            "email",
+            "full_name",
+            "role",
+            "password",
+            "password_confirm",
+        ]
 
     def validate(self, attrs):
         """
@@ -45,8 +67,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
         Raises:
             serializers.ValidationError: If the passwords do not match.
         """
-        if attrs['password'] != attrs['password_confirm']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        if attrs["password"] != attrs["password_confirm"]:
+            raise serializers.ValidationError(
+                {"password": "Password fields didn't match."}
+            )
         return attrs
 
     def create(self, validated_data):
@@ -62,8 +86,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         Returns:
             User: The newly created user instance.
         """
-        validated_data.pop('password_confirm')
-        password = validated_data.pop('password')
+        validated_data.pop("password_confirm")
+        password = validated_data.pop("password")
         user = User.objects.create_user(**validated_data, password=password)
         return user
 
@@ -75,8 +99,11 @@ class LoginSerializer(serializers.Serializer):
     Supports login via username or email.
     Validates user credentials and authenticates the user.
     """
+
     username = serializers.CharField(required=True)
-    password = serializers.CharField(required=True, write_only=True, style={'input_type': 'password'})
+    password = serializers.CharField(
+        required=True, write_only=True, style={"input_type": "password"}
+    )
 
     def validate(self, attrs):
         """
@@ -93,30 +120,30 @@ class LoginSerializer(serializers.Serializer):
         Raises:
             serializers.ValidationError: If authentication fails or the user is inactive.
         """
-        username_or_email = attrs.get('username')
-        password = attrs.get('password')
+        username_or_email = attrs.get("username")
+        password = attrs.get("password")
 
         if username_or_email and password:
             # Check if input is an email
-            if '@' in username_or_email:
+            if "@" in username_or_email:
                 try:
                     user_obj = User.objects.get(email=username_or_email)
                     username = user_obj.username
                 except User.DoesNotExist:
                     # Use generic message to prevent user enumeration
-                    raise serializers.ValidationError('Invalid credentials.')
+                    raise serializers.ValidationError("Invalid credentials.")
             else:
                 username = username_or_email
 
             user = authenticate(username=username, password=password)
             if not user:
-                raise serializers.ValidationError('Invalid credentials.')
+                raise serializers.ValidationError("Invalid credentials.")
             if not user.is_active:
-                raise serializers.ValidationError('User account is disabled.')
+                raise serializers.ValidationError("User account is disabled.")
         else:
             raise serializers.ValidationError('Must include "username" and "password".')
 
-        attrs['user'] = user
+        attrs["user"] = user
         return attrs
 
 
@@ -124,6 +151,7 @@ class ChangePasswordSerializer(serializers.Serializer):
     """
     Serializer for changing a user's password.
     """
+
     old_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True)
     new_password_confirm = serializers.CharField(required=True, write_only=True)
@@ -141,6 +169,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         Raises:
             serializers.ValidationError: If the new passwords do not match.
         """
-        if attrs['new_password'] != attrs['new_password_confirm']:
-            raise serializers.ValidationError({"new_password": "New password fields didn't match."})
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise serializers.ValidationError(
+                {"new_password": "New password fields didn't match."}
+            )
         return attrs

@@ -23,11 +23,11 @@ def api_client():
 def admin_user(db):
     """Create and return an admin user."""
     return User.objects.create_user(
-        username='admin',
-        email='admin@test.com',
-        password='adminpass123',
-        full_name='Admin User',
-        role='Admin'
+        username="admin",
+        email="admin@test.com",
+        password="adminpass123",
+        full_name="Admin User",
+        role="Admin",
     )
 
 
@@ -35,11 +35,11 @@ def admin_user(db):
 def cashier_user(db):
     """Create and return a cashier user."""
     return User.objects.create_user(
-        username='cashier',
-        email='cashier@test.com',
-        password='cashierpass123',
-        full_name='Cashier User',
-        role='Cashier'
+        username="cashier",
+        email="cashier@test.com",
+        password="cashierpass123",
+        full_name="Cashier User",
+        role="Cashier",
     )
 
 
@@ -54,19 +54,19 @@ def authenticated_client(api_client, admin_user):
 def patient(db, admin_user):
     """Create and return a patient."""
     return Patient.objects.create(
-        first_name='John',
-        last_name='Doe',
+        first_name="John",
+        last_name="Doe",
         date_of_birth=date(1990, 5, 15),
-        gender='Male',
-        phone='03001234567',
-        created_by=admin_user
+        gender="Male",
+        phone="03001234567",
+        created_by=admin_user,
     )
 
 
 @pytest.fixture
 def test_category(db):
     """Create and return a test category."""
-    return TestCategory.objects.create(name='Hematology')
+    return TestCategory.objects.create(name="Hematology")
 
 
 @pytest.fixture
@@ -74,11 +74,11 @@ def test_instance(db, test_category):
     """Create and return a test."""
     return Test.objects.create(
         category=test_category,
-        test_code='CBC',
-        test_name='Complete Blood Count',
-        sample_type='EDTA Blood',
-        price=Decimal('800.00'),
-        turnaround_time=4
+        test_code="CBC",
+        test_name="Complete Blood Count",
+        sample_type="EDTA Blood",
+        price=Decimal("800.00"),
+        turnaround_time=4,
     )
 
 
@@ -86,15 +86,9 @@ def test_instance(db, test_category):
 def order(db, patient, admin_user, test_instance):
     """Create and return an order."""
     order = Order.objects.create(
-        patient=patient,
-        ordered_by=admin_user,
-        status='pending'
+        patient=patient, ordered_by=admin_user, status="pending"
     )
-    OrderItem.objects.create(
-        order=order,
-        test=test_instance,
-        price=test_instance.price
-    )
+    OrderItem.objects.create(order=order, test=test_instance, price=test_instance.price)
     order.calculate_total()
     return order
 
@@ -104,9 +98,9 @@ def payment(db, order, cashier_user):
     """Create and return a payment."""
     return Payment.objects.create(
         order=order,
-        amount=Decimal('500.00'),
-        payment_method='cash',
-        recorded_by=cashier_user
+        amount=Decimal("500.00"),
+        payment_method="cash",
+        recorded_by=cashier_user,
     )
 
 
@@ -118,16 +112,16 @@ class TestPaymentModel:
         """Test creating a payment."""
         payment = Payment.objects.create(
             order=order,
-            amount=Decimal('400.00'),
-            payment_method='cash',
-            recorded_by=cashier_user
+            amount=Decimal("400.00"),
+            payment_method="cash",
+            recorded_by=cashier_user,
         )
-        assert payment.amount == Decimal('400.00')
+        assert payment.amount == Decimal("400.00")
         assert payment.order == order
 
     def test_payment_str(self, payment):
         """Test payment string representation."""
-        assert '500' in str(payment)
+        assert "500" in str(payment)
 
     def test_full_payment_marks_order_paid(self, order, cashier_user):
         """Test that full payment marks order as paid."""
@@ -135,8 +129,8 @@ class TestPaymentModel:
         Payment.objects.create(
             order=order,
             amount=order.net_amount,
-            payment_method='cash',
-            recorded_by=cashier_user
+            payment_method="cash",
+            recorded_by=cashier_user,
         )
         order.refresh_from_db()
         assert order.is_paid
@@ -145,9 +139,9 @@ class TestPaymentModel:
         """Test that partial payment does not mark order as paid."""
         Payment.objects.create(
             order=order,
-            amount=Decimal('100.00'),
-            payment_method='cash',
-            recorded_by=cashier_user
+            amount=Decimal("100.00"),
+            payment_method="cash",
+            recorded_by=cashier_user,
         )
         order.refresh_from_db()
         assert not order.is_paid
@@ -156,19 +150,13 @@ class TestPaymentModel:
         """Test that multiple payments totaling net amount mark order as paid."""
         half = order.net_amount / 2
         Payment.objects.create(
-            order=order,
-            amount=half,
-            payment_method='cash',
-            recorded_by=cashier_user
+            order=order, amount=half, payment_method="cash", recorded_by=cashier_user
         )
         order.refresh_from_db()
         assert not order.is_paid
 
         Payment.objects.create(
-            order=order,
-            amount=half,
-            payment_method='card',
-            recorded_by=cashier_user
+            order=order, amount=half, payment_method="card", recorded_by=cashier_user
         )
         order.refresh_from_db()
         assert order.is_paid
@@ -180,30 +168,29 @@ class TestPaymentViewSet:
 
     def test_list_payments(self, authenticated_client, payment):
         """Test listing payments."""
-        response = authenticated_client.get('/api/v1/payments/')
+        response = authenticated_client.get("/api/v1/payments/")
         assert response.status_code == status.HTTP_200_OK
 
     def test_create_payment(self, api_client, cashier_user, order):
         """Test creating a payment."""
         api_client.force_authenticate(user=cashier_user)
-        response = api_client.post('/api/v1/payments/', {
-            'order': order.id,
-            'amount': '800.00',
-            'payment_method': 'cash'
-        })
+        response = api_client.post(
+            "/api/v1/payments/",
+            {"order": order.id, "amount": "800.00", "payment_method": "cash"},
+        )
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['recorded_by'] == cashier_user.id
+        assert response.data["recorded_by"] == cashier_user.id
 
     def test_filter_payments_by_order(self, authenticated_client, payment):
         """Test filtering payments by order."""
-        response = authenticated_client.get('/api/v1/payments/', {
-            'order': payment.order.id
-        })
+        response = authenticated_client.get(
+            "/api/v1/payments/", {"order": payment.order.id}
+        )
         assert response.status_code == status.HTTP_200_OK
 
     def test_filter_payments_by_method(self, authenticated_client, payment):
         """Test filtering payments by payment method."""
-        response = authenticated_client.get('/api/v1/payments/', {
-            'payment_method': 'cash'
-        })
+        response = authenticated_client.get(
+            "/api/v1/payments/", {"payment_method": "cash"}
+        )
         assert response.status_code == status.HTTP_200_OK

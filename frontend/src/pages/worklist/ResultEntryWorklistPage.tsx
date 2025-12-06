@@ -40,7 +40,7 @@ export default function ResultEntryWorklistPage() {
             </div>
           ) : (
             <div className={styles.worklist}>
-              {worklistItems.map((item) => (
+              {worklistItems.map((item: OrderItem) => (
                 <div
                   key={item.id}
                   className={`${styles.worklistItem} ${selectedItem?.id === item.id ? styles.selected : ''}`}
@@ -70,7 +70,8 @@ export default function ResultEntryWorklistPage() {
                       onClick={(e) => {
                         e.stopPropagation();
                         // TODO: Replace with navigate() from react-router-dom
-                        window.location.href = `/dashboard/results?orderId=${(item as any).order.id}&orderItemId=${item.id}`;
+                        const orderItem = item as OrderItem & { order: { id: number } };
+                        window.location.href = `/dashboard/results?orderId=${orderItem.order.id}&orderItemId=${item.id}`;
                       }}
                       className={styles.enterButton}
                     >

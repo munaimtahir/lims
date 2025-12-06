@@ -17,31 +17,34 @@ class SampleCollection(models.Model):
         collected_by (User, optional): The user who collected the sample.
         notes (str, optional): Any notes related to the sample collection.
     """
+
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('collected', 'Collected'),
-        ('received', 'Received in Lab'),
-        ('rejected', 'Rejected'),
+        ("pending", "Pending"),
+        ("collected", "Collected"),
+        ("received", "Received in Lab"),
+        ("rejected", "Rejected"),
     ]
 
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='samples')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="samples")
     # Can be linked to specific items or the whole order
-    order_items = models.ManyToManyField(OrderItem, related_name='samples')
+    order_items = models.ManyToManyField(OrderItem, related_name="samples")
 
     sample_type = models.CharField(max_length=100)
     barcode = models.CharField(max_length=100, unique=True, blank=True, null=True)
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     collected_at = models.DateTimeField(blank=True, null=True)
     collected_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
-        null=True, related_name='samples_collected'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="samples_collected",
     )
 
     notes = models.TextField(blank=True)
 
     class Meta:
-        ordering = ['-collected_at']
+        ordering = ["-collected_at"]
 
     def __str__(self):
         """
