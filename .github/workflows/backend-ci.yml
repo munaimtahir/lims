@@ -1,0 +1,87 @@
+name: Backend CI
+
+# Triggers on push and pull_request to main branches
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'lims-backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'lims-backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  backend-tests:
+    name: Django Backend Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    # PostgreSQL service for integration tests
+    # Can be replaced with SQLite for simpler tests
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: lims_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'  # Inferred from Dockerfile
+          cache: 'pip'
+          cache-dependency-path: 'lims-backend/requirements/development.txt'
+
+      - name: Install dependencies
+        working-directory: lims-backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/development.txt
+
+      - name: Run linting with flake8
+        working-directory: lims-backend
+        run: |
+          # Lint code excluding migrations
+          flake8 apps/ --max-line-length=120 --exclude=migrations
+
+      - name: Run tests with pytest and coverage
+        working-directory: lims-backend
+        env:
+          # Use SQLite for CI tests (faster and simpler)
+          DB_ENGINE: django.db.backends.sqlite3
+          DB_NAME: test.db
+          SECRET_KEY: test-secret-key-for-ci-only
+          DEBUG: 'True'
+          DJANGO_SETTINGS_MODULE: config.settings.development
+        run: |
+          # Run pytest with coverage
+          coverage run -m pytest apps/ -v
+          # Generate coverage report (70% minimum threshold)
+          coverage report --fail-under=70
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: lims-backend/.coverage
+          retention-days: 7

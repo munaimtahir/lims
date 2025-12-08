@@ -1,0 +1,89 @@
+name: Docker CI
+
+# Triggers on push to main branches and tags
+on:
+  push:
+    branches: [main, develop]
+    tags:
+      - 'v*'
+    paths:
+      - 'lims-backend/Dockerfile'
+      - 'frontend/Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/docker-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'lims-backend/Dockerfile'
+      - 'frontend/Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/docker-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  docker-build-test:
+    name: Docker Build & Sanity Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate docker-compose.yml
+        run: |
+          # Validate docker-compose configuration
+          docker compose config --quiet
+
+      - name: Build backend Docker image
+        working-directory: lims-backend
+        run: |
+          # Build backend image
+          docker build \
+            --tag lims-backend:ci-test \
+            --file Dockerfile \
+            .
+
+      - name: Test backend image
+        run: |
+          # Run basic sanity check on backend image
+          docker run --rm lims-backend:ci-test python --version
+          docker run --rm lims-backend:ci-test python -c "import django; print(f'Django {django.get_version()}')"
+
+      - name: Build frontend Docker image
+        working-directory: frontend
+        run: |
+          # Build frontend image
+          docker build \
+            --tag lims-frontend:ci-test \
+            --file Dockerfile \
+            .
+
+      - name: Test frontend image
+        run: |
+          # Run basic sanity check on frontend image
+          docker run --rm -d --name frontend-test -p 8080:80 lims-frontend:ci-test
+          # Wait for nginx to start
+          sleep 5
+          # Check if nginx is serving content
+          curl -f http://localhost:8080/ || exit 1
+          # Cleanup
+          docker stop frontend-test
+
+      - name: Build full stack with docker-compose (smoke test)
+        run: |
+          # Build all services (don't run them, just verify build succeeds)
+          docker compose build --no-cache
+
+      - name: Clean up Docker resources
+        if: always()
+        run: |
+          # Clean up to free disk space
+          docker compose down -v --remove-orphans || true
+          docker system prune -af --volumes || true
