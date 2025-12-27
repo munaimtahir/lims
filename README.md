@@ -117,7 +117,7 @@ See [TEST_CATALOG_EXPANDED.md](./TEST_CATALOG_EXPANDED.md) for complete test det
 └──────────┘ └───────────┘
 ```
 
-For detailed architecture, see [ARCHITECTURE.md](./ARCHITECTURE.md).
+For detailed architecture, see [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md).
 
 ## 🚀 Getting Started
 
@@ -309,23 +309,36 @@ lims/
 │   ├── vite.config.ts         # Vite configuration
 │   └── Dockerfile             # Frontend container
 │
-├── legacy_lab/                # Legacy code reference (read-only)
-│   └── lab-main/              # Old LIMS for data migration reference
+├── docs/                      # Documentation
+│   ├── architecture/          # Architecture documentation
+│   │   └── ARCHITECTURE.md
+│   ├── api/                   # API documentation
+│   │   └── API_DESIGN.md
+│   ├── deployment/            # Deployment guides
+│   │   ├── DEPLOYMENT.md
+│   │   ├── SSH_DEPLOYMENT.md
+│   │   └── TROUBLESHOOTING.md
+│   ├── archive/               # Archived documentation
+│   ├── DATA_MODEL.md          # Database schema
+│   ├── WORKFLOW.md            # Laboratory workflows
+│   ├── VISION.md              # Project vision & goals
+│   ├── TEST_CATALOG_EXPANDED.md # Complete test catalog
+│   └── LEGACY_LAB.md          # Legacy code reference guide
 │
+├── archive/                   # Archived code and documentation
+│   └── legacy_lab/            # Legacy code reference (read-only)
+│       └── lab-main/          # Old LIMS for data migration reference
+│
+├── scripts/                    # Utility scripts
+│   ├── deploy.sh              # Deployment script
+│   ├── health-check.sh        # Health monitoring script
+│   └── validate_system.sh     # System validation script
+│
+├── .github/workflows/         # CI/CD pipelines
 ├── docker-compose.yml         # Docker orchestration
 ├── Caddyfile                  # Reverse proxy configuration
-├── .github/workflows/         # CI/CD pipelines
-│
-├── ARCHITECTURE.md            # System architecture documentation
-├── API_DESIGN.md              # API specification
-├── DATA_MODEL.md              # Database schema
-├── DEPLOYMENT.md              # Deployment guide
-├── VISION.md                  # Project vision & goals
-├── WORKFLOW.md                # Laboratory workflows
-├── IMPLEMENTATION_PLAN.md     # Development roadmap
-├── FEATURE_PRIORITY.md        # Feature prioritization
-├── TEST_CATALOG_EXPANDED.md   # Complete test catalog
 ├── CHANGELOG.md               # Version history
+├── LICENSE                    # License file
 └── README.md                  # This file
 ```
 
@@ -379,19 +392,27 @@ See `.github/workflows/ci.yml` for details.
 
 ### Design Documents
 
-- [VISION.md](./VISION.md) - Project vision, goals, and core values
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Complete system architecture
-- [API_DESIGN.md](./API_DESIGN.md) - RESTful API specification
-- [DATA_MODEL.md](./DATA_MODEL.md) - Database schema and relationships
-- [WORKFLOW.md](./WORKFLOW.md) - Laboratory workflows and business logic
-- [DEPLOYMENT.md](./DEPLOYMENT.md) - Production deployment guide
+- [VISION.md](./docs/VISION.md) - Project vision, goals, and core values
+- [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md) - Complete system architecture
+- [API_DESIGN.md](./docs/api/API_DESIGN.md) - RESTful API specification
+- [DATA_MODEL.md](./docs/DATA_MODEL.md) - Database schema and relationships
+- [WORKFLOW.md](./docs/WORKFLOW.md) - Laboratory workflows and business logic
 
-### Development
+### Deployment
 
-- [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) - 3-phase development plan
-- [FEATURE_PRIORITY.md](./FEATURE_PRIORITY.md) - Feature prioritization
-- [TEST_CATALOG_EXPANDED.md](./TEST_CATALOG_EXPANDED.md) - Complete test catalog
+- [DEPLOYMENT.md](./docs/deployment/DEPLOYMENT.md) - Production deployment guide
+- [SSH_DEPLOYMENT.md](./docs/deployment/SSH_DEPLOYMENT.md) - SSH deployment instructions
+- [TROUBLESHOOTING.md](./docs/deployment/TROUBLESHOOTING.md) - Troubleshooting guide
+
+### Reference
+
+- [TEST_CATALOG_EXPANDED.md](./docs/TEST_CATALOG_EXPANDED.md) - Complete test catalog
+- [LEGACY_LAB.md](./docs/LEGACY_LAB.md) - Legacy code reference guide
 - [CHANGELOG.md](./CHANGELOG.md) - Version history
+
+### Archived Documentation
+
+Historical and redundant documentation is archived in [`docs/archive/`](./docs/archive/).
 
 ### API Documentation
 
@@ -447,6 +468,6 @@ For issues, questions, or contributions:
 
 ---
 
-**Note**: This is a production-grade LIMS system. For legacy code reference and data migration, see `legacy_lab/lab-main/` directory. The legacy code is preserved for reference only and should not be run as a separate application.
+**Note**: This is a production-grade LIMS system. For legacy code reference and data migration, see [`archive/legacy_lab/`](./archive/legacy_lab/) directory. The legacy code is preserved for reference only and should not be run as a separate application. See [`docs/LEGACY_LAB.md`](./docs/LEGACY_LAB.md) for more information.
 
 Made with ❤️ for modern laboratories

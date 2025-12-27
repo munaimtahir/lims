@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `legacy_lab/lab-main/` directory contains the original LIMS implementation that has been preserved for reference purposes. This code is **NOT** part of the active application and should **NOT** be run independently.
+The `archive/legacy_lab/lab-main/` directory contains the original LIMS implementation that has been preserved for reference purposes. This code is **NOT** part of the active application and should **NOT** be run independently.
 
 ## Why It's Kept
 
@@ -54,7 +54,7 @@ Provides context for:
 
 1. **Review the Excel files**:
    ```bash
-   cd legacy_lab/lab-main/backend/seed_data/
+   cd archive/legacy_lab/lab-main/backend/seed_data/
    # Review AlShifa_LIMS_Master.xlsx
    ```
 
@@ -73,7 +73,7 @@ Provides context for:
 
 1. **Review models** for data structure:
    ```bash
-   cd legacy_lab/lab-main/backend/
+   cd archive/legacy_lab/lab-main/backend/
    # Review various app models
    ```
 
@@ -86,7 +86,7 @@ Provides context for:
 3. **Adapt, don't copy**:
    - Understand the intent
    - Implement using modern Django/React patterns
-   - Follow the architecture in `ARCHITECTURE.md`
+   - Follow the architecture in [`docs/architecture/ARCHITECTURE.md`](./architecture/ARCHITECTURE.md)
 
 ## Modern Implementation
 
@@ -142,8 +142,8 @@ If the schemas are similar enough, you could:
 ## Questions?
 
 For questions about the legacy code or migration strategies:
-- Review `DATA_MODEL.md` for the modern schema
-- Check `IMPLEMENTATION_PLAN.md` for migration strategy
+- Review [`DATA_MODEL.md`](./DATA_MODEL.md) for the modern schema
+- Check archived documentation in [`docs/archive/`](./archive/) for historical context
 - Open an issue on GitHub
 
 ---
