@@ -2,7 +2,7 @@
 Laboratory test catalog models: Categories, Tests, Parameters, and Panels.
 
 This module includes both the simplified models (Test, TestParameter) for basic use
-and the comprehensive models (Parameter, ReferenceRange, ParameterQuickText) for
+and the comprehensive models (Parameter, ParameterReferenceRange, ParameterQuickText) for
 advanced laboratory workflows with Excel import support.
 """
 
@@ -238,7 +238,7 @@ class ReferenceRange(models.Model):
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        'accounts.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -401,9 +401,9 @@ class Parameter(models.Model):
         return f"{self.code} - {self.name}"
 
 
-class ReferenceRange(models.Model):
+class ParameterReferenceRange(models.Model):
     """
-    Represents a reference range for a parameter.
+    Represents a reference range for a parameter (legacy Parameter model).
 
     This model defines normal and critical ranges for parameters based on
     various factors like sex, age, and method. Supports Excel import.
