@@ -6,7 +6,7 @@ from django.db.models import Count, Sum
 from datetime import timedelta
 from apps.orders.models import Order
 from apps.patients.models import Patient
-from apps.samples.models import SampleCollection
+from apps.samples.models import Sample, SampleStatus
 from apps.results.models import TestResult
 from apps.reports.models import Report
 from apps.billing.models import Payment
@@ -34,7 +34,7 @@ class DashboardStatisticsView(APIView):
 
         # Today's statistics
         today_orders = Order.objects.filter(created_at__date=today).count()
-        today_samples = SampleCollection.objects.filter(
+        today_samples = Sample.objects.filter(
             collected_at__date=today
         ).count()
         today_results = TestResult.objects.filter(entered_at__date=today).count()
@@ -43,7 +43,7 @@ class DashboardStatisticsView(APIView):
         today_revenue = today_payments.aggregate(total=Sum("amount"))["total"] or 0
 
         # Pending work
-        pending_collections = SampleCollection.objects.filter(status="pending").count()
+        pending_collections = Sample.objects.filter(status=SampleStatus.PENDING).count()
         pending_results = TestResult.objects.filter(status="pending").count()
         pending_verifications = TestResult.objects.filter(status="pending").count()
 
@@ -67,7 +67,7 @@ class DashboardStatisticsView(APIView):
         # Total counts
         total_patients = Patient.objects.count()
         total_orders = Order.objects.count()
-        total_samples = SampleCollection.objects.count()
+        total_samples = Sample.objects.count()
         total_results = TestResult.objects.count()
 
         # Revenue statistics

@@ -186,8 +186,14 @@ class ReportViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_200_OK,
                 )
 
-            # Generate PDF
-            pdf_content = generate_pdf_report(order.id)
+            # Generate PDF with lab information (can be pulled from system settings later)
+            pdf_content = generate_pdf_report(
+                order.id,
+                lab_name=request.data.get("lab_name", "Laboratory"),
+                lab_address=request.data.get("lab_address", ""),
+                lab_phone=request.data.get("lab_phone", ""),
+                lab_email=request.data.get("lab_email", ""),
+            )
 
             # Create or update report
             if existing_report:

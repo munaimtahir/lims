@@ -1,9 +1,13 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from decimal import Decimal
+import logging
 from apps.patients.models import Patient
 from apps.laboratory.models import Test, TestPanel
+
+logger = logging.getLogger(__name__)
 
 
 class Order(models.Model):
@@ -96,7 +100,8 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Override the save method to generate an order ID and calculate the net amount.
+        Override the save method to generate an order ID, calculate the net amount,
+        and validate status transitions.
 
         Args:
             *args: Variable length argument list.
@@ -108,7 +113,90 @@ class Order(models.Model):
         # Calculate net amount
         self.net_amount = max(self.total_amount - self.discount, Decimal("0.00"))
 
+        # Validate status transition if status is being changed
+        if self.pk:  # Only validate if this is an update
+            try:
+                old_order = Order.objects.get(pk=self.pk)
+                if old_order.status != self.status:
+                    self.validate_status_transition(old_order.status, self.status)
+            except Order.DoesNotExist:
+                pass  # New order, no validation needed
+
         super().save(*args, **kwargs)
+
+    def validate_status_transition(self, old_status, new_status):
+        """
+        Validate that a status transition is allowed.
+
+        Valid transitions:
+        - NEW -> COLLECTED, CANCELLED
+        - COLLECTED -> IN_PROCESS, CANCELLED
+        - IN_PROCESS -> VERIFIED, CANCELLED
+        - VERIFIED -> PUBLISHED, CANCELLED
+        - PUBLISHED -> (no transitions, final state)
+        - CANCELLED -> (no transitions, final state)
+
+        Args:
+            old_status (str): The current status.
+            new_status (str): The desired new status.
+
+        Raises:
+            ValidationError: If the transition is not allowed.
+        """
+        # Define valid transitions
+        valid_transitions = {
+            "NEW": ["COLLECTED", "CANCELLED"],
+            "COLLECTED": ["IN_PROCESS", "CANCELLED"],
+            "IN_PROCESS": ["VERIFIED", "CANCELLED"],
+            "VERIFIED": ["PUBLISHED", "CANCELLED"],
+            "PUBLISHED": [],  # Final state, no transitions allowed
+            "CANCELLED": [],  # Final state, no transitions allowed
+        }
+
+        # Check if transition is valid
+        if new_status not in valid_transitions.get(old_status, []):
+            error_msg = (
+                f"Invalid status transition from '{old_status}' to '{new_status}'. "
+                f"Valid transitions from '{old_status}': {', '.join(valid_transitions.get(old_status, []))}"
+            )
+            logger.warning(
+                f"Invalid status transition attempted for order {self.order_id}: "
+                f"{old_status} -> {new_status}"
+            )
+            raise ValidationError(error_msg)
+
+    def can_transition_to(self, new_status):
+        """
+        Check if the order can transition to a new status.
+
+        Args:
+            new_status (str): The desired new status.
+
+        Returns:
+            bool: True if the transition is allowed, False otherwise.
+        """
+        try:
+            self.validate_status_transition(self.status, new_status)
+            return True
+        except ValidationError:
+            return False
+
+    def transition_to(self, new_status, user=None):
+        """
+        Transition the order to a new status with validation.
+
+        Args:
+            new_status (str): The desired new status.
+            user (User, optional): The user making the transition.
+
+        Raises:
+            ValidationError: If the transition is not allowed.
+        """
+        self.validate_status_transition(self.status, new_status)
+        self.status = new_status
+        if user:
+            self.ordered_by = user  # Track who made the transition
+        self.save()
 
     def generate_order_id(self):
         """

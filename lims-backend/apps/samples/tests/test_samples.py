@@ -10,7 +10,7 @@ from apps.accounts.models import User
 from apps.patients.models import Patient
 from apps.laboratory.models import TestCategory, Test
 from apps.orders.models import Order, OrderItem
-from apps.samples.models import SampleCollection
+from apps.samples.models import Sample, SampleStatus
 
 
 @pytest.fixture
@@ -95,34 +95,46 @@ def order(db, patient, admin_user, test_instance):
 
 @pytest.fixture
 def sample(db, order, phlebotomist_user):
-    """Create and return a sample collection."""
-    sample = SampleCollection.objects.create(
-        order=order, sample_type="EDTA Blood", barcode="BC-001", status="pending"
+    """Create and return a sample."""
+    order_item = order.items.first()
+    sample = Sample.objects.create(
+        order_item=order_item, sample_type="EDTA Blood", status=SampleStatus.PENDING
     )
-    sample.order_items.set(order.items.all())
     return sample
 
 
 @pytest.mark.django_db
-class TestSampleCollectionModel:
-    """Tests for the SampleCollection model."""
+class TestSampleModel:
+    """Tests for the Sample model."""
 
     def test_create_sample(self, order):
-        """Test creating a sample collection."""
-        sample = SampleCollection.objects.create(
-            order=order, sample_type="EDTA Blood", barcode="BC-002"
+        """Test creating a sample."""
+        order_item = order.items.first()
+        sample = Sample.objects.create(
+            order_item=order_item, sample_type="EDTA Blood"
         )
-        assert sample.status == "pending"
-        assert sample.order == order
+        assert sample.status == SampleStatus.PENDING
+        assert sample.order_item == order_item
+        assert sample.barcode is not None
 
     def test_sample_str(self, sample):
         """Test sample string representation."""
-        assert "BC-001" in str(sample) or str(sample.id) in str(sample)
+        assert sample.barcode in str(sample)
+        assert sample.sample_type in str(sample)
+
+    def test_sample_barcode_generation(self, order):
+        """Test automatic barcode generation."""
+        order_item = order.items.first()
+        sample = Sample.objects.create(
+            order_item=order_item, sample_type="EDTA Blood"
+        )
+        assert sample.barcode is not None
+        assert sample.barcode.startswith("SAM-")
 
 
 @pytest.mark.django_db
-class TestSampleCollectionViewSet:
-    """Tests for the SampleCollection ViewSet."""
+class TestSampleViewSet:
+    """Tests for the Sample ViewSet."""
 
     def test_list_samples(self, authenticated_client, sample):
         """Test listing samples."""
@@ -130,14 +142,13 @@ class TestSampleCollectionViewSet:
         assert response.status_code == status.HTTP_200_OK
 
     def test_create_sample(self, authenticated_client, order):
-        """Test creating a sample collection."""
+        """Test creating a sample."""
+        order_item = order.items.first()
         response = authenticated_client.post(
             "/api/v1/samples/",
             {
-                "order": order.id,
+                "order_item": order_item.id,
                 "sample_type": "Serum",
-                "barcode": "BC-003",
-                "order_items": [item.id for item in order.items.all()],
             },
         )
         assert response.status_code == status.HTTP_201_CREATED
@@ -150,15 +161,20 @@ class TestSampleCollectionViewSet:
         api_client.force_authenticate(user=phlebotomist_user)
 
         response = api_client.patch(
-            f"/api/v1/samples/{sample.id}/", {"status": "collected"}
+            f"/api/v1/samples/{sample.id}/", {"status": SampleStatus.COLLECTED}
         )
         assert response.status_code == status.HTTP_200_OK
         sample.refresh_from_db()
-        assert sample.status == "collected"
+        assert sample.status == SampleStatus.COLLECTED
         assert sample.collected_by == phlebotomist_user
         assert sample.collected_at is not None
 
     def test_filter_samples_by_status(self, authenticated_client, sample):
         """Test filtering samples by status."""
-        response = authenticated_client.get("/api/v1/samples/", {"status": "pending"})
+        response = authenticated_client.get("/api/v1/samples/", {"status": SampleStatus.PENDING})
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_pending_collections(self, authenticated_client, sample):
+        """Test pending collections endpoint."""
+        response = authenticated_client.get("/api/v1/samples/pending_collections/")
         assert response.status_code == status.HTTP_200_OK

@@ -1,17 +1,33 @@
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from io import BytesIO
+from django.utils import timezone
 from apps.orders.models import Order
 
 
-def generate_pdf_report(order_id):
+def generate_pdf_report(order_id, lab_name="Laboratory", lab_address="", lab_phone="", lab_email=""):
     """
-    Generate a PDF report for a given order.
+    Generate a professional PDF report for a given order.
 
-    This function creates a simple PDF with the order details and test results.
+    This function creates a well-formatted PDF with:
+    - Professional header with lab information
+    - Patient demographics
+    - Formatted test results in tables
+    - Reference ranges and flags
+    - Digital signatures
+    - Pagination for long reports
 
     Args:
         order_id (int): The ID of the order to generate the report for.
+        lab_name (str): Name of the laboratory.
+        lab_address (str): Address of the laboratory.
+        lab_phone (str): Phone number of the laboratory.
+        lab_email (str): Email of the laboratory.
 
     Returns:
         bytes: The content of the generated PDF file.
@@ -20,43 +36,176 @@ def generate_pdf_report(order_id):
         ValueError: If the order is not found.
     """
     buffer = BytesIO()
-    p = canvas.Canvas(buffer, pagesize=A4)
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72,
+                           topMargin=72, bottomMargin=72)
+    story = []
+    styles = getSampleStyleSheet()
 
     try:
-        order = Order.objects.get(id=order_id)
+        order = Order.objects.select_related('patient').prefetch_related(
+            'items__test', 'items__panel', 'items__results__test_parameter'
+        ).get(id=order_id)
     except Order.DoesNotExist:
         raise ValueError("Order not found")
 
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        textColor=colors.HexColor('#1a1a1a'),
+        spaceAfter=30,
+        alignment=TA_CENTER,
+    )
+
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=12,
+        textColor=colors.HexColor('#333333'),
+        spaceAfter=12,
+        spaceBefore=12,
+    )
+
     # Header
-    p.setFont("Helvetica-Bold", 16)
-    p.drawString(100, 800, "Laboratory Report")
+    header_data = [
+        [Paragraph(f"<b>{lab_name}</b>", title_style)],
+    ]
+    if lab_address:
+        header_data.append([Paragraph(lab_address, styles['Normal'])])
+    if lab_phone or lab_email:
+        contact_info = []
+        if lab_phone:
+            contact_info.append(f"Phone: {lab_phone}")
+        if lab_email:
+            contact_info.append(f"Email: {lab_email}")
+        header_data.append([Paragraph(" | ".join(contact_info), styles['Normal'])])
 
-    p.setFont("Helvetica", 12)
-    p.drawString(100, 780, f"Order ID: {order.order_id}")
-    p.drawString(100, 760, f"Patient: {order.patient.get_full_name()}")
-    p.drawString(100, 740, f"Date: {order.created_at.strftime('%Y-%m-%d')}")
+    header_table = Table(header_data, colWidths=[6*inch])
+    header_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(header_table)
+    story.append(Spacer(1, 0.2*inch))
 
-    # Results
-    y = 700
-    p.drawString(100, y, "Test Results:")
-    y -= 20
+    # Report title
+    story.append(Paragraph("<b>LABORATORY REPORT</b>", title_style))
+    story.append(Spacer(1, 0.1*inch))
+
+    # Patient Information
+    story.append(Paragraph("<b>Patient Information</b>", heading_style))
+    patient_data = [
+        ['Patient Name:', order.patient.get_full_name()],
+        ['Patient ID:', order.patient.patient_id],
+        ['Date of Birth:', order.patient.date_of_birth.strftime('%Y-%m-%d') if order.patient.date_of_birth else 'N/A'],
+        ['Gender:', order.patient.gender],
+        ['Order ID:', order.order_id],
+        ['Order Date:', order.created_at.strftime('%Y-%m-%d %H:%M')],
+        ['Report Date:', timezone.now().strftime('%Y-%m-%d %H:%M')],
+    ]
+    patient_table = Table(patient_data, colWidths=[2*inch, 4*inch])
+    patient_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+    ]))
+    story.append(patient_table)
+    story.append(Spacer(1, 0.3*inch))
+
+    # Test Results
+    story.append(Paragraph("<b>Test Results</b>", heading_style))
 
     for item in order.items.all():
-        test_name = item.test.test_name if item.test else item.panel.panel_name
-        p.setFont("Helvetica-Bold", 10)
-        p.drawString(100, y, f"- {test_name}")
-        y -= 15
+        test_name = item.test.test_name if item.test else item.panel.panel_name if item.panel else "Unknown Test"
+        
+        # Test header
+        story.append(Paragraph(f"<b>{test_name}</b>", styles['Heading3']))
+        story.append(Spacer(1, 0.1*inch))
 
-        for result in item.results.all():
-            p.setFont("Helvetica", 10)
+        # Results table
+        results_data = [['Parameter', 'Result', 'Unit', 'Reference Range', 'Flag']]
+        
+        for result in item.results.all().order_by('test_parameter__display_order'):
             param = result.test_parameter
-            text = f"{param.parameter_name}: {result.result_value} {param.unit} ({result.flag})"
-            p.drawString(120, y, text)
-            y -= 15
+            # Get reference range based on patient gender
+            if order.patient.gender == 'Male':
+                ref_min = param.reference_min_male
+                ref_max = param.reference_max_male
+            else:
+                ref_min = param.reference_min_female
+                ref_max = param.reference_max_female
 
-    p.showPage()
-    p.save()
+            ref_range = ""
+            if ref_min is not None and ref_max is not None:
+                ref_range = f"{ref_min} - {ref_max}"
+            elif ref_min is not None:
+                ref_range = f">= {ref_min}"
+            elif ref_max is not None:
+                ref_range = f"<= {ref_max}"
 
+            # Format flag with color indication
+            flag_text = result.flag.replace('_', ' ').title()
+            if 'Critical' in flag_text:
+                flag_text = f"<font color='red'><b>{flag_text}</b></font>"
+            elif result.flag in ['high', 'low']:
+                flag_text = f"<font color='orange'>{flag_text}</font>"
+
+            results_data.append([
+                param.parameter_name,
+                result.result_value,
+                param.unit,
+                ref_range,
+                Paragraph(flag_text, styles['Normal']),
+            ])
+
+        if len(results_data) > 1:  # If there are results
+            results_table = Table(results_data, colWidths=[1.5*inch, 1*inch, 0.8*inch, 1.5*inch, 1.2*inch])
+            results_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4472C4')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9f9f9')]),
+            ]))
+            story.append(results_table)
+        else:
+            story.append(Paragraph("<i>No results available</i>", styles['Normal']))
+
+        story.append(Spacer(1, 0.2*inch))
+
+    # Footer with signatures
+    story.append(Spacer(1, 0.3*inch))
+    story.append(Paragraph("<b>Authorized Signatures</b>", heading_style))
+    
+    signature_data = [
+        ['Lab Technician:', '___________________', 'Pathologist:', '___________________'],
+        ['', '', '', ''],
+        ['Date:', '___________________', 'Date:', '___________________'],
+    ]
+    signature_table = Table(signature_data, colWidths=[1.5*inch, 2*inch, 1.5*inch, 2*inch])
+    signature_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(signature_table)
+
+    # Build PDF
+    doc.build(story)
     pdf = buffer.getvalue()
     buffer.close()
     return pdf

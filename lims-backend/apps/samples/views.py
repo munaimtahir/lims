@@ -2,24 +2,24 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import SampleCollection
-from .serializers import SampleCollectionSerializer
+from .models import Sample, SampleStatus
+from .serializers import SampleSerializer
 
 
-class SampleCollectionViewSet(viewsets.ModelViewSet):
+class SampleViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for handling CRUD operations for Sample Collections.
+    ViewSet for handling CRUD operations for Samples.
     """
 
-    queryset = SampleCollection.objects.all()
-    serializer_class = SampleCollectionSerializer
+    queryset = Sample.objects.all()
+    serializer_class = SampleSerializer
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["order", "status", "sample_type"]
-    search_fields = ["barcode", "order__order_id", "order__patient__first_name"]
+    filterset_fields = ["order_item__order", "status", "sample_type"]
+    search_fields = ["barcode", "order_item__order__order_id", "order_item__order__patient__first_name"]
     ordering_fields = ["collected_at", "status"]
 
     @action(detail=False, methods=["get"])
@@ -28,12 +28,11 @@ class SampleCollectionViewSet(viewsets.ModelViewSet):
         Get all pending sample collections (worklist for phlebotomists).
 
         Returns:
-            Response: A paginated list of pending sample collections.
+            Response: A paginated list of pending samples.
         """
         pending_samples = (
-            self.queryset.filter(status="pending")
-            .select_related("order", "order__patient", "collected_by")
-            .prefetch_related("order_items")
+            self.queryset.filter(status=SampleStatus.PENDING)
+            .select_related("order_item", "order_item__order", "order_item__order__patient", "collected_by")
         )
 
         page = self.paginate_queryset(pending_samples)

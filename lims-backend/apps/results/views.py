@@ -33,18 +33,19 @@ class TestResultViewSet(viewsets.ModelViewSet):
             Response: A paginated list of order items needing result entry.
         """
         # Get order items with collected samples but no results
-        from apps.samples.models import SampleCollection
+        from apps.samples.models import Sample, SampleStatus
 
         # Find order items that have collected samples but missing results
-        collected_samples = SampleCollection.objects.filter(
-            status__in=["collected", "received"]
-        ).values_list("order_items", flat=True)
+        collected_samples = Sample.objects.filter(
+            status__in=[SampleStatus.COLLECTED, SampleStatus.RECEIVED]
+        ).values_list("order_item_id", flat=True)
 
         # Get order items that need results
         order_items_needing_results = (
             OrderItem.objects.filter(id__in=collected_samples)
             .exclude(results__isnull=False)
             .select_related("order", "order__patient", "test", "panel")
+            .distinct()
         )
 
         # Also include order items with pending results
