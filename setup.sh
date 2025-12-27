@@ -183,6 +183,12 @@ else
     log_info ".env file already exists, skipping creation"
 fi
 
+# Create static directory if it doesn't exist
+if [ ! -d "static" ]; then
+    log_info "Creating static directory..."
+    mkdir -p static
+fi
+
 # Run migrations
 log_info "Running database migrations..."
 python manage.py migrate --noinput

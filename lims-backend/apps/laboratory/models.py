@@ -467,7 +467,7 @@ class ParameterReferenceRange(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "reference_ranges"
+        db_table = "parameter_reference_ranges"
         verbose_name = "Reference Range"
         verbose_name_plural = "Reference Ranges"
         ordering = ["parameter", "age_min"]
