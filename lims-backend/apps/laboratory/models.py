@@ -172,6 +172,114 @@ class TestParameter(models.Model):
         return f"{self.test.test_code} - {self.parameter_name}"
 
 
+class ReferenceRange(models.Model):
+    """
+    Represents a reference range for a test parameter with age and gender specificity.
+    
+    Supports versioning and age-specific ranges. Multiple ranges can exist for the same
+    parameter with different age groups.
+    
+    Attributes:
+        parameter (TestParameter): The parameter this range applies to.
+        age_min (int, optional): Minimum age in years (null means no minimum).
+        age_max (int, optional): Maximum age in years (null means no maximum).
+        gender (str): Gender this range applies to (Male, Female, or Both).
+        reference_min (Decimal): Minimum reference value.
+        reference_max (Decimal): Maximum reference value.
+        critical_low (Decimal, optional): Critical low value.
+        critical_high (Decimal, optional): Critical high value.
+        version (int): Version number for tracking changes.
+        is_active (bool): Whether this range is currently active.
+        effective_date (date): When this range became effective.
+        notes (str, optional): Notes about this range.
+        created_at (datetime): When this range was created.
+        created_by (User, optional): User who created this range.
+    """
+    
+    GENDER_CHOICES = [
+        ("Male", "Male"),
+        ("Female", "Female"),
+        ("Both", "Both"),
+    ]
+    
+    parameter = models.ForeignKey(
+        TestParameter, on_delete=models.CASCADE, related_name="reference_ranges"
+    )
+    
+    # Age range (in years)
+    age_min = models.IntegerField(null=True, blank=True, help_text="Minimum age in years (null = no minimum)")
+    age_max = models.IntegerField(null=True, blank=True, help_text="Maximum age in years (null = no maximum)")
+    
+    # Gender
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="Both")
+    
+    # Reference values
+    reference_min = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    reference_max = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    
+    # Critical values
+    critical_low = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    critical_high = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    
+    # Versioning
+    version = models.IntegerField(default=1)
+    is_active = models.BooleanField(default=True)
+    effective_date = models.DateField(auto_now_add=True)
+    
+    # Metadata
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reference_ranges_created",
+    )
+    
+    class Meta:
+        db_table = "reference_ranges"
+        verbose_name = "Reference Range"
+        verbose_name_plural = "Reference Ranges"
+        ordering = ["parameter", "age_min", "gender", "-version"]
+        indexes = [
+            models.Index(fields=["parameter", "is_active"]),
+            models.Index(fields=["parameter", "gender", "age_min", "age_max"]),
+        ]
+        unique_together = [
+            ("parameter", "age_min", "age_max", "gender", "version"),
+        ]
+    
+    def __str__(self):
+        """Return string representation."""
+        age_str = ""
+        if self.age_min is not None or self.age_max is not None:
+            min_age = self.age_min if self.age_min is not None else "0"
+            max_age = self.age_max if self.age_max is not None else "∞"
+            age_str = f" (Age: {min_age}-{max_age})"
+        return f"{self.parameter.parameter_name} - {self.gender}{age_str} v{self.version}"
+    
+    def clean(self):
+        """Validate the reference range."""
+        from django.core.exceptions import ValidationError
+        
+        if self.age_min is not None and self.age_max is not None:
+            if self.age_min >= self.age_max:
+                raise ValidationError("age_min must be less than age_max")
+        
+        if self.reference_min is not None and self.reference_max is not None:
+            if self.reference_min >= self.reference_max:
+                raise ValidationError("reference_min must be less than reference_max")
+
+
 class TestPanel(models.Model):
     """
     Represents a test panel that groups multiple tests together.

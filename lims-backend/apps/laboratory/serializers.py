@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import TestCategory, Test, TestParameter, TestPanel
+from django.db import models
+from .models import TestCategory, Test, TestParameter, TestPanel, ReferenceRange
 
 
 class TestCategorySerializer(serializers.ModelSerializer):
@@ -54,3 +55,97 @@ class TestPanelSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestPanel
         fields = "__all__"
+
+
+class ReferenceRangeSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the ReferenceRange model.
+    
+    Includes parameter details for easier display.
+    """
+    
+    parameter_name = serializers.CharField(source="parameter.parameter_name", read_only=True)
+    test_name = serializers.CharField(source="parameter.test.test_name", read_only=True)
+    test_code = serializers.CharField(source="parameter.test.test_code", read_only=True)
+    created_by_name = serializers.CharField(source="created_by.full_name", read_only=True)
+    
+    class Meta:
+        model = ReferenceRange
+        fields = [
+            "id",
+            "parameter",
+            "parameter_name",
+            "test_name",
+            "test_code",
+            "age_min",
+            "age_max",
+            "gender",
+            "reference_min",
+            "reference_max",
+            "critical_low",
+            "critical_high",
+            "version",
+            "is_active",
+            "effective_date",
+            "notes",
+            "created_at",
+            "created_by",
+            "created_by_name",
+        ]
+        read_only_fields = ["created_at", "version"]
+    
+    def validate(self, data):
+        """Validate reference range data."""
+        age_min = data.get("age_min")
+        age_max = data.get("age_max")
+        ref_min = data.get("reference_min")
+        ref_max = data.get("reference_max")
+        
+        if age_min is not None and age_max is not None:
+            if age_min >= age_max:
+                raise serializers.ValidationError({
+                    "age_max": "Maximum age must be greater than minimum age."
+                })
+        
+        if ref_min is not None and ref_max is not None:
+            if ref_min >= ref_max:
+                raise serializers.ValidationError({
+                    "reference_max": "Maximum reference value must be greater than minimum value."
+                })
+        
+        return data
+    
+    def create(self, validated_data):
+        """Create a new reference range with versioning."""
+        # Get the latest version for this parameter/age/gender combination
+        parameter = validated_data["parameter"]
+        age_min = validated_data.get("age_min")
+        age_max = validated_data.get("age_max")
+        gender = validated_data.get("gender", "Both")
+        
+        # Deactivate old ranges for the same parameter/age/gender
+        old_ranges = ReferenceRange.objects.filter(
+            parameter=parameter,
+            age_min=age_min,
+            age_max=age_max,
+            gender=gender,
+            is_active=True
+        )
+        old_ranges.update(is_active=False)
+        
+        # Get next version number
+        max_version = ReferenceRange.objects.filter(
+            parameter=parameter,
+            age_min=age_min,
+            age_max=age_max,
+            gender=gender
+        ).aggregate(max_version=models.Max("version"))["max_version"] or 0
+        
+        validated_data["version"] = max_version + 1
+        
+        # Set created_by if available
+        request = self.context.get("request")
+        if request and hasattr(request, "user") and request.user.is_authenticated:
+            validated_data["created_by"] = request.user
+        
+        return super().create(validated_data)

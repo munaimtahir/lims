@@ -26,3 +26,6 @@ python-decouple==3.8
 
 # Date/Time Utilities
 python-dateutil==2.8.2
+
+# Excel Export
+openpyxl==3.1.2

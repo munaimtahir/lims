@@ -3,8 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from apps.core.export_utils import export_to_csv, export_to_excel
 from .models import TestResult
 from .serializers import TestResultSerializer
+from .filters import TestResultFilter
 from apps.orders.models import OrderItem
 
 
@@ -18,8 +20,51 @@ class TestResultViewSet(viewsets.ModelViewSet):
     queryset = TestResult.objects.all()
     serializer_class = TestResultSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ["order_item", "flag", "status"]
-    ordering_fields = ["test_parameter__display_order"]
+    filterset_class = TestResultFilter
+    ordering_fields = ["test_parameter__display_order", "entered_at"]
+    
+    @action(detail=False, methods=["get"])
+    def export(self, request):
+        """
+        Export result search results to CSV or Excel.
+        
+        Query params:
+            - format: 'csv' or 'excel' (default: 'csv')
+            - All other result filter params are supported
+        
+        Returns:
+            Response: CSV or Excel file download
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        
+        format_type = request.query_params.get("format", "csv").lower()
+        filename = f"results_export_{timezone.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        data = serializer.data
+        headers = [
+            "Parameter", "Test", "Result Value", "Unit", "Flag",
+            "Status", "Order ID", "Entered At", "Verified At"
+        ]
+        
+        export_data = []
+        for item in data:
+            export_data.append([
+                item.get("test_parameter", {}).get("parameter_name", "") if isinstance(item.get("test_parameter"), dict) else "",
+                item.get("test_parameter", {}).get("test", {}).get("test_name", "") if isinstance(item.get("test_parameter"), dict) else "",
+                item.get("result_value", ""),
+                item.get("test_parameter", {}).get("unit", "") if isinstance(item.get("test_parameter"), dict) else "",
+                item.get("flag", ""),
+                item.get("status", ""),
+                item.get("order_item", {}).get("order", {}).get("order_id", "") if isinstance(item.get("order_item"), dict) else "",
+                item.get("entered_at", ""),
+                item.get("verified_at", ""),
+            ])
+        
+        if format_type == "excel":
+            return export_to_excel(export_data, f"{filename}.xlsx", headers, "Results")
+        else:
+            return export_to_csv(export_data, f"{filename}.csv", headers)
 
     @action(detail=False, methods=["get"])
     def worklist(self, request):

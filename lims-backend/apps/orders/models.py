@@ -197,6 +197,17 @@ class Order(models.Model):
         if user:
             self.ordered_by = user  # Track who made the transition
         self.save()
+        
+        # Send order complete notification when order is published
+        if new_status == "PUBLISHED":
+            try:
+                from apps.notifications.utils import send_order_complete_notification
+                send_order_complete_notification(self)
+            except Exception as e:
+                # Don't fail if notification fails
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send order complete notification: {e}")
 
     def generate_order_id(self):
         """

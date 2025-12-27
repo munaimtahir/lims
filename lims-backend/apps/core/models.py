@@ -2,6 +2,7 @@
 
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from django.conf import settings
 
 
 class LabTerminal(models.Model):
@@ -118,3 +119,133 @@ class LabTerminal(models.Model):
 
         return next_mrn
 
+
+class SystemSettings(models.Model):
+    """
+    System-wide configuration settings for the LIMS.
+    
+    Stores lab information, report customization, email settings, and other
+    system-wide configurations. Uses a singleton pattern - only one settings
+    instance should exist.
+    
+    Attributes:
+        lab_name (str): Name of the laboratory.
+        lab_address (str): Address of the laboratory.
+        lab_phone (str): Phone number of the laboratory.
+        lab_email (str): Email address of the laboratory.
+        lab_logo (FileField, optional): Logo image for reports.
+        report_header (str, optional): Custom header text for reports.
+        report_footer (str, optional): Custom footer text for reports.
+        currency (str): Currency code (default: PKR).
+        tax_rate (Decimal): Tax rate as percentage.
+        email_host (str): SMTP host for email.
+        email_port (int): SMTP port.
+        email_use_tls (bool): Use TLS for email.
+        email_use_ssl (bool): Use SSL for email.
+        email_host_user (str): SMTP username.
+        email_host_password (str): SMTP password (encrypted).
+        email_from (str): Default from email address.
+        backup_enabled (bool): Whether automated backups are enabled.
+        backup_frequency (str): Backup frequency (daily, weekly, monthly).
+        updated_at (datetime): Last update timestamp.
+        updated_by (User, optional): User who last updated settings.
+    """
+    
+    # Lab Information
+    lab_name = models.CharField(max_length=255, default="Laboratory")
+    lab_address = models.TextField(blank=True, null=True)
+    lab_phone = models.CharField(max_length=50, blank=True, null=True)
+    lab_email = models.EmailField(blank=True, null=True)
+    lab_logo = models.ImageField(
+        upload_to="settings/logos/",
+        blank=True,
+        null=True,
+        help_text="Laboratory logo for reports",
+    )
+    
+    # Report Customization
+    report_header = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Custom header text for reports",
+    )
+    report_footer = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Custom footer text for reports",
+    )
+    
+    # Financial Settings
+    currency = models.CharField(max_length=10, default="PKR")
+    tax_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0.00,
+        help_text="Tax rate as percentage",
+    )
+    
+    # Email Configuration
+    email_host = models.CharField(max_length=255, blank=True, null=True)
+    email_port = models.IntegerField(default=587)
+    email_use_tls = models.BooleanField(default=True)
+    email_use_ssl = models.BooleanField(default=False)
+    email_host_user = models.CharField(max_length=255, blank=True, null=True)
+    email_host_password = models.CharField(max_length=255, blank=True, null=True)
+    email_from = models.EmailField(blank=True, null=True)
+    
+    # Backup Settings
+    backup_enabled = models.BooleanField(default=False)
+    backup_frequency = models.CharField(
+        max_length=20,
+        choices=[
+            ("daily", "Daily"),
+            ("weekly", "Weekly"),
+            ("monthly", "Monthly"),
+        ],
+        default="daily",
+    )
+    
+    # Metadata
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="settings_updated",
+    )
+    
+    class Meta:
+        db_table = "system_settings"
+        verbose_name = "System Settings"
+        verbose_name_plural = "System Settings"
+    
+    def __str__(self):
+        """Return string representation."""
+        return f"System Settings - {self.lab_name}"
+    
+    def save(self, *args, **kwargs):
+        """Override save to ensure singleton pattern."""
+        # Ensure only one settings instance exists
+        if not self.pk:
+            # Check if settings already exist
+            if SystemSettings.objects.exists():
+                # Update existing instance instead of creating new one
+                existing = SystemSettings.objects.first()
+                for field in self._meta.fields:
+                    if field.name not in ['id', 'updated_at', 'updated_by']:
+                        setattr(existing, field.name, getattr(self, field.name))
+                existing.save(*args, **kwargs)
+                return existing
+        return super().save(*args, **kwargs)
+    
+    @classmethod
+    def get_settings(cls):
+        """
+        Get the system settings instance (singleton pattern).
+        
+        Returns:
+            SystemSettings: The settings instance, creating one if it doesn't exist.
+        """
+        settings, created = cls.objects.get_or_create(pk=1)
+        return settings

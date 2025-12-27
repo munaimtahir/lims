@@ -66,6 +66,18 @@ class Payment(models.Model):
         order's net amount, the order's `is_paid` status is set to True.
         """
         total_paid = sum(p.amount for p in self.order.payments.all())
+        was_paid = self.order.is_paid
         if total_paid >= self.order.net_amount:
             self.order.is_paid = True
             self.order.save()
+            
+            # Send payment receipt notification
+            if not was_paid:  # Only send if order just became paid
+                try:
+                    from apps.notifications.utils import send_payment_receipt_notification
+                    send_payment_receipt_notification(self)
+                except Exception as e:
+                    # Don't fail if notification fails
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to send payment receipt notification: {e}")

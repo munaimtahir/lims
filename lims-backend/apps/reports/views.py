@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from django.http import FileResponse
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Report
+from .models import Report, ReportStatus
 from .serializers import ReportSerializer
 from .utils import generate_pdf_report
 from apps.orders.models import Order
@@ -83,17 +83,179 @@ class ReportViewSet(viewsets.ModelViewSet):
         Mark a report as delivered to the patient.
 
         Args:
+            request (Request): The request object with optional 'method' (email, print, download, sms).
+            pk (int): The primary key of the report.
+
+        Returns:
+            Response: Success message with delivery details.
+        """
+        report = self.get_object()
+        delivery_method = request.data.get("method", "print")
+        
+        report.mark_delivered(request.user, delivery_method)
+        
+        return Response(
+            {
+                "status": "Report marked as delivered",
+                "report_id": report.id,
+                "delivered_at": report.delivered_at.isoformat(),
+                "delivery_method": report.delivery_method,
+            },
+            status=status.HTTP_200_OK,
+        )
+    
+    @action(detail=True, methods=["post"])
+    def reprint(self, request, pk=None):
+        """
+        Reprint a report (increments reprint count).
+
+        Args:
             request (Request): The request object.
             pk (int): The primary key of the report.
 
         Returns:
-            Response: Success message.
+            Response: Report data with updated reprint count.
         """
         report = self.get_object()
-        # Note: We might want to add a 'delivered_at' field to the Report model
-        # For now, we'll just return success
+        report.increment_reprint()
+        
         return Response(
-            {"status": "Report marked as delivered", "report_id": report.id}
+            {
+                "status": "Report reprinted",
+                "report": self.get_serializer(report).data,
+                "reprint_count": report.reprint_count,
+            },
+            status=status.HTTP_200_OK,
+        )
+    
+    @action(detail=True, methods=["post"])
+    def amend(self, request, pk=None):
+        """
+        Create an amended version of a report.
+
+        Args:
+            request (Request): The request object with 'reason' (required).
+            pk (int): The primary key of the report to amend.
+
+        Returns:
+            Response: The new amended report data.
+        """
+        report = self.get_object()
+        reason = request.data.get("reason")
+        
+        if not reason:
+            return Response(
+                {"error": "Amendment reason is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # Check permissions (only pathologists/admins can create amendments)
+        if not (request.user.is_pathologist or request.user.is_admin):
+            return Response(
+                {"error": "Only pathologists can create report amendments"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
+        # Generate new PDF for amended report
+        try:
+            pdf_content = generate_pdf_report(
+                report.order.id,
+                lab_name=request.data.get("lab_name", "Laboratory"),
+                lab_address=request.data.get("lab_address", ""),
+                lab_phone=request.data.get("lab_phone", ""),
+                lab_email=request.data.get("lab_email", ""),
+            )
+            
+            # Create amended report
+            amended_report = report.create_amendment(reason, request.user)
+            
+            # Save PDF file
+            filename = f"Report_Amended_{amended_report.report_number}.pdf"
+            amended_report.report_file.save(filename, ContentFile(pdf_content))
+            amended_report.save()
+            
+            return Response(
+                {
+                    "status": "Report amended successfully",
+                    "original_report": self.get_serializer(report).data,
+                    "amended_report": self.get_serializer(amended_report).data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to create amendment: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+    
+    @action(detail=False, methods=["get"])
+    def patient_history(self, request):
+        """
+        Get report history for a patient.
+
+        Query params:
+            - patient_id: The patient ID (required)
+            - limit: Number of reports to return (default: 10)
+
+        Returns:
+            Response: List of reports for the patient.
+        """
+        patient_id = request.query_params.get("patient_id")
+        if not patient_id:
+            return Response(
+                {"error": "patient_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        limit = int(request.query_params.get("limit", 10))
+        
+        reports = Report.objects.filter(
+            order__patient_id=patient_id
+        ).select_related(
+            "order",
+            "order__patient",
+            "generated_by",
+            "verified_by",
+        ).order_by("-generated_at")[:limit]
+        
+        serializer = self.get_serializer(reports, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=["get"])
+    def amendments(self, request):
+        """
+        Get all amendments for a report.
+
+        Query params:
+            - report_id: The original report ID (required)
+
+        Returns:
+            Response: List of amended reports.
+        """
+        report_id = request.query_params.get("report_id")
+        if not report_id:
+            return Response(
+                {"error": "report_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try:
+            original_report = Report.objects.get(id=report_id)
+        except Report.DoesNotExist:
+            return Response(
+                {"error": "Report not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+        amendments = Report.objects.filter(amended_from=original_report).order_by("-generated_at")
+        serializer = self.get_serializer(amendments, many=True)
+        
+        return Response(
+            {
+                "original_report": self.get_serializer(original_report).data,
+                "amendments": serializer.data,
+            },
+            status=status.HTTP_200_OK,
         )
 
     @action(detail=True, methods=["post"])
@@ -176,7 +338,9 @@ class ReportViewSet(viewsets.ModelViewSet):
                     )
 
             # Check if report already exists
-            existing_report = Report.objects.filter(order=order, is_final=True).first()
+            existing_report = Report.objects.filter(
+                order=order, status=ReportStatus.FINAL
+            ).first()
             if existing_report and not request.data.get("regenerate", False):
                 return Response(
                     {
@@ -206,8 +370,18 @@ class ReportViewSet(viewsets.ModelViewSet):
 
             filename = f"Report_{order.order_id}_{order.id}.pdf"
             report.report_file.save(filename, ContentFile(pdf_content))
-            report.is_final = request.data.get("is_final", True)
+            report.status = ReportStatus.FINAL if request.data.get("is_final", True) else ReportStatus.DRAFT
+            report.template_name = request.data.get("template_name", "default")
             report.save()
+            
+            # Send report ready notification
+            if report.status == ReportStatus.FINAL:
+                try:
+                    from apps.notifications.utils import send_report_ready_notification
+                    send_report_ready_notification(report)
+                except Exception as e:
+                    # Don't fail if notification fails
+                    pass
 
             return Response(
                 ReportSerializer(report).data, status=status.HTTP_201_CREATED

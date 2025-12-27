@@ -235,3 +235,14 @@ class TestResult(models.Model):
         else:
             # Should not reach here, but default to normal
             self.flag = "normal"
+        
+        # Send critical value alert if needed
+        if self.flag in ["critical_low", "critical_high"]:
+            try:
+                from apps.notifications.utils import send_critical_value_alert
+                send_critical_value_alert(self)
+            except Exception as e:
+                # Don't fail save if notification fails
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send critical value alert: {e}")
