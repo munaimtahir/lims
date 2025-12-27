@@ -173,7 +173,9 @@ class PatientViewSet(viewsets.ModelViewSet):
 
         orders = patient.orders.all().order_by("-created_at")[:10]
 
-        # TODO: Implement test comparisons in Phase 2
+        # Note: Test comparisons feature will be implemented in Phase 2
+        # This will include comparing current test results with previous results
+        # for the same patient to track trends and changes over time
         return Response(
             {
                 "success": True,

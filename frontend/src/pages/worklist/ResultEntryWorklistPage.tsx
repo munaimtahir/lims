@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { resultApi } from '../../api/services';
 import type { OrderItem } from '../../types';
 import styles from './ResultEntryWorklistPage.module.css';
 
 export default function ResultEntryWorklistPage() {
+  const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null);
 
   const { data: worklistData, isLoading, error } = useQuery({
@@ -69,9 +71,8 @@ export default function ResultEntryWorklistPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        // TODO: Replace with navigate() from react-router-dom
                         const orderItem = item as OrderItem & { order: { id: number } };
-                        window.location.href = `/dashboard/results?orderId=${orderItem.order.id}&orderItemId=${item.id}`;
+                        navigate(`/dashboard/results?orderId=${orderItem.order.id}&orderItemId=${item.id}`);
                       }}
                       className={styles.enterButton}
                     >

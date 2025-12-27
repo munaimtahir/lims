@@ -29,10 +29,18 @@ class Order(models.Model):
     ORDER_ID_PREFIX = "ORD"
 
     STATUS_CHOICES = [
-        ("pending", "Pending"),
-        ("in_progress", "In Progress"),
-        ("completed", "Completed"),
-        ("cancelled", "Cancelled"),
+        ("NEW", "New"),
+        ("COLLECTED", "Collected"),
+        ("IN_PROCESS", "In Process"),
+        ("VERIFIED", "Verified"),
+        ("PUBLISHED", "Published"),
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    PRIORITY_CHOICES = [
+        ("ROUTINE", "Routine"),
+        ("URGENT", "Urgent"),
+        ("STAT", "STAT"),
     ]
 
     order_id = models.CharField(
@@ -49,7 +57,12 @@ class Order(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="NEW"
+    )
+    priority = models.CharField(
+        max_length=20, choices=PRIORITY_CHOICES, default="ROUTINE"
+    )
     notes = models.TextField(blank=True)
 
     # Financials
@@ -99,13 +112,15 @@ class Order(models.Model):
 
     def generate_order_id(self):
         """
-        Generate a unique order ID in the format ORD-YYYY-NNNNN.
+        Generate a unique order ID in the format ORD-YYYYMMDD-NNNN.
+
+        This matches the legacy format for consistency.
 
         Returns:
             str: The generated order ID.
         """
-        current_year = timezone.now().year
-        prefix = f"{self.ORDER_ID_PREFIX}-{current_year}-"
+        today = timezone.now().strftime("%Y%m%d")
+        prefix = f"{self.ORDER_ID_PREFIX}-{today}-"
 
         last_order = (
             Order.objects.filter(order_id__startswith=prefix)
@@ -122,7 +137,7 @@ class Order(models.Model):
         else:
             new_number = 1
 
-        return f"{prefix}{new_number:05d}"
+        return f"{prefix}{new_number:04d}"
 
     def calculate_total(self):
         """
@@ -155,8 +170,10 @@ class OrderItem(models.Model):
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
-    # Result tracking (simplified for now, will link to detailed results later)
-    status = models.CharField(max_length=20, default="pending")
+    # Result tracking - status matches order status workflow
+    status = models.CharField(
+        max_length=20, choices=Order.STATUS_CHOICES, default="NEW"
+    )
 
     class Meta:
         unique_together = ("order", "test", "panel")

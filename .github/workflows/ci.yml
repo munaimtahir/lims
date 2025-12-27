@@ -57,7 +57,7 @@ jobs:
           DEBUG: 'True'
         run: |
           coverage run -m pytest apps/ -v
-          coverage report --fail-under=70
+          coverage report --fail-under=99
 
   frontend-tests:
     runs-on: ubuntu-latest
@@ -79,9 +79,17 @@ jobs:
         working-directory: frontend
         run: npm run lint
 
+      - name: Run type checking
+        working-directory: frontend
+        run: npm run type-check
+
       - name: Build
         working-directory: frontend
         run: npm run build
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm run test -- --run
 
   docker-build:
     runs-on: ubuntu-latest

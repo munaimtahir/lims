@@ -40,14 +40,15 @@ class TestResult(models.Model):
     # Auto-calculated flag
     flag = models.CharField(max_length=20, choices=FLAG_CHOICES, default="normal")
 
-    # Verification Status
+    # Verification Status - matches legacy workflow
     VERIFICATION_STATUS = [
-        ("pending", "Pending"),
-        ("verified", "Verified"),
-        ("rejected", "Rejected"),
+        ("DRAFT", "Draft"),
+        ("ENTERED", "Entered"),
+        ("VERIFIED", "Verified"),
+        ("PUBLISHED", "Published"),
     ]
     status = models.CharField(
-        max_length=20, choices=VERIFICATION_STATUS, default="pending"
+        max_length=20, choices=VERIFICATION_STATUS, default="DRAFT"
     )
 
     # Metadata
@@ -57,7 +58,7 @@ class TestResult(models.Model):
         null=True,
         related_name="results_entered",
     )
-    entered_at = models.DateTimeField(auto_now_add=True)
+    entered_at = models.DateTimeField(null=True, blank=True)
     verified_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -65,8 +66,10 @@ class TestResult(models.Model):
         related_name="results_verified",
     )
     verified_at = models.DateTimeField(blank=True, null=True)
+    published_at = models.DateTimeField(blank=True, null=True)
 
     remarks = models.TextField(blank=True)
+    notes = models.TextField(blank=True, help_text="Additional notes about the result")
 
     class Meta:
         unique_together = ("order_item", "test_parameter")
