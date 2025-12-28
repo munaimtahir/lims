@@ -2,6 +2,7 @@
 Utility functions for audit logging.
 """
 from django.contrib.contenttypes.models import ContentType
+from django.db.models.fields.files import FieldFile
 from .models import AuditLog
 
 
@@ -59,6 +60,10 @@ def log_action(
         AuditLog: The created audit log entry.
     """
     content_type = ContentType.objects.get_for_model(instance)
+
+    # Don't log ContentType or Migration changes to avoid loops during migration
+    if content_type.model in ['contenttype', 'migration', 'logentry']:
+        return None
 
     audit_log = AuditLog.objects.create(
         user=user,
@@ -143,7 +148,7 @@ def model_to_dict_safe(instance):
     """
     Convert a model instance to a JSON-serializable dictionary.
 
-    Handles common field types like datetime, Decimal, and foreign keys.
+    Handles common field types like datetime, Decimal, foreign keys, and files.
 
     Args:
         instance: The model instance to convert.
@@ -163,6 +168,11 @@ def model_to_dict_safe(instance):
             value = value.isoformat()
         elif isinstance(value, Decimal):
             value = str(value)
+        elif isinstance(value, FieldFile):
+            try:
+                value = value.url
+            except ValueError:
+                value = str(value) if value else None
         elif hasattr(value, "pk"):  # Foreign key
             value = value.pk
 

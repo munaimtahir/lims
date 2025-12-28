@@ -32,12 +32,18 @@ def pre_save_handler(sender, instance, **kwargs):
     if sender == AuditLog:
         return
 
+    # Check if we are running migrations or raw SQL that might fail
+    import sys
+    if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
+        return
+
     # Only track if instance has a primary key (i.e., it's an update, not a create)
     if instance.pk:
         try:
             old_instance = sender.objects.get(pk=instance.pk)
             _old_instances[id(instance)] = model_to_dict_safe(old_instance)
-        except sender.DoesNotExist:
+        except (sender.DoesNotExist, Exception):
+            # Catch OperationalError if table doesn't exist yet
             pass
 
 
@@ -48,6 +54,11 @@ def post_save_handler(sender, instance, created, **kwargs):
     """
     # Skip if this is AuditLog itself to avoid recursion
     if sender == AuditLog:
+        return
+
+    # Check if we are running migrations
+    import sys
+    if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
         return
 
     # Skip if model is not in INSTALLED_APPS or doesn't have a pk
@@ -79,6 +90,10 @@ def post_save_handler(sender, instance, created, **kwargs):
     try:
         content_type = ContentType.objects.get_for_model(instance)
         
+        # Don't log ContentType or Migration changes to avoid loops during migration
+        if content_type.model in ['contenttype', 'migration', 'logentry']:
+            return
+
         AuditLog.objects.create(
             user=user,
             action=action,

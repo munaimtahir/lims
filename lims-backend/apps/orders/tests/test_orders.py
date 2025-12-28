@@ -102,7 +102,7 @@ def test_panel(db, test_category, test_instance):
 def order(db, patient, receptionist_user, test_instance):
     """Create and return an order."""
     order = Order.objects.create(
-        patient=patient, ordered_by=receptionist_user, status="pending"
+        patient=patient, ordered_by=receptionist_user, status="NEW"
     )
     OrderItem.objects.create(order=order, test=test_instance, price=test_instance.price)
     order.calculate_total()
@@ -118,7 +118,7 @@ class TestOrderModel:
         order = Order.objects.create(patient=patient, ordered_by=receptionist_user)
         assert order.order_id is not None
         assert order.order_id.startswith("ORD-")
-        assert order.status == "pending"
+        assert order.status == "NEW"
 
     def test_order_id_generation(self, patient, receptionist_user):
         """Test auto-generation of order ID."""
@@ -206,17 +206,23 @@ class TestOrderViewSet:
 
     def test_cancel_order(self, authenticated_client, order):
         """Test canceling an order."""
+        # Ensure initial status is allowed to transition to CANCELLED
+        order.status = "NEW"
+        order.save()
+
         response = authenticated_client.post(
             f"/api/v1/orders/orders/{order.id}/cancel/"
         )
         assert response.status_code == status.HTTP_200_OK
         order.refresh_from_db()
-        assert order.status == "cancelled"
+        assert order.status == "CANCELLED"
 
     def test_cancel_completed_order_fails(self, authenticated_client, order):
         """Test that canceling a completed order fails."""
-        order.status = "completed"
-        order.save()
+        # Use PUBLISHED status as 'completed' equivalent
+        # Bypass validation for test setup using update
+        Order.objects.filter(pk=order.pk).update(status="PUBLISHED")
+
         response = authenticated_client.post(
             f"/api/v1/orders/orders/{order.id}/cancel/"
         )

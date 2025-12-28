@@ -86,15 +86,23 @@ class OrderViewSet(viewsets.ModelViewSet):
             Response: A response object with a status message.
         """
         order = self.get_object()
-        if order.status == "completed":
+        # Check against mapped statuses if needed, or rely on model validation
+        if order.status == "PUBLISHED": # Using PUBLISHED as completed state
             return Response(
                 {"error": "Cannot cancel completed order"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        order.status = "cancelled"
-        order.save()
-        return Response({"status": "order cancelled"})
+        try:
+            # Use transition_to for proper validation and side effects
+            order.transition_to("CANCELLED", user=request.user)
+            return Response({"status": "order cancelled"})
+        except Exception as e:
+             # Fallback if transition fails
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class OrderItemViewSet(viewsets.ReadOnlyModelViewSet):

@@ -82,7 +82,7 @@ class TestPatientModel:
         assert patient.first_name == "Jane"
         assert patient.last_name == "Smith"
         assert patient.patient_id is not None
-        assert patient.patient_id.startswith("P-")
+        assert patient.patient_id.startswith("PAT-")
 
     def test_patient_id_generation(self, receptionist_user):
         """Test auto-generation of patient ID."""
