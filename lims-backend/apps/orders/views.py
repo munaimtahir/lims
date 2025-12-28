@@ -58,7 +58,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         for item in data:
             export_data.append([
                 item.get("order_id", ""),
-                item.get("patient", {}).get("full_name", "") if isinstance(item.get("patient"), dict) else str(item.get("patient", "")),
+                (item.get("patient", {}).get("full_name", "")
+                 if isinstance(item.get("patient"), dict)
+                 else str(item.get("patient", ""))),
                 item.get("status", ""),
                 item.get("priority", ""),
                 str(item.get("total_amount", "")),
