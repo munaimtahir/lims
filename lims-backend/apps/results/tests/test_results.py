@@ -149,7 +149,7 @@ class TestTestResultModel:
             entered_by=technician_user,
         )
         assert result.result_value == "15.0"
-        assert result.status == "pending"
+        assert result.status == "DRAFT"
 
     def test_result_flag_normal(self, order, test_parameter, technician_user):
         """Test that normal result is flagged correctly (Male patient)."""

@@ -243,6 +243,5 @@ class TestResult(models.Model):
                 send_critical_value_alert(self)
             except Exception as e:
                 # Don't fail save if notification fails
-                import logging
-                logger = logging.getLogger(__name__)
+                # Use logger defined at module level instead of redefining
                 logger.error(f"Failed to send critical value alert: {e}")
