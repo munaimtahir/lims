@@ -98,7 +98,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             order.transition_to("CANCELLED", user=request.user)
             return Response({"status": "order cancelled"})
         except Exception as e:
-             # Fallback if transition fails
+            # Fallback if transition fails
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
