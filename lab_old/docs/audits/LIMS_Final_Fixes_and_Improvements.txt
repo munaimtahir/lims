@@ -1,0 +1,407 @@
+You are an expert AI software engineer working on the "Al-Shifa LIMS" repository (monorepo: Django 5.2 backend + React 19/TS front-end + Nginx + Postgres + Redis, Dockerized). Your job is to:
+
+1. APPLY all fixes and improvements described in the internal audits,
+2. CLEAN UP the repo (env, Docker, master data, docs),
+3. ENSURE the app is production-ready and deployable on my VPS IP **172.237.71.40** using Docker Compose,
+4. LEAVE me with a clear summary + final deployment commands.
+
+The audits you must implement are conceptually summarized from two documents:
+- “Al-Shifa LIMS Codebase Review and Deployment Audit” :contentReference[oaicite:0]{index=0}
+- “Al-Shifa LIMS Final Fixes and Improvements” :contentReference[oaicite:1]{index=1}
+
+You should NOT assume anything has already been correctly applied. For every change described below:
+- If it already exists and is correct → just verify it and do nothing.
+- If it’s missing or partially done → implement/fix it.
+
+Work in **small, logically grouped commits** on a feature branch (for example: `fix/lims-prod-readiness`), and ensure all tests & linters pass at each stage.
+
+---
+
+## GLOBAL CONSTRAINTS
+
+- Do NOT hard-code secrets. Use environment variables everywhere.
+- Keep `.env` files **out of version control**; only `.env.example` should be tracked.
+- Preserve existing behavior unless the audit clearly says to change it.
+- Maintain or improve test coverage (target: ≥99% backend, strong coverage frontend).
+- Use Black + isort + Ruff for Python, Prettier + ESLint for frontend.
+- Do not introduce new technologies beyond what’s already in the repo (Django, DRF, React, Vite, Nginx, Docker, Playwright, etc.).
+
+---
+
+## STAGE 1 — REPO SCAN & BRANCH PREP
+
+1. Pull the latest `main` (or primary) branch.
+2. Create a new branch, e.g. `fix/lims-prod-readiness`.
+3. Scan the repo structure:
+   - Backend (Django apps: patients, orders, samples, users, results, etc.).
+   - Frontend (React/Vite app).
+   - Docker files:
+     - Root `docker-compose.yml` (production),
+     - `infra/docker-compose.yml` (development),
+     - `backend/Dockerfile`,
+     - `nginx/Dockerfile`,
+     - any `frontend/Dockerfile`.
+   - Docs (`README.md`, deployment guides, audit/checklist docs, etc.).
+4. Run the full test suite and CI-equivalent locally:
+   - Backend tests (pytest or `python manage.py test`).
+   - Frontend tests (Vitest/Jest).
+   - E2E Playwright tests (if there is a script, e.g. `npm run e2e`).
+   - Linting: Ruff/Flake8 + Black check + ESLint/Prettier check.
+5. Capture current state:
+   - Note current test counts and coverage (backend and frontend).
+   - Note any failing tests or lint errors.
+
+You will use this as baseline and improve from there.
+
+---
+
+## STAGE 2 — ENVIRONMENT CONFIG FIXES (CRITICAL)
+
+Goal: Standardize env vars, align them with Django settings, and fix host/IP for production on **172.237.71.40**.
+
+### 2.1. Align env variable names with Django settings
+
+1. Open `backend/core/settings.py` (or equivalent).
+   - Confirm it reads `DEBUG`, `ALLOWED_HOSTS`, and other critical settings from environment (not `DJANGO_DEBUG` etc.).
+2. Open `.env.example` (root and/or infra versions).
+   - Replace any inconsistent variable names such as `DJANGO_DEBUG` with `DEBUG`, and `DJANGO_ALLOWED_HOSTS` with `ALLOWED_HOSTS`, so they match `settings.py`.
+   - Make sure comments clearly explain:
+     - `DEBUG` must be `False` in production.
+     - `ALLOWED_HOSTS` is a comma-separated list.
+
+3. Ensure `ALLOWED_HOSTS` covers:
+   - `172.237.71.40`
+   - `localhost`
+   - `127.0.0.1`
+   - Any internal Docker hostnames if required (`backend`, etc.).
+
+4. Ensure `CSRF_TRUSTED_ORIGINS` and `CORS_ALLOWED_ORIGINS`:
+   - Include `http://172.237.71.40` for production.
+   - Include `http://localhost:8000`, `http://localhost:5173` for dev.
+   - Use env vars in settings (`CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`) if not already done.
+
+### 2.2. Remove tracked `.env` and keep `.env.example` only
+
+1. If a real `.env` file is tracked in git:
+   - Remove it from git (but not from the working tree if needed locally).
+   - Add `.env` to `.gitignore`.
+2. Ensure `.env.example` is:
+   - Comprehensive, with comments and safe placeholder values.
+   - Updated to use the correct production IP `172.237.71.40`.
+
+### 2.3. Docker Compose defaults
+
+1. In `docker-compose.yml` (production):
+   - Set default environment values (using `${VAR}` with sensible defaults) so that, if not overridden, the containers:
+     - Use `ALLOWED_HOSTS=172.237.71.40,localhost,127.0.0.1`.
+   - Ensure `CSRF_TRUSTED_ORIGINS` / `CORS_ALLOWED_ORIGINS` envs are wired through.
+
+2. In `infra/docker-compose.yml` (dev):
+   - Set `ALLOWED_HOSTS=localhost,127.0.0.1` etc.
+   - Ensure the dev `.env` flows into the containers correctly.
+
+Run backend tests again after these changes to confirm nothing broke.
+
+---
+
+## STAGE 3 — DOCKER & NGINX CONFIG (DEV + PROD)
+
+### 3.1. Production Docker (root `docker-compose.yml`)
+
+1. Verify services:
+   - `backend` (Django + Gunicorn),
+   - `frontend` (if separate) or served via Nginx multi-stage,
+   - `nginx`, `postgres`, `redis`, any `worker`/`rq`/`celery`.
+2. Check health checks:
+   - Backend health endpoint: e.g. `/api/health/`.
+   - Ensure the internal healthcheck uses a `Host` header that is included in `ALLOWED_HOSTS` (e.g. `localhost`).
+   - Make sure `depends_on: condition: service_healthy` is properly configured.
+3. Ensure backend Dockerfile:
+   - Installs requirements.
+   - Runs `python manage.py collectstatic --noinput` during build.
+   - Runs migrations on container start (entrypoint or command) **without automatically seeding default users** in production.
+
+4. Nginx:
+   - Confirm `nginx/nginx.conf`:
+     - Serves the React build.
+     - Proxies `/api/` to backend container.
+   - Confirm the multi-stage `nginx/Dockerfile`:
+     - Builds frontend (Node + PNPM builder stage).
+     - Copies frontend build into Nginx.
+     - Copies Django `staticfiles` (admin/static) from backend stage to appropriate directory (shared volume or image copy).
+
+### 3.2. Dev Docker (`infra/docker-compose.yml`) — Vite dev server fix
+
+Goal: Frontend dev environment uses the **Node builder stage** to run Vite dev server with hot reload.
+
+1. Identify frontend service in `infra/docker-compose.yml`.
+2. Ensure:
+   - `build.context: ../frontend`.
+   - `build.target: builder` (the Node+pnpm stage in frontend or nginx Dockerfile).
+   - `command: sh -c "pnpm install && pnpm dev --host"` for dev.
+   - Ports: map `5173:5173`.
+   - Volumes:
+     - Mount `../frontend:/app` (or equivalent).
+     - Optional: a named volume for `/app/node_modules` to speed up installs.
+3. Ensure backend dev service runs Django dev server (`runserver`) and is reachable from frontend.
+4. Validate:
+   - `docker compose -f infra/docker-compose.yml up` should bring up:
+     - Backend dev server on 8000,
+     - Frontend dev server on 5173,
+     - Both working with hot reload.
+
+---
+
+## STAGE 4 — FRONTEND API URL & ENV
+
+Goal: Fix API base URL so the frontend consistently uses `/api` path.
+
+1. Open `frontend/.env.development` and `.env.example` for frontend.
+2. Confirm / set:
+   - `VITE_API_URL=http://localhost:8000/api` for dev.
+   - For production, ensure frontend uses `VITE_API_URL=http://172.237.71.40/api` (or an env-driven URL) as appropriate.
+3. Search the frontend code for any hard-coded base URLs:
+   - Normalize all API usage through a single configuration module (e.g., `apiClient.ts` using `import.meta.env.VITE_API_URL`).
+4. Run frontend dev build and tests to confirm no 404s due to missing `/api`.
+
+---
+
+## STAGE 5 — MASTER DATA EXCEL FILE (SEED DATA)
+
+Goal: Have **one canonical** Excel master file at the expected path, and ensure the import command works out-of-the-box.
+
+1. Inspect `backend/seed_data/`:
+   - Identify all Excel files: `AlShifa_LIMS_Master.xlsx`, `*_Full_v1.xlsx`, `*_Full_v2_from_CSV.xlsx`, or similar.
+2. Decide canonical file:
+   - Use `backend/seed_data/AlShifa_LIMS_Master.xlsx` as the **single source of truth**.
+   - Ensure this file has all required sheets (tests, parameters, reference ranges, etc.) as per audit. 
+3. Remove or move outdated files:
+   - Any `_Full_v1`, `_Full_v2`, `old/` variants should be removed or moved into a clearly named archive directory that is not used by code (or wiped from repo if not needed).
+4. Open `backend/catalog/management/commands/import_lims_master.py`:
+   - Ensure default file path points to `backend/seed_data/AlShifa_LIMS_Master.xlsx`.
+   - Ensure the command:
+     - Supports `--file` override.
+     - Supports `--dry-run` mode.
+5. Add / verify tests for this command:
+   - A test that:
+     - Verifies `--dry-run` works and prints a summary.
+     - Verifies a missing file produces a clear error.
+   - Ensure tests run and count towards coverage.
+
+---
+
+## STAGE 6 — BACKEND FUNCTIONAL FIXES FROM AUDIT
+
+Apply and/or verify the following backend code fixes (as described in the audit):
+
+1. **Missing `UserRole` import in samples views**:
+   - In `backend/samples/views.py`, ensure:
+     - `from users.models import UserRole` is present.
+     - Any logic using `UserRole` works without `NameError`.
+   - Re-run sample-related tests (receive/reject endpoints) and ensure they all pass.
+
+2. **Login API response structure**:
+   - Open custom JWT serializer (e.g., `backend/core/auth_serializers.py` or similar).
+   - In `CustomTokenObtainPairSerializer.validate()`:
+     - After calling `super().validate(attrs)`, ensure `data` includes:
+       - `data["role"] = self.user.role`
+       - `data["username"] = self.user.username`
+       - `data["user"]` contains full user object including `id`, `username`, `role`.
+   - Confirm frontend E2E tests expect `role` and `username` at top level and now pass.
+
+3. **Admin static files & WhiteNoise configuration**:
+   - Ensure `whitenoise` is installed and added to `INSTALLED_APPS` / `MIDDLEWARE` as per best practices.
+   - In `backend/core/settings.py`:
+     - `STATIC_URL = "/static/"`
+     - `STATIC_ROOT = BASE_DIR / "staticfiles"`
+     - `STATICFILES_DIRS` includes any local `backend/static` directory.
+     - `STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"` (or equivalent).
+   - Backend Dockerfile:
+     - During build, run `python manage.py collectstatic --noinput`.
+   - Nginx:
+     - Make sure static files from `/app/staticfiles` (or chosen path) are served correctly.
+   - Manually confirm Django admin styling works in production build (CSS loads, not naked HTML).
+
+4. **Other issues from “Final Fixes and Improvements”**:
+   - Walk through each numbered fix (1–14) in the “Final Fixes and Improvements” audit and:
+     - Verify that the code change exists and is correct.
+     - If missing, implement it as described (tests, naming consistency, etc.).
+   - This includes:
+     - Catalog pagination fix in Playwright spec (using `.results` array).
+     - Cleanup of npm vs pnpm artifacts (see Stage 7).
+     - Naming consistency (`isMobileMenuOpen`, “LIMS” naming, etc.).
+     - Any new tests referenced.
+
+---
+
+## STAGE 7 — TOOLING & REPO CLEANUP
+
+Goal: Remove obsolete and confusing artifacts; keep repo lean and production-focused.
+
+1. **Node package managers**:
+   - Confirm frontend uses PNPM (presence of `pnpm-lock.yaml`, PNPM usage in Dockerfiles).
+   - Remove `package-lock.json` and any irrelevant npm-only artifacts.
+   - Update docs to state PNPM is the official package manager.
+
+2. **Redundant Dockerfiles / Nginx configs**:
+   - If `frontend/Dockerfile` is no longer used in production (because Nginx multi-stage build handles frontend):
+     - Either:
+       - Remove it, OR
+       - Clearly repurpose and document as dev-only.
+   - Remove any commented / unused default Nginx configs that are not part of production.
+
+3. **Old / debug docs**:
+   - Identify files like:
+     - `DEPLOYMENT_DEBUG_NOTES.md`
+     - `DEPLOYMENT_CHECKLIST.md`
+     - `DEPLOYMENT_READINESS_AUDIT.md`
+     - `VPS_CONFIGURATION_VERIFICATION.md`
+     - `BUG_REPORT_AND_FIXES.md`
+     - `FRONTEND_BACKEND_FIX_SUMMARY.md`
+   - Move solved/historical docs to `docs/archive/` or remove them if not needed.
+   - Keep and update only:
+     - `README.md`
+     - `PRODUCTION_DEPLOYMENT.md`
+     - `LIMS_IMPORT.md` (or equivalent)
+     - Short, current checklists as needed.
+
+4. **Env file hygiene**:
+   - Ensure `.env.example` covers:
+     - Backend config.
+     - Database/Redis config.
+     - Production IP `172.237.71.40`.
+     - CORS/CSRF origins.
+   - Ensure `infra/.env.example` exists for dev if needed, also cleaned.
+
+---
+
+## STAGE 8 — DEFAULT CREDENTIALS & SECURITY
+
+Goal: Ensure no dangerous default credentials or insecure settings slip into production.
+
+1. Review user seeding logic:
+   - Check `backend/users/management/commands/seed_data.py`.
+   - Identify any default usernames/passwords (e.g. `admin` / `admin123`).
+2. For **production deployment**:
+   - DO NOT automatically run `seed_data` in the production Docker CMD/entrypoint.
+   - Confirm production entrypoint only runs:
+     - `python manage.py migrate`
+     - Gunicorn (or similar).
+3. Add safeguard:
+   - In deployment docs / scripts (e.g., `scripts/verify-deployment.sh` or similar):
+     - Add a note / optional check to ensure `admin` does not have the default password.
+4. In `PRODUCTION_DEPLOYMENT.md` (or README):
+   - Explicitly document that:
+     - Default seeded credentials must never be used as-is in production.
+     - Admin must run `python manage.py changepassword admin` (or create a secure admin) before go-live.
+5. Security settings:
+   - Confirm:
+     - `DEBUG = False` by default in production.
+     - Secure cookies / CSRF settings are appropriate.
+     - No secrets are committed.
+
+(Optionally document how to enable HTTPS via Nginx once a certificate is obtained; keep port 443 mapping ready.)
+
+---
+
+## STAGE 9 — TEST COVERAGE & E2E VALIDATION
+
+1. Backend tests:
+   - Add / verify tests for:
+     - Import command success + failure + dry-run.
+     - Sample receive/reject flows (including error cases).
+     - Order cancellation & test editing edge cases.
+     - Permission checks (e.g., non-admin attempts that should 403).
+   - Run coverage:
+     - Target ≥99% total coverage; try for 100% if feasible.
+
+2. Frontend tests:
+   - Run unit tests and update as needed:
+     - Components with interactive behavior (e.g., mobile nav menu).
+     - Form validation edge cases.
+   - Ensure linting passes (ESLint, Prettier).
+
+3. E2E / Playwright:
+   - Ensure the main LIMS workflow spec:
+     - Logs in as a test user.
+     - Creates a patient, order.
+     - Progresses through sample collection/receiving.
+     - Enters results.
+     - Verifies and downloads a report.
+   - Fix any test assumptions about API shapes (arrays vs paginated `results`, etc.).
+   - All E2E tests must pass.
+
+4. CI:
+   - Ensure GitHub Actions / CI definition:
+     - Runs backend tests + linting.
+     - Runs frontend tests + linting.
+     - Optional: runs E2E tests (or provide instructions).
+
+---
+
+## STAGE 10 — FINAL DOCS & DEPLOYMENT GUIDE FOR VPS 172.237.71.40
+
+1. Update `README.md` and `PRODUCTION_DEPLOYMENT.md` to give a **single, correct set of instructions** for:
+   - Cloning repo on the VPS.
+   - Creating `.env` from `.env.example` with:
+     - Correct DB credentials.
+     - `ALLOWED_HOSTS` including `172.237.71.40`.
+     - CORS/CSRF origins including `http://172.237.71.40`.
+   - Building and running the app with Docker Compose:
+     - `docker compose build`
+     - `docker compose up -d`
+   - Running master data import command on VPS:
+     - `docker compose exec backend python manage.py import_lims_master --dry-run`
+     - Then `docker compose exec backend python manage.py import_lims_master` for actual import.
+   - Creating or securing admin account:
+     - `docker compose exec backend python manage.py createsuperuser` (or `changepassword admin`).
+
+2. Provide an explicit **VPS check list** in docs:
+   - Check containers:
+     - `docker compose ps`
+   - Check health endpoints (from local machine browser):
+     - `http://172.237.71.40/` (frontend)
+     - `http://172.237.71.40/api/health/` (JSON “healthy”).
+   - Check admin UI at:
+     - `http://172.237.71.40/admin/` (should be styled, not unstyled HTML).
+
+3. Keep a short “Quick Troubleshooting” section:
+   - Common causes:
+     - 400 errors due to misconfigured `ALLOWED_HOSTS`.
+     - 404s due to missing `/api` prefix.
+     - Unstyled admin due to missing `collectstatic` or static misconfig.
+
+---
+
+## STAGE 11 — CLEANUP, SUMMARY & PR
+
+1. Re-run **all** tests:
+   - Backend tests with coverage.
+   - Frontend tests.
+   - E2E tests.
+   - Lint checks.
+2. Ensure everything is green.
+3. Prepare a final summary (as Markdown) in the PR description:
+   - High-level overview of what you changed.
+   - List of key fixes (env, Docker, Excel master, backend fixes, frontend fixes, tests, docs).
+   - Any breaking changes or manual steps required (e.g. admin password change, TLS setup).
+4. Ensure no `.env` or secret files are tracked.
+5. Open a PR from `fix/lims-prod-readiness` into `main`.
+
+---
+
+## DEFINITION OF DONE
+
+You are done when:
+
+- The repository:
+  - Has consistent, correct environment configuration for dev & prod (including IP **172.237.71.40**).
+  - Has a single canonical Excel master data file wired to the import command.
+  - Has all audit-identified backend/frontend issues fixed or verified as fixed.
+  - Has no obsolete or confusing extra Docker configs, lockfiles, or debug docs (only clearly marked archives remain, if any).
+- All tests (backend, frontend, E2E) and linters pass.
+- Admin static files and frontend build work correctly in a production Docker build.
+- Clear, step-by-step docs exist for deploying the app on the VPS at 172.237.71.40 with Docker Compose, seeding data, and securing admin access.
+- A detailed PR description summarises all changes and how to deploy.
+
+Perform all edits, tests, and documentation updates necessary to reach this state.

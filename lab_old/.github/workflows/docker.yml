@@ -1,0 +1,50 @@
+name: Docker CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'backend/Dockerfile'
+      - 'frontend/Dockerfile'
+      - 'nginx/Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/docker.yml'
+  pull_request:
+    paths:
+      - 'backend/Dockerfile'
+      - 'frontend/Dockerfile'
+      - 'nginx/Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/docker.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate-compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          POSTGRES_USER=lims
+          POSTGRES_PASSWORD=lims
+          POSTGRES_DB=lims
+          DEBUG=False
+          ALLOWED_HOSTS=localhost,127.0.0.1
+          CORS_ALLOWED_ORIGINS=http://localhost
+          EOF
+      
+      - name: Validate docker-compose.yml syntax
+        run: docker compose config --quiet
