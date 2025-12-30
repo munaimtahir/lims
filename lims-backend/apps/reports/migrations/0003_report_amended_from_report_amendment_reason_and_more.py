@@ -73,10 +73,12 @@ class Migration(migrations.Migration):
             model_name="report",
             name="report_number",
             field=models.CharField(
+                blank=True,
                 db_index=True,
                 default="",
                 help_text="Unique report number (e.g., RPT-YYYYMMDD-NNNN)",
                 max_length=50,
+                null=True,
                 unique=True,
             ),
             preserve_default=False,

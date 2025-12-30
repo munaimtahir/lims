@@ -6,6 +6,7 @@ using Django signals. Uses contextvars to store request information for signal h
 """
 
 import logging
+import sys
 from contextvars import ContextVar
 from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
@@ -33,7 +34,6 @@ def pre_save_handler(sender, instance, **kwargs):
         return
 
     # Check if we are running migrations or raw SQL that might fail
-    import sys
     if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
         return
 
@@ -57,7 +57,6 @@ def post_save_handler(sender, instance, created, **kwargs):
         return
 
     # Check if we are running migrations
-    import sys
     if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
         return
 
