@@ -58,7 +58,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         for item in data:
             export_data.append([
                 item.get("order_id", ""),
-                item.get("patient", {}).get("full_name", "") if isinstance(item.get("patient"), dict) else str(item.get("patient", "")),
+                (item.get("patient", {}).get("full_name", "")
+                 if isinstance(item.get("patient"), dict)
+                 else str(item.get("patient", ""))),
                 item.get("status", ""),
                 item.get("priority", ""),
                 str(item.get("total_amount", "")),
@@ -98,7 +100,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             order.transition_to("CANCELLED", user=request.user)
             return Response({"status": "order cancelled"})
         except Exception as e:
-             # Fallback if transition fails
+            # Fallback if transition fails
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,

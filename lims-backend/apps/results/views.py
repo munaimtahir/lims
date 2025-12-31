@@ -50,17 +50,21 @@ class TestResultViewSet(viewsets.ModelViewSet):
         export_data = []
         for item in data:
             export_data.append([
-                item.get("test_parameter", {}).get("parameter_name", "") if isinstance(item.get("test_parameter"), dict) else "",
-                item.get("test_parameter", {}).get("test", {}).get("test_name", "") if isinstance(item.get("test_parameter"), dict) else "",
+                (item.get("test_parameter", {}).get("parameter_name", "")
+                 if isinstance(item.get("test_parameter"), dict) else ""),
+                (item.get("test_parameter", {}).get("test", {}).get("test_name", "")
+                 if isinstance(item.get("test_parameter"), dict) else ""),
                 item.get("result_value", ""),
-                item.get("test_parameter", {}).get("unit", "") if isinstance(item.get("test_parameter"), dict) else "",
+                (item.get("test_parameter", {}).get("unit", "")
+                 if isinstance(item.get("test_parameter"), dict) else ""),
                 item.get("flag", ""),
                 item.get("status", ""),
-                item.get("order_item", {}).get("order", {}).get("order_id", "") if isinstance(item.get("order_item"), dict) else "",
+                (item.get("order_item", {}).get("order", {}).get("order_id", "")
+                 if isinstance(item.get("order_item"), dict) else ""),
                 item.get("entered_at", ""),
                 item.get("verified_at", ""),
             ])
-        
+
         if format_type == "excel":
             return export_to_excel(export_data, f"{filename}.xlsx", headers, "Results")
         else:

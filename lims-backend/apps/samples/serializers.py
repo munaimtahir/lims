@@ -42,7 +42,10 @@ class SampleSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["barcode", "collected_at", "collected_by", "received_at", "received_by", "created_at", "updated_at"]
+        read_only_fields = [
+            "barcode", "collected_at", "collected_by", "received_at",
+            "received_by", "created_at", "updated_at"
+        ]
 
     def update(self, instance, validated_data):
         """
