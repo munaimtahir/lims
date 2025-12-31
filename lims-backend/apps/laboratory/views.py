@@ -11,6 +11,53 @@ from .serializers import (
     TestParameterSerializer,
     ReferenceRangeSerializer,
 )
+from .utils import import_tests_from_excel
+
+
+class BulkImportViewSet(viewsets.ViewSet):
+    """
+    ViewSet for bulk importing laboratory data from Excel.
+    """
+
+    def create(self, request):
+        """
+        Import data from an uploaded Excel file.
+        """
+        file = request.FILES.get("file")
+        if not file:
+            return Response(
+                {"error": "No file uploaded"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # if not file.name.endswith(".xlsx"):
+        #     return Response(
+        #         {"error": "Invalid file format. Please upload an Excel (.xlsx) file."},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+
+        try:
+            summary = import_tests_from_excel(file)
+            return Response(
+                {
+                    "success": True,
+                    "message": "Import completed successfully",
+                    "summary": summary
+                },
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            # If it's a validation error (like invalid file format handled by openpyxl), we might want to return 400
+            if "does not support the old .xls file format" in str(e) or "is not a valid Zip file" in str(e):
+                 return Response(
+                    {"error": "Invalid Excel file format."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class TestCategoryViewSet(viewsets.ModelViewSet):

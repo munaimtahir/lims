@@ -6,9 +6,11 @@ from .views import (
     TestPanelViewSet,
     TestParameterViewSet,
     ReferenceRangeViewSet,
+    BulkImportViewSet,
 )
 
 router = DefaultRouter()
+router.register(r"import", BulkImportViewSet, basename="import")
 router.register(r"categories", TestCategoryViewSet)
 router.register(r"tests", TestViewSet)
 router.register(r"panels", TestPanelViewSet)
