@@ -9,94 +9,77 @@
 #   CADDY_DOMAINS_ADDITIONAL - additional domains (e.g., www.your-domain.com)
 
 (common) {
-    # Enable gzip compression
-    encode gzip
-    
-    # Security headers
-    header X-Content-Type-Options "nosniff"
-    header X-Frame-Options "DENY"
-    header X-XSS-Protection "1; mode=block"
-    header Referrer-Policy "strict-origin-when-cross-origin"
-    
-    # Add HSTS header (HTTP Strict Transport Security) for production
-    header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-    
-    # Add timing headers for debugging
-    header Server "LIMS/1.0"
-}
-
-# HTTP redirect to HTTPS (only for production domains)
-http://localhost {
-    handle {
-        reverse_proxy frontend:80 {
-            header_up Host {upstream_hostport}
-        }
-    }
-}
-
-# HTTPS Configuration - Auto HTTPS enabled by Caddy
-# Caddy will automatically obtain and renew Let's Encrypt certificates
-localhost, 127.0.0.1 {
-    # Use http for local development
-    @localhost {
-        host localhost 127.0.0.1
-    }
-    
-    handle @localhost {
-        import common
-    }
-    
-    # Frontend - React SPA
-    @frontend {
-        not path /api/* /admin/* /static/* /media/* /health
-    }
-    handle @frontend {
-        reverse_proxy frontend:80 {
-            header_up Host {upstream_hostport}
-        }
-        # SPA Fallback - serve index.html for non-file routes
-        try_files {path} /index.html
-    }
-
-    # Backend API
-    handle /api/* {
-        reverse_proxy backend:8000 {
-            header_up Host {upstream_hostport}
-            header_up X-Forwarded-Proto http
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Real-IP {remote_host}
-        }
-    }
-
-    # Django Admin
-    handle /admin/* {
-        reverse_proxy backend:8000 {
-            header_up Host {upstream_hostport}
-            header_up X-Forwarded-Proto http
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Real-IP {remote_host}
-        }
-    }
-
-    # Static files served from backend
-    handle /static/* {
-        reverse_proxy backend:8000 {
-            header_up Host {upstream_hostport}
-        }
-    }
-
-    # Media files served from backend
-    handle /media/* {
-        reverse_proxy backend:8000 {
-            header_up Host {upstream_hostport}
-        }
-    }
-
-    # Health check endpoint
-    handle /health {
-        respond "OK" 200
-    }
-}
+     # Enable gzip compression
+     encode gzip
+     
+     # Security headers
+     header X-Content-Type-Options "nosniff"
+     header X-Frame-Options "DENY"
+     header X-XSS-Protection "1; mode=block"
+     header Referrer-Policy "strict-origin-when-cross-origin"
+     
+     # Add HSTS header (HTTP Strict Transport Security) for production
+     header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+     
+     # Add timing headers for debugging
+     header Server "LIMS/1.0"
+ }
+ 
+# Reverse proxy for host-level Caddy (listens on :8013)
+:80 {
+    import common
+ 
+     # Frontend - React SPA
+     @frontend {
+         not path /api/* /admin/* /static/* /media/* /health
+     }
+     handle @frontend {
+         reverse_proxy frontend:80 {
+             header_up Host {upstream_hostport}
+         }
+         # SPA Fallback - serve index.html for non-file routes
+         try_files {path} /index.html
+     }
+ 
+     # Backend API
+     handle /api/* {
+         reverse_proxy backend:8000 {
+             header_up Host {upstream_hostport}
+             header_up X-Forwarded-Proto http
+             header_up X-Forwarded-For {remote_host}
+             header_up X-Real-IP {remote_host}
+         }
+     }
+ 
+     # Django Admin
+     handle /admin/* {
+         reverse_proxy backend:8000 {
+             header_up Host {upstream_hostport}
+             header_up X-Forwarded-Proto http
+             header_up X-Forwarded-For {remote_host}
+             header_up X-Real-IP {remote_host}
+         }
+     }
+ 
+     # Static files served from backend
+     handle /static/* {
+         reverse_proxy backend:8000 {
+             header_up Host {upstream_hostport}
+         }
+     }
+ 
+     # Media files served from backend
+     handle /media/* {
+         reverse_proxy backend:8000 {
+             header_up Host {upstream_hostport}
+         }
+     }
+ 
+     # Health check endpoint
+     handle /health {
+         respond "OK" 200
+     }
+ }
 
 # Production HTTPS Configuration
 # Uncomment and customize for production deployment
