@@ -1,0 +1,214 @@
+"""
+Comprehensive tests for dashboard app views.
+"""
+import pytest
+from decimal import Decimal
+from django.utils import timezone
+from datetime import timedelta
+from rest_framework.test import APIClient
+from rest_framework import status
+from apps.accounts.models import User
+from apps.patients.models import Patient
+from apps.orders.models import Order
+from apps.samples.models import Sample, SampleStatus
+from apps.results.models import TestResult
+from apps.reports.models import Report
+from apps.billing.models import Payment
+from apps.laboratory.models import TestCategory, Test
+
+
+@pytest.mark.django_db
+class TestDashboardStatisticsViewSet:
+    """Test DashboardStatisticsViewSet API."""
+    
+    @pytest.fixture
+    def api_client(self):
+        """Create API client."""
+        return APIClient()
+    
+    @pytest.fixture
+    def user(self):
+        """Create test user."""
+        return User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",
+            full_name="Test User",
+            role="Admin",
+        )
+    
+    @pytest.fixture
+    def patient(self):
+        """Create test patient."""
+        return Patient.objects.create(
+            patient_id="PAT-001",
+            first_name="John",
+            last_name="Doe",
+            date_of_birth="1990-01-01",
+            gender="Male",
+            phone="1234567890",
+        )
+    
+    def test_get_statistics(self, api_client, user, patient):
+        """Test getting dashboard statistics."""
+        # Create some test data
+        order = Order.objects.create(
+            order_id="ORD-001",
+            patient=patient,
+            status="completed",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.get("/api/v1/dashboard/statistics/")
+        assert response.status_code == status.HTTP_200_OK
+        assert "today" in response.data
+        assert "pending" in response.data
+        assert "totals" in response.data
+        assert "revenue" in response.data
+    
+    def test_revenue_report(self, api_client, user, patient):
+        """Test revenue report endpoint."""
+        # Create payment
+        order = Order.objects.create(
+            order_id="ORD-001",
+            patient=patient,
+            status="completed",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        Payment.objects.create(
+            order=order,
+            amount=Decimal("100.00"),
+            payment_method="cash",
+            payment_date=timezone.now().date(),
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.get("/api/v1/dashboard/statistics/revenue_report/")
+        assert response.status_code == status.HTTP_200_OK
+        assert "success" in response.data
+        assert response.data["success"] is True
+    
+    def test_revenue_report_date_range(self, api_client, user, patient):
+        """Test revenue report with date range."""
+        order = Order.objects.create(
+            order_id="ORD-001",
+            patient=patient,
+            status="completed",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        Payment.objects.create(
+            order=order,
+            amount=Decimal("100.00"),
+            payment_method="cash",
+            payment_date=timezone.now().date(),
+        )
+        
+        api_client.force_authenticate(user=user)
+        date_from = (timezone.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        date_to = timezone.now().strftime("%Y-%m-%d")
+        response = api_client.get(
+            f"/api/v1/dashboard/statistics/revenue_report/?date_from={date_from}&date_to={date_to}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_test_statistics(self, api_client, user, patient):
+        """Test test statistics endpoint."""
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=Decimal("50.00"),
+            turnaround_time=24,
+        )
+        
+        order = Order.objects.create(
+            order_id="ORD-001",
+            patient=patient,
+            status="completed",
+            total_amount=Decimal("50.00"),
+            net_amount=Decimal("50.00"),
+        )
+        from apps.orders.models import OrderItem
+        OrderItem.objects.create(
+            order=order,
+            test=test,
+            price=Decimal("50.00"),
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.get("/api/v1/dashboard/statistics/test_statistics/")
+        assert response.status_code == status.HTTP_200_OK
+        assert "success" in response.data
+    
+    def test_turnaround_time(self, api_client, user, patient):
+        """Test turnaround time endpoint."""
+        order = Order.objects.create(
+            order_id="ORD-001",
+            patient=patient,
+            status="VERIFIED",
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.get("/api/v1/dashboard/statistics/turnaround_time/")
+        assert response.status_code == status.HTTP_200_OK
+        assert "success" in response.data
+    
+    def test_workload_distribution(self, api_client, user, patient):
+        """Test workload distribution endpoint."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get("/api/v1/dashboard/statistics/workload_distribution/")
+        assert response.status_code == status.HTTP_200_OK
+        assert "success" in response.data
+        assert "data" in response.data
+    
+    def test_payment_methods(self, api_client, user, patient):
+        """Test payment methods endpoint."""
+        order = Order.objects.create(
+            order_id="ORD-001",
+            patient=patient,
+            status="completed",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        Payment.objects.create(
+            order=order,
+            amount=Decimal("100.00"),
+            payment_method="cash",
+            payment_date=timezone.now().date(),
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.get("/api/v1/dashboard/statistics/payment_methods/")
+        assert response.status_code == status.HTTP_200_OK
+        assert "success" in response.data
+    
+    def test_export_analytics(self, api_client, user, patient):
+        """Test export analytics endpoint."""
+        order = Order.objects.create(
+            order_id="ORD-001",
+            patient=patient,
+            status="completed",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        Payment.objects.create(
+            order=order,
+            amount=Decimal("100.00"),
+            payment_method="cash",
+            payment_date=timezone.now().date(),
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/export_analytics/?report_type=revenue&format=excel"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
