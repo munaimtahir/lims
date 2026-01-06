@@ -8,6 +8,20 @@
 #   CADDY_DOMAIN - primary domain (e.g., your-domain.com)
 #   CADDY_DOMAINS_ADDITIONAL - additional domains (e.g., www.your-domain.com)
 
+# Global options (must be first)
+{
+    # Log level (debug, info, warn, error)
+    log {
+        level info
+    }
+    
+    # Admin endpoint (disabled for security)
+    admin off
+    
+    # Auto HTTPS disabled (handled by host Caddy)
+    auto_https off
+}
+
 (common) {
      # Enable gzip compression
      encode gzip
@@ -80,17 +94,3 @@
          respond "OK" 200
      }
  }
-
-# Global options
-{
-    # Log level (debug, info, warn, error)
-    log {
-        level info
-    }
-    
-    # Admin endpoint (disabled for security)
-    admin off
-    
-    # Auto HTTPS enabled for production domain
-    auto_https on
-}
