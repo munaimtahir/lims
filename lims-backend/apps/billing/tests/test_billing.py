@@ -194,3 +194,107 @@ class TestPaymentViewSet:
             "/api/v1/payments/", {"payment_method": "cash"}
         )
         assert response.status_code == status.HTTP_200_OK
+    
+    def test_receipt_generation(self, authenticated_client, payment):
+        """Test generating payment receipt PDF."""
+        response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response["Content-Type"] == "application/pdf"
+        assert "Receipt" in response["Content-Disposition"]
+        # FileResponse is a streaming response, verify it's set up correctly
+        assert hasattr(response, 'streaming_content') or hasattr(response, 'file')
+    
+    def test_receipt_with_lab_info(self, authenticated_client, payment):
+        """Test receipt generation with lab information."""
+        response = authenticated_client.get(
+            f"/api/v1/payments/{payment.id}/receipt/",
+            {
+                "lab_name": "Test Lab",
+                "lab_address": "123 Test St",
+                "lab_phone": "123-456-7890",
+                "lab_email": "test@lab.com",
+            }
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response["Content-Type"] == "application/pdf"
+        # Verify PDF content exists
+        content = b''.join(response.streaming_content) if hasattr(response, 'streaming_content') else getattr(response, 'content', b'')
+        assert len(content) > 0
+    
+    def test_receipt_with_discount(self, authenticated_client, order, cashier_user):
+        """Test receipt generation with discount."""
+        order.discount = Decimal("100.00")
+        order.save()
+        payment = Payment.objects.create(
+            order=order,
+            amount=order.net_amount,
+            payment_method="cash",
+            recorded_by=cashier_user,
+        )
+        response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_receipt_with_transaction_id(self, authenticated_client, order, cashier_user):
+        """Test receipt generation with transaction ID."""
+        payment = Payment.objects.create(
+            order=order,
+            amount=Decimal("500.00"),
+            payment_method="card",
+            transaction_id="TXN123456",
+            recorded_by=cashier_user,
+        )
+        response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_receipt_with_notes(self, authenticated_client, order, cashier_user):
+        """Test receipt generation with payment notes."""
+        payment = Payment.objects.create(
+            order=order,
+            amount=Decimal("500.00"),
+            payment_method="cash",
+            notes="Payment received in full",
+            recorded_by=cashier_user,
+        )
+        response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_receipt_partial_payment(self, authenticated_client, order, cashier_user):
+        """Test receipt generation for partial payment."""
+        payment = Payment.objects.create(
+            order=order,
+            amount=Decimal("300.00"),  # Less than net amount
+            payment_method="cash",
+            recorded_by=cashier_user,
+        )
+        response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_receipt_full_payment(self, authenticated_client, order, cashier_user):
+        """Test receipt generation for full payment."""
+        payment = Payment.objects.create(
+            order=order,
+            amount=order.net_amount,  # Full payment
+            payment_method="cash",
+            recorded_by=cashier_user,
+        )
+        response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_receipt_multiple_payments(self, authenticated_client, order, cashier_user):
+        """Test receipt generation when order has multiple payments."""
+        # Create first payment
+        Payment.objects.create(
+            order=order,
+            amount=Decimal("300.00"),
+            payment_method="cash",
+            recorded_by=cashier_user,
+        )
+        # Create second payment
+        payment2 = Payment.objects.create(
+            order=order,
+            amount=Decimal("500.00"),
+            payment_method="card",
+            recorded_by=cashier_user,
+        )
+        response = authenticated_client.get(f"/api/v1/payments/{payment2.id}/receipt/")
+        assert response.status_code == status.HTTP_200_OK

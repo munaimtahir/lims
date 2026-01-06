@@ -96,6 +96,10 @@ class LabTerminalViewSet(viewsets.ModelViewSet):
         Get all active terminals.
         """
         active_terminals = self.queryset.filter(is_active=True)
+        page = self.paginate_queryset(active_terminals)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(active_terminals, many=True)
         return Response(serializer.data)
 
@@ -118,12 +122,32 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         """Return the singleton settings instance."""
+        # Handle PUT/PATCH on list endpoint for singleton pattern
+        if request.method == 'PUT':
+            return self.update(request, *args, **kwargs)
+        elif request.method == 'PATCH':
+            return self.partial_update(request, *args, **kwargs)
+        
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
     def update(self, request, *args, **kwargs):
         """Update system settings."""
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        
+        # Set updated_by
+        if request.user.is_authenticated:
+            serializer.save(updated_by=request.user)
+        else:
+            serializer.save()
+        
+        return Response(serializer.data)
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Partially update system settings."""
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)

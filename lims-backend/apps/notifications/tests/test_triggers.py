@@ -63,12 +63,12 @@ class TestResultCriticalFlagNotification:
             critical_high=Decimal("250.00"),
         )
     
-    @patch('apps.notifications.utils.send_email')
+    @patch('apps.notifications.utils.send_mail')
     def test_critical_high_result_creates_notification(
-        self, mock_send_email, patient, order, test_parameter
+        self, mock_send_mail, patient, order, test_parameter
     ):
         """Test that critical high result creates notification."""
-        mock_send_email.return_value = True
+        mock_send_mail.return_value = True
         
         # Create order item
         order_item = OrderItem.objects.create(
@@ -132,10 +132,10 @@ class TestPaymentReceiptNotification:
             net_amount=Decimal("100.00"),
         )
     
-    @patch('apps.notifications.utils.send_email')
-    def test_payment_creates_receipt_notification(self, mock_send_email, patient, order):
+    @patch('apps.notifications.utils.send_mail')
+    def test_payment_creates_receipt_notification(self, mock_send_mail, patient, order):
         """Test that payment creation triggers receipt notification."""
-        mock_send_email.return_value = True
+        mock_send_mail.return_value = True
         
         user = User.objects.create_user(
             username="cashier",
@@ -197,10 +197,10 @@ class TestReportReadyNotification:
             net_amount=Decimal("100.00"),
         )
     
-    @patch('apps.notifications.utils.send_email')
-    def test_report_ready_creates_notification(self, mock_send_email, patient, order):
+    @patch('apps.notifications.utils.send_mail')
+    def test_report_ready_creates_notification(self, mock_send_mail, patient, order):
         """Test that report ready status triggers notification."""
-        mock_send_email.return_value = True
+        mock_send_mail.return_value = True
         
         user = User.objects.create_user(
             username="pathologist",
@@ -251,10 +251,10 @@ class TestOrderCompleteNotification:
             email="patient@example.com",
         )
     
-    @patch('apps.notifications.utils.send_email')
-    def test_order_complete_creates_notification(self, mock_send_email, patient):
+    @patch('apps.notifications.utils.send_mail')
+    def test_order_complete_creates_notification(self, mock_send_mail, patient):
         """Test that order completion triggers notification."""
-        mock_send_email.return_value = True
+        mock_send_mail.return_value = True
         
         # Create completed order
         order = Order.objects.create(

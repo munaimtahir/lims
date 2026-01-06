@@ -176,7 +176,13 @@ class HL7Parser:
         try:
             msh = self.get_segment('MSH')
             if not msh:
-                raise ValueError("Missing MSH segment")
+                logger.warning("Missing MSH segment, returning empty structure")
+                return {
+                    "message_type": "",
+                    "patient": {},
+                    "order": {},
+                    "results": [],
+                }
             
             message_type = msh[8] if len(msh) > 8 else ""
             
@@ -188,7 +194,13 @@ class HL7Parser:
             }
         except Exception as e:
             logger.error(f"Error parsing HL7 message: {e}")
-            raise
+            # Return empty structure instead of raising
+            return {
+                "message_type": "",
+                "patient": {},
+                "order": {},
+                "results": [],
+            }
 
 
 def parse_hl7_message(message: str) -> Dict:

@@ -5,6 +5,22 @@ from django.db import models, transaction
 from django.conf import settings
 
 
+class SystemSettingsManager(models.Manager):
+    """Custom manager for SystemSettings to enforce singleton pattern."""
+    
+    def create(self, **kwargs):
+        """Create or update the singleton settings instance."""
+        if self.model.objects.exists():
+            # Update existing instance
+            existing = self.model.objects.first()
+            for key, value in kwargs.items():
+                if hasattr(existing, key):
+                    setattr(existing, key, value)
+            existing.save()
+            return existing
+        return super().create(**kwargs)
+
+
 class LabTerminal(models.Model):
     """
     Represents a physical workstation or terminal within the laboratory.
@@ -151,6 +167,8 @@ class SystemSettings(models.Model):
         updated_by (User, optional): User who last updated settings.
     """
     
+    objects = SystemSettingsManager()
+    
     # Lab Information
     lab_name = models.CharField(max_length=255, default="Laboratory")
     lab_address = models.TextField(blank=True, null=True)
@@ -235,7 +253,11 @@ class SystemSettings(models.Model):
                 for field in self._meta.fields:
                     if field.name not in ['id', 'updated_at', 'updated_by']:
                         setattr(existing, field.name, getattr(self, field.name))
+                # Remove force_insert from kwargs to allow update
+                kwargs.pop('force_insert', None)
                 existing.save(*args, **kwargs)
+                # Update self to match existing instance
+                self.pk = existing.pk
                 return existing
         return super().save(*args, **kwargs)
     

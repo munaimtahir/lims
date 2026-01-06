@@ -8,9 +8,15 @@ from .views import LabTerminalViewSet, SystemSettingsViewSet
 
 router = DefaultRouter()
 router.register(r"terminals", LabTerminalViewSet, basename="terminal")
-router.register(r"settings", SystemSettingsViewSet, basename="settings")
+# Don't register settings in router - handle manually for singleton pattern
 
 urlpatterns = [
     path("", include(router.urls)),
+    # Manual route for settings (singleton pattern - no pk needed)
+    path("settings/", SystemSettingsViewSet.as_view({
+        'get': 'list',
+        'put': 'list',  # Route PUT to list which handles update
+        'patch': 'list',  # Route PATCH to list which handles partial_update
+    }), name="settings-list"),
 ]
 

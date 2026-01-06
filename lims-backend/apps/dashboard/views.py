@@ -181,9 +181,17 @@ class DashboardStatisticsViewSet(ViewSet):
         elif group_by == "week":
             payments = payments.annotate(period=TruncDay("payment_date"))
         else:  # month
-            payments = payments.extra(
-                select={"period": "DATE_TRUNC('month', payment_date)"}
-            )
+            # Use database-specific month truncation
+            from django.db import connection
+            if connection.vendor == 'postgresql':
+                payments = payments.extra(
+                    select={"period": "DATE_TRUNC('month', payment_date)"}
+                )
+            else:
+                # SQLite fallback: use strftime
+                payments = payments.extra(
+                    select={"period": "strftime('%%Y-%%m-01', payment_date)"}
+                )
         
         revenue_data = (
             payments.values("period")

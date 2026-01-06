@@ -2,6 +2,7 @@
 Comprehensive tests for integrations app.
 """
 import pytest
+from decimal import Decimal
 from django.utils import timezone
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -117,7 +118,7 @@ class TestAnalyzerViewSet:
             "connection_type": "HL7",
             "connection_config": {"host": "localhost"},
         }
-        response = api_client.post("/api/v1/integrations/analyzers/", data)
+        response = api_client.post("/api/v1/integrations/analyzers/", data, format='json')
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["name"] == "New Analyzer"
 
@@ -148,6 +149,18 @@ class TestAnalyzerResultImportViewSet:
         return Analyzer.objects.create(
             name="Test Analyzer",
             model="TEST-1",
+        )
+    
+    @pytest.fixture
+    def patient(self):
+        """Create test patient."""
+        return Patient.objects.create(
+            patient_id="PAT-001",
+            first_name="John",
+            last_name="Doe",
+            date_of_birth="1990-01-01",
+            gender="Male",
+            phone="1234567890",
         )
     
     def test_list_imports(self, api_client, user, analyzer):
@@ -185,10 +198,165 @@ class TestAnalyzerResultImportViewSet:
             "analyzer_id": analyzer.id,
             "message": "Invalid HL7 message",
         }
-        response = api_client.post("/api/v1/integrations/imports/import_hl7/", data)
+        response = api_client.post("/api/v1/integrations/imports/import_hl7/", data, format='json')
         # Should create import record with FAILED status
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert AnalyzerResultImport.objects.filter(status="FAILED").exists()
+    
+    def test_import_hl7_successful_match(self, api_client, user, analyzer, patient):
+        """Test HL7 import with successful order matching."""
+        from apps.orders.models import Order, OrderItem
+        
+        # Create order with matching order_id
+        order = Order.objects.create(
+            order_id="ORD-HL7-001",
+            patient=patient,
+            status="in_progress",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=Decimal("50.00"),
+            turnaround_time=24,
+        )
+        param = TestParameter.objects.create(
+            test=test,
+            parameter_name="WBC",
+            unit="10*3/uL",
+        )
+        
+        order_item = OrderItem.objects.create(
+            order=order,
+            test=test,
+            price=Decimal("50.00"),
+        )
+        
+        # Valid HL7 message with matching order
+        hl7_message = """MSH|^~\\&|LAB|HOSPITAL|LAB|HOSPITAL|20240101120000||ORU^R01|12345|P|2.5
+PID|1||12345||DOE^JOHN||19900101|M
+OBR|1||ORD-HL7-001|CBC^Complete Blood Count
+OBX|1|NM|WBC^White Blood Count|5.0|10*3/uL|4.0-11.0|N|||F"""
+        
+        api_client.force_authenticate(user=user)
+        data = {
+            "analyzer_id": analyzer.id,
+            "message": hl7_message,
+        }
+        response = api_client.post("/api/v1/integrations/imports/import_hl7/", data, format='json')
+        
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["status"] in ["success", "pending_review"]
+    
+    def test_import_hl7_manual_review(self, api_client, user, analyzer):
+        """Test HL7 import that requires manual review (no order match)."""
+        # Valid HL7 message but no matching order
+        hl7_message = """MSH|^~\\&|LAB|HOSPITAL|LAB|HOSPITAL|20240101120000||ORU^R01|12345|P|2.5
+PID|1||12345||DOE^JOHN||19900101|M
+OBR|1||NONEXISTENT-ORDER|CBC^Complete Blood Count
+OBX|1|NM|WBC^White Blood Count|5.0|10*3/uL|4.0-11.0|N|||F"""
+        
+        api_client.force_authenticate(user=user)
+        data = {
+            "analyzer_id": analyzer.id,
+            "message": hl7_message,
+        }
+        response = api_client.post("/api/v1/integrations/imports/import_hl7/", data, format='json')
+        
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["status"] == "pending_review"
+    
+    def test_match_order_action(self, api_client, user, analyzer, patient):
+        """Test match_order action."""
+        from apps.orders.models import Order, OrderItem
+        
+        order = Order.objects.create(
+            order_id="ORD-MATCH-001",
+            patient=patient,
+            status="in_progress",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=Decimal("50.00"),
+            turnaround_time=24,
+        )
+        
+        order_item = OrderItem.objects.create(
+            order=order,
+            test=test,
+            price=Decimal("50.00"),
+        )
+        
+        # Create import record
+        import_record = AnalyzerResultImport.objects.create(
+            analyzer=analyzer,
+            raw_message="Test message",
+            parsed_data={
+                "results": [
+                    {"parameter_name": "WBC", "value": "5.0", "flag": "normal"}
+                ]
+            },
+            status="MANUAL_REVIEW",
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.post(
+            f"/api/v1/integrations/imports/{import_record.id}/match_order/",
+            {"order_item_id": order_item.id},
+            format='json'
+        )
+        
+        assert response.status_code == status.HTTP_200_OK
+        import_record.refresh_from_db()
+        assert import_record.order_item == order_item
+    
+    def test_match_order_invalid_order_item(self, api_client, user, analyzer):
+        """Test match_order with invalid order_item_id."""
+        import_record = AnalyzerResultImport.objects.create(
+            analyzer=analyzer,
+            raw_message="Test message",
+            parsed_data={},
+            status="MANUAL_REVIEW",
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.post(
+            f"/api/v1/integrations/imports/{import_record.id}/match_order/",
+            {"order_item_id": 99999},
+            format='json'
+        )
+        
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+    
+    def test_match_order_missing_order_item_id(self, api_client, user, analyzer):
+        """Test match_order without order_item_id."""
+        import_record = AnalyzerResultImport.objects.create(
+            analyzer=analyzer,
+            raw_message="Test message",
+            parsed_data={},
+            status="MANUAL_REVIEW",
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.post(
+            f"/api/v1/integrations/imports/{import_record.id}/match_order/",
+            {},
+            format='json'
+        )
+        
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db

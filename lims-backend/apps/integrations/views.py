@@ -64,6 +64,26 @@ class AnalyzerResultImportViewSet(viewsets.ModelViewSet):
         # Parse HL7 message
         try:
             parsed_data = parse_hl7_message(message)
+            # Check if parsing resulted in valid data (has MSH segment or order/results)
+            if not parsed_data.get("message_type") and not parsed_data.get("order") and not parsed_data.get("results"):
+                # Invalid message - no valid data parsed
+                import_record = AnalyzerResultImport.objects.create(
+                    analyzer=analyzer,
+                    raw_message=message,
+                    parsed_data=parsed_data,
+                    status="FAILED",
+                    error_message="Invalid HL7 message: Missing MSH segment or no parseable data",
+                    imported_by=request.user if request.user.is_authenticated else None,
+                )
+                
+                return Response(
+                    {
+                        "status": "failed",
+                        "error": "Invalid HL7 message: Missing MSH segment or no parseable data",
+                        "import_id": import_record.id,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         except Exception as e:
             # Create import record with error
             import_record = AnalyzerResultImport.objects.create(
@@ -72,6 +92,7 @@ class AnalyzerResultImportViewSet(viewsets.ModelViewSet):
                 parsed_data={},
                 status="FAILED",
                 error_message=f"HL7 parsing error: {str(e)}",
+                imported_by=request.user if request.user.is_authenticated else None,
             )
             return Response(
                 {
