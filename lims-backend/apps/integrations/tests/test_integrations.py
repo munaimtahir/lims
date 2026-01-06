@@ -389,3 +389,330 @@ OBX|1|NM|WBC^White Blood Count|100|10*3/uL|4.0-11.0|N|||F"""
         assert isinstance(parsed, dict)
 
 
+@pytest.mark.django_db
+class TestAnalyzerResultImportViewSetAdditional:
+    """Additional tests for AnalyzerResultImportViewSet."""
+    
+    @pytest.fixture
+    def api_client(self):
+        """Create API client."""
+        return APIClient()
+    
+    @pytest.fixture
+    def user(self):
+        """Create test user."""
+        return User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",
+            full_name="Test User",
+            role="Admin",
+        )
+    
+    @pytest.fixture
+    def analyzer(self):
+        """Create test analyzer."""
+        return Analyzer.objects.create(
+            name="Test Analyzer",
+            model="TEST-1",
+        )
+    
+    @pytest.fixture
+    def patient(self):
+        """Create test patient."""
+        return Patient.objects.create(
+            patient_id="PAT-001",
+            first_name="John",
+            last_name="Doe",
+            date_of_birth="1990-01-01",
+            gender="Male",
+            phone="1234567890",
+        )
+    
+    def test_import_hl7_exception_handling(self, api_client, user, analyzer):
+        """Test import_hl7 handles exceptions during parsing."""
+        api_client.force_authenticate(user=user)
+        # This will trigger exception handling in import_hl7
+        data = {
+            "analyzer_id": analyzer.id,
+            "message": "Invalid message that causes exception",
+        }
+        # Mock parse_hl7_message to raise exception
+        from unittest.mock import patch
+        with patch('apps.integrations.views.parse_hl7_message') as mock_parse:
+            mock_parse.side_effect = Exception("Parse error")
+            response = api_client.post("/api/v1/integrations/imports/import_hl7/", data, format='json')
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert AnalyzerResultImport.objects.filter(status="FAILED").exists()
+    
+    def test_import_hl7_no_message_type_or_order(self, api_client, user, analyzer):
+        """Test import_hl7 with parsed data missing message_type, order, and results."""
+        api_client.force_authenticate(user=user)
+        from unittest.mock import patch
+        with patch('apps.integrations.views.parse_hl7_message') as mock_parse:
+            mock_parse.return_value = {}  # Empty parsed data
+            data = {
+                "analyzer_id": analyzer.id,
+                "message": "Test message",
+            }
+            response = api_client.post("/api/v1/integrations/imports/import_hl7/", data, format='json')
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert AnalyzerResultImport.objects.filter(status="FAILED").exists()
+    
+    def test_import_hl7_match_by_placer_order(self, api_client, user, analyzer, patient):
+        """Test import_hl7 matches order by placer_order_number."""
+        from apps.orders.models import Order, OrderItem
+        from apps.laboratory.models import TestCategory, Test
+        
+        order = Order.objects.create(
+            order_id="ORD-HL7-002",
+            patient=patient,
+            status="in_progress",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=Decimal("50.00"),
+            turnaround_time=24,
+        )
+        
+        order_item = OrderItem.objects.create(
+            order=order,
+            test=test,
+            price=Decimal("50.00"),
+        )
+        
+        hl7_message = """MSH|^~\\&|LAB|HOSPITAL|LAB|HOSPITAL|20240101120000||ORU^R01|12345|P|2.5
+PID|1||12345||DOE^JOHN||19900101|M
+OBR|1||ORD-HL7-002|CBC^Complete Blood Count"""
+        
+        api_client.force_authenticate(user=user)
+        data = {
+            "analyzer_id": analyzer.id,
+            "message": hl7_message,
+        }
+        response = api_client.post("/api/v1/integrations/imports/import_hl7/", data, format='json')
+        assert response.status_code == status.HTTP_201_CREATED
+    
+    def test_import_hl7_create_results_on_match(self, api_client, user, analyzer, patient):
+        """Test import_hl7 creates test results when order is matched."""
+        from apps.orders.models import Order, OrderItem
+        from apps.laboratory.models import TestCategory, Test, TestParameter
+        
+        order = Order.objects.create(
+            order_id="ORD-HL7-003",
+            patient=patient,
+            status="in_progress",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=Decimal("50.00"),
+            turnaround_time=24,
+        )
+        param = TestParameter.objects.create(
+            test=test,
+            parameter_name="WBC",
+            unit="10*3/uL",
+        )
+        
+        order_item = OrderItem.objects.create(
+            order=order,
+            test=test,
+            price=Decimal("50.00"),
+        )
+        
+        hl7_message = """MSH|^~\\&|LAB|HOSPITAL|LAB|HOSPITAL|20240101120000||ORU^R01|12345|P|2.5
+PID|1||12345||DOE^JOHN||19900101|M
+OBR|1||ORD-HL7-003|CBC^Complete Blood Count
+OBX|1|NM|WBC^White Blood Count|5.0|10*3/uL|4.0-11.0|N|||F"""
+        
+        api_client.force_authenticate(user=user)
+        data = {
+            "analyzer_id": analyzer.id,
+            "message": hl7_message,
+        }
+        response = api_client.post("/api/v1/integrations/imports/import_hl7/", data, format='json')
+        assert response.status_code == status.HTTP_201_CREATED
+        
+        # Check test result was created
+        from apps.results.models import TestResult
+        assert TestResult.objects.filter(order_item=order_item, test_parameter=param).exists()
+    
+    def test_import_hl7_result_creation_exception(self, api_client, user, analyzer, patient):
+        """Test import_hl7 handles exception during result creation."""
+        from apps.orders.models import Order, OrderItem
+        from apps.laboratory.models import TestCategory, Test
+        
+        order = Order.objects.create(
+            order_id="ORD-HL7-004",
+            patient=patient,
+            status="in_progress",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=Decimal("50.00"),
+            turnaround_time=24,
+        )
+        
+        order_item = OrderItem.objects.create(
+            order=order,
+            test=test,
+            price=Decimal("50.00"),
+        )
+        
+        hl7_message = """MSH|^~\\&|LAB|HOSPITAL|LAB|HOSPITAL|20240101120000||ORU^R01|12345|P|2.5
+PID|1||12345||DOE^JOHN||19900101|M
+OBR|1||ORD-HL7-004|CBC^Complete Blood Count
+OBX|1|NM|WBC^White Blood Count|5.0|10*3/uL|4.0-11.0|N|||F"""
+        
+        api_client.force_authenticate(user=user)
+        data = {
+            "analyzer_id": analyzer.id,
+            "message": hl7_message,
+        }
+        
+        # Mock TestResult.objects.get_or_create to raise exception
+        from unittest.mock import patch
+        with patch('apps.integrations.views.TestResult.objects.get_or_create') as mock_create:
+            mock_create.side_effect = Exception("Database error")
+            response = api_client.post("/api/v1/integrations/imports/import_hl7/", data, format='json')
+            assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+            import_record = AnalyzerResultImport.objects.filter(analyzer=analyzer).first()
+            assert import_record.status == "FAILED"
+    
+    def test_match_order_creates_results(self, api_client, user, analyzer, patient):
+        """Test match_order action creates test results."""
+        from apps.orders.models import Order, OrderItem
+        from apps.laboratory.models import TestCategory, Test, TestParameter
+        
+        order = Order.objects.create(
+            order_id="ORD-MATCH-002",
+            patient=patient,
+            status="in_progress",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=Decimal("50.00"),
+            turnaround_time=24,
+        )
+        param = TestParameter.objects.create(
+            test=test,
+            parameter_name="WBC",
+            unit="10*3/uL",
+        )
+        
+        order_item = OrderItem.objects.create(
+            order=order,
+            test=test,
+            price=Decimal("50.00"),
+        )
+        
+        import_record = AnalyzerResultImport.objects.create(
+            analyzer=analyzer,
+            raw_message="Test message",
+            parsed_data={
+                "results": [
+                    {"parameter_name": "WBC", "value": "5.0", "flag": "normal"}
+                ]
+            },
+            status="MANUAL_REVIEW",
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.post(
+            f"/api/v1/integrations/imports/{import_record.id}/match_order/",
+            {"order_item_id": order_item.id},
+            format='json'
+        )
+        
+        assert response.status_code == status.HTTP_200_OK
+        import_record.refresh_from_db()
+        assert import_record.order_item == order_item
+        
+        # Check test result was created
+        from apps.results.models import TestResult
+        assert TestResult.objects.filter(order_item=order_item, test_parameter=param).exists()
+    
+    def test_match_order_result_creation_exception(self, api_client, user, analyzer, patient):
+        """Test match_order handles exception during result creation."""
+        from apps.orders.models import Order, OrderItem
+        from apps.laboratory.models import TestCategory, Test
+        
+        order = Order.objects.create(
+            order_id="ORD-EXCEPTION",
+            patient=patient,
+            status="in_progress",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=Decimal("50.00"),
+            turnaround_time=24,
+        )
+        
+        order_item = OrderItem.objects.create(
+            order=order,
+            test=test,
+            price=Decimal("50.00"),
+        )
+        
+        import_record = AnalyzerResultImport.objects.create(
+            analyzer=analyzer,
+            raw_message="Test message",
+            parsed_data={
+                "results": [
+                    {"parameter_name": "WBC", "value": "5.0", "flag": "normal"}
+                ]
+            },
+            status="MANUAL_REVIEW",
+        )
+        
+        api_client.force_authenticate(user=user)
+        
+        # Mock TestResult.objects.get_or_create to raise exception
+        from unittest.mock import patch
+        with patch('apps.integrations.views.TestResult.objects.get_or_create') as mock_create:
+            mock_create.side_effect = Exception("Database error")
+            response = api_client.post(
+                f"/api/v1/integrations/imports/{import_record.id}/match_order/",
+                {"order_item_id": order_item.id},
+                format='json'
+            )
+            assert response.status_code == status.HTTP_200_OK  # Still returns 200 but status is FAILED
+            import_record.refresh_from_db()
+            assert import_record.status == "FAILED"
+
+

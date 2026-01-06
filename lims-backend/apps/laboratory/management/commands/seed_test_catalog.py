@@ -31,7 +31,9 @@ class Command(BaseCommand):
         if options["clear"]:
             self.stdout.write(self.style.WARNING("Clearing existing test catalog data..."))
             TestParameter.objects.all().delete()
-            TestPanel.objects.all().clear()  # Clear many-to-many relationships
+            # Clear many-to-many relationships before deleting panels
+            for panel in TestPanel.objects.all():
+                panel.tests.clear()
             TestPanel.objects.all().delete()
             Test.objects.all().delete()
             TestCategory.objects.all().delete()

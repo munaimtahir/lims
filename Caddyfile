@@ -25,10 +25,10 @@
      header Server "LIMS/1.0"
  }
  
-# Reverse proxy for host-level Caddy (listens on :8013)
+# HTTP configuration for Docker container (host Caddy handles HTTPS)
 :80 {
     import common
- 
+
      # Frontend - React SPA
      @frontend {
          not path /api/* /admin/* /static/* /media/* /health
@@ -40,106 +40,46 @@
          # SPA Fallback - serve index.html for non-file routes
          try_files {path} /index.html
      }
- 
+
      # Backend API
      handle /api/* {
          reverse_proxy backend:8000 {
              header_up Host {upstream_hostport}
-             header_up X-Forwarded-Proto http
+             header_up X-Forwarded-Proto {scheme}
              header_up X-Forwarded-For {remote_host}
              header_up X-Real-IP {remote_host}
          }
      }
- 
+
      # Django Admin
      handle /admin/* {
          reverse_proxy backend:8000 {
              header_up Host {upstream_hostport}
-             header_up X-Forwarded-Proto http
+             header_up X-Forwarded-Proto {scheme}
              header_up X-Forwarded-For {remote_host}
              header_up X-Real-IP {remote_host}
          }
      }
- 
+
      # Static files served from backend
      handle /static/* {
          reverse_proxy backend:8000 {
              header_up Host {upstream_hostport}
          }
      }
- 
+
      # Media files served from backend
      handle /media/* {
          reverse_proxy backend:8000 {
              header_up Host {upstream_hostport}
          }
      }
- 
+
      # Health check endpoint
      handle /health {
          respond "OK" 200
      }
  }
-
-# Production HTTPS Configuration
-# Uncomment and customize for production deployment
-# This configuration is for when CADDY_DOMAIN is set to your actual domain
-# example.com www.example.com {
-#     import common
-#     
-#     # Log HTTPS access
-#     log {
-#         level info
-#         format json
-#     }
-#     
-#     # Frontend - React SPA with HTTPS
-#     @frontend {
-#         not path /api/* /admin/* /static/* /media/* /health
-#     }
-#     handle @frontend {
-#         reverse_proxy frontend:80 {
-#             header_up Host {upstream_hostport}
-#         }
-#         # SPA Fallback - serve index.html for non-file routes
-#         try_files {path} /index.html
-#     }
-#
-#     # Backend API with HTTPS forwarding headers
-#     handle /api/* {
-#         reverse_proxy backend:8000 {
-#             header_up Host {upstream_hostport}
-#             header_up X-Forwarded-Proto https
-#             header_up X-Forwarded-For {remote_host}
-#             header_up X-Real-IP {remote_host}
-#         }
-#     }
-#
-#     # Django Admin
-#     handle /admin/* {
-#         reverse_proxy backend:8000 {
-#             header_up Host {upstream_hostport}
-#             header_up X-Forwarded-Proto https
-#             header_up X-Forwarded-For {remote_host}
-#             header_up X-Real-IP {remote_host}
-#         }
-#     }
-#
-#     # Static files
-#     handle /static/* {
-#         reverse_proxy backend:8000
-#     }
-#
-#     # Media files
-#     handle /media/* {
-#         reverse_proxy backend:8000
-#     }
-#
-#     # Health check
-#     handle /health {
-#         respond "OK" 200
-#     }
-# }
 
 # Global options
 {
@@ -151,6 +91,6 @@
     # Admin endpoint (disabled for security)
     admin off
     
-    # Auto HTTPS disabled for localhost
-    auto_https off
+    # Auto HTTPS enabled for production domain
+    auto_https on
 }

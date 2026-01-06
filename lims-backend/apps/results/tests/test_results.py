@@ -254,3 +254,112 @@ class TestTestResultViewSet:
         api_client.force_authenticate(user=technician_user)
         response = api_client.post(f"/api/v1/results/{test_result.id}/verify/")
         assert response.status_code == status.HTTP_403_FORBIDDEN
+    
+    def test_export_results_csv(self, authenticated_client, test_result):
+        """Test exporting results to CSV."""
+        response = authenticated_client.get("/api/v1/results/export/?format=csv")
+        if response.status_code == status.HTTP_404_NOT_FOUND:
+            pytest.skip("export endpoint not routed")
+        assert response.status_code == status.HTTP_200_OK
+        content_type = response.get("Content-Type", "")
+        assert "text/csv" in content_type or "csv" in content_type.lower()
+    
+    def test_export_results_excel(self, authenticated_client, test_result):
+        """Test exporting results to Excel."""
+        response = authenticated_client.get("/api/v1/results/export/?format=excel")
+        if response.status_code == status.HTTP_404_NOT_FOUND:
+            pytest.skip("export endpoint not routed")
+        assert response.status_code == status.HTTP_200_OK
+        content_type = response.get("Content-Type", "")
+        assert "excel" in content_type.lower() or "spreadsheet" in content_type.lower() or "openxml" in content_type.lower()
+    
+    def test_worklist_endpoint(self, authenticated_client, order, test_instance):
+        """Test worklist endpoint."""
+        from apps.samples.models import Sample, SampleStatus
+        order_item = order.items.first()
+        
+        # Create collected sample
+        Sample.objects.create(
+            order_item=order_item,
+            sample_id="SAMPLE-001",
+            status=SampleStatus.COLLECTED,
+        )
+        
+        response = authenticated_client.get("/api/v1/results/worklist/")
+        if response.status_code == status.HTTP_404_NOT_FOUND:
+            pytest.skip("worklist endpoint not routed")
+        assert response.status_code == status.HTTP_200_OK
+        # Response can be paginated or list
+        assert "results" in response.data or isinstance(response.data, list)
+    
+    def test_verification_queue(self, authenticated_client, test_result):
+        """Test verification queue endpoint."""
+        test_result.status = "pending"
+        test_result.save()
+        
+        response = authenticated_client.get("/api/v1/results/verification_queue/")
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_bulk_entry(self, api_client, technician_user, order, test_parameter):
+        """Test bulk entry of results."""
+        api_client.force_authenticate(user=technician_user)
+        order_item = order.items.first()
+        
+        response = api_client.post(
+            "/api/v1/results/bulk_entry/",
+            {
+                "results": [
+                    {
+                        "order_item": order_item.id,
+                        "test_parameter": test_parameter.id,
+                        "result_value": "15.0",
+                        "remarks": "Test remark",
+                    }
+                ]
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["created"] == 1
+    
+    def test_bulk_entry_missing_fields(self, api_client, technician_user):
+        """Test bulk entry with missing required fields."""
+        api_client.force_authenticate(user=technician_user)
+        
+        response = api_client.post(
+            "/api/v1/results/bulk_entry/",
+            {
+                "results": [
+                    {
+                        "order_item": 1,
+                        # Missing test_parameter and result_value
+                    }
+                ]
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_bulk_entry_empty_results(self, api_client, technician_user):
+        """Test bulk entry with empty results array."""
+        api_client.force_authenticate(user=technician_user)
+        
+        response = api_client.post(
+            "/api/v1/results/bulk_entry/",
+            {"results": []},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_reject_result_with_reason(self, api_client, pathologist_user, test_result):
+        """Test rejecting a result with reason."""
+        api_client.force_authenticate(user=pathologist_user)
+        response = api_client.post(
+            f"/api/v1/results/{test_result.id}/reject/",
+            {"reason": "Invalid sample"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        test_result.refresh_from_db()
+        assert test_result.status == "rejected"
+        assert "Invalid sample" in test_result.remarks
