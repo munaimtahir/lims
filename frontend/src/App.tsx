@@ -16,6 +16,10 @@ import { VerificationQueuePage } from './pages/review';
 import { ReportsPage } from './pages/reports';
 import { PaymentsPage } from './pages/payments';
 import { AuditLogsPage } from './pages/audit';
+import ReferenceRangesPage from './pages/reference-ranges';
+import SystemSettingsPage from './pages/settings';
+import LabTerminalsPage from './pages/terminals';
+import NotificationsPage from './pages/notifications';
 import './App.css';
 
 // Create a client for React Query
@@ -60,6 +64,12 @@ function App() {
               <Route path="reports" element={<ReportsPage />} />
               <Route path="payments" element={<PaymentsPage />} />
               <Route path="audit" element={<AuditLogsPage />} />
+              
+              {/* New pages */}
+              <Route path="reference-ranges" element={<ReferenceRangesPage />} />
+              <Route path="settings" element={<SystemSettingsPage />} />
+              <Route path="terminals" element={<LabTerminalsPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
             
             {/* Default redirect */}

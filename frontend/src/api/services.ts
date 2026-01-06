@@ -13,6 +13,12 @@ import type {
   Report,
   ApiResponse,
   PaginatedResponse,
+  ReferenceRange,
+  ReferenceRangeCreateRequest,
+  SystemSettings,
+  LabTerminal,
+  LabTerminalCreateRequest,
+  Notification,
 } from '../types';
 
 /**
@@ -81,6 +87,12 @@ export const laboratoryApi = {
 
   getPanel: async (id: number) => {
     const response = await api.get<TestPanel>(`/laboratory/panels/${id}/`);
+    return response.data;
+  },
+
+  // Parameters
+  getParameters: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<TestParameter>>('/laboratory/parameters/', { params });
     return response.data;
   },
 };
@@ -284,6 +296,122 @@ export const reportApi = {
 export const dashboardApi = {
   getStatistics: async () => {
     const response = await api.get('/dashboard/statistics/');
+    return response.data;
+  },
+};
+
+/**
+ * Reference Range API service
+ */
+export const referenceRangeApi = {
+  list: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<ReferenceRange>>('/laboratory/reference-ranges/', { params });
+    return response.data;
+  },
+
+  get: async (id: number): Promise<ApiResponse<ReferenceRange>> => {
+    const response = await api.get<ApiResponse<ReferenceRange>>(`/laboratory/reference-ranges/${id}/`);
+    return response.data;
+  },
+
+  create: async (data: ReferenceRangeCreateRequest): Promise<ApiResponse<ReferenceRange>> => {
+    const response = await api.post<ApiResponse<ReferenceRange>>('/laboratory/reference-ranges/', data);
+    return response.data;
+  },
+
+  update: async (id: number, data: Partial<ReferenceRangeCreateRequest>): Promise<ApiResponse<ReferenceRange>> => {
+    const response = await api.patch<ApiResponse<ReferenceRange>>(`/laboratory/reference-ranges/${id}/`, data);
+    return response.data;
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await api.delete(`/laboratory/reference-ranges/${id}/`);
+  },
+
+  forParameter: async (parameterId: number, age?: number, gender?: string) => {
+    const params: Record<string, unknown> = { parameter_id: parameterId };
+    if (age !== undefined) params.age = age;
+    if (gender) params.gender = gender;
+    const response = await api.get<PaginatedResponse<ReferenceRange>>('/laboratory/reference-ranges/for_parameter/', { params });
+    return response.data;
+  },
+};
+
+/**
+ * System Settings API service
+ */
+export const systemSettingsApi = {
+  get: async (): Promise<ApiResponse<SystemSettings>> => {
+    const response = await api.get<ApiResponse<SystemSettings>>('/core/settings/');
+    return response.data;
+  },
+
+  update: async (data: Partial<SystemSettings>): Promise<ApiResponse<SystemSettings>> => {
+    const response = await api.put<ApiResponse<SystemSettings>>('/core/settings/', data);
+    return response.data;
+  },
+
+  patch: async (data: Partial<SystemSettings>): Promise<ApiResponse<SystemSettings>> => {
+    const response = await api.patch<ApiResponse<SystemSettings>>('/core/settings/', data);
+    return response.data;
+  },
+};
+
+/**
+ * Lab Terminal API service
+ */
+export const labTerminalApi = {
+  list: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<LabTerminal>>('/core/terminals/', { params });
+    return response.data;
+  },
+
+  get: async (id: number): Promise<ApiResponse<LabTerminal>> => {
+    const response = await api.get<ApiResponse<LabTerminal>>(`/core/terminals/${id}/`);
+    return response.data;
+  },
+
+  create: async (data: LabTerminalCreateRequest): Promise<ApiResponse<LabTerminal>> => {
+    const response = await api.post<ApiResponse<LabTerminal>>('/core/terminals/', data);
+    return response.data;
+  },
+
+  update: async (id: number, data: Partial<LabTerminalCreateRequest>): Promise<ApiResponse<LabTerminal>> => {
+    const response = await api.patch<ApiResponse<LabTerminal>>(`/core/terminals/${id}/`, data);
+    return response.data;
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await api.delete(`/core/terminals/${id}/`);
+  },
+
+  getNextMrn: async (id: number) => {
+    const response = await api.post(`/core/terminals/${id}/get_next_mrn/`);
+    return response.data;
+  },
+
+  resetRange: async (id: number) => {
+    const response = await api.post(`/core/terminals/${id}/reset_range/`);
+    return response.data;
+  },
+
+  getActive: async () => {
+    const response = await api.get<PaginatedResponse<LabTerminal>>('/core/terminals/active/');
+    return response.data;
+  },
+};
+
+/**
+ * Notification API service
+ */
+export const notificationApi = {
+  list: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<Notification>>('/notifications/', { params });
+    return response.data;
+  },
+
+  get: async (id: number): Promise<ApiResponse<Notification>> => {
+    const response = await api.get<ApiResponse<Notification>>(`/notifications/${id}/`);
     return response.data;
   },
 };

@@ -279,3 +279,116 @@ export interface ApiError {
   message?: string;
   [key: string]: unknown;
 }
+
+/**
+ * Reference Range types
+ */
+export interface ReferenceRange {
+  id: number;
+  parameter: number;
+  parameter_name: string;
+  test_name: string;
+  test_code: string;
+  age_min?: number;
+  age_max?: number;
+  gender: 'Male' | 'Female' | 'Both';
+  reference_min?: number;
+  reference_max?: number;
+  critical_low?: number;
+  critical_high?: number;
+  version: number;
+  is_active: boolean;
+  effective_date: string;
+  notes?: string;
+  created_at: string;
+  created_by?: number;
+  created_by_name?: string;
+}
+
+export interface ReferenceRangeCreateRequest {
+  parameter: number;
+  age_min?: number;
+  age_max?: number;
+  gender: 'Male' | 'Female' | 'Both';
+  reference_min?: number;
+  reference_max?: number;
+  critical_low?: number;
+  critical_high?: number;
+  notes?: string;
+}
+
+/**
+ * System Settings types
+ */
+export interface SystemSettings {
+  id: number;
+  lab_name: string;
+  lab_address?: string;
+  lab_phone?: string;
+  lab_email?: string;
+  lab_logo?: string;
+  report_header?: string;
+  report_footer?: string;
+  currency: string;
+  tax_rate: string;
+  email_host?: string;
+  email_port: number;
+  email_use_tls: boolean;
+  email_use_ssl: boolean;
+  email_host_user?: string;
+  email_host_password?: string;
+  email_from?: string;
+  backup_enabled: boolean;
+  backup_frequency: 'daily' | 'weekly' | 'monthly';
+  updated_at: string;
+  updated_by?: number;
+  updated_by_name?: string;
+}
+
+/**
+ * Lab Terminal types
+ */
+export interface LabTerminal {
+  id: number;
+  code: string;
+  name: string;
+  offline_range_start: number;
+  offline_range_end: number;
+  offline_current: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LabTerminalCreateRequest {
+  code: string;
+  name: string;
+  offline_range_start: number;
+  offline_range_end: number;
+  is_active?: boolean;
+}
+
+/**
+ * Notification types
+ */
+export type NotificationType = 'ORDER_COMPLETE' | 'CRITICAL_VALUE' | 'PAYMENT_RECEIPT' | 'REPORT_READY' | 'SYSTEM_ALERT';
+export type NotificationStatus = 'PENDING' | 'SENT' | 'FAILED' | 'CANCELLED';
+
+export interface Notification {
+  id: number;
+  notification_type: NotificationType;
+  notification_type_display: string;
+  recipient_email: string;
+  recipient_user?: number;
+  recipient_user_name?: string;
+  subject: string;
+  message: string;
+  status: NotificationStatus;
+  status_display: string;
+  sent_at?: string;
+  error_message?: string;
+  related_order?: number;
+  related_payment?: number;
+  related_report?: number;
+  created_at: string;
+}

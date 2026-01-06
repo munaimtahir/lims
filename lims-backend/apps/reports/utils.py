@@ -8,9 +8,10 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from io import BytesIO
 from django.utils import timezone
 from apps.orders.models import Order
+from apps.core.models import SystemSettings
 
 
-def generate_pdf_report(order_id, lab_name="Laboratory", lab_address="", lab_phone="", lab_email=""):
+def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=None, lab_email=None):
     """
     Generate a professional PDF report for a given order.
 
@@ -24,10 +25,10 @@ def generate_pdf_report(order_id, lab_name="Laboratory", lab_address="", lab_pho
 
     Args:
         order_id (int): The ID of the order to generate the report for.
-        lab_name (str): Name of the laboratory.
-        lab_address (str): Address of the laboratory.
-        lab_phone (str): Phone number of the laboratory.
-        lab_email (str): Email of the laboratory.
+        lab_name (str, optional): Name of the laboratory (overrides System Settings).
+        lab_address (str, optional): Address of the laboratory (overrides System Settings).
+        lab_phone (str, optional): Phone number of the laboratory (overrides System Settings).
+        lab_email (str, optional): Email of the laboratory (overrides System Settings).
 
     Returns:
         bytes: The content of the generated PDF file.
@@ -35,6 +36,27 @@ def generate_pdf_report(order_id, lab_name="Laboratory", lab_address="", lab_pho
     Raises:
         ValueError: If the order is not found.
     """
+    # Get system settings for lab information
+    try:
+        settings = SystemSettings.get_settings()
+        if lab_name is None:
+            lab_name = settings.lab_name or "Laboratory"
+        if lab_address is None:
+            lab_address = settings.lab_address or ""
+        if lab_phone is None:
+            lab_phone = settings.lab_phone or ""
+        if lab_email is None:
+            lab_email = settings.lab_email or ""
+        report_header = settings.report_header or ""
+        report_footer = settings.report_footer or ""
+    except Exception:
+        # Fallback if settings don't exist
+        lab_name = lab_name or "Laboratory"
+        lab_address = lab_address or ""
+        lab_phone = lab_phone or ""
+        lab_email = lab_email or ""
+        report_header = ""
+        report_footer = ""
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72,
                            topMargin=72, bottomMargin=72)
@@ -68,9 +90,14 @@ def generate_pdf_report(order_id, lab_name="Laboratory", lab_address="", lab_pho
     )
 
     # Header
-    header_data = [
-        [Paragraph(f"<b>{lab_name}</b>", title_style)],
-    ]
+    header_data = []
+    
+    # Custom header from settings
+    if report_header:
+        header_data.append([Paragraph(report_header, styles['Normal'])])
+        header_data.append([Spacer(1, 0.1*inch)])
+    
+    header_data.append([Paragraph(f"<b>{lab_name}</b>", title_style)])
     if lab_address:
         header_data.append([Paragraph(lab_address, styles['Normal'])])
     if lab_phone or lab_email:
@@ -203,6 +230,11 @@ def generate_pdf_report(order_id, lab_name="Laboratory", lab_address="", lab_pho
         ('TOPPADDING', (0, 0), (-1, -1), 6),
     ]))
     story.append(signature_table)
+    
+    # Custom footer from settings
+    if report_footer:
+        story.append(Spacer(1, 0.2*inch))
+        story.append(Paragraph(report_footer, styles['Normal']))
 
     # Build PDF
     doc.build(story)

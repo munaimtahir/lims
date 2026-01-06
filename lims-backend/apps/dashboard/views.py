@@ -28,7 +28,7 @@ class DashboardStatisticsViewSet(ViewSet):
     - Order status breakdown
     """
 
-    def get(self, request):
+    def list(self, request):
         """
         Get dashboard statistics.
 

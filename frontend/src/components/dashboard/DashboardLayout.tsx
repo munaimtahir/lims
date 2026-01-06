@@ -26,9 +26,14 @@ export default function DashboardLayout() {
           { to: '/dashboard/patients', label: 'Patients' },
           { to: '/dashboard/orders', label: 'Orders' },
           { to: '/dashboard/tests', label: 'Test Catalog' },
+          { to: '/dashboard/reference-ranges', label: 'Reference Ranges' },
           { to: '/dashboard/samples', label: 'Samples' },
           { to: '/dashboard/results', label: 'Results' },
           { to: '/dashboard/reports', label: 'Reports' },
+          { to: '/dashboard/payments', label: 'Payments' },
+          { to: '/dashboard/terminals', label: 'Lab Terminals' },
+          { to: '/dashboard/notifications', label: 'Notifications' },
+          { to: '/dashboard/settings', label: 'System Settings' },
           { to: '/dashboard/audit', label: 'Audit Logs' }
         );
         break;
