@@ -166,6 +166,97 @@ class TestPDFGeneration:
         """Test that generating PDF for nonexistent order raises error."""
         with pytest.raises(ValueError):
             generate_pdf_report(99999)
+    
+    def test_generate_pdf_with_custom_lab_info(self, order_with_results):
+        """Test PDF generation with custom lab information."""
+        pdf_content = generate_pdf_report(
+            order_with_results.id,
+            lab_name="Custom Lab",
+            lab_address="123 Custom St",
+            lab_phone="555-1234",
+            lab_email="custom@lab.com",
+        )
+        assert isinstance(pdf_content, bytes)
+        assert len(pdf_content) > 0
+    
+    def test_generate_pdf_with_system_settings_exception(self, order_with_results):
+        """Test PDF generation handles SystemSettings exception."""
+        from unittest.mock import patch
+        
+        # Mock SystemSettings to raise exception
+        with patch('apps.reports.utils.SystemSettings') as mock_settings:
+            mock_settings.get_settings.side_effect = Exception("Settings error")
+            
+            # Should not raise exception, should use fallback values
+            pdf_content = generate_pdf_report(order_with_results.id)
+            assert isinstance(pdf_content, bytes)
+            assert len(pdf_content) > 0
+    
+    def test_generate_pdf_with_report_header_footer(self, order_with_results):
+        """Test PDF generation with report header and footer from settings."""
+        from apps.core.models import SystemSettings
+        
+        # Create settings with header/footer
+        settings = SystemSettings.get_settings()
+        settings.report_header = "Custom Header"
+        settings.report_footer = "Custom Footer"
+        settings.save()
+        
+        pdf_content = generate_pdf_report(order_with_results.id)
+        assert isinstance(pdf_content, bytes)
+        assert len(pdf_content) > 0
+    
+    def test_generate_pdf_with_panel_items(self, order_with_results, pathologist_user):
+        """Test PDF generation with panel items."""
+        from apps.laboratory.models import TestPanel
+        from apps.orders.models import OrderItem
+        
+        # Create panel and add to order
+        category = order_with_results.items.first().test.category
+        panel = TestPanel.objects.create(
+            panel_code="PANEL1",
+            panel_name="Test Panel",
+            category=category,
+            sample_type="Blood",
+            price=200.00,
+            turnaround_time=24,
+        )
+        OrderItem.objects.create(
+            order=order_with_results,
+            panel=panel,
+            price=200.00,
+        )
+        
+        pdf_content = generate_pdf_report(order_with_results.id)
+        assert isinstance(pdf_content, bytes)
+        assert len(pdf_content) > 0
+    
+    def test_generate_pdf_with_partial_reference_ranges(self, order_with_results):
+        """Test PDF generation with partial reference ranges (only min or max)."""
+        from apps.laboratory.models import TestParameter
+        
+        # Get a parameter and set only min or max
+        order_item = order_with_results.items.first()
+        if order_item.test:
+            param = order_item.test.parameters.first()
+            if param:
+                param.reference_min_male = 10.0
+                param.reference_max_male = None
+                param.save()
+        
+        pdf_content = generate_pdf_report(order_with_results.id)
+        assert isinstance(pdf_content, bytes)
+        assert len(pdf_content) > 0
+    
+    def test_generate_pdf_with_no_results(self, order_with_results):
+        """Test PDF generation for order with no results."""
+        # Remove all results
+        from apps.results.models import TestResult
+        TestResult.objects.filter(order_item__order=order_with_results).delete()
+        
+        pdf_content = generate_pdf_report(order_with_results.id)
+        assert isinstance(pdf_content, bytes)
+        assert len(pdf_content) > 0
 
 
 @pytest.mark.django_db
@@ -469,3 +560,75 @@ class TestReportViewSet:
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED
+    
+    def test_report_generate_report_number(self, order_with_results, pathologist_user):
+        """Test automatic report number generation."""
+        from django.core.files.base import ContentFile
+        report = Report(
+            order=order_with_results,
+            generated_by=pathologist_user,
+            status="final",
+        )
+        report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+        report.save()
+        
+        assert report.report_number is not None
+        assert report.report_number.startswith("RPT-")
+    
+    def test_report_mark_delivered(self, order_with_results, pathologist_user):
+        """Test mark_delivered method."""
+        from django.core.files.base import ContentFile
+        report = Report.objects.create(
+            order=order_with_results,
+            generated_by=pathologist_user,
+            status="final",
+        )
+        report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+        report.save()
+        
+        report.mark_delivered(pathologist_user, "email")
+        report.refresh_from_db()
+        
+        assert report.delivered_at is not None
+        assert report.delivered_by == pathologist_user
+        assert report.delivery_method == "email"
+    
+    def test_report_increment_reprint(self, order_with_results, pathologist_user):
+        """Test increment_reprint method."""
+        from django.core.files.base import ContentFile
+        report = Report.objects.create(
+            order=order_with_results,
+            generated_by=pathologist_user,
+            status="final",
+            reprint_count=0,
+        )
+        report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+        report.save()
+        
+        initial_count = report.reprint_count
+        report.increment_reprint()
+        report.refresh_from_db()
+        
+        assert report.reprint_count == initial_count + 1
+        assert report.last_reprinted_at is not None
+    
+    def test_report_create_amendment(self, order_with_results, pathologist_user):
+        """Test create_amendment method."""
+        from django.core.files.base import ContentFile
+        original_report = Report.objects.create(
+            order=order_with_results,
+            generated_by=pathologist_user,
+            status="final",
+        )
+        original_report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+        original_report.save()
+        
+        amended_report = original_report.create_amendment("Correction needed", pathologist_user)
+        
+        assert amended_report is not None
+        assert amended_report.amended_from == original_report
+        assert amended_report.amendment_reason == "Correction needed"
+        assert amended_report.status == "FINAL"
+        
+        original_report.refresh_from_db()
+        assert original_report.status == "AMENDED"

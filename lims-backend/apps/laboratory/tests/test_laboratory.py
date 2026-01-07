@@ -228,3 +228,91 @@ class TestTestPanelViewSet:
         )
         assert response.status_code == status.HTTP_200_OK
         assert "tests" in response.data
+
+
+@pytest.mark.django_db
+class TestImportTestsViewSet:
+    """Tests for ImportTests ViewSet."""
+    
+    @pytest.fixture
+    def api_client(self):
+        """Return an API client for making requests."""
+        return APIClient()
+    
+    @pytest.fixture
+    def admin_user(self, db):
+        """Create and return an admin user."""
+        return User.objects.create_user(
+            username="admin",
+            email="admin@test.com",
+            password="adminpass123",
+            full_name="Admin User",
+            role="Admin",
+        )
+    
+    def test_import_tests_no_file(self, api_client, admin_user):
+        """Test import_tests without file."""
+        api_client.force_authenticate(user=admin_user)
+        response = api_client.post("/api/v1/laboratory/import_tests/")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "No file uploaded" in response.data.get("error", "")
+    
+    def test_import_tests_success(self, api_client, admin_user):
+        """Test successful import of tests from Excel."""
+        from io import BytesIO
+        from openpyxl import Workbook
+        
+        # Create Excel file
+        wb = Workbook()
+        ws = wb.create_sheet("Tests")
+        ws.append(["Code", "Name", "Category", "SampleType", "Price", "TAT"])
+        ws.append(["TEST1", "Test One", "Hematology", "Blood", 100.00, 24])
+        
+        file_obj = BytesIO()
+        wb.save(file_obj)
+        file_obj.seek(0)
+        file_obj.name = "tests.xlsx"
+        
+        api_client.force_authenticate(user=admin_user)
+        response = api_client.post(
+            "/api/v1/laboratory/import_tests/",
+            {"file": file_obj},
+            format="multipart",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["success"] is True
+    
+    def test_import_tests_invalid_file_format(self, api_client, admin_user):
+        """Test import_tests with invalid file format."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        
+        invalid_file = SimpleUploadedFile("test.txt", b"Not an Excel file")
+        
+        api_client.force_authenticate(user=admin_user)
+        response = api_client.post(
+            "/api/v1/laboratory/import_tests/",
+            {"file": invalid_file},
+            format="multipart",
+        )
+        # Should return error (either 400 or 500 depending on error handling)
+        assert response.status_code in [status.HTTP_400_BAD_REQUEST, status.HTTP_500_INTERNAL_SERVER_ERROR]
+    
+    def test_import_tests_exception_handling(self, api_client, admin_user):
+        """Test import_tests handles exceptions."""
+        from unittest.mock import patch
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        
+        file_obj = SimpleUploadedFile("test.xlsx", b"fake excel content")
+        
+        api_client.force_authenticate(user=admin_user)
+        
+        # Mock import_tests_from_excel to raise exception
+        with patch('apps.laboratory.views.import_tests_from_excel') as mock_import:
+            mock_import.side_effect = Exception("Import failed")
+            
+            response = api_client.post(
+                "/api/v1/laboratory/import_tests/",
+                {"file": file_obj},
+                format="multipart",
+            )
+            assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR

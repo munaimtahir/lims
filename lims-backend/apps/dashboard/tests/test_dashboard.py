@@ -491,5 +491,186 @@ class TestDashboardStatisticsViewSet:
         if response.status_code == 404:
             pytest.skip("export_analytics endpoint not routed")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Unsupported report type" in response.data.get("error", "")
+    
+    def test_export_analytics_tat_report(self, api_client, user, patient):
+        """Test export analytics for turnaround time report."""
+        from apps.orders.models import Order, OrderItem
+        from apps.laboratory.models import TestCategory, Test, TestParameter
+        from apps.results.models import TestResult
+        
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=Decimal("50.00"),
+            turnaround_time=24,
+        )
+        param = TestParameter.objects.create(
+            test=test,
+            parameter_name="WBC",
+            unit="10*3/uL",
+        )
+        
+        order = Order.objects.create(
+            order_id="ORD-EXPORT",
+            patient=patient,
+            status="VERIFIED",
+        )
+        order_item = OrderItem.objects.create(
+            order=order,
+            test=test,
+            price=Decimal("50.00"),
+        )
+        TestResult.objects.create(
+            order_item=order_item,
+            test_parameter=param,
+            result_value="5.0",
+            status="verified",
+            verified_at=timezone.now(),
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/export_analytics/?report_type=tat&format=excel"
+        )
+        if response.status_code == 404:
+            pytest.skip("export_analytics endpoint not routed")
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_export_analytics_workload_report(self, api_client, user, patient):
+        """Test export analytics for workload report."""
+        from apps.accounts.models import User as UserModel
+        
+        receptionist = UserModel.objects.create_user(
+            username="receptionist2",
+            email="receptionist2@example.com",
+            password="testpass",
+            full_name="Receptionist",
+            role="Receptionist",
+        )
+        
+        order = Order.objects.create(
+            order_id="ORD-WORKLOAD",
+            patient=patient,
+            status="completed",
+            ordered_by=receptionist,
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/export_analytics/?report_type=workload&format=excel"
+        )
+        if response.status_code == 404:
+            pytest.skip("export_analytics endpoint not routed")
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_export_analytics_payments_report(self, api_client, user, patient):
+        """Test export analytics for payments report."""
+        order = Order.objects.create(
+            order_id="ORD-PAYMENTS",
+            patient=patient,
+            status="completed",
+            total_amount=Decimal("100.00"),
+            net_amount=Decimal("100.00"),
+        )
+        Payment.objects.create(
+            order=order,
+            amount=Decimal("100.00"),
+            payment_method="cash",
+            payment_date=timezone.now().date(),
+        )
+        
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/export_analytics/?report_type=payments&format=csv"
+        )
+        if response.status_code == 404:
+            pytest.skip("export_analytics endpoint not routed")
+        assert response.status_code == status.HTTP_200_OK
+    
+    def test_revenue_report_invalid_date_from_format(self, api_client, user):
+        """Test revenue report with invalid date_from format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/revenue_report/?date_from=invalid-format"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Invalid date_from format" in response.data.get("error", "")
+    
+    def test_revenue_report_invalid_date_to_format(self, api_client, user):
+        """Test revenue report with invalid date_to format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/revenue_report/?date_to=invalid-format"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Invalid date_to format" in response.data.get("error", "")
+    
+    def test_test_statistics_invalid_date_from(self, api_client, user):
+        """Test test_statistics with invalid date_from format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/test_statistics/?date_from=invalid"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_test_statistics_invalid_date_to(self, api_client, user):
+        """Test test_statistics with invalid date_to format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/test_statistics/?date_to=invalid"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_turnaround_time_invalid_date_from(self, api_client, user):
+        """Test turnaround_time with invalid date_from format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/turnaround_time/?date_from=invalid"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_turnaround_time_invalid_date_to(self, api_client, user):
+        """Test turnaround_time with invalid date_to format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/turnaround_time/?date_to=invalid"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_workload_distribution_invalid_date_from(self, api_client, user):
+        """Test workload_distribution with invalid date_from format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/workload_distribution/?date_from=invalid"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_workload_distribution_invalid_date_to(self, api_client, user):
+        """Test workload_distribution with invalid date_to format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/workload_distribution/?date_to=invalid"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_payment_methods_invalid_date_from(self, api_client, user):
+        """Test payment_methods with invalid date_from format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/payment_methods/?date_from=invalid"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_payment_methods_invalid_date_to(self, api_client, user):
+        """Test payment_methods with invalid date_to format."""
+        api_client.force_authenticate(user=user)
+        response = api_client.get(
+            "/api/v1/dashboard/statistics/payment_methods/?date_to=invalid"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 

@@ -225,3 +225,109 @@ class TestPatientViewSet:
         """Test that unauthenticated access is denied."""
         response = api_client.get("/api/v1/patients/")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    
+    def test_patient_history_with_limit(self, authenticated_client, sample_patient):
+        """Test patient history with custom limit."""
+        response = authenticated_client.get(
+            f"/api/v1/patients/{sample_patient.id}/history/?limit=10"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["success"] is True
+    
+    def test_patient_history_with_parameter_filter(self, authenticated_client, sample_patient, admin_user):
+        """Test patient history filtered by parameter."""
+        from apps.laboratory.models import TestCategory, Test, TestParameter
+        from apps.orders.models import Order, OrderItem
+        from apps.results.models import TestResult
+        
+        # Create test data
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=100.00,
+            turnaround_time=24,
+        )
+        param = TestParameter.objects.create(
+            test=test,
+            parameter_name="WBC",
+            unit="10*3/uL",
+        )
+        
+        order = Order.objects.create(
+            patient=sample_patient,
+            ordered_by=admin_user,
+            status="completed",
+        )
+        order_item = OrderItem.objects.create(order=order, test=test, price=100.00)
+        TestResult.objects.create(
+            order_item=order_item,
+            test_parameter=param,
+            result_value="5.0",
+        )
+        
+        response = authenticated_client.get(
+            f"/api/v1/patients/{sample_patient.id}/history/?parameter_id={param.id}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["success"] is True
+    
+    def test_patient_test_comparison(self, authenticated_client, sample_patient, admin_user):
+        """Test patient test comparison endpoint."""
+        from apps.laboratory.models import TestCategory, Test, TestParameter
+        from apps.orders.models import Order, OrderItem
+        from apps.results.models import TestResult
+        
+        # Create test data
+        category = TestCategory.objects.create(name="Hematology")
+        test = Test.objects.create(
+            category=category,
+            test_code="CBC",
+            test_name="Complete Blood Count",
+            sample_type="Blood",
+            price=100.00,
+            turnaround_time=24,
+        )
+        param = TestParameter.objects.create(
+            test=test,
+            parameter_name="WBC",
+            unit="10*3/uL",
+            reference_min_male=4.0,
+            reference_max_male=11.0,
+        )
+        
+        order = Order.objects.create(
+            patient=sample_patient,
+            ordered_by=admin_user,
+            status="completed",
+        )
+        order_item = OrderItem.objects.create(order=order, test=test, price=100.00)
+        TestResult.objects.create(
+            order_item=order_item,
+            test_parameter=param,
+            result_value="5.0",
+        )
+        
+        response = authenticated_client.get(
+            f"/api/v1/patients/{sample_patient.id}/test_comparison/?parameter_id={param.id}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["success"] is True
+        assert "comparison" in response.data["data"]
+        assert "parameter" in response.data["data"]
+    
+    def test_patient_test_comparison_missing_parameter_id(self, authenticated_client, sample_patient):
+        """Test test comparison without parameter_id."""
+        response = authenticated_client.get(
+            f"/api/v1/patients/{sample_patient.id}/test_comparison/"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_patient_test_comparison_invalid_parameter(self, authenticated_client, sample_patient):
+        """Test test comparison with invalid parameter_id."""
+        response = authenticated_client.get(
+            f"/api/v1/patients/{sample_patient.id}/test_comparison/?parameter_id=99999"
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND

@@ -227,3 +227,113 @@ class TestOrderViewSet:
             f"/api/v1/orders/orders/{order.id}/cancel/"
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+class TestOrderModelMethods:
+    """Test Order model methods."""
+    
+    def test_validate_status_transition_valid(self, patient, receptionist_user):
+        """Test valid status transitions."""
+        order = Order.objects.create(
+            patient=patient,
+            ordered_by=receptionist_user,
+            status="NEW",
+        )
+        
+        # Valid transition: NEW -> COLLECTED
+        order.validate_status_transition("NEW", "COLLECTED")
+        order.status = "COLLECTED"
+        order.save()
+        assert order.status == "COLLECTED"
+    
+    def test_validate_status_transition_invalid(self, patient, receptionist_user):
+        """Test invalid status transitions."""
+        order = Order.objects.create(
+            patient=patient,
+            ordered_by=receptionist_user,
+            status="NEW",
+        )
+        
+        # Invalid transition: NEW -> VERIFIED (must go through COLLECTED, IN_PROCESS first)
+        from django.core.exceptions import ValidationError
+        with pytest.raises(ValidationError):
+            order.validate_status_transition("NEW", "VERIFIED")
+    
+    def test_can_transition_to_valid(self, patient, receptionist_user):
+        """Test can_transition_to returns True for valid transitions."""
+        order = Order.objects.create(
+            patient=patient,
+            ordered_by=receptionist_user,
+            status="NEW",
+        )
+        
+        assert order.can_transition_to("COLLECTED") is True
+        assert order.can_transition_to("CANCELLED") is True
+    
+    def test_can_transition_to_invalid(self, patient, receptionist_user):
+        """Test can_transition_to returns False for invalid transitions."""
+        order = Order.objects.create(
+            patient=patient,
+            ordered_by=receptionist_user,
+            status="NEW",
+        )
+        
+        assert order.can_transition_to("VERIFIED") is False
+        assert order.can_transition_to("PUBLISHED") is False
+    
+    def test_transition_to_valid(self, patient, receptionist_user):
+        """Test transition_to method with valid transition."""
+        order = Order.objects.create(
+            patient=patient,
+            ordered_by=receptionist_user,
+            status="NEW",
+        )
+        
+        order.transition_to("COLLECTED", receptionist_user)
+        order.refresh_from_db()
+        assert order.status == "COLLECTED"
+    
+    def test_transition_to_invalid(self, patient, receptionist_user):
+        """Test transition_to method with invalid transition."""
+        order = Order.objects.create(
+            patient=patient,
+            ordered_by=receptionist_user,
+            status="NEW",
+        )
+        
+        from django.core.exceptions import ValidationError
+        with pytest.raises(ValidationError):
+            order.transition_to("VERIFIED", receptionist_user)
+    
+    def test_transition_to_published_sends_notification(self, patient, receptionist_user, test_instance):
+        """Test that transitioning to PUBLISHED sends notification."""
+        from unittest.mock import patch
+        order = Order.objects.create(
+            patient=patient,
+            ordered_by=receptionist_user,
+            status="VERIFIED",
+        )
+        OrderItem.objects.create(order=order, test=test_instance, price=test_instance.price)
+        
+        with patch('apps.notifications.utils.send_order_complete_notification') as mock_notify:
+            order.transition_to("PUBLISHED", receptionist_user)
+            mock_notify.assert_called_once_with(order)
+    
+    def test_status_final_states_no_transitions(self, patient, receptionist_user):
+        """Test that PUBLISHED and CANCELLED are final states."""
+        # Test PUBLISHED
+        order1 = Order.objects.create(
+            patient=patient,
+            ordered_by=receptionist_user,
+            status="PUBLISHED",
+        )
+        assert order1.can_transition_to("COLLECTED") is False
+        
+        # Test CANCELLED
+        order2 = Order.objects.create(
+            patient=patient,
+            ordered_by=receptionist_user,
+            status="CANCELLED",
+        )
+        assert order2.can_transition_to("COLLECTED") is False

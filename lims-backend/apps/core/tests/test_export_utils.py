@@ -219,4 +219,29 @@ class TestExportToExcel:
         
         assert isinstance(response, HttpResponse)
         assert len(response.content) > 0
+    
+    def test_export_excel_with_non_string_cell_value(self):
+        """Test Excel export handles non-string cell values in column width calculation."""
+        # Create data that will trigger the except block in column width calculation
+        # Use a value that causes an exception when trying to get length
+        data = [
+            {"col1": object(), "col2": "normal"},  # object() doesn't have len()
+        ]
+        headers = ["col1", "col2"]
+        
+        # Should not raise exception, should handle gracefully
+        response = export_to_excel(data, "nonstring.xlsx", headers)
+        assert isinstance(response, HttpResponse)
+        assert len(response.content) > 0
+    
+    def test_export_excel_with_none_cell_value(self):
+        """Test Excel export handles None cell values."""
+        data = [
+            {"col1": None, "col2": "normal"},
+        ]
+        headers = ["col1", "col2"]
+        
+        response = export_to_excel(data, "none.xlsx", headers)
+        assert isinstance(response, HttpResponse)
+        assert len(response.content) > 0
 

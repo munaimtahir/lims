@@ -636,5 +636,52 @@ class TestNotificationUtils:
             mock_send.assert_called_once()
             call_args = mock_send.call_args
             assert call_args[1]['from_email'] == "lab@example.com"
+    
+    def test_send_notification_system_settings_exception(self):
+        """Test send_notification handles SystemSettings exception gracefully."""
+        from apps.notifications.utils import send_notification
+        from unittest.mock import patch, MagicMock
+        
+        # Mock SystemSettings.get_settings to raise exception
+        with patch('apps.notifications.utils.SystemSettings') as mock_settings:
+            mock_settings.get_settings.side_effect = Exception("Settings error")
+            
+            with patch('apps.notifications.utils.send_mail') as mock_send:
+                mock_send.return_value = True
+                
+                # Should not raise exception, should continue with default email
+                notification = send_notification(
+                    notification_type=NotificationType.SYSTEM_ALERT,
+                    recipient_email="test@example.com",
+                    subject="Test",
+                    message="Test message",
+                )
+                
+                assert notification is not None
+                assert notification.status == NotificationStatus.SENT
+    
+    def test_send_notification_email_from_exception(self):
+        """Test send_notification handles email_from exception gracefully."""
+        from apps.notifications.utils import send_notification
+        from unittest.mock import patch, MagicMock
+        
+        with patch('apps.notifications.utils.send_mail') as mock_send:
+            mock_send.return_value = True
+            
+            # Mock SystemSettings.get_settings to raise exception when getting email_from
+            with patch('apps.notifications.utils.SystemSettings') as mock_settings:
+                mock_settings_instance = MagicMock()
+                mock_settings_instance.email_from = None
+                mock_settings.get_settings.side_effect = [mock_settings_instance, Exception("Error getting email_from")]
+                
+                # Should not raise exception, should use default
+                notification = send_notification(
+                    notification_type=NotificationType.SYSTEM_ALERT,
+                    recipient_email="test@example.com",
+                    subject="Test",
+                    message="Test message",
+                )
+                
+                assert notification is not None
 
 
