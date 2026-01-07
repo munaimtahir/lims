@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db import transaction
+from django.db import transaction, models
 from .models import Analyzer, AnalyzerResultImport
 from .serializers import AnalyzerSerializer, AnalyzerResultImportSerializer
 from .hl7_parser import parse_hl7_message
@@ -111,11 +111,27 @@ class AnalyzerResultImportViewSet(viewsets.ModelViewSet):
         placer_order = order_info.get("placer_order_number")
         filler_order = order_info.get("filler_order_number")
         
+        from apps.orders.models import Order
+        
+        # Try placer_order first
         if placer_order:
             try:
-                # Try to match by order_id
-                from apps.orders.models import Order
                 order = Order.objects.filter(order_id=placer_order).first()
+                if order:
+                    # Match by test code
+                    test_code = order_info.get("test_code")
+                    if test_code:
+                        order_item = OrderItem.objects.filter(
+                            order=order,
+                            test__test_code=test_code,
+                        ).first()
+            except Exception as e:
+                pass
+        
+        # If no match, try filler_order
+        if not order_item and filler_order:
+            try:
+                order = Order.objects.filter(order_id=filler_order).first()
                 if order:
                     # Match by test code
                     test_code = order_info.get("test_code")
@@ -143,11 +159,14 @@ class AnalyzerResultImportViewSet(viewsets.ModelViewSet):
                 with transaction.atomic():
                     results = parsed_data.get("results", [])
                     for result_data in results:
-                        # Find test parameter
+                        # Find test parameter by name or ID
                         param_name = result_data.get("parameter_name", "")
+                        param_id = result_data.get("parameter_id", "")
                         param = TestParameter.objects.filter(
                             test=order_item.test,
-                            parameter_name__icontains=param_name,
+                        ).filter(
+                            models.Q(parameter_name__icontains=param_name) | 
+                            models.Q(parameter_name__icontains=param_id)
                         ).first()
                         
                         if param:
@@ -239,9 +258,12 @@ class AnalyzerResultImportViewSet(viewsets.ModelViewSet):
             
             for result_data in results:
                 param_name = result_data.get("parameter_name", "")
+                param_id = result_data.get("parameter_id", "")
                 param = TestParameter.objects.filter(
                     test=order_item.test,
-                    parameter_name__icontains=param_name,
+                ).filter(
+                    models.Q(parameter_name__icontains=param_name) | 
+                    models.Q(parameter_name__icontains=param_id)
                 ).first()
                 
                 if param:

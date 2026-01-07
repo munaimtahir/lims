@@ -13,8 +13,8 @@ class PatientFilter(django_filters.FilterSet):
     """
     
     # Date range filtering
-    created_from = django_filters.DateFilter(field_name="created_at", lookup_expr="gte")
-    created_to = django_filters.DateFilter(field_name="created_at", lookup_expr="lte")
+    created_from = django_filters.DateFilter(method="filter_created_from")
+    created_to = django_filters.DateFilter(method="filter_created_to")
     
     # Name search (multiple fields)
     name = django_filters.CharFilter(method="filter_name")
@@ -40,13 +40,67 @@ class PatientFilter(django_filters.FilterSet):
     
     def filter_age_min(self, queryset, name, value):
         """Filter by minimum age."""
-        from datetime import date
-        max_dob = date.today().replace(year=date.today().year - value)
+        from datetime import date, timedelta
+        # Convert to int if Decimal
+        age = int(value) if hasattr(value, '__int__') else value
+        # Calculate max DOB: someone who is at least 'age' years old
+        # was born on or before (today - age years)
+        today = date.today()
+        max_dob = date(today.year - age, today.month, today.day)
+        # Handle leap year edge case (Feb 29)
+        try:
+            max_dob = date(today.year - age, today.month, today.day)
+        except ValueError:
+            # If Feb 29 doesn't exist in that year, use Feb 28
+            max_dob = date(today.year - age, today.month, today.day - 1)
         return queryset.filter(date_of_birth__lte=max_dob)
     
     def filter_age_max(self, queryset, name, value):
         """Filter by maximum age."""
         from datetime import date
-        min_dob = date.today().replace(year=date.today().year - value - 1)
+        # Convert to int if Decimal
+        age = int(value) if hasattr(value, '__int__') else value
+        # Calculate min DOB: someone who is at most 'age' years old
+        # was born on or after (today - age - 1 years)
+        today = date.today()
+        min_dob = date(today.year - age - 1, today.month, today.day)
+        # Handle leap year edge case
+        try:
+            min_dob = date(today.year - age - 1, today.month, today.day)
+        except ValueError:
+            # If Feb 29 doesn't exist in that year, use Feb 28
+            min_dob = date(today.year - age - 1, today.month, today.day - 1)
         return queryset.filter(date_of_birth__gte=min_dob)
+    
+    def filter_created_from(self, queryset, name, value):
+        """Filter by created_from date (start of day)."""
+        from django.utils import timezone
+        from datetime import datetime, time as time_class
+        import pytz
+        # Convert string to date if needed
+        if isinstance(value, str):
+            from datetime import date as date_class
+            value = date_class.fromisoformat(value)
+        # Convert date to start of day datetime in UTC
+        # Since timezone.now() returns UTC, we should compare in UTC
+        start_of_day_naive = datetime.combine(value, time_class.min)
+        # Make timezone-aware using UTC to match timezone.now() behavior
+        start_of_day = timezone.make_aware(start_of_day_naive, pytz.UTC)
+        return queryset.filter(created_at__gte=start_of_day)
+    
+    def filter_created_to(self, queryset, name, value):
+        """Filter by created_to date (end of day)."""
+        from django.utils import timezone
+        from datetime import datetime, time as time_class, timedelta
+        # Convert string to date if needed
+        if isinstance(value, str):
+            from datetime import date as date_class
+            value = date_class.fromisoformat(value)
+        # Convert date to end of day in the current timezone
+        # Get current timezone-aware datetime for today to determine timezone
+        tz = timezone.get_current_timezone()
+        end_of_day = timezone.make_aware(datetime.combine(value, time_class.max), tz)
+        # Add 1 day and subtract 1 microsecond to get end of day
+        end_of_day = end_of_day + timedelta(days=1) - timedelta(microseconds=1)
+        return queryset.filter(created_at__lte=end_of_day)
 

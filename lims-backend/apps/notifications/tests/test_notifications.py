@@ -643,8 +643,9 @@ class TestNotificationUtils:
         from unittest.mock import patch, MagicMock
         
         # Mock SystemSettings.get_settings to raise exception
-        with patch('apps.notifications.utils.SystemSettings') as mock_settings:
-            mock_settings.get_settings.side_effect = Exception("Settings error")
+        # SystemSettings is imported inside the function, so patch it at the source
+        with patch('apps.core.models.SystemSettings.get_settings') as mock_get_settings:
+            mock_get_settings.side_effect = Exception("Settings error")
             
             with patch('apps.notifications.utils.send_mail') as mock_send:
                 mock_send.return_value = True
@@ -663,17 +664,16 @@ class TestNotificationUtils:
     def test_send_notification_email_from_exception(self):
         """Test send_notification handles email_from exception gracefully."""
         from apps.notifications.utils import send_notification
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import patch, MagicMock, PropertyMock
         
         with patch('apps.notifications.utils.send_mail') as mock_send:
             mock_send.return_value = True
             
-            # Mock SystemSettings.get_settings to raise exception when getting email_from
-            with patch('apps.notifications.utils.SystemSettings') as mock_settings:
-                mock_settings_instance = MagicMock()
-                mock_settings_instance.email_from = None
-                mock_settings.get_settings.side_effect = [mock_settings_instance, Exception("Error getting email_from")]
-                
+            # Mock SystemSettings.get_settings to return an instance that raises exception when accessing email_from
+            mock_settings_instance = MagicMock()
+            type(mock_settings_instance).email_from = PropertyMock(side_effect=Exception("Email from error"))
+            
+            with patch('apps.core.models.SystemSettings.get_settings', return_value=mock_settings_instance):
                 # Should not raise exception, should use default
                 notification = send_notification(
                     notification_type=NotificationType.SYSTEM_ALERT,
@@ -683,5 +683,6 @@ class TestNotificationUtils:
                 )
                 
                 assert notification is not None
+                assert notification.status == NotificationStatus.SENT
 
 

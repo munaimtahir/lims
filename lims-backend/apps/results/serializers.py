@@ -56,7 +56,11 @@ class TestResultSerializer(serializers.ModelSerializer):
         Returns:
             TestResult: The newly created test result instance.
         """
+        from django.utils import timezone
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             validated_data["entered_by"] = request.user
+        # Set entered_at if not provided
+        if "entered_at" not in validated_data:
+            validated_data["entered_at"] = timezone.now()
         return super().create(validated_data)

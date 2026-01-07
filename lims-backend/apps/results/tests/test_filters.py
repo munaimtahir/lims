@@ -77,23 +77,40 @@ class TestTestResultFilter:
             role="Lab Technician",
         )
     
-    def test_filter_by_value_min(self, order_item, test_parameter, technician):
+    def test_filter_by_value_min(self, order, test_parameter, technician):
         """Test filtering by minimum value."""
-        # Create results with different values
+        # Create multiple order items for the same order to avoid unique constraint
+        order_item1 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item2 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item3 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        
+        # Create results with different values on different order items
         result1 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item1,
             test_parameter=test_parameter,
             result_value="5.0",
             entered_by=technician,
         )
         result2 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item2,
             test_parameter=test_parameter,
             result_value="10.0",
             entered_by=technician,
         )
         result3 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item3,
             test_parameter=test_parameter,
             result_value="3.0",
             entered_by=technician,
@@ -109,23 +126,40 @@ class TestTestResultFilter:
         assert result2.id in result_ids
         assert result3.id not in result_ids
     
-    def test_filter_by_value_max(self, order_item, test_parameter, technician):
+    def test_filter_by_value_max(self, order, test_parameter, technician):
         """Test filtering by maximum value."""
-        # Create results with different values
+        # Create multiple order items for the same order to avoid unique constraint
+        order_item1 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item2 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item3 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        
+        # Create results with different values on different order items
         result1 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item1,
             test_parameter=test_parameter,
             result_value="5.0",
             entered_by=technician,
         )
         result2 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item2,
             test_parameter=test_parameter,
             result_value="10.0",
             entered_by=technician,
         )
         result3 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item3,
             test_parameter=test_parameter,
             result_value="3.0",
             entered_by=technician,
@@ -141,23 +175,40 @@ class TestTestResultFilter:
         assert result3.id in result_ids
         assert result2.id not in result_ids
     
-    def test_filter_by_value_range(self, order_item, test_parameter, technician):
+    def test_filter_by_value_range(self, order, test_parameter, technician):
         """Test filtering by value range (min and max)."""
-        # Create results with different values
+        # Create multiple order items for the same order to avoid unique constraint
+        order_item1 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item2 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item3 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        
+        # Create results with different values on different order items
         result1 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item1,
             test_parameter=test_parameter,
             result_value="5.0",
             entered_by=technician,
         )
         result2 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item2,
             test_parameter=test_parameter,
             result_value="10.0",
             entered_by=technician,
         )
         result3 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item3,
             test_parameter=test_parameter,
             result_value="3.0",
             entered_by=technician,
@@ -176,20 +227,32 @@ class TestTestResultFilter:
         assert result2.id not in result_ids
         assert result3.id not in result_ids
     
-    def test_filter_by_entered_from(self, order_item, test_parameter, technician):
+    def test_filter_by_entered_from(self, order, test_parameter, technician):
         """Test filtering by entered_from date."""
+        # Create multiple order items for the same order to avoid unique constraint
+        order_item1 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item2 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        
         now = timezone.now()
         yesterday = now - timezone.timedelta(days=1)
         
         result1 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item1,
             test_parameter=test_parameter,
             result_value="5.0",
             entered_by=technician,
             entered_at=yesterday,
         )
         result2 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item2,
             test_parameter=test_parameter,
             result_value="10.0",
             entered_by=technician,
@@ -208,20 +271,32 @@ class TestTestResultFilter:
         assert result2.id in result_ids
         assert result1.id not in result_ids
     
-    def test_filter_by_entered_to(self, order_item, test_parameter, technician):
+    def test_filter_by_entered_to(self, order, test_parameter, technician):
         """Test filtering by entered_to date."""
+        # Create multiple order items for the same order to avoid unique constraint
+        order_item1 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item2 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        
         now = timezone.now()
         yesterday = now - timezone.timedelta(days=1)
         
         result1 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item1,
             test_parameter=test_parameter,
             result_value="5.0",
             entered_by=technician,
             entered_at=yesterday,
         )
         result2 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item2,
             test_parameter=test_parameter,
             result_value="10.0",
             entered_by=technician,
@@ -240,22 +315,39 @@ class TestTestResultFilter:
         assert result1.id in result_ids
         assert result2.id not in result_ids
     
-    def test_filter_by_flag(self, order_item, test_parameter, technician):
+    def test_filter_by_flag(self, order, test_parameter, technician):
         """Test filtering by flag."""
+        # Create multiple order items for the same order to avoid unique constraint
+        order_item1 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item2 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        
         result1 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item1,
             test_parameter=test_parameter,
             result_value="5.0",
-            flag="normal",
             entered_by=technician,
         )
+        # Update flag directly in DB to bypass validation
+        TestResult.objects.filter(id=result1.id).update(flag="normal")
+        result1.refresh_from_db()
+        
         result2 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item2,
             test_parameter=test_parameter,
             result_value="20.0",
-            flag="high",
             entered_by=technician,
         )
+        # Update flag directly in DB to bypass validation
+        TestResult.objects.filter(id=result2.id).update(flag="high")
+        result2.refresh_from_db()
         
         # Filter by flag = normal
         filter_set = TestResultFilter(
@@ -269,26 +361,38 @@ class TestTestResultFilter:
         assert result1.id in result_ids
         assert result2.id not in result_ids
     
-    def test_filter_by_status(self, order_item, test_parameter, technician):
+    def test_filter_by_status(self, order, test_parameter, technician):
         """Test filtering by status."""
+        # Create multiple order items for the same order to avoid unique constraint
+        order_item1 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item2 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        
         result1 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item1,
             test_parameter=test_parameter,
             result_value="5.0",
-            status="pending",
+            status="DRAFT",
             entered_by=technician,
         )
         result2 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item2,
             test_parameter=test_parameter,
             result_value="10.0",
-            status="verified",
+            status="VERIFIED",
             entered_by=technician,
         )
         
-        # Filter by status = pending
+        # Filter by status = DRAFT
         filter_set = TestResultFilter(
-            {"status": "pending"},
+            {"status": "DRAFT"},
             queryset=TestResult.objects.all()
         )
         results = filter_set.qs
@@ -338,16 +442,28 @@ class TestTestResultFilter:
         assert result1.id in result_ids
         assert result2.id not in result_ids
     
-    def test_filter_handles_non_numeric_values(self, order_item, test_parameter, technician):
+    def test_filter_handles_non_numeric_values(self, order, test_parameter, technician):
         """Test that filter handles non-numeric result values gracefully."""
+        # Create multiple order items for the same order to avoid unique constraint
+        order_item1 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        order_item2 = OrderItem.objects.create(
+            order=order,
+            test=test_parameter.test,
+            price=Decimal("50.00"),
+        )
+        
         result1 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item1,
             test_parameter=test_parameter,
             result_value="POSITIVE",
             entered_by=technician,
         )
         result2 = TestResult.objects.create(
-            order_item=order_item,
+            order_item=order_item2,
             test_parameter=test_parameter,
             result_value="5.0",
             entered_by=technician,

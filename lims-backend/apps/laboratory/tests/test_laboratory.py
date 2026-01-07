@@ -253,7 +253,8 @@ class TestImportTestsViewSet:
     def test_import_tests_no_file(self, api_client, admin_user):
         """Test import_tests without file."""
         api_client.force_authenticate(user=admin_user)
-        response = api_client.post("/api/v1/laboratory/import_tests/")
+        # The router registers it as "import", so URL is /api/v1/laboratory/import/
+        response = api_client.post("/api/v1/laboratory/import/")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "No file uploaded" in response.data.get("error", "")
     
@@ -274,8 +275,9 @@ class TestImportTestsViewSet:
         file_obj.name = "tests.xlsx"
         
         api_client.force_authenticate(user=admin_user)
+        # The router registers it as "import", so URL is /api/v1/laboratory/import/
         response = api_client.post(
-            "/api/v1/laboratory/import_tests/",
+            "/api/v1/laboratory/import/",
             {"file": file_obj},
             format="multipart",
         )
@@ -289,8 +291,9 @@ class TestImportTestsViewSet:
         invalid_file = SimpleUploadedFile("test.txt", b"Not an Excel file")
         
         api_client.force_authenticate(user=admin_user)
+        # The router registers it as "import", so URL is /api/v1/laboratory/import/
         response = api_client.post(
-            "/api/v1/laboratory/import_tests/",
+            "/api/v1/laboratory/import/",
             {"file": invalid_file},
             format="multipart",
         )
@@ -310,8 +313,9 @@ class TestImportTestsViewSet:
         with patch('apps.laboratory.views.import_tests_from_excel') as mock_import:
             mock_import.side_effect = Exception("Import failed")
             
+            # The router registers it as "import", so URL is /api/v1/laboratory/import/
             response = api_client.post(
-                "/api/v1/laboratory/import_tests/",
+                "/api/v1/laboratory/import/",
                 {"file": file_obj},
                 format="multipart",
             )

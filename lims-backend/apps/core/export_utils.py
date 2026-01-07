@@ -80,7 +80,16 @@ def export_to_excel(data, filename="export.xlsx", headers=None, sheet_name="Shee
             # Write data
             for row_idx, row_data in enumerate(data, 2):
                 for col_idx, header in enumerate(headers, 1):
-                    ws.cell(row=row_idx, column=col_idx, value=row_data.get(header, ""))
+                    value = row_data.get(header, "")
+                    # Convert non-serializable types to string
+                    if value is not None and not isinstance(value, (str, int, float, bool, type(None))):
+                        try:
+                            # Try to convert to string
+                            value = str(value)
+                        except Exception:
+                            # If conversion fails, use empty string
+                            value = ""
+                    ws.cell(row=row_idx, column=col_idx, value=value)
         else:
             # Data is list of lists
             if headers:

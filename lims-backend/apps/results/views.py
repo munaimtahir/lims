@@ -105,7 +105,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
         )
         order_items_with_pending = OrderItem.objects.filter(
             id__in=pending_results
-        ).select_related("order", "order__patient", "test", "panel")
+        ).select_related("order", "order__patient", "test", "panel").distinct()
 
         # Combine and deduplicate
         all_items = (order_items_needing_results | order_items_with_pending).distinct()

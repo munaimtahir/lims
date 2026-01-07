@@ -405,8 +405,9 @@ OBR|1||ORD-HL7-002|CBC^Complete Blood Count"""
         api_client.force_authenticate(user=user)
         
         # Mock Order.objects.filter to raise exception
-        with patch('apps.integrations.views.Order') as mock_order:
-            mock_order.objects.filter.side_effect = Exception("DB error")
+        # Order is imported locally in the view, so patch at source
+        with patch('apps.orders.models.Order.objects.filter') as mock_filter:
+            mock_filter.side_effect = Exception("DB error")
             
             data = {
                 "analyzer_id": analyzer.id,
@@ -764,6 +765,13 @@ OBX|1|NM|WBC^White Blood Count|5.0|10*3/uL|4.0-11.0|N|||F"""
             turnaround_time=24,
         )
         
+        # Create test parameter so it can be matched
+        param = TestParameter.objects.create(
+            test=test,
+            parameter_name="WBC",
+            unit="10*3/uL",
+        )
+        
         order_item = OrderItem.objects.create(
             order=order,
             test=test,
@@ -782,13 +790,16 @@ OBX|1|NM|WBC^White Blood Count|5.0|10*3/uL|4.0-11.0|N|||F"""
         }
         
         # Mock TestResult.objects.get_or_create to raise exception
+        # Need to patch where it's actually used - in the view module after import
         from unittest.mock import patch
         with patch('apps.integrations.views.TestResult.objects.get_or_create') as mock_create:
             mock_create.side_effect = Exception("Database error")
             response = api_client.post("/api/v1/integrations/imports/import_hl7/", data, format='json')
-            assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-            import_record = AnalyzerResultImport.objects.filter(analyzer=analyzer).first()
-            assert import_record.status == "FAILED"
+            # The exception should be caught and return 500, but if parameter not found, returns 201
+            # So we need to ensure parameter exists - it does (WBC parameter created above)
+            assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR, f"Expected 500, got {response.status_code}. Response: {response.data}"
+            import_record = AnalyzerResultImport.objects.filter(analyzer=analyzer).order_by('-id').first()
+            assert import_record.status == "FAILED", f"Expected FAILED, got {import_record.status}"
     
     def test_match_order_creates_results(self, api_client, user, analyzer, patient):
         """Test match_order action creates test results."""
@@ -853,7 +864,7 @@ OBX|1|NM|WBC^White Blood Count|5.0|10*3/uL|4.0-11.0|N|||F"""
     def test_match_order_result_creation_exception(self, api_client, user, analyzer, patient):
         """Test match_order handles exception during result creation."""
         from apps.orders.models import Order, OrderItem
-        from apps.laboratory.models import TestCategory, Test
+        from apps.laboratory.models import TestCategory, Test, TestParameter
         
         order = Order.objects.create(
             order_id="ORD-EXCEPTION",
@@ -871,6 +882,13 @@ OBX|1|NM|WBC^White Blood Count|5.0|10*3/uL|4.0-11.0|N|||F"""
             sample_type="Blood",
             price=Decimal("50.00"),
             turnaround_time=24,
+        )
+        
+        # Create test parameter so it can be matched
+        param = TestParameter.objects.create(
+            test=test,
+            parameter_name="WBC",
+            unit="10*3/uL",
         )
         
         order_item = OrderItem.objects.create(
@@ -894,7 +912,8 @@ OBX|1|NM|WBC^White Blood Count|5.0|10*3/uL|4.0-11.0|N|||F"""
         
         # Mock TestResult.objects.get_or_create to raise exception
         from unittest.mock import patch
-        with patch('apps.integrations.views.TestResult.objects.get_or_create') as mock_create:
+        # Patch at the source module where it's used
+        with patch('apps.results.models.TestResult.objects.get_or_create') as mock_create:
             mock_create.side_effect = Exception("Database error")
             response = api_client.post(
                 f"/api/v1/integrations/imports/{import_record.id}/match_order/",

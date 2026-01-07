@@ -384,14 +384,36 @@ class DashboardStatisticsViewSet(ViewSet):
         date_from = request.query_params.get("date_from")
         date_to = request.query_params.get("date_to")
         
+        # Parse and validate dates
+        date_from_obj = None
+        date_to_obj = None
+        
+        if date_from:
+            try:
+                date_from_obj = datetime.strptime(date_from, "%Y-%m-%d").date()
+            except ValueError:
+                return Response(
+                    {"error": "Invalid date_from format. Use YYYY-MM-DD"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
+        if date_to:
+            try:
+                date_to_obj = datetime.strptime(date_to, "%Y-%m-%d").date()
+            except ValueError:
+                return Response(
+                    {"error": "Invalid date_to format. Use YYYY-MM-DD"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        
         workload = {}
         
         # Orders created by receptionists
         orders_qs = Order.objects.all()
-        if date_from:
-            orders_qs = orders_qs.filter(created_at__gte=date_from)
-        if date_to:
-            orders_qs = orders_qs.filter(created_at__lte=date_to)
+        if date_from_obj:
+            orders_qs = orders_qs.filter(created_at__gte=date_from_obj)
+        if date_to_obj:
+            orders_qs = orders_qs.filter(created_at__lte=date_to_obj)
         
         workload["receptionists"] = (
             orders_qs.filter(ordered_by__role="Receptionist")
@@ -402,10 +424,10 @@ class DashboardStatisticsViewSet(ViewSet):
         
         # Samples collected by phlebotomists
         samples_qs = Sample.objects.filter(collected_by__isnull=False)
-        if date_from:
-            samples_qs = samples_qs.filter(collected_at__gte=date_from)
-        if date_to:
-            samples_qs = samples_qs.filter(collected_at__lte=date_to)
+        if date_from_obj:
+            samples_qs = samples_qs.filter(collected_at__gte=date_from_obj)
+        if date_to_obj:
+            samples_qs = samples_qs.filter(collected_at__lte=date_to_obj)
         
         workload["phlebotomists"] = (
             samples_qs.values("collected_by__full_name")
@@ -415,10 +437,10 @@ class DashboardStatisticsViewSet(ViewSet):
         
         # Results entered by lab technicians
         results_qs = TestResult.objects.filter(entered_by__isnull=False)
-        if date_from:
-            results_qs = results_qs.filter(entered_at__gte=date_from)
-        if date_to:
-            results_qs = results_qs.filter(entered_at__lte=date_to)
+        if date_from_obj:
+            results_qs = results_qs.filter(entered_at__gte=date_from_obj)
+        if date_to_obj:
+            results_qs = results_qs.filter(entered_at__lte=date_to_obj)
         
         workload["lab_technicians"] = (
             results_qs.values("entered_by__full_name")
@@ -428,10 +450,10 @@ class DashboardStatisticsViewSet(ViewSet):
         
         # Results verified by pathologists
         verified_qs = TestResult.objects.filter(verified_by__isnull=False)
-        if date_from:
-            verified_qs = verified_qs.filter(verified_at__gte=date_from)
-        if date_to:
-            verified_qs = verified_qs.filter(verified_at__lte=date_to)
+        if date_from_obj:
+            verified_qs = verified_qs.filter(verified_at__gte=date_from_obj)
+        if date_to_obj:
+            verified_qs = verified_qs.filter(verified_at__lte=date_to_obj)
         
         workload["pathologists"] = (
             verified_qs.values("verified_by__full_name")
