@@ -19,6 +19,7 @@ import type {
   LabTerminal,
   LabTerminalCreateRequest,
   Notification,
+  TestParameter,
 } from '../types';
 
 /**
