@@ -102,3 +102,4 @@ dump.rdb
 # Archives (keep structure but ignore contents if needed)
 # archive/legacy_lab/ is kept for reference
 
+.credentials.txt

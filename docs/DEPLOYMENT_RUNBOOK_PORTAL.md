@@ -430,6 +430,44 @@ The LIMS application is deployed and running. Internal endpoints are functional.
 
 ---
 
+## Initial Admin Credentials
+
+**Status:** ✅ **Credentials Generated and Configured**
+
+A superuser account has been created for initial access to the LIMS system:
+
+```
+Username: admin
+Email: admin@alshifalab.pk
+Full Name: System Administrator
+Password: [See .credentials.txt file]
+Role: Admin
+Superuser: Yes
+Staff: Yes
+```
+
+**Access URLs:**
+- Admin Panel: `https://portal.alshifalab.pk/admin/`
+- API Base: `https://portal.alshifalab.pk/api/v1/`
+
+**Security Notes:**
+- Credentials are stored in `.credentials.txt` (not tracked in git)
+- **IMPORTANT:** Change the password immediately after first login
+- The credentials file has restricted permissions (600) and should be deleted after secure storage elsewhere
+
+**Verification:**
+```bash
+$ docker compose exec backend python manage.py shell
+>>> from apps.accounts.models import User
+>>> user = User.objects.get(username='admin')
+>>> user.is_superuser
+True
+>>> user.has_usable_password()
+True
+```
+
+---
+
 **Deployment Completed:** 2026-01-08  
 **Deployed By:** Automated Deployment Process  
 **Next Review:** Monitor health checks for 10-15 minutes post-deployment
