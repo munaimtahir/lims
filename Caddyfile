@@ -58,7 +58,7 @@
      # Backend API
      handle /api/* {
          reverse_proxy backend:8000 {
-             header_up Host {upstream_hostport}
+             header_up Host {host}
              header_up X-Forwarded-Proto {scheme}
              header_up X-Forwarded-For {remote_host}
              header_up X-Real-IP {remote_host}
@@ -68,7 +68,7 @@
      # Django Admin
      handle /admin/* {
          reverse_proxy backend:8000 {
-             header_up Host {upstream_hostport}
+             header_up Host {host}
              header_up X-Forwarded-Proto {scheme}
              header_up X-Forwarded-For {remote_host}
              header_up X-Real-IP {remote_host}

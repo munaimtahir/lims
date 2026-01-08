@@ -166,6 +166,29 @@ logger.info(f"Production CORS_ALLOWED_ORIGINS configured: {CORS_ALLOWED_ORIGINS}
 
 
 # ============================================
+# CSRF TRUSTED ORIGINS CONFIGURATION
+# ============================================
+# CRITICAL FOR HTTPS DEPLOYMENT
+# Django 4.0+ requires CSRF_TRUSTED_ORIGINS for HTTPS sites
+# Must include the protocol (https://) and domain
+
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')]
+if not CSRF_TRUSTED_ORIGINS or CSRF_TRUSTED_ORIGINS == ['']:
+    # Fallback to CORS_ALLOWED_ORIGINS if CSRF_TRUSTED_ORIGINS not explicitly set
+    if CORS_ALLOWED_ORIGINS and CORS_ALLOWED_ORIGINS != ['']:
+        CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+        logger.info(f"CSRF_TRUSTED_ORIGINS not set, using CORS_ALLOWED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
+    else:
+        logger.warning(
+            "WARNING: CSRF_TRUSTED_ORIGINS not configured. "
+            "CSRF protection may fail for HTTPS requests. "
+            "Set CSRF_TRUSTED_ORIGINS to your domain (e.g., https://portal.alshifalab.pk)"
+        )
+
+logger.info(f"Production CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}")
+
+
+# ============================================
 # STATIC AND MEDIA FILES
 # ============================================
 
