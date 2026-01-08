@@ -59,7 +59,9 @@
      handle /api/* {
          reverse_proxy backend:8000 {
              header_up Host {host}
-             header_up X-Forwarded-Proto {scheme}
+             # Set to https since host Caddy handles HTTPS termination
+             # This prevents Django SECURE_SSL_REDIRECT from causing redirect loops
+             header_up X-Forwarded-Proto https
              header_up X-Forwarded-For {remote_host}
              header_up X-Real-IP {remote_host}
          }
@@ -69,7 +71,9 @@
      handle /admin/* {
          reverse_proxy backend:8000 {
              header_up Host {host}
-             header_up X-Forwarded-Proto {scheme}
+             # Set to https since host Caddy handles HTTPS termination
+             # This prevents Django SECURE_SSL_REDIRECT from causing redirect loops
+             header_up X-Forwarded-Proto https
              header_up X-Forwarded-For {remote_host}
              header_up X-Real-IP {remote_host}
          }
@@ -79,6 +83,8 @@
      handle /static/* {
          reverse_proxy backend:8000 {
              header_up Host {upstream_hostport}
+             # Set to https since host Caddy handles HTTPS termination
+             header_up X-Forwarded-Proto https
          }
      }
 
@@ -86,6 +92,8 @@
      handle /media/* {
          reverse_proxy backend:8000 {
              header_up Host {upstream_hostport}
+             # Set to https since host Caddy handles HTTPS termination
+             header_up X-Forwarded-Proto https
          }
      }
 

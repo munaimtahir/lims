@@ -117,21 +117,20 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
         'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/0'),
+        'KEY_PREFIX': 'lims',
+        'TIMEOUT': 300,  # Default timeout 5 minutes
         'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'CONNECTION_POOL_KWARGS': {
                 'retry_on_timeout': True,
                 'max_connections': 50,
             },
         },
-        'KEY_PREFIX': 'lims',
-        'TIMEOUT': 300,  # Default timeout 5 minutes
     }
 }
 
-# Use Redis for sessions
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+# Use database for sessions (more reliable than Redis for critical operations)
+# Redis cache is still used for general caching
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 
 # ============================================
