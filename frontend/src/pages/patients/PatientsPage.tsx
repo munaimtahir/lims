@@ -8,11 +8,17 @@ export default function PatientsPage() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
   const { data: patientsData, isLoading, error } = useQuery({
     queryKey: ['patients', searchQuery],
     queryFn: () => patientApi.list({ search: searchQuery || undefined }),
+  });
+
+  const { data: selectedPatientData } = useQuery({
+    queryKey: ['patient', selectedPatientId],
+    queryFn: () => patientApi.get(selectedPatientId!),
+    enabled: selectedPatientId !== null,
   });
 
   const createMutation = useMutation({
@@ -78,7 +84,7 @@ export default function PatientsPage() {
                 <td>{patient.last_visit || 'N/A'}</td>
                 <td>
                   <button
-                    onClick={() => setSelectedPatient(patient)}
+                    onClick={() => setSelectedPatientId(patient.id)}
                     className={styles.viewButton}
                   >
                     View
@@ -106,10 +112,10 @@ export default function PatientsPage() {
         />
       )}
 
-      {selectedPatient && (
+      {selectedPatientData?.data && (
         <PatientDetailModal
-          patient={selectedPatient}
-          onClose={() => setSelectedPatient(null)}
+          patient={selectedPatientData.data}
+          onClose={() => setSelectedPatientId(null)}
         />
       )}
     </div>
