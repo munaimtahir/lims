@@ -91,7 +91,7 @@ services:
       DEBUG: "False"
       
       # Allowed Hosts (CRITICAL: Include public IP and domains)
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-api.lims.alshifalab.pk,lims.alshifalab.pk,localhost,127.0.0.1}
       
       # Database Configuration
       DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
@@ -105,7 +105,8 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       
       # CORS Configuration (CRITICAL: Must match frontend domain)
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://lims.alshifalab.pk}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://lims.alshifalab.pk,https://api.lims.alshifalab.pk}
       CORS_ALLOW_CREDENTIALS: "True"
       
       # SSL/HTTPS Configuration
@@ -223,8 +224,8 @@ services:
     container_name: lims_proxy
     restart: unless-stopped
     ports:
-      # Expose HTTP on high port to avoid conflict with host Caddy
-      - "8013:80"
+      # Bind to localhost only for Caddy reverse proxy
+      - "127.0.0.1:8013:80"
     volumes:
       # Caddy configuration file
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
