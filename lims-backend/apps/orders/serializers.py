@@ -159,4 +159,26 @@ class OrderSerializer(serializers.ModelSerializer):
             # Calculate total
             order.calculate_total()
 
+            # Create samples for each order item
+            from apps.samples.models import Sample, SampleStatus
+            for item in order.items.all():
+                # Determine sample type from test or panel
+                sample_type = "Blood"  # Default
+                if item.test:
+                    sample_type = item.test.sample_type or "Blood"
+                elif item.panel:
+                    # For panels, use panel's sample_type or first test's sample type
+                    sample_type = item.panel.sample_type or "Blood"
+                    if not sample_type or sample_type == "Blood":
+                        first_test = item.panel.tests.first()
+                        if first_test:
+                            sample_type = first_test.sample_type or "Blood"
+                
+                # Create sample for this order item
+                Sample.objects.create(
+                    order_item=item,
+                    sample_type=sample_type,
+                    status=SampleStatus.PENDING
+                )
+
         return order

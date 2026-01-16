@@ -20,6 +20,21 @@ class TestResultSerializer(serializers.ModelSerializer):
         source="verified_by.full_name", read_only=True
     )
 
+    def to_representation(self, instance):
+        """Convert status to lowercase for frontend compatibility."""
+        data = super().to_representation(instance)
+        # Map backend status to frontend status
+        status_map = {
+            "DRAFT": "pending",
+            "ENTERED": "pending",
+            "VERIFIED": "verified",
+            "PUBLISHED": "verified",
+            "REJECTED": "rejected",
+        }
+        if "status" in data and data["status"]:
+            data["status"] = status_map.get(data["status"], data["status"].lower())
+        return data
+
     class Meta:
         model = TestResult
         fields = [
@@ -30,6 +45,7 @@ class TestResultSerializer(serializers.ModelSerializer):
             "unit",
             "result_value",
             "flag",
+            "status",
             "remarks",
             "entered_by",
             "entered_by_name",
@@ -63,4 +79,7 @@ class TestResultSerializer(serializers.ModelSerializer):
         # Set entered_at if not provided
         if "entered_at" not in validated_data:
             validated_data["entered_at"] = timezone.now()
+        # Set status to ENTERED when creating (pending verification)
+        if "status" not in validated_data:
+            validated_data["status"] = "ENTERED"
         return super().create(validated_data)

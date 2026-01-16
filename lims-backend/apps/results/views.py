@@ -97,9 +97,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
             .distinct()
         )
 
-        # Also include order items with pending results
+        # Also include order items with pending results (ENTERED status means pending verification)
         pending_results = (
-            self.queryset.filter(status="pending")
+            self.queryset.filter(status="ENTERED")
             .values_list("order_item_id", flat=True)
             .distinct()
         )
@@ -146,7 +146,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
             Response: A paginated list of results pending verification.
         """
         pending_results = (
-            self.queryset.filter(status="pending")
+            self.queryset.filter(status="ENTERED")
             .select_related(
                 "order_item",
                 "order_item__order",
@@ -226,7 +226,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
                     # Update existing result
                     result.result_value = result_value
                     result.remarks = result_data.get("remarks", "")
-                    result.status = "pending"  # Reset to pending if updating
+                    result.status = "ENTERED"  # Set to ENTERED status when updating
                     result.save()
 
                 created_results.append(self.get_serializer(result).data)
@@ -281,7 +281,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
         result.verified_by = request.user
         result.verified_at = timezone.now()
-        result.status = "verified"
+        result.status = "VERIFIED"
         result.save()
 
         return Response({"status": "result verified"})
@@ -313,7 +313,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
         if rejection_reason:
             result.remarks = f"Rejected: {rejection_reason}. {result.remarks or ''}"
 
-        result.status = "rejected"
+        result.status = "REJECTED"
         result.verified_by = request.user  # Track who rejected
         result.verified_at = timezone.now()
         result.save()

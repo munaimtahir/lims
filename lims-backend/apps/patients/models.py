@@ -101,6 +101,22 @@ class Patient(models.Model):
     # Address
     address = models.TextField(blank=True, null=True)
 
+    # Offline/sync fields
+    is_offline_entry = models.BooleanField(default=False, help_text="True if originally created while offline")
+    origin_terminal = models.ForeignKey(
+        "core.LabTerminal",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="patients",
+        help_text="Terminal that created this registration (if known)",
+    )
+    synced_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when this record was synced to central server",
+    )
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -43,7 +43,7 @@ class SampleSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = [
-            "barcode", "collected_at", "collected_by", "received_at",
+            "collected_at", "collected_by", "received_at",
             "received_by", "created_at", "updated_at"
         ]
 
@@ -72,5 +72,15 @@ class SampleSerializer(serializers.ModelSerializer):
                 request = self.context.get("request")
                 if request and hasattr(request, "user"):
                     validated_data["received_by"] = request.user
+
+        # Handle barcode: if provided, use it; otherwise, let model auto-generate if missing
+        barcode = validated_data.get("barcode")
+        if barcode:
+            # Use provided barcode (model will validate uniqueness)
+            validated_data["barcode"] = barcode
+        elif not instance.barcode:
+            # No barcode provided and instance doesn't have one - let model auto-generate
+            # Remove from validated_data so model's save() method handles it
+            validated_data.pop("barcode", None)
 
         return super().update(instance, validated_data)
