@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from apps.core.views import HealthCheckView
 
@@ -20,7 +21,7 @@ urlpatterns = [
     # Health check endpoint (must be before other API routes)
     path('api/v1/health/', HealthCheckView.as_view(), name='health-check'),
     
-    # API v1
+    # API v1 (CSRF exempt - DRF handles authentication via JWT)
     path('api/v1/auth/', include('apps.accounts.urls')),
     path('api/v1/patients/', include('apps.patients.urls')),
     path('api/v1/laboratory/', include('apps.laboratory.urls')),
