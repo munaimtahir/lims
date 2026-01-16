@@ -4,10 +4,9 @@ URL configuration for core app.
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import LabTerminalViewSet, SystemSettingsViewSet, HealthCheckView
+from .views import SystemSettingsViewSet, HealthCheckView
 
 router = DefaultRouter()
-router.register(r"terminals", LabTerminalViewSet, basename="terminal")
 # Don't register settings in router - handle manually for singleton pattern
 
 urlpatterns = [

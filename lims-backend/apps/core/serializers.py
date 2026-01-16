@@ -3,42 +3,7 @@ Serializers for core models.
 """
 
 from rest_framework import serializers
-from .models import LabTerminal, SystemSettings
-
-
-class LabTerminalSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the LabTerminal model.
-    """
-    
-    class Meta:
-        model = LabTerminal
-        fields = [
-            "id",
-            "code",
-            "name",
-            "offline_range_start",
-            "offline_range_end",
-            "offline_current",
-            "is_active",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["created_at", "updated_at", "offline_current"]
-    
-    def validate(self, data):
-        """Validate terminal data."""
-        offline_range_start = data.get("offline_range_start")
-        offline_range_end = data.get("offline_range_end")
-        
-        if offline_range_start and offline_range_end:
-            if offline_range_start >= offline_range_end:
-                raise serializers.ValidationError({
-                    "offline_range_end": "End range must be greater than start range."
-                })
-        
-        return data
-
+from .models import SystemSettings
 
 class SystemSettingsSerializer(serializers.ModelSerializer):
     """

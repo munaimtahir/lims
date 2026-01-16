@@ -373,15 +373,6 @@ class ReportViewSet(viewsets.ModelViewSet):
             report.status = ReportStatus.FINAL if request.data.get("is_final", True) else ReportStatus.DRAFT
             report.template_name = request.data.get("template_name", "default")
             report.save()
-            
-            # Send report ready notification
-            if report.status == ReportStatus.FINAL:
-                try:
-                    from apps.notifications.utils import send_report_ready_notification
-                    send_report_ready_notification(report)
-                except Exception as e:
-                    # Don't fail if notification fails
-                    pass
 
             return Response(
                 ReportSerializer(report).data, status=status.HTTP_201_CREATED

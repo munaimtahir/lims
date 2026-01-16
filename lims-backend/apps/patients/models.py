@@ -1,10 +1,9 @@
 """
 Patient model for LIMS.
 
-Supports both online and offline registration with MRN generation.
+Supports patient registration with MRN generation.
 """
 
-from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
@@ -102,25 +101,6 @@ class Patient(models.Model):
     # Address
     address = models.TextField(blank=True, null=True)
 
-    # Offline registration support
-    origin_terminal = models.ForeignKey(
-        "core.LabTerminal",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="patients",
-        help_text="Terminal that created this registration (if known)",
-    )
-    is_offline_entry = models.BooleanField(
-        default=False,
-        help_text="True if originally created while offline",
-    )
-    synced_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Timestamp when this record was synced to central server",
-    )
-
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -204,22 +184,12 @@ class Patient(models.Model):
         """
         Generate a unique Medical Record Number in the format PAT-YYYYMMDD-NNNN.
 
-        For offline entries, uses the terminal's offline range.
-        For online entries, uses the standard daily sequence.
+        Uses the standard daily sequence.
 
         Returns:
             str: The generated MRN.
         """
-        # Check if this is an offline entry with a terminal
-        if self.is_offline_entry and self.origin_terminal:
-            try:
-                next_mrn = self.origin_terminal.get_next_offline_mrn()
-                return f"PAT-OFFLINE-{next_mrn:06d}"
-            except ValidationError:
-                # Fall back to standard generation if offline range exhausted
-                pass
-        
-        # Standard online MRN generation
+        # Standard MRN generation
         today = timezone.now().strftime("%Y%m%d")
         prefix = f"PAT-{today}-"
         

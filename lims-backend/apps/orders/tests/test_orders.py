@@ -306,20 +306,6 @@ class TestOrderModelMethods:
         with pytest.raises(ValidationError):
             order.transition_to("VERIFIED", receptionist_user)
     
-    def test_transition_to_published_sends_notification(self, patient, receptionist_user, test_instance):
-        """Test that transitioning to PUBLISHED sends notification."""
-        from unittest.mock import patch
-        order = Order.objects.create(
-            patient=patient,
-            ordered_by=receptionist_user,
-            status="VERIFIED",
-        )
-        OrderItem.objects.create(order=order, test=test_instance, price=test_instance.price)
-        
-        with patch('apps.notifications.utils.send_order_complete_notification') as mock_notify:
-            order.transition_to("PUBLISHED", receptionist_user)
-            mock_notify.assert_called_once_with(order)
-    
     def test_status_final_states_no_transitions(self, patient, receptionist_user):
         """Test that PUBLISHED and CANCELLED are final states."""
         # Test PUBLISHED

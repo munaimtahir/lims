@@ -16,9 +16,6 @@ import type {
   ReferenceRange,
   ReferenceRangeCreateRequest,
   SystemSettings,
-  LabTerminal,
-  LabTerminalCreateRequest,
-  Notification,
   TestParameter,
 } from '../types';
 
@@ -358,61 +355,3 @@ export const systemSettingsApi = {
   },
 };
 
-/**
- * Lab Terminal API service
- */
-export const labTerminalApi = {
-  list: async (params?: Record<string, unknown>) => {
-    const response = await api.get<PaginatedResponse<LabTerminal>>('/core/terminals/', { params });
-    return response.data;
-  },
-
-  get: async (id: number): Promise<ApiResponse<LabTerminal>> => {
-    const response = await api.get<ApiResponse<LabTerminal>>(`/core/terminals/${id}/`);
-    return response.data;
-  },
-
-  create: async (data: LabTerminalCreateRequest): Promise<ApiResponse<LabTerminal>> => {
-    const response = await api.post<ApiResponse<LabTerminal>>('/core/terminals/', data);
-    return response.data;
-  },
-
-  update: async (id: number, data: Partial<LabTerminalCreateRequest>): Promise<ApiResponse<LabTerminal>> => {
-    const response = await api.patch<ApiResponse<LabTerminal>>(`/core/terminals/${id}/`, data);
-    return response.data;
-  },
-
-  delete: async (id: number): Promise<void> => {
-    await api.delete(`/core/terminals/${id}/`);
-  },
-
-  getNextMrn: async (id: number) => {
-    const response = await api.post(`/core/terminals/${id}/get_next_mrn/`);
-    return response.data;
-  },
-
-  resetRange: async (id: number) => {
-    const response = await api.post(`/core/terminals/${id}/reset_range/`);
-    return response.data;
-  },
-
-  getActive: async () => {
-    const response = await api.get<PaginatedResponse<LabTerminal>>('/core/terminals/active/');
-    return response.data;
-  },
-};
-
-/**
- * Notification API service
- */
-export const notificationApi = {
-  list: async (params?: Record<string, unknown>) => {
-    const response = await api.get<PaginatedResponse<Notification>>('/notifications/', { params });
-    return response.data;
-  },
-
-  get: async (id: number): Promise<ApiResponse<Notification>> => {
-    const response = await api.get<ApiResponse<Notification>>(`/notifications/${id}/`);
-    return response.data;
-  },
-};

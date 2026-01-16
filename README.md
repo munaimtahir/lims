@@ -34,18 +34,23 @@ This LIMS is a complete software solution designed to manage all activities in a
 
 ## ✨ Features
 
-### Core Features (Phase 1)
+### Core Features
 
-- ✅ **User Management** - Role-based authentication and authorization
-- ✅ **Patient Management** - Complete demographic information and history
-- ✅ **Order Management** - Test and panel ordering with automatic pricing
-- ✅ **Sample Collection** - Barcode tracking and collection workflow
-- ✅ **Result Entry** - Validation, auto-flagging, and quality controls
+The LIMS now focuses on core laboratory workflow functionality:
+
+- ✅ **User Management** - Role-based authentication and authorization (RBAC)
+- ✅ **Patient Management** - Complete demographic information and history with MRN generation
+- ✅ **Test Catalog** - Services/tests/parameters with reference ranges
+- ✅ **Order Management** - Test and panel ordering with automatic pricing / Worklist
+- ✅ **Sample Collection** - Barcode tracking and sample lifecycle management
+- ✅ **Result Entry** - Validation, auto-flagging (abnormal/critical), and quality controls
 - ✅ **Result Verification** - Pathologist review and approval workflow
 - ✅ **Report Generation** - Professional PDF reports with digital signatures
-- ✅ **Billing & Payments** - Multiple payment methods and receipt generation
+- ✅ **Billing & Payments** - Multiple payment methods and receipt PDF generation
 - ✅ **Dashboard** - Role-based statistics and metrics
 - ✅ **Audit Trail** - Complete activity logging
+
+> **Note:** For detailed core scope information, see [`docs/CORE_SCOPE.md`](./docs/CORE_SCOPE.md). Out-of-scope modules (notifications, integrations, terminals/kiosk) have been removed.
 
 ### Test Catalog
 
@@ -287,7 +292,8 @@ lims/
 │   │   ├── reports/           # Report generation
 │   │   ├── billing/           # Payment & billing
 │   │   ├── audit/             # Audit trail
-│   │   └── dashboard/         # Dashboard statistics
+│   │   ├── dashboard/         # Dashboard statistics
+│   │   └── core/              # Core utilities (SystemSettings, HealthCheck)
 │   ├── config/                # Project configuration
 │   │   ├── settings/          # Settings (base, dev, prod)
 │   │   ├── urls.py            # URL routing
@@ -406,6 +412,7 @@ See `.github/workflows/ci.yml` for details.
 
 ### Reference
 
+- [CORE_SCOPE.md](./docs/CORE_SCOPE.md) - Core LIMS scope and module documentation
 - [TEST_CATALOG_EXPANDED.md](./docs/TEST_CATALOG_EXPANDED.md) - Complete test catalog
 - [LEGACY_LAB.md](./docs/LEGACY_LAB.md) - Legacy code reference guide
 - [CHANGELOG.md](./CHANGELOG.md) - Version history

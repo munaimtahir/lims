@@ -3,62 +3,9 @@ Tests for core serializers.
 """
 import pytest
 from rest_framework.exceptions import ValidationError as DRFValidationError
-from apps.core.serializers import LabTerminalSerializer, SystemSettingsSerializer
-from apps.core.models import LabTerminal, SystemSettings
+from apps.core.serializers import SystemSettingsSerializer
+from apps.core.models import SystemSettings
 from apps.accounts.models import User
-
-
-@pytest.mark.django_db
-class TestLabTerminalSerializer:
-    """Test LabTerminalSerializer."""
-    
-    def test_validate_range_start_greater_than_end(self):
-        """Test validation when start >= end."""
-        serializer = LabTerminalSerializer()
-        data = {
-            "code": "TERM1",
-            "name": "Terminal 1",
-            "offline_range_start": 1000,
-            "offline_range_end": 500,
-        }
-        with pytest.raises(DRFValidationError) as exc_info:
-            serializer.validate(data)
-        assert "offline_range_end" in str(exc_info.value)
-    
-    def test_validate_range_start_equal_to_end(self):
-        """Test validation when start == end."""
-        serializer = LabTerminalSerializer()
-        data = {
-            "code": "TERM1",
-            "name": "Terminal 1",
-            "offline_range_start": 1000,
-            "offline_range_end": 1000,
-        }
-        with pytest.raises(DRFValidationError) as exc_info:
-            serializer.validate(data)
-        assert "offline_range_end" in str(exc_info.value)
-    
-    def test_validate_valid_range(self):
-        """Test validation with valid range."""
-        serializer = LabTerminalSerializer()
-        data = {
-            "code": "TERM1",
-            "name": "Terminal 1",
-            "offline_range_start": 1000,
-            "offline_range_end": 2000,
-        }
-        result = serializer.validate(data)
-        assert result == data
-    
-    def test_validate_no_range(self):
-        """Test validation without range values."""
-        serializer = LabTerminalSerializer()
-        data = {
-            "code": "TERM1",
-            "name": "Terminal 1",
-        }
-        result = serializer.validate(data)
-        assert result == data
 
 
 @pytest.mark.django_db

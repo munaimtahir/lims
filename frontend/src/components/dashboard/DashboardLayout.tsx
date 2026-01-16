@@ -31,8 +31,6 @@ export default function DashboardLayout() {
           { to: '/dashboard/results', label: 'Results' },
           { to: '/dashboard/reports', label: 'Reports' },
           { to: '/dashboard/payments', label: 'Payments' },
-          { to: '/dashboard/terminals', label: 'Lab Terminals' },
-          { to: '/dashboard/notifications', label: 'Notifications' },
           { to: '/dashboard/settings', label: 'System Settings' },
           { to: '/dashboard/audit', label: 'Audit Logs' }
         );
