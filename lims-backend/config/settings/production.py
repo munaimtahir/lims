@@ -181,7 +181,7 @@ if not CSRF_TRUSTED_ORIGINS or CSRF_TRUSTED_ORIGINS == ['']:
         logger.warning(
             "WARNING: CSRF_TRUSTED_ORIGINS not configured. "
             "CSRF protection may fail for HTTPS requests. "
-            "Set CSRF_TRUSTED_ORIGINS to your domain (e.g., https://portal.alshifalab.pk)"
+            "Set CSRF_TRUSTED_ORIGINS to your domain (e.g., https://yourdomain.com)"
         )
 
 logger.info(f"Production CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}")

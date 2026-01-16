@@ -1,8 +1,8 @@
 # LIMS Next Development Plan
-## Go-Live Path for portal.alshifalab.pk
+## Go-Live Path for yourdomain.com
 
 **Date:** 2026-01-08  
-**Target Domain:** portal.alshifalab.pk  
+**Target Domain:** yourdomain.com  
 **Priority:** Go-live blockers first, then enhancements
 
 ---
@@ -35,7 +35,7 @@ if not CSRF_TRUSTED_ORIGINS or CSRF_TRUSTED_ORIGINS == ['']:
         logger.warning(
             "WARNING: CSRF_TRUSTED_ORIGINS not configured. "
             "CSRF protection may fail for HTTPS requests. "
-            "Set CSRF_TRUSTED_ORIGINS to your frontend domain (e.g., https://portal.alshifalab.pk)"
+            "Set CSRF_TRUSTED_ORIGINS to your frontend domain (e.g., https://yourdomain.com)"
         )
 
 logger.info(f"Production CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}")
@@ -62,7 +62,7 @@ Create `.env.production` in the repository root with the following content:
 ```bash
 # ============================================
 # LIMS Production Environment Configuration
-# Domain: portal.alshifalab.pk
+# Domain: yourdomain.com
 # ============================================
 
 # Django Security
@@ -70,10 +70,10 @@ SECRET_KEY=<GENERATE_NEW_SECURE_KEY>
 DEBUG=False
 
 # Domain Configuration
-SERVER_NAME=portal.alshifalab.pk
-ALLOWED_HOSTS=portal.alshifalab.pk,<SERVER_PUBLIC_IP>
-CSRF_TRUSTED_ORIGINS=https://portal.alshifalab.pk
-CORS_ALLOWED_ORIGINS=https://portal.alshifalab.pk
+SERVER_NAME=yourdomain.com
+ALLOWED_HOSTS=yourdomain.com,${SERVER_IP}
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com
+CORS_ALLOWED_ORIGINS=https://yourdomain.com
 
 # Database Configuration
 DB_ENGINE=django.db.backends.postgresql
@@ -101,14 +101,14 @@ EMAIL_PORT=587
 EMAIL_USE_TLS=True
 EMAIL_HOST_USER=<YOUR_EMAIL>
 EMAIL_HOST_PASSWORD=<YOUR_EMAIL_PASSWORD>
-DEFAULT_FROM_EMAIL=noreply@portal.alshifalab.pk
+DEFAULT_FROM_EMAIL=noreply@yourdomain.com
 
 # Frontend Configuration
 VITE_API_BASE_URL=/api/v1/
 REACT_APP_API_BASE_URL=/api/v1/
 
 # Caddy Configuration
-CADDY_DOMAIN=portal.alshifalab.pk
+CADDY_DOMAIN=yourdomain.com
 CADDY_DOMAINS_ADDITIONAL=
 
 # Logging
@@ -131,9 +131,9 @@ JWT_REFRESH_TOKEN_LIFETIME_DAYS=7
 - [ ] All placeholders replaced with actual values
 - [ ] SECRET_KEY is strong (50+ characters)
 - [ ] DB_PASSWORD is strong (32+ characters)
-- [ ] ALLOWED_HOSTS includes portal.alshifalab.pk and server IP
-- [ ] CSRF_TRUSTED_ORIGINS includes https://portal.alshifalab.pk
-- [ ] CORS_ALLOWED_ORIGINS includes https://portal.alshifalab.pk
+- [ ] ALLOWED_HOSTS includes yourdomain.com and server IP
+- [ ] CSRF_TRUSTED_ORIGINS includes https://yourdomain.com
+- [ ] CORS_ALLOWED_ORIGINS includes https://yourdomain.com
 - [ ] File is NOT committed to git (add to .gitignore)
 
 ---
@@ -297,13 +297,13 @@ docker compose ps  # Verify all services are up
 **Action**:
 ```bash
 # Test frontend (should return HTML)
-curl -k https://portal.alshifalab.pk/ -I
+curl -k https://yourdomain.com/ -I
 
 # Test API health endpoint
-curl -k https://portal.alshifalab.pk/api/v1/health/
+curl -k https://yourdomain.com/api/v1/health/
 
 # Test admin (should redirect to login)
-curl -k https://portal.alshifalab.pk/admin/ -I
+curl -k https://yourdomain.com/admin/ -I
 ```
 
 **Acceptance Criteria**:
@@ -323,8 +323,8 @@ curl -k https://portal.alshifalab.pk/admin/ -I
 **Estimated Time**: 5 minutes
 
 **Checklist**:
-- [ ] DNS resolves correctly: `nslookup portal.alshifalab.pk`
-- [ ] HTTPS certificate is valid: `openssl s_client -connect portal.alshifalab.pk:443`
+- [ ] DNS resolves correctly: `nslookup yourdomain.com`
+- [ ] HTTPS certificate is valid: `openssl s_client -connect yourdomain.com:443`
 - [ ] No mixed content warnings in browser console
 - [ ] Frontend loads without CORS errors
 
@@ -460,7 +460,7 @@ docker compose logs proxy | grep -i error
 
 ### Go-Live Blockers (Must Complete)
 1. ✅ Add CSRF_TRUSTED_ORIGINS to production.py
-2. ✅ Create .env.production with portal.alshifalab.pk
+2. ✅ Create .env.production with yourdomain.com
 3. ✅ Investigate and fix container health issues
 4. ✅ Run migrations
 5. ✅ Collect static files
