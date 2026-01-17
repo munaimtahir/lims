@@ -8,6 +8,7 @@ from .models import TestResult
 from .serializers import TestResultSerializer
 from .filters import TestResultFilter
 from apps.orders.models import OrderItem
+from apps.laboratory.models import TestParameter
 from .services.expected_results import (
     ensure_test_results,
     get_orderitem_expected_parameters,
@@ -161,9 +162,23 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
+            from django.db.models import Prefetch
+            from apps.laboratory.models import ReferenceRange
+            
+            # Prefetch active reference ranges for all parameters to avoid N+1 queries
+            reference_ranges_prefetch = Prefetch(
+                'reference_ranges',
+                queryset=ReferenceRange.objects.filter(is_active=True).order_by('-version', '-id'),
+                to_attr='active_reference_ranges'
+            )
+            
             order_item = (
                 OrderItem.objects.select_related("order", "order__patient", "test", "panel")
-                .prefetch_related("panel__tests", "test__parameters", "panel__tests__parameters")
+                .prefetch_related(
+                    "panel__tests",
+                    Prefetch("test__parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
+                    Prefetch("panel__tests__parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
+                )
                 .get(id=order_item_id)
             )
         except (OrderItem.DoesNotExist, ValueError):

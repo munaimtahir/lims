@@ -323,5 +323,20 @@ class PatientListSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
 
     def get_last_order_referred_by(self, obj):
+        """
+        Return the referrer of the patient's most recent order.
+
+        If the queryset used to fetch patients has been prefetched with
+        'latest_orders' attribute, that value will be used directly to avoid
+        issuing an extra database query per patient.
+
+        If no such prefetch is present, this method falls back to querying
+        the related 'orders' for the latest one.
+        """
+        # Fast-path: use prefetched latest_orders if available
+        if hasattr(obj, 'latest_orders') and obj.latest_orders:
+            return obj.latest_orders[0].referred_by if obj.latest_orders else None
+        
+        # Fallback: compute from the related orders (may incur N+1 query)
         last_order = obj.orders.order_by("-created_at").first()
         return last_order.referred_by if last_order else None
