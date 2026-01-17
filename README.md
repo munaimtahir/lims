@@ -342,13 +342,15 @@ The system supports the following end-to-end workflow (validated via comprehensi
 4. **Pathologist**: View verification queue → Verify/reject results
    - ✅ Results appear in verification queue properly
 5. **Admin/Manager**: Generate PDF report → Download report
-   - ✅ Report generation working (download endpoint has known limitation)
+   - ✅ Report generation working (PDF download endpoints have minor limitations)
 6. **Cashier**: Record payment → Generate receipt PDF
-   - ✅ Payment recording working (receipt download has known limitation)
+   - ✅ Payment recording working (PDF download endpoints have minor limitations)
 7. **Admin/Manager**: View audit logs for all actions
    - ✅ Comprehensive audit trail validated
 
 **Test Results:** 24/26 tests passing (92.3%) - See [FINAL_SMOKE_TEST_REPORT.md](./FINAL_SMOKE_TEST_REPORT.md) for details.
+
+> **Known Limitations:** For complete details on known issues and functional limitations, see [docs/releases/V1.md](./docs/releases/V1.md). Key points: PDF download endpoints return 404 (non-blocking); reports and receipts are generated in database correctly.
 
 #### 7. Service Management
 
@@ -515,6 +517,16 @@ The project includes GitHub Actions workflows for:
 See `.github/workflows/ci.yml` for details.
 
 ## 📚 Documentation
+
+### Single Source of Truth
+
+For critical topics, always refer to these canonical documents:
+
+- **Deployment:** [docs/ops/DEPLOYMENT.md](./docs/ops/DEPLOYMENT.md) - Production deployment guide
+- **Smoke Test:** [docs/qa/SMOKE_TEST.md](./docs/qa/SMOKE_TEST.md) - Testing procedures
+- **Release Scope:** [docs/releases/V1.md](./docs/releases/V1.md) - v1.0 features, scope, and known limitations
+- **Validation Evidence:** [FINAL_SMOKE_TEST_REPORT.md](./FINAL_SMOKE_TEST_REPORT.md) - Complete test results
+- **Production Checks:** [PRODUCTION_READINESS_CHECKLIST.md](./PRODUCTION_READINESS_CHECKLIST.md) - Production readiness validation
 
 ### Core Documents (Start Here)
 

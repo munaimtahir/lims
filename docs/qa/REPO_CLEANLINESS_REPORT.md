@@ -96,6 +96,13 @@ smoke_test.py                          ← Validation script
 |-------------------|--------------|--------|
 | docs/repo-cleanup/ | archive/prompts/repo-cleanup/ | Historical prompts and plans |
 
+### Moved to docs/archive/ (Final Hardening - 2026-01-17)
+| Original Location | New Location | Reason |
+|-------------------|--------------|--------|
+| docs/deployment/DEPLOYMENT.md | docs/archive/DEPLOYMENT_LEGACY.md | Legacy guide (superseded by docs/ops/DEPLOYMENT.md) |
+| docs/deployment/SSH_DEPLOYMENT.md | docs/archive/SSH_DEPLOYMENT.md | Legacy SSH-specific guide (superseded) |
+| docs/deployment/TROUBLESHOOTING.md | docs/archive/TROUBLESHOOTING.md | Legacy troubleshooting (superseded) |
+
 ### Moved to docs/ops/
 | Original Location | New Location | Reason |
 |-------------------|--------------|--------|
@@ -115,9 +122,9 @@ smoke_test.py                          ← Validation script
 | smoke_test_final_output.txt | Obsolete output file |
 | REPO_CLEANUP_SUMMARY.md | Outdated, superseded by this report |
 
-**Total Files Moved:** 13  
+**Total Files Moved:** 16 (13 initial + 3 final hardening)  
 **Total Files Deleted:** 3  
-**Total Files Created:** 3 (DEPLOYMENT.md, SMOKE_TEST.md, V1.md, REPO_CLEANLINESS_REPORT.md)
+**Total Files Created:** 5 (DEPLOYMENT.md, SMOKE_TEST.md, V1.md, REPO_CLEANLINESS_REPORT.md, docs/deployment/README.md stub)
 
 ---
 
@@ -142,13 +149,14 @@ lims/
 │   ├── architecture/                  ← Architecture docs
 │   │   └── ARCHITECTURE.md
 │   ├── archive/                       ← Archived docs (legacy)
+│   │   ├── DEPLOYMENT_LEGACY.md       ← Legacy deployment guide (archived 2026-01-17)
 │   │   ├── FEATURE_PRIORITY.md
 │   │   ├── IMPLEMENTATION_PLAN.md
-│   │   └── README_OLD.md
-│   ├── deployment/                    ← Legacy deployment docs
-│   │   ├── DEPLOYMENT.md
-│   │   ├── SSH_DEPLOYMENT.md
-│   │   └── TROUBLESHOOTING.md
+│   │   ├── README_OLD.md
+│   │   ├── SSH_DEPLOYMENT.md          ← SSH deployment guide (archived 2026-01-17)
+│   │   └── TROUBLESHOOTING.md         ← Troubleshooting guide (archived 2026-01-17)
+│   ├── deployment/                    ← Stub directory (points to canonical)
+│   │   └── README.md                  ← Points to docs/ops/DEPLOYMENT.md
 │   ├── ops/                           ← Operations documentation ⭐ NEW
 │   │   ├── DEPLOYMENT.md              ← Canonical deployment guide
 │   │   ├── DEPLOYMENT_SUCCESS.md      ← Production deployment report
@@ -282,6 +290,33 @@ All documentation has been verified to reflect:
 ✅ **API Endpoints:** Correct paths documented (e.g., /api/v1/laboratory/parameters/)
 
 ✅ **Known Limitations:** PDF download endpoints return 404 (documented as non-critical)
+
+### Final Documentation Hardening (2026-01-17)
+
+Additional cleanup pass to eliminate duplication and establish single source of truth:
+
+#### Archived Legacy Deployment Docs
+- ✅ **docs/deployment/DEPLOYMENT.md** → docs/archive/DEPLOYMENT_LEGACY.md
+- ✅ **docs/deployment/SSH_DEPLOYMENT.md** → docs/archive/SSH_DEPLOYMENT.md
+- ✅ **docs/deployment/TROUBLESHOOTING.md** → docs/archive/TROUBLESHOOTING.md
+- ✅ **Created docs/deployment/README.md** - Stub pointing to canonical location
+
+**Reason:** These were legacy guides that duplicated and conflicted with the canonical `docs/ops/DEPLOYMENT.md` (v1.0 validated). The canonical guide is the production-validated deployment method.
+
+#### Canonicalized "Single Source of Truth"
+- ✅ **README.md** - Added "Single Source of Truth" section listing canonical docs
+  - Deployment: docs/ops/DEPLOYMENT.md
+  - Smoke Test: docs/qa/SMOKE_TEST.md
+  - Release Scope: docs/releases/V1.md
+  - Validation Evidence: FINAL_SMOKE_TEST_REPORT.md
+  - Production Checks: PRODUCTION_READINESS_CHECKLIST.md
+
+#### Fixed Internal References
+- ✅ **RELEASE_NOTES_v1.md** - Updated deployment link to docs/ops/DEPLOYMENT.md
+- ✅ **README.md** - Known limitations now reference docs/releases/V1.md (no duplication)
+
+#### Updated Documentation Tree
+docs/deployment/ is now only a stub directory pointing to canonical location.
 
 ---
 

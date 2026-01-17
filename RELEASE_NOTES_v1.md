@@ -233,7 +233,7 @@ docker compose exec db pg_dump -U postgres lims_db > backup_$(date +%Y%m%d).sql
 
 - **Architecture**: `docs/architecture/ARCHITECTURE.md`
 - **API Design**: `docs/api/API_DESIGN.md`
-- **Deployment**: `docs/deployment/DEPLOYMENT.md`
+- **Deployment**: `docs/ops/DEPLOYMENT.md`
 - **Troubleshooting**: `docs/deployment/TROUBLESHOOTING.md`
 - **Workflow**: `docs/WORKFLOW.md`
 
