@@ -140,21 +140,19 @@ class PatientViewSet(viewsets.ModelViewSet):
             **kwargs: Arbitrary keyword arguments.
 
         Returns:
-            Response: A paginated or full list of patients.
+            Response: A paginated or full list of patients (standard DRF pagination).
         """
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
 
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
+            # Return standard DRF pagination: {count, next, previous, results: [...]}
+            return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
+        # For non-paginated responses, return plain array
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"])
     def history(self, request, pk=None):
