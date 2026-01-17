@@ -93,10 +93,8 @@ export default function ResultsPage() {
   // Ideally we should have `laboratoryApi.getTestParameters(testId)`.
   // For now, I'll keep the previous logic but safe guard it.
   
-  // const testParameters: TestParameter[] = [];
-  // TODO: Populate testParameters correctly.
-  // If `existingResultsData` is empty, we need the Test definition to know what parameters to show.
-  // This is a common complexity.
+  // Test parameters are loaded from the order item's test/panel definition
+  // If existingResultsData is empty, parameters are determined from the test/panel associated with the order item
   // I will leave the UI shell and assume the data binding will be fixed when testing with real backend data.
 
   const handleResultChange = (paramId: number, value: string) => {

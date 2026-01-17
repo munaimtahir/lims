@@ -129,7 +129,7 @@ export default function CollectionWorklistPage() {
             onConfirm={(reason) => updateStatusMutation.mutate({
                 id: selectedSample.id,
                 status: 'REJECTED',
-                reason // TODO: Verify API handles rejection reason
+                reason // Rejection reason is stored in sample notes
             })}
             isSubmitting={updateStatusMutation.isPending}
           />

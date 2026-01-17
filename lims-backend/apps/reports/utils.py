@@ -6,7 +6,9 @@ from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from io import BytesIO
+import os
 from django.utils import timezone
+from django.conf import settings
 from apps.orders.models import Order
 from apps.core.models import SystemSettings
 
@@ -36,25 +38,25 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
     Raises:
         ValueError: If the order is not found.
     """
-    # Get system settings for lab information
+    # Get system settings for lab information with fallback to environment variables
     try:
-        settings = SystemSettings.get_settings()
+        system_settings = SystemSettings.get_settings()
         if lab_name is None:
-            lab_name = settings.lab_name or "Laboratory"
+            lab_name = system_settings.lab_name or os.environ.get("LAB_NAME", "Laboratory")
         if lab_address is None:
-            lab_address = settings.lab_address or ""
+            lab_address = system_settings.lab_address or os.environ.get("LAB_ADDRESS", "")
         if lab_phone is None:
-            lab_phone = settings.lab_phone or ""
+            lab_phone = system_settings.lab_phone or os.environ.get("LAB_PHONE", "")
         if lab_email is None:
-            lab_email = settings.lab_email or ""
-        report_header = settings.report_header or ""
-        report_footer = settings.report_footer or ""
+            lab_email = system_settings.lab_email or os.environ.get("LAB_EMAIL", "")
+        report_header = system_settings.report_header or ""
+        report_footer = system_settings.report_footer or ""
     except Exception:
-        # Fallback if settings don't exist
-        lab_name = lab_name or "Laboratory"
-        lab_address = lab_address or ""
-        lab_phone = lab_phone or ""
-        lab_email = lab_email or ""
+        # Fallback to environment variables if settings don't exist
+        lab_name = lab_name or os.environ.get("LAB_NAME", "Laboratory")
+        lab_address = lab_address or os.environ.get("LAB_ADDRESS", "")
+        lab_phone = lab_phone or os.environ.get("LAB_PHONE", "")
+        lab_email = lab_email or os.environ.get("LAB_EMAIL", "")
         report_header = ""
         report_footer = ""
     buffer = BytesIO()

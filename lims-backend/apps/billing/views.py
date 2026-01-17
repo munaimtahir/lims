@@ -2,6 +2,8 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from django.http import FileResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from django.conf import settings
+import os
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.lib import colors
@@ -9,6 +11,7 @@ from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from io import BytesIO
+from apps.core.models import SystemSettings
 from .models import Payment
 from .serializers import PaymentSerializer
 
@@ -40,10 +43,20 @@ class PaymentViewSet(viewsets.ModelViewSet):
             FileResponse: The PDF receipt file.
         """
         payment = self.get_object()
-        lab_name = request.query_params.get("lab_name", "Laboratory")
-        lab_address = request.query_params.get("lab_address", "")
-        lab_phone = request.query_params.get("lab_phone", "")
-        lab_email = request.query_params.get("lab_email", "")
+        
+        # Get lab information from SystemSettings with fallback to env or query params
+        try:
+            system_settings = SystemSettings.get_settings()
+            lab_name = request.query_params.get("lab_name") or system_settings.lab_name or os.environ.get("LAB_NAME", "Laboratory")
+            lab_address = request.query_params.get("lab_address") or system_settings.lab_address or os.environ.get("LAB_ADDRESS", "")
+            lab_phone = request.query_params.get("lab_phone") or system_settings.lab_phone or os.environ.get("LAB_PHONE", "")
+            lab_email = request.query_params.get("lab_email") or system_settings.lab_email or os.environ.get("LAB_EMAIL", "")
+        except Exception:
+            # Fallback to query params or env if SystemSettings fails
+            lab_name = request.query_params.get("lab_name") or os.environ.get("LAB_NAME", "Laboratory")
+            lab_address = request.query_params.get("lab_address") or os.environ.get("LAB_ADDRESS", "")
+            lab_phone = request.query_params.get("lab_phone") or os.environ.get("LAB_PHONE", "")
+            lab_email = request.query_params.get("lab_email") or os.environ.get("LAB_EMAIL", "")
 
         # Generate PDF receipt
         buffer = BytesIO()

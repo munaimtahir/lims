@@ -218,64 +218,144 @@ cd lims-backend
 celery -A config worker -l INFO
 ```
 
-### Docker Setup
+### Production Deployment (Docker Compose)
 
 #### 1. Prepare Environment
 
 ```bash
-# Create .env file in root directory
-cp .env.example .env
+# Create production environment file
+cp .env.example .env.production
 
-# Update environment variables
-nano .env
+# Edit and fill in required variables
+nano .env.production
 ```
 
-Required environment variables:
+**Required environment variables** (see `.env.example` for complete list):
 ```env
-SECRET_KEY=your-secret-key-here-change-in-production
-DB_PASSWORD=secure_database_password
-ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+# CRITICAL - Generate secure values
+SECRET_KEY=<generate-with-python3-c-import-secrets-print-secrets-token-urlsafe-50>
+DB_PASSWORD=<generate-with-openssl-rand-base64-32>
+
+# CRITICAL - Include your domain and server IP
+ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com,your-server-ip
 CORS_ALLOWED_ORIGINS=https://yourdomain.com
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com
+
+# Database
+DB_NAME=lims_db
+DB_USER=postgres
+DB_HOST=db
+DB_PORT=5432
+
+# Settings
+DEBUG=False
+DJANGO_SETTINGS_MODULE=config.settings.production
 ```
 
-#### 2. Build and Run
+#### 2. Build and Start Services
 
 ```bash
-# Build images
-docker-compose build
+# Build all images
+docker compose build
 
-# Run all services
-docker-compose up -d
+# Start all services in detached mode
+docker compose up -d
 
-# Check logs
-docker-compose logs -f
+# Wait for services to be healthy (10-15 seconds)
+sleep 15
 
-# Run migrations
-docker-compose exec backend python manage.py migrate
-
-# Create superuser
-docker-compose exec backend python manage.py createsuperuser
-
-# (Optional) Load sample data
-docker-compose exec backend python manage.py loaddata sample_data.json
+# Check service status
+docker compose ps
 ```
 
-#### 3. Access the Application
-
-- Application: `http://localhost`
-- Admin Panel: `http://localhost/admin/`
-- API Documentation: `http://localhost/api/docs/`
-
-#### 4. Stop Services
+#### 3. Initialize Database
 
 ```bash
-docker-compose down
+# Run all migrations
+docker compose exec backend python manage.py migrate
+
+# Seed core test catalog (11 tests with parameters and reference ranges)
+docker compose exec backend python manage.py seed_test_catalog --clear
+
+# Create demo users for all roles (optional, for testing)
+docker compose exec backend python manage.py create_demo_users
 ```
 
-To remove volumes (database data):
+**Demo Users Created:**
+- `admin` / `admin123` - Admin (full access)
+- `receptionist` / `recep123` - Receptionist
+- `cashier` / `cash123` - Cashier
+- `phlebotomist` / `phleb123` - Phlebotomist
+- `labtech` / `labtech123` - Lab Technician
+- `pathologist` / `patho123` - Pathologist
+- `manager` / `manager123` - Manager
+
+#### 4. Verify Deployment
+
 ```bash
-docker-compose down -v
+# Check health endpoint
+curl http://localhost:8013/api/v1/health/
+
+# Check service logs
+docker compose logs backend
+docker compose logs celery
+docker compose logs frontend
 ```
+
+#### 5. Access the Application
+
+- **Application**: `http://localhost:8013` (or your configured domain)
+- **Admin Panel**: `http://localhost:8013/admin/`
+- **API Documentation**: `http://localhost:8013/api/docs/`
+- **Health Check**: `http://localhost:8013/api/v1/health/`
+
+#### 6. Core Workflow
+
+The system supports the following end-to-end workflow:
+
+1. **Receptionist**: Create patient → Create order (select tests/services)
+2. **Phlebotomist**: View collection worklist → Mark sample collected
+3. **Lab Technician**: View pending results worklist → Enter test results
+4. **Pathologist**: View verification queue → Verify/reject results
+5. **Admin/Manager**: Generate PDF report → Download report
+6. **Cashier**: Record payment → Generate receipt PDF
+7. **Admin/Manager**: View audit logs for all actions
+
+#### 7. Service Management
+
+```bash
+# Stop all services
+docker compose down
+
+# Stop and remove volumes (WARNING: deletes database)
+docker compose down -v
+
+# Restart a specific service
+docker compose restart backend
+
+# View logs
+docker compose logs -f backend
+
+# Rebuild after code changes
+docker compose build backend
+docker compose up -d backend
+```
+
+### User Roles and Permissions
+
+The system includes 7 predefined roles:
+
+| Role | Description | Key Permissions |
+|------|-------------|-----------------|
+| **Admin** | System administrator | Full access to all features |
+| **Receptionist** | Front desk staff | Create patients, create orders |
+| **Phlebotomist** | Sample collector | View collection worklist, mark samples collected |
+| **Lab Technician** | Lab staff | Enter test results, view worklists |
+| **Pathologist** | Lab director | Verify/reject results, authorize reports |
+| **Cashier** | Billing staff | Record payments, generate receipts |
+| **Manager** | Operations manager | View reports, audit logs, dashboard |
+
+Role-based access control (RBAC) is enforced at both the frontend (UI visibility) and backend (API permissions) levels.
 
 ## 📁 Project Structure
 
