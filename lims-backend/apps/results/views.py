@@ -1,6 +1,7 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.core.export_utils import export_to_csv, export_to_excel
@@ -153,14 +154,12 @@ class TestResultViewSet(viewsets.ModelViewSet):
             OrderItem: The fetched order item with related data
             
         Raises:
-            ValidationError: If order_item_id is missing or invalid, or if patient is missing
+            Response: Returns error response for invalid requests (to be caught by caller)
         """
         order_item_id = request.query_params.get("order_item_id") or request.data.get("order_item_id")
         if not order_item_id:
-            return Response(
-                {"error": "order_item_id is required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise ValidationError({"order_item_id": "This field is required"})
+        
         try:
             from django.db.models import Prefetch
             from apps.laboratory.models import ReferenceRange
@@ -182,16 +181,11 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 .get(id=order_item_id)
             )
         except (OrderItem.DoesNotExist, ValueError):
-            return Response(
-                {"error": "Order item not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+            raise ValidationError({"order_item_id": "Order item not found"})
         
-        # Explicitly check for missing patient
-        if not hasattr(order_item, 'order') or not hasattr(order_item.order, 'patient') or not order_item.order.patient:
-            return Response(
-                {"error": "Order item has no associated patient"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # Explicitly check for missing patient (select_related ensures these are loaded)
+        if not order_item.order.patient:
+            raise ValidationError({"error": "Order item has no associated patient"})
         
         return order_item
 
@@ -199,9 +193,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
     def expected(self, request):
         """Return expected result rows for an order item without writing."""
         order_item = self._get_order_item_from_request(request)
-        if isinstance(order_item, Response):
-            return order_item
-
+        
         expected = get_orderitem_expected_parameters(
             order_item, order_item.order.patient
         )
@@ -211,9 +203,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
     def ensure(self, request):
         """Ensure result rows exist for an order item."""
         order_item = self._get_order_item_from_request(request)
-        if isinstance(order_item, Response):
-            return order_item
-
+        
         results = ensure_test_results(order_item)
         serializer = self.get_serializer(results, many=True)
         return Response({"results": serializer.data})

@@ -335,7 +335,7 @@ class PatientListSerializer(serializers.ModelSerializer):
         """
         # Fast-path: use prefetched latest_orders if available
         if hasattr(obj, 'latest_orders') and obj.latest_orders:
-            return obj.latest_orders[0].referred_by if obj.latest_orders else None
+            return obj.latest_orders[0].referred_by
         
         # Fallback: compute from the related orders (may incur N+1 query)
         last_order = obj.orders.order_by("-created_at").first()
