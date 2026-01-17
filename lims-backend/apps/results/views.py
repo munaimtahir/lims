@@ -141,10 +141,20 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
         return Response(worklist_data)
 
-    @action(detail=False, methods=["get"])
-    def expected(self, request):
-        """Return expected result rows for an order item without writing."""
-        order_item_id = request.query_params.get("order_item_id")
+    def _get_order_item_from_request(self, request):
+        """
+        Extract and validate order_item_id from request, fetch OrderItem instance.
+        
+        Args:
+            request: DRF request object
+            
+        Returns:
+            OrderItem: The fetched order item with related data
+            
+        Raises:
+            ValidationError: If order_item_id is missing or invalid, or if patient is missing
+        """
+        order_item_id = request.query_params.get("order_item_id") or request.data.get("order_item_id")
         if not order_item_id:
             return Response(
                 {"error": "order_item_id is required"},
@@ -160,6 +170,22 @@ class TestResultViewSet(viewsets.ModelViewSet):
             return Response(
                 {"error": "Order item not found"}, status=status.HTTP_404_NOT_FOUND
             )
+        
+        # Explicitly check for missing patient
+        if not hasattr(order_item, 'order') or not hasattr(order_item.order, 'patient') or not order_item.order.patient:
+            return Response(
+                {"error": "Order item has no associated patient"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        return order_item
+
+    @action(detail=False, methods=["get"])
+    def expected(self, request):
+        """Return expected result rows for an order item without writing."""
+        order_item = self._get_order_item_from_request(request)
+        if isinstance(order_item, Response):
+            return order_item
 
         expected = get_orderitem_expected_parameters(
             order_item, order_item.order.patient
@@ -169,22 +195,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["post"])
     def ensure(self, request):
         """Ensure result rows exist for an order item."""
-        order_item_id = request.query_params.get("order_item_id")
-        if not order_item_id:
-            return Response(
-                {"error": "order_item_id is required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        try:
-            order_item = (
-                OrderItem.objects.select_related("order", "order__patient", "test", "panel")
-                .prefetch_related("panel__tests", "test__parameters", "panel__tests__parameters")
-                .get(id=order_item_id)
-            )
-        except (OrderItem.DoesNotExist, ValueError):
-            return Response(
-                {"error": "Order item not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+        order_item = self._get_order_item_from_request(request)
+        if isinstance(order_item, Response):
+            return order_item
 
         results = ensure_test_results(order_item)
         serializer = self.get_serializer(results, many=True)
