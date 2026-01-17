@@ -11,6 +11,7 @@ import os
 from django.utils import timezone
 from django.conf import settings
 from apps.orders.models import Order
+from apps.laboratory.ranges import pick_reference_range
 from apps.core.models import SystemSettings
 
 
@@ -186,27 +187,27 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
         
         for result in item.results.all().order_by('test_parameter__display_order'):
             param = result.test_parameter
-            # Get reference range based on patient gender
-            if order.patient.gender == 'Male':
-                ref_min = param.reference_min_male
-                ref_max = param.reference_max_male
-            else:
-                ref_min = param.reference_min_female
-                ref_max = param.reference_max_female
+            range_info = pick_reference_range(param, order.patient)
+            ref_range = range_info["display"]
 
-            ref_range = ""
-            if ref_min is not None and ref_max is not None:
-                ref_range = f"{ref_min} - {ref_max}"
-            elif ref_min is not None:
-                ref_range = f">= {ref_min}"
-            elif ref_max is not None:
-                ref_range = f"<= {ref_max}"
+            flag_map = {
+                "C": "Critical",
+                "L": "Low",
+                "H": "High",
+                "critical_low": "Critical Low",
+                "critical_high": "Critical High",
+                "low": "Low",
+                "high": "High",
+                "normal": "Normal",
+                "abnormal": "Abnormal",
+            }
+            flag_label = flag_map.get(result.flag, "Normal" if not result.flag else result.flag)
 
             # Format flag with color indication
-            flag_text = result.flag.replace('_', ' ').title()
-            if 'Critical' in flag_text:
+            flag_text = flag_label
+            if 'Critical' in flag_label:
                 flag_text = f"<font color='red'><b>{flag_text}</b></font>"
-            elif result.flag in ['high', 'low']:
+            elif result.flag in ['high', 'low', 'H', 'L']:
                 flag_text = f"<font color='orange'>{flag_text}</font>"
 
             results_data.append([

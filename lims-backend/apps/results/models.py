@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 import logging
 from apps.orders.models import OrderItem
 from apps.laboratory.models import TestParameter
+from apps.laboratory.ranges import compute_flag, pick_reference_range
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +27,10 @@ class TestResult(models.Model):
     """
 
     FLAG_CHOICES = [
-        ("normal", "Normal"),
-        ("low", "Low"),
-        ("high", "High"),
-        ("critical_low", "Critical Low"),
-        ("critical_high", "Critical High"),
-        ("abnormal", "Abnormal"),  # For non-numeric
+        ("", "Normal"),
+        ("L", "Low"),
+        ("H", "High"),
+        ("C", "Critical"),
     ]
 
     order_item = models.ForeignKey(
@@ -42,7 +41,7 @@ class TestResult(models.Model):
     result_value = models.CharField(max_length=500)
 
     # Auto-calculated flag
-    flag = models.CharField(max_length=20, choices=FLAG_CHOICES, default="normal")
+    flag = models.CharField(max_length=20, choices=FLAG_CHOICES, default="")
 
     # Verification Status - matches legacy workflow
     VERIFICATION_STATUS = [
@@ -109,130 +108,28 @@ class TestResult(models.Model):
         Raises:
             ValidationError: If result value cannot be validated and is required to be numeric.
         """
-        # Handle empty or None result values
-        if not self.result_value or not self.result_value.strip():
+        if not self.result_value or not str(self.result_value).strip():
             logger.warning(
                 f"Empty result value for parameter {self.test_parameter.parameter_name} "
                 f"in order {self.order_item.order.order_id}"
             )
-            self.flag = "abnormal"
+            self.flag = ""
             return
 
-        # Try to parse as numeric
+        patient = None
         try:
-            # Remove any whitespace and common non-numeric characters
-            cleaned_value = self.result_value.strip().replace(',', '').replace(' ', '')
-            value = float(cleaned_value)
-        except (ValueError, TypeError, AttributeError):
-            # Non-numeric result - check if it's a valid text result
-            cleaned_value = self.result_value.strip().upper()
-            
-            # Common non-numeric result patterns
-            if cleaned_value in ['NEGATIVE', 'NEG', '-', 'NONE', 'NOT DETECTED', 'ND']:
-                self.flag = "normal"
-                return
-            elif cleaned_value in ['POSITIVE', 'POS', '+', 'DETECTED', 'REACTIVE']:
-                self.flag = "abnormal"
-                return
-            else:
-                # Unknown non-numeric result - mark as abnormal but don't fail
-                logger.info(
-                    f"Non-numeric result '{self.result_value}' for parameter "
-                    f"{self.test_parameter.parameter_name} in order {self.order_item.order.order_id}. "
-                    f"Marking as abnormal."
-                )
-                self.flag = "abnormal"
-                return
-
-        # Get patient gender for gender-specific ranges
-        try:
-            gender = self.order_item.order.patient.gender
+            patient = self.order_item.order.patient
         except AttributeError:
             logger.warning(
-                f"Could not determine patient gender for order {self.order_item.order.order_id}. "
-                f"Using default ranges."
-            )
-            gender = None
-
-        # Get reference ranges based on gender
-        if gender == "Male":
-            ref_min = self.test_parameter.reference_min_male
-            ref_max = self.test_parameter.reference_max_male
-        elif gender == "Female":
-            ref_min = self.test_parameter.reference_min_female
-            ref_max = self.test_parameter.reference_max_female
-        else:
-            # Unknown gender or not specified - use male ranges as default, or both if available
-            ref_min = self.test_parameter.reference_min_male or self.test_parameter.reference_min_female
-            ref_max = self.test_parameter.reference_max_male or self.test_parameter.reference_max_female
-
-        # Get critical values (gender-independent)
-        crit_low = self.test_parameter.critical_low
-        crit_high = self.test_parameter.critical_high
-
-        # Validate critical values are reasonable
-        if crit_low is not None and crit_high is not None and crit_low >= crit_high:
-            logger.warning(
-                f"Invalid critical range for parameter {self.test_parameter.parameter_name}: "
-                f"critical_low ({crit_low}) >= critical_high ({crit_high})"
+                f"Could not determine patient for order {self.order_item.order.order_id}. "
+                f"Using fallback ranges."
             )
 
-        # Check critical values first (highest priority)
-        if crit_low is not None and value <= crit_low:
-            self.flag = "critical_low"
-            logger.warning(
-                f"Critical low value detected: {value} <= {crit_low} for parameter "
-                f"{self.test_parameter.parameter_name} in order {self.order_item.order.order_id}"
-            )
-            return
-        elif crit_high is not None and value >= crit_high:
-            self.flag = "critical_high"
-            logger.warning(
-                f"Critical high value detected: {value} >= {crit_high} for parameter "
-                f"{self.test_parameter.parameter_name} in order {self.order_item.order.order_id}"
-            )
-            return
-
-        # Check reference ranges
-        if ref_min is None and ref_max is None:
-            # No reference range available - mark as normal but log
-            logger.info(
-                f"No reference range available for parameter {self.test_parameter.parameter_name} "
-                f"(gender: {gender}). Marking as normal."
-            )
-            self.flag = "normal"
-            return
-
-        # Check if value is within range
-        if ref_min is not None and ref_max is not None:
-            # Both min and max defined
-            if ref_min > ref_max:
-                logger.warning(
-                    f"Invalid reference range for parameter {self.test_parameter.parameter_name}: "
-                    f"min ({ref_min}) > max ({ref_max})"
-                )
-                self.flag = "normal"  # Default to normal if range is invalid
-                return
-
-            if value < ref_min:
-                self.flag = "low"
-            elif value > ref_max:
-                self.flag = "high"
-            else:
-                self.flag = "normal"
-        elif ref_min is not None:
-            # Only minimum defined
-            if value < ref_min:
-                self.flag = "low"
-            else:
-                self.flag = "normal"
-        elif ref_max is not None:
-            # Only maximum defined
-            if value > ref_max:
-                self.flag = "high"
-            else:
-                self.flag = "normal"
-        else:
-            # Should not reach here, but default to normal
-            self.flag = "normal"
-
+        range_info = pick_reference_range(self.test_parameter, patient)
+        self.flag = compute_flag(
+            self.result_value,
+            range_info["ref_min"],
+            range_info["ref_max"],
+            range_info["critical_low"],
+            range_info["critical_high"],
+        )

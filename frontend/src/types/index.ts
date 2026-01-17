@@ -217,7 +217,17 @@ export interface SampleCollection {
 /**
  * Result types
  */
-export type ResultFlag = 'normal' | 'low' | 'high' | 'critical_low' | 'critical_high' | 'abnormal';
+export type ResultFlag =
+  | ''
+  | 'L'
+  | 'H'
+  | 'C'
+  | 'normal'
+  | 'low'
+  | 'high'
+  | 'critical_low'
+  | 'critical_high'
+  | 'abnormal';
 export type ResultStatus = 'pending' | 'verified' | 'rejected';
 
 export interface TestResult {

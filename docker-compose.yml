@@ -224,8 +224,9 @@ services:
     container_name: lims_proxy
     restart: unless-stopped
     ports:
-      # Bind to localhost only for Caddy reverse proxy
-      - "127.0.0.1:8013:80"
+      # Expose publicly for production access
+      - "80:80"
+      - "443:443"
     volumes:
       # Caddy configuration file
       - ./Caddyfile:/etc/caddy/Caddyfile:ro

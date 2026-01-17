@@ -49,14 +49,32 @@ export default function VerificationQueuePage() {
 
   const getFlagClass = (flag: string) => {
     switch (flag) {
+      case 'C':
       case 'critical_low':
       case 'critical_high':
         return styles.flagCritical;
+      case 'H':
+      case 'L':
       case 'high':
       case 'low':
         return styles.flagAbnormal;
       default:
         return styles.flagNormal;
+    }
+  };
+
+  const getFlagLabel = (flag: string) => {
+    switch (flag) {
+      case 'C':
+        return 'Critical';
+      case 'H':
+        return 'High';
+      case 'L':
+        return 'Low';
+      case '':
+        return 'Normal';
+      default:
+        return flag.replace('_', ' ');
     }
   };
 
@@ -105,7 +123,7 @@ export default function VerificationQueuePage() {
                     <td>{result.unit}</td>
                     <td>
                       <span className={`${styles.flagBadge} ${getFlagClass(result.flag)}`}>
-                        {result.flag.replace('_', ' ')}
+                        {getFlagLabel(result.flag)}
                       </span>
                     </td>
                     <td>{result.entered_by_name || '-'}</td>
