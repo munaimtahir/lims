@@ -160,8 +160,14 @@ class OrderSerializer(serializers.ModelSerializer):
             order.calculate_total()
 
             # Create samples for each order item
+            # We need to collect the items before the transaction is complete
+            # because order.items.all() needs the transaction to be committed
             from apps.samples.models import Sample, SampleStatus
-            for item in order.items.all():
+            
+            # Refresh from DB to get all related order items
+            order_items = OrderItem.objects.filter(order=order)
+            
+            for item in order_items:
                 # Determine sample type from test or panel
                 sample_type = "Blood"  # Default
                 if item.test:

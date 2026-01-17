@@ -214,6 +214,67 @@ class TestOrderSerializer:
         
         assert order.patient == patient
         assert order.ordered_by is None
+    
+    def test_samples_auto_created_on_order_creation(self, user, patient, test_instance):
+        """
+        REGRESSION TEST for Issue #1: Samples not auto-created on order creation.
+        
+        This test ensures that Sample objects are automatically created when an order
+        is created with tests/panels.
+        """
+        from apps.samples.models import Sample, SampleStatus
+        
+        factory = APIRequestFactory()
+        request = factory.post('/')
+        request.user = user
+        
+        serializer = OrderSerializer(
+            context={"request": request}
+        )
+        validated_data = {
+            "patient": patient,
+            "test_ids": [test_instance.id],
+            "status": "NEW",
+        }
+        order = serializer.create(validated_data)
+        
+        # Verify samples were auto-created
+        samples = Sample.objects.filter(order_item__order=order)
+        assert samples.count() == 1, "Sample should be auto-created for each order item"
+        
+        sample = samples.first()
+        assert sample.status == SampleStatus.PENDING
+        assert sample.sample_type == test_instance.sample_type
+        assert sample.order_item.test == test_instance
+    
+    def test_samples_auto_created_for_multiple_items(self, user, patient, test_instance, test_panel):
+        """
+        REGRESSION TEST: Verify samples are created for orders with multiple tests/panels.
+        """
+        from apps.samples.models import Sample, SampleStatus
+        
+        factory = APIRequestFactory()
+        request = factory.post('/')
+        request.user = user
+        
+        serializer = OrderSerializer(
+            context={"request": request}
+        )
+        validated_data = {
+            "patient": patient,
+            "test_ids": [test_instance.id],
+            "panel_ids": [test_panel.id],
+            "status": "NEW",
+        }
+        order = serializer.create(validated_data)
+        
+        # Verify samples were auto-created for both items
+        samples = Sample.objects.filter(order_item__order=order)
+        assert samples.count() == 2, "Sample should be created for each order item (test + panel)"
+        
+        # All samples should be PENDING
+        for sample in samples:
+            assert sample.status == SampleStatus.PENDING
 
 
 @pytest.mark.django_db

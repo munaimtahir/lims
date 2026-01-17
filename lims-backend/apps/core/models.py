@@ -4,6 +4,25 @@ from django.db import models
 from django.conf import settings
 
 
+class LabTerminal(models.Model):
+    """
+    Model representing a laboratory terminal/workstation.
+    Used for tracking offline entries and synchronization.
+    """
+    name = models.CharField(max_length=255, help_text="Terminal name or identifier")
+    location = models.CharField(max_length=255, blank=True, help_text="Physical location of terminal")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = "core_labterminal"
+        verbose_name = "Lab Terminal"
+        verbose_name_plural = "Lab Terminals"
+    
+    def __str__(self):
+        return self.name
+
+
 class SystemSettingsManager(models.Manager):
     """Custom manager for SystemSettings to enforce singleton pattern."""
     

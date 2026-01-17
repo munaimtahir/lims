@@ -219,6 +219,8 @@ class TestResultViewSet(viewsets.ModelViewSet):
                         "result_value": result_value,
                         "remarks": result_data.get("remarks", ""),
                         "entered_by": request.user,
+                        "entered_at": timezone.now(),
+                        "status": "ENTERED",  # Set to ENTERED status on creation
                     },
                 )
 
@@ -226,6 +228,8 @@ class TestResultViewSet(viewsets.ModelViewSet):
                     # Update existing result
                     result.result_value = result_value
                     result.remarks = result_data.get("remarks", "")
+                    result.entered_by = request.user
+                    result.entered_at = timezone.now()
                     result.status = "ENTERED"  # Set to ENTERED status when updating
                     result.save()
 

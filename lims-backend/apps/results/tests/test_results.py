@@ -316,6 +316,97 @@ class TestTestResultViewSet:
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["created"] == 1
     
+    def test_bulk_entry_result_status_entered(self, api_client, technician_user, order, test_parameter):
+        """
+        REGRESSION TEST for Issue #2: Result status defaults to DRAFT instead of ENTERED.
+        
+        This test ensures that results created via bulk_entry are saved with status=ENTERED
+        in the database, not DRAFT.
+        """
+        api_client.force_authenticate(user=technician_user)
+        order_item = order.items.first()
+        
+        response = api_client.post(
+            "/api/v1/results/bulk_entry/",
+            {
+                "results": [
+                    {
+                        "order_item": order_item.id,
+                        "test_parameter": test_parameter.id,
+                        "result_value": "15.5",
+                        "remarks": "Test result",
+                    }
+                ]
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["created"] == 1
+        
+        # Verify the result status in the database
+        result = TestResult.objects.get(
+            order_item=order_item,
+            test_parameter=test_parameter
+        )
+        assert result.status == "ENTERED", "Result status should be ENTERED in DB, not DRAFT"
+        assert result.entered_by == technician_user
+        assert result.entered_at is not None
+    
+    def test_bulk_entry_update_sets_entered_status(self, api_client, technician_user, test_result):
+        """
+        REGRESSION TEST: Verify updating a result via bulk_entry sets status to ENTERED.
+        """
+        api_client.force_authenticate(user=technician_user)
+        order_item = test_result.order_item
+        
+        # Set initial status to DRAFT
+        test_result.status = "DRAFT"
+        test_result.save()
+        
+        response = api_client.post(
+            "/api/v1/results/bulk_entry/",
+            {
+                "results": [
+                    {
+                        "order_item": order_item.id,
+                        "test_parameter": test_result.test_parameter.id,
+                        "result_value": "16.5",
+                        "remarks": "Updated",
+                    }
+                ]
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        
+        # Verify status is now ENTERED in DB
+        test_result.refresh_from_db()
+        assert test_result.status == "ENTERED", "Updated result should have ENTERED status"
+        assert test_result.result_value == "16.5"
+    
+    def test_verification_queue_shows_entered_results(self, api_client, pathologist_user, order, test_parameter, technician_user):
+        """
+        REGRESSION TEST: Verify that results with ENTERED status appear in verification queue.
+        """
+        api_client.force_authenticate(user=pathologist_user)
+        order_item = order.items.first()
+        
+        # Create a result with ENTERED status
+        result = TestResult.objects.create(
+            order_item=order_item,
+            test_parameter=test_parameter,
+            result_value="14.0",
+            entered_by=technician_user,
+            status="ENTERED"
+        )
+        
+        response = api_client.get("/api/v1/results/verification_queue/")
+        assert response.status_code == status.HTTP_200_OK
+        
+        # Verify result appears in queue
+        result_ids = [r["id"] for r in response.data.get("results", response.data)]
+        assert result.id in result_ids, "ENTERED results should appear in verification queue"
+    
     def test_bulk_entry_missing_fields(self, api_client, technician_user):
         """Test bulk entry with missing required fields."""
         api_client.force_authenticate(user=technician_user)
