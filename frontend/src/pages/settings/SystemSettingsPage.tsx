@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { systemSettingsApi } from '../../api/services';
+import { normalizeObjectResponse } from '../../utils/apiHelpers';
 import type { SystemSettings } from '../../types';
 import styles from './SystemSettingsPage.module.css';
 
@@ -24,7 +25,8 @@ export default function SystemSettingsPage() {
     },
   });
 
-  const settings = settingsData?.data;
+  // Use normalizer to handle both wrapped {data: {...}} and plain object responses
+  const settings = normalizeObjectResponse<SystemSettings>(settingsData);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
