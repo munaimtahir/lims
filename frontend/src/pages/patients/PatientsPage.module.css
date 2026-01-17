@@ -15,6 +15,17 @@
   font-size: 1.5rem;
 }
 
+.subtitle {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+}
+
 .addButton {
   background: #667eea;
   color: white;
@@ -28,6 +39,22 @@
 
 .addButton:hover {
   background: #5a67d8;
+}
+
+.primaryButton {
+  background: #0f172a;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .searchForm {
@@ -56,6 +83,20 @@
   padding: 10px 24px;
   border-radius: 8px;
   cursor: pointer;
+}
+
+.layoutGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+}
+
+.listCard,
+.detailCard {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .table {
@@ -124,6 +165,50 @@
 
 .error {
   color: #dc2626;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.badge {
+  background: #e0f2fe;
+  color: #0f172a;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.detailLabel {
+  display: block;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.detailValue {
+  display: block;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.sectionHeader {
+  margin: 16px 0;
+}
+
+.emptyState {
+  color: #64748b;
+  text-align: center;
+  padding: 40px 12px;
 }
 
 /* Modal styles */
@@ -199,6 +284,93 @@
   font-weight: 500;
 }
 
+.ageInputs {
+  display: grid;
+  gap: 8px;
+}
+
+.ageField {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ageField input {
+  width: 80px;
+}
+
+.formError {
+  color: #dc2626;
+  margin-bottom: 12px;
+}
+
+.selectedPatient {
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.checkboxLabel {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.totalSection {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  font-weight: 600;
+}
+
+.totalAmount {
+  color: #0f172a;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cancelButton {
+  background: #f1f5f9;
+  color: #1e293b;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submitButton {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.patientDetails {
+  padding: 12px 0;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
 .formGroup input,
 .formGroup select,
 .formGroup textarea {
@@ -223,62 +395,4 @@
   border-radius: 8px;
   font-size: 0.875rem;
   margin-bottom: 16px;
-}
-
-.formActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.cancelButton {
-  background: #f1f5f9;
-  color: #1e293b;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.submitButton {
-  background: #667eea;
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.submitButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Patient details */
-.patientDetails {
-  padding: 24px;
-}
-
-.detailRow {
-  display: flex;
-  padding: 12px 0;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.detailRow:last-child {
-  border-bottom: none;
-}
-
-.detailLabel {
-  width: 140px;
-  color: #64748b;
-  font-size: 0.875rem;
-}
-
-.detailValue {
-  color: #1e293b;
-  font-weight: 500;
 }

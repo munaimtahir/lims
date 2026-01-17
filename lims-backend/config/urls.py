@@ -9,6 +9,7 @@ from django.conf.urls.static import static
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from apps.core.views import HealthCheckView
+from apps.orders.views import WorklistPatientsView
 
 urlpatterns = [
     # Admin
@@ -33,6 +34,7 @@ urlpatterns = [
     path('api/v1/audit/', include('apps.audit.urls')),
     path('api/v1/dashboard/', include('apps.dashboard.urls')),
     path('api/v1/core/', include('apps.core.urls')),
+    path('api/v1/worklist/patients/', WorklistPatientsView.as_view(), name='worklist-patients'),
 ]
 
 # Serve media files in development

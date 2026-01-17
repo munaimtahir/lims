@@ -179,6 +179,46 @@ class TestPatientViewSet:
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
+    def test_create_patient_with_dob_only(self, authenticated_client):
+        """Test creating patient with DOB only."""
+        response = authenticated_client.post(
+            "/api/v1/patients/",
+            {
+                "full_name": "DOB Only",
+                "date_of_birth": "1995-06-12",
+                "gender": "Female",
+                "phone": "03001231234",
+            },
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["data"]["date_of_birth"] == "1995-06-12"
+
+    def test_create_patient_with_age_only(self, authenticated_client):
+        """Test creating patient with age only."""
+        response = authenticated_client.post(
+            "/api/v1/patients/",
+            {
+                "full_name": "Age Only",
+                "age_years": 30,
+                "gender": "Male",
+                "phone": "03001235555",
+            },
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["data"]["age_years"] == 30
+
+    def test_create_patient_missing_age_and_dob(self, authenticated_client):
+        """Test creating patient without DOB or age."""
+        response = authenticated_client.post(
+            "/api/v1/patients/",
+            {
+                "full_name": "Missing Age",
+                "gender": "Male",
+                "phone": "03001236666",
+            },
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
     def test_list_patients(self, authenticated_client, sample_patient):
         """Test listing patients."""
         response = authenticated_client.get("/api/v1/patients/")

@@ -73,6 +73,12 @@ class Patient(models.Model):
     last_name = models.CharField(max_length=100, blank=True)
     full_name = models.CharField(max_length=255, blank=True, help_text="Full name (alternative to first_name/last_name)")
     father_name = models.CharField(max_length=255, blank=True, default="")
+    father_husband_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Father/Husband name",
+    )
     date_of_birth = models.DateField(null=True, blank=True, help_text="Date of birth")
     dob = models.DateField(null=True, blank=True, help_text="Date of birth (legacy field)")
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
@@ -86,6 +92,13 @@ class Patient(models.Model):
     # Contact Information
     phone = models.CharField(max_length=20, validators=[phone_validator])
     email = models.EmailField(blank=True, null=True)
+
+    default_referred_by = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Default referred by for future orders",
+    )
 
     # Identification
     national_id = models.CharField(max_length=20, blank=True, null=True, unique=True)
@@ -193,6 +206,12 @@ class Patient(models.Model):
         # Use cnic if national_id not set
         if not self.national_id and self.cnic:
             self.national_id = self.cnic
+
+        if not self.father_husband_name and self.father_name:
+            self.father_husband_name = self.father_name
+
+        if not self.father_name and self.father_husband_name:
+            self.father_name = self.father_husband_name
         
         super().save(*args, **kwargs)
 

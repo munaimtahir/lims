@@ -7,9 +7,10 @@ import os
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.utils import ImageReader
 from io import BytesIO
 from apps.core.models import SystemSettings
 from .models import Payment
@@ -51,12 +52,33 @@ class PaymentViewSet(viewsets.ModelViewSet):
             lab_address = request.query_params.get("lab_address") or system_settings.lab_address or os.environ.get("LAB_ADDRESS", "")
             lab_phone = request.query_params.get("lab_phone") or system_settings.lab_phone or os.environ.get("LAB_PHONE", "")
             lab_email = request.query_params.get("lab_email") or system_settings.lab_email or os.environ.get("LAB_EMAIL", "")
+            report_header = system_settings.report_header or ""
+            report_footer = system_settings.report_footer or ""
+            report_header_image = system_settings.report_header_image
+            report_footer_image = system_settings.report_footer_image
         except Exception:
             # Fallback to query params or env if SystemSettings fails
             lab_name = request.query_params.get("lab_name") or os.environ.get("LAB_NAME", "Laboratory")
             lab_address = request.query_params.get("lab_address") or os.environ.get("LAB_ADDRESS", "")
             lab_phone = request.query_params.get("lab_phone") or os.environ.get("LAB_PHONE", "")
             lab_email = request.query_params.get("lab_email") or os.environ.get("LAB_EMAIL", "")
+            report_header = ""
+            report_footer = ""
+            report_header_image = None
+            report_footer_image = None
+
+        def add_report_image(story, image_field, max_width=6 * inch, spacer=0.15 * inch):
+            if not image_field:
+                return
+            try:
+                image_reader = ImageReader(image_field)
+                img_width, img_height = image_reader.getSize()
+                scale = min(max_width / img_width, 1)
+                rendered = Image(image_reader, width=img_width * scale, height=img_height * scale)
+                story.append(rendered)
+                story.append(Spacer(1, spacer))
+            except Exception:
+                return
 
         # Generate PDF receipt
         buffer = BytesIO()
@@ -85,6 +107,12 @@ class PaymentViewSet(viewsets.ModelViewSet):
         )
 
         # Header with lab information
+        if report_header:
+            story.append(Paragraph(report_header, styles['Normal']))
+            story.append(Spacer(1, 0.1*inch))
+
+        add_report_image(story, report_header_image)
+
         header_data = [
             [Paragraph(f"<b>{lab_name}</b>", title_style)],
         ]
@@ -188,6 +216,10 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
         # Footer
         story.append(Spacer(1, 0.3*inch))
+        add_report_image(story, report_footer_image, spacer=0.1 * inch)
+        if report_footer:
+            story.append(Paragraph(report_footer, styles['Normal']))
+            story.append(Spacer(1, 0.1*inch))
         footer_text = f"Recorded by: {payment.recorded_by.full_name if payment.recorded_by else 'System'}"
         story.append(Paragraph(footer_text, styles['Normal']))
         story.append(Spacer(1, 0.1*inch))

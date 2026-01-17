@@ -5,6 +5,7 @@ import pytest
 from decimal import Decimal
 from rest_framework.test import APIClient
 from rest_framework import status
+from django.core.files.uploadedfile import SimpleUploadedFile
 from apps.accounts.models import User
 from apps.core.models import SystemSettings
 
@@ -81,6 +82,17 @@ class TestSystemSettingsViewSet:
             full_name="Test User",
             role="Admin",
         )
+
+    @pytest.fixture
+    def non_admin_user(self):
+        """Create non-admin user."""
+        return User.objects.create_user(
+            username="receptionist",
+            email="reception@test.com",
+            password="testpass123",
+            full_name="Reception User",
+            role="Receptionist",
+        )
     
     def test_get_settings(self, api_client, user):
         """Test getting system settings."""
@@ -134,4 +146,45 @@ class TestSystemSettingsViewSet:
         response = api_client.patch("/api/v1/core/settings/", data)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
+    def test_upload_report_header_image(self, api_client, user):
+        """Test uploading report header image."""
+        SystemSettings.objects.create(lab_name="Test Lab")
+        api_client.force_authenticate(user=user)
+        image_content = (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
+            b"\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
+            b"\x00\x00\x00\x0bIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01"
+            b"\x0d\x0a\x2d\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+        )
+        upload = SimpleUploadedFile("header.png", image_content, content_type="image/png")
+        response = api_client.post(
+            "/api/v1/core/settings/report-header-image/",
+            {"report_header_image": upload},
+            format="multipart",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["report_header_image"]
 
+    def test_upload_report_header_image_unauthorized(self, api_client, non_admin_user):
+        """Test unauthorized upload of report header image."""
+        SystemSettings.objects.create(lab_name="Test Lab")
+        api_client.force_authenticate(user=non_admin_user)
+        upload = SimpleUploadedFile("header.png", b"file", content_type="image/png")
+        response = api_client.post(
+            "/api/v1/core/settings/report-header-image/",
+            {"report_header_image": upload},
+            format="multipart",
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_get_settings_with_header_image(self, api_client, user):
+        """Test settings GET includes header image URL."""
+        settings = SystemSettings.objects.create(lab_name="Test Lab")
+        settings.report_header_image = SimpleUploadedFile(
+            "header.png", b"file", content_type="image/png"
+        )
+        settings.save()
+        api_client.force_authenticate(user=user)
+        response = api_client.get("/api/v1/core/settings/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["report_header_image"]

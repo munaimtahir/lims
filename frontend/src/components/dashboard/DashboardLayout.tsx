@@ -13,7 +13,7 @@ export default function DashboardLayout() {
 
   // Get navigation items based on user role
   const getNavItems = () => {
-    const items: { to: string; label: string }[] = [];
+    const items: { to: string; label: string; children?: { to: string; label: string }[] }[] = [];
     
     if (!user) return items;
 
@@ -24,27 +24,32 @@ export default function DashboardLayout() {
       case 'Admin':
         items.push(
           { to: '/dashboard/patients', label: 'Patients' },
-          { to: '/dashboard/orders', label: 'Orders' },
-          { to: '/dashboard/tests', label: 'Test Catalog' },
-          { to: '/dashboard/reference-ranges', label: 'Reference Ranges' },
+          { to: '/dashboard/patients-worklist', label: 'Worklist' },
           { to: '/dashboard/samples', label: 'Samples' },
           { to: '/dashboard/results', label: 'Results' },
           { to: '/dashboard/reports', label: 'Reports' },
           { to: '/dashboard/payments', label: 'Payments' },
-          { to: '/dashboard/settings', label: 'System Settings' },
-          { to: '/dashboard/audit', label: 'Audit Logs' }
+          { to: '/dashboard/audit', label: 'Audit Logs' },
+          {
+            to: '/dashboard/settings',
+            label: 'Settings',
+            children: [
+              { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
+              { to: '/dashboard/tests', label: 'Test Catalog' },
+              { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
+            ],
+          }
         );
         break;
       case 'Receptionist':
         items.push(
           { to: '/dashboard/patients', label: 'Patients' },
-          { to: '/dashboard/orders', label: 'Orders' },
+          { to: '/dashboard/patients-worklist', label: 'Worklist' },
           { to: '/dashboard/payments', label: 'Payments' }
         );
         break;
       case 'Cashier':
         items.push(
-          { to: '/dashboard/orders', label: 'Orders' },
           { to: '/dashboard/payments', label: 'Payments' }
         );
         break;
@@ -69,8 +74,16 @@ export default function DashboardLayout() {
       case 'Manager':
         items.push(
           { to: '/dashboard/reports', label: 'Reports' },
-          { to: '/dashboard/tests', label: 'Test Catalog' },
-          { to: '/dashboard/audit', label: 'Audit Logs' }
+          { to: '/dashboard/audit', label: 'Audit Logs' },
+          {
+            to: '/dashboard/settings',
+            label: 'Settings',
+            children: [
+              { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
+              { to: '/dashboard/tests', label: 'Test Catalog' },
+              { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
+            ],
+          }
         );
         break;
     }
@@ -97,6 +110,22 @@ export default function DashboardLayout() {
               >
                 {item.label}
               </NavLink>
+              {item.children && (
+                <ul className={styles.subNavList}>
+                  {item.children.map((child) => (
+                    <li key={child.to}>
+                      <NavLink
+                        to={child.to}
+                        className={({ isActive }) =>
+                          isActive ? `${styles.subNavLink} ${styles.active}` : styles.subNavLink
+                        }
+                      >
+                        {child.label}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>

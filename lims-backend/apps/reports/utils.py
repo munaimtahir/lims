@@ -2,15 +2,31 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, PageBreak
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.utils import ImageReader
 from io import BytesIO
 import os
 from django.utils import timezone
 from django.conf import settings
 from apps.orders.models import Order
 from apps.core.models import SystemSettings
+
+
+def add_report_image(story, image_field, max_width=6 * inch, spacer=0.15 * inch):
+    """Add a header/footer image to the story with preserved aspect ratio."""
+    if not image_field:
+        return
+    try:
+        image_reader = ImageReader(image_field)
+        img_width, img_height = image_reader.getSize()
+        scale = min(max_width / img_width, 1)
+        rendered = Image(image_reader, width=img_width * scale, height=img_height * scale)
+        story.append(rendered)
+        story.append(Spacer(1, spacer))
+    except Exception:
+        return
 
 
 def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=None, lab_email=None):
@@ -51,6 +67,8 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
             lab_email = system_settings.lab_email or os.environ.get("LAB_EMAIL", "")
         report_header = system_settings.report_header or ""
         report_footer = system_settings.report_footer or ""
+        report_header_image = system_settings.report_header_image
+        report_footer_image = system_settings.report_footer_image
     except Exception:
         # Fallback to environment variables if settings don't exist
         lab_name = lab_name or os.environ.get("LAB_NAME", "Laboratory")
@@ -59,6 +77,8 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
         lab_email = lab_email or os.environ.get("LAB_EMAIL", "")
         report_header = ""
         report_footer = ""
+        report_header_image = None
+        report_footer_image = None
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72,
                            topMargin=72, bottomMargin=72)
@@ -98,6 +118,8 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
     if report_header:
         header_data.append([Paragraph(report_header, styles['Normal'])])
         header_data.append([Spacer(1, 0.1*inch)])
+
+    add_report_image(story, report_header_image)
     
     header_data.append([Paragraph(f"<b>{lab_name}</b>", title_style)])
     if lab_address:
@@ -233,9 +255,11 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
     ]))
     story.append(signature_table)
     
+    add_report_image(story, report_footer_image, spacer=0.1 * inch)
+
     # Custom footer from settings
     if report_footer:
-        story.append(Spacer(1, 0.2*inch))
+        story.append(Spacer(1, 0.1*inch))
         story.append(Paragraph(report_footer, styles['Normal']))
 
     # Build PDF

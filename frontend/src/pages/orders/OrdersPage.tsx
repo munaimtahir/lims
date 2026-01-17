@@ -20,13 +20,15 @@ export default function OrdersPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending':
+      case 'NEW':
         return styles.statusPending;
-      case 'in_progress':
+      case 'COLLECTED':
+      case 'IN_PROCESS':
         return styles.statusInProgress;
-      case 'completed':
+      case 'VERIFIED':
+      case 'PUBLISHED':
         return styles.statusCompleted;
-      case 'cancelled':
+      case 'CANCELLED':
         return styles.statusCancelled;
       default:
         return '';
