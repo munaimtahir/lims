@@ -160,7 +160,7 @@ class TestTestResultModel:
             result_value="15.0",  # Within 13.5-17.5 for male
             entered_by=technician_user,
         )
-        assert result.flag == "normal"
+        assert result.flag == ""
 
     def test_result_flag_high(self, order, test_parameter, technician_user):
         """Test that high result is flagged correctly."""
@@ -171,7 +171,7 @@ class TestTestResultModel:
             result_value="18.0",  # Above 17.5 for male
             entered_by=technician_user,
         )
-        assert result.flag == "high"
+        assert result.flag == "H"
 
     def test_result_flag_low(self, order, test_parameter, technician_user):
         """Test that low result is flagged correctly."""
@@ -182,7 +182,7 @@ class TestTestResultModel:
             result_value="12.0",  # Below 13.5 for male
             entered_by=technician_user,
         )
-        assert result.flag == "low"
+        assert result.flag == "L"
 
     def test_result_flag_critical_high(self, order, test_parameter, technician_user):
         """Test that critical high result is flagged correctly."""
@@ -193,7 +193,7 @@ class TestTestResultModel:
             result_value="21.0",  # >= 20.0 critical high
             entered_by=technician_user,
         )
-        assert result.flag == "critical_high"
+        assert result.flag == "C"
 
     def test_result_flag_critical_low(self, order, test_parameter, technician_user):
         """Test that critical low result is flagged correctly."""
@@ -204,7 +204,7 @@ class TestTestResultModel:
             result_value="6.5",  # <= 7.0 critical low
             entered_by=technician_user,
         )
-        assert result.flag == "critical_low"
+        assert result.flag == "C"
 
 
 @pytest.mark.django_db

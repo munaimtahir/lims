@@ -8,6 +8,10 @@ from .models import TestResult
 from .serializers import TestResultSerializer
 from .filters import TestResultFilter
 from apps.orders.models import OrderItem
+from .services.expected_results import (
+    ensure_test_results,
+    get_orderitem_expected_parameters,
+)
 
 
 class TestResultViewSet(viewsets.ModelViewSet):
@@ -136,6 +140,55 @@ class TestResultViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(paginated_data)
 
         return Response(worklist_data)
+
+    @action(detail=False, methods=["get"])
+    def expected(self, request):
+        """Return expected result rows for an order item without writing."""
+        order_item_id = request.query_params.get("order_item_id")
+        if not order_item_id:
+            return Response(
+                {"error": "order_item_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            order_item = (
+                OrderItem.objects.select_related("order", "order__patient", "test", "panel")
+                .prefetch_related("panel__tests", "test__parameters", "panel__tests__parameters")
+                .get(id=order_item_id)
+            )
+        except (OrderItem.DoesNotExist, ValueError):
+            return Response(
+                {"error": "Order item not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        expected = get_orderitem_expected_parameters(
+            order_item, order_item.order.patient
+        )
+        return Response({"results": expected})
+
+    @action(detail=False, methods=["post"])
+    def ensure(self, request):
+        """Ensure result rows exist for an order item."""
+        order_item_id = request.query_params.get("order_item_id")
+        if not order_item_id:
+            return Response(
+                {"error": "order_item_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            order_item = (
+                OrderItem.objects.select_related("order", "order__patient", "test", "panel")
+                .prefetch_related("panel__tests", "test__parameters", "panel__tests__parameters")
+                .get(id=order_item_id)
+            )
+        except (OrderItem.DoesNotExist, ValueError):
+            return Response(
+                {"error": "Order item not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        results = ensure_test_results(order_item)
+        serializer = self.get_serializer(results, many=True)
+        return Response({"results": serializer.data})
 
     @action(detail=False, methods=["get"])
     def verification_queue(self, request):

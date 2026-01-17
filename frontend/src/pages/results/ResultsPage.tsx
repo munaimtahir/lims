@@ -8,7 +8,7 @@ import styles from './ResultsPage.module.css';
 export default function ResultsPage() {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const orderItemId = searchParams.get('orderItem');
+  const orderItemId = searchParams.get('orderItem') || searchParams.get('orderItemId');
   
   const [selectedOrderItem] = useState<number | null>(
     orderItemId ? Number(orderItemId) : null
@@ -29,6 +29,22 @@ export default function ResultsPage() {
     // Let's assume Order ID for "Result Entry" context usually.
     enabled: !!selectedOrderItem,
   });
+
+  const ensureMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedOrderItem) return;
+      return resultApi.ensure(selectedOrderItem);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['results', selectedOrderItem] });
+    },
+  });
+
+  useEffect(() => {
+    if (selectedOrderItem) {
+      ensureMutation.mutate();
+    }
+  }, [ensureMutation, selectedOrderItem]);
 
   // Fetch existing results for this order item
   const { data: existingResultsData } = useQuery({

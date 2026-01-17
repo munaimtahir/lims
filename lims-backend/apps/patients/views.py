@@ -283,8 +283,9 @@ class PatientViewSet(viewsets.ModelViewSet):
                                 })
                             
                             # Check if flag changed to critical
-                            if prev_result["flag"] not in ["critical_low", "critical_high"] and \
-                               curr_result["flag"] in ["critical_low", "critical_high"]:
+                            critical_flags = {"C", "critical_low", "critical_high"}
+                            if prev_result["flag"] not in critical_flags and \
+                               curr_result["flag"] in critical_flags:
                                 delta_alerts.append({
                                     "type": "critical_change",
                                     "message": f"Result changed to {curr_result['flag']} from {prev_result['flag']}",
