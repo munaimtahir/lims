@@ -5,11 +5,13 @@ Views for core models.
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from django.db import connection
 from .models import SystemSettings
 from .serializers import SystemSettingsSerializer
+from apps.accounts.permissions import IsAdminOrReadOnly
 class SystemSettingsViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing system settings.
@@ -19,8 +21,8 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
     
     queryset = SystemSettings.objects.all()
     serializer_class = SystemSettingsSerializer
-    permission_classes = [IsAuthenticated]
-    http_method_names = ['get', 'put', 'patch', 'options', 'head']
+    permission_classes = [IsAdminOrReadOnly]
+    http_method_names = ['get', 'put', 'patch', 'post', 'delete', 'options', 'head']
     
     def get_object(self):
         """Get the singleton settings instance."""
@@ -65,6 +67,54 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
             serializer.save()
         
         return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=["post", "delete"],
+        url_path="report-header-image",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def report_header_image(self, request):
+        """Upload or remove report header image."""
+        instance = self.get_object()
+        if request.method == "DELETE":
+            instance.report_header_image.delete(save=True)
+            return Response(SystemSettingsSerializer(instance).data)
+
+        image = request.FILES.get("report_header_image")
+        if not image:
+            return Response(
+                {"error": "report_header_image file is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        instance.report_header_image = image
+        instance.updated_by = request.user
+        instance.save()
+        return Response(SystemSettingsSerializer(instance).data)
+
+    @action(
+        detail=False,
+        methods=["post", "delete"],
+        url_path="report-footer-image",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def report_footer_image(self, request):
+        """Upload or remove report footer image."""
+        instance = self.get_object()
+        if request.method == "DELETE":
+            instance.report_footer_image.delete(save=True)
+            return Response(SystemSettingsSerializer(instance).data)
+
+        image = request.FILES.get("report_footer_image")
+        if not image:
+            return Response(
+                {"error": "report_footer_image file is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        instance.report_footer_image = image
+        instance.updated_by = request.user
+        instance.save()
+        return Response(SystemSettingsSerializer(instance).data)
     
     @action(detail=False, methods=["get"])
     def current(self, request):
@@ -102,4 +152,3 @@ class HealthCheckView(APIView):
                 "service": "LIMS Backend",
                 "database": "disconnected"
             }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-

@@ -23,6 +23,8 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
             "lab_logo",
             "report_header",
             "report_footer",
+            "report_header_image",
+            "report_footer_image",
             "currency",
             "tax_rate",
             "email_host",
@@ -51,4 +53,3 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
         if value < 0:
             raise serializers.ValidationError("Tax rate cannot be negative")
         return value
-

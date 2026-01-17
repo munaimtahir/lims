@@ -17,6 +17,7 @@ import type {
   ReferenceRangeCreateRequest,
   SystemSettings,
   TestParameter,
+  WorklistPatient,
 } from '../types';
 
 /**
@@ -368,6 +369,44 @@ export const systemSettingsApi = {
 
   patch: async (data: Partial<SystemSettings>): Promise<ApiResponse<SystemSettings>> => {
     const response = await api.patch<ApiResponse<SystemSettings>>('/core/settings/', data);
+    return response.data;
+  },
+
+  uploadReportHeaderImage: async (file: File): Promise<SystemSettings> => {
+    const formData = new FormData();
+    formData.append('report_header_image', file);
+    const response = await api.post<SystemSettings>('/core/settings/report-header-image/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  removeReportHeaderImage: async (): Promise<SystemSettings> => {
+    const response = await api.delete<SystemSettings>('/core/settings/report-header-image/');
+    return response.data;
+  },
+
+  uploadReportFooterImage: async (file: File): Promise<SystemSettings> => {
+    const formData = new FormData();
+    formData.append('report_footer_image', file);
+    const response = await api.post<SystemSettings>('/core/settings/report-footer-image/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  removeReportFooterImage: async (): Promise<SystemSettings> => {
+    const response = await api.delete<SystemSettings>('/core/settings/report-footer-image/');
+    return response.data;
+  },
+};
+
+/**
+ * Worklist API service
+ */
+export const worklistApi = {
+  listPatients: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<WorklistPatient>>('/worklist/patients/', { params });
     return response.data;
   },
 };

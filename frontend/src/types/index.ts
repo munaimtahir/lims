@@ -53,12 +53,19 @@ export interface Patient {
   first_name: string;
   last_name: string;
   full_name: string;
-  date_of_birth: string;
+  date_of_birth?: string;
+  age_years?: number;
+  age_months?: number;
+  age_days?: number;
   age: number;
   gender: 'Male' | 'Female' | 'Other';
   phone: string;
   email?: string;
   national_id?: string;
+  cnic?: string;
+  father_husband_name?: string;
+  default_referred_by?: string;
+  last_order_referred_by?: string;
   address?: string;
   created_at: string;
   updated_at: string;
@@ -67,13 +74,20 @@ export interface Patient {
 }
 
 export interface PatientCreateRequest {
-  first_name: string;
-  last_name: string;
-  date_of_birth: string;
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
+  date_of_birth?: string;
+  age_years?: number;
+  age_months?: number;
+  age_days?: number;
   gender: 'Male' | 'Female' | 'Other';
   phone: string;
   email?: string;
   national_id?: string;
+  cnic?: string;
+  father_husband_name?: string;
+  default_referred_by?: string;
   address?: string;
 }
 
@@ -138,7 +152,7 @@ export interface TestPanel {
 /**
  * Order types
  */
-export type OrderStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+export type OrderStatus = 'NEW' | 'COLLECTED' | 'IN_PROCESS' | 'VERIFIED' | 'PUBLISHED' | 'CANCELLED';
 
 export interface OrderItem {
   id: number;
@@ -163,6 +177,7 @@ export interface Order {
   updated_at: string;
   status: OrderStatus;
   notes: string;
+  referred_by?: string;
   total_amount: string;
   discount: string;
   net_amount: string;
@@ -176,6 +191,7 @@ export interface OrderCreateRequest {
   panel_ids?: number[];
   discount?: string;
   notes?: string;
+  referred_by?: string;
 }
 
 /**
@@ -339,6 +355,8 @@ export interface SystemSettings {
   lab_logo?: string;
   report_header?: string;
   report_footer?: string;
+  report_header_image?: string;
+  report_footer_image?: string;
   currency: string;
   tax_rate: string;
   email_host?: string;
@@ -353,4 +371,23 @@ export interface SystemSettings {
   updated_at: string;
   updated_by?: number;
   updated_by_name?: string;
+}
+
+export interface WorklistPatient {
+  patient_id: number;
+  patient_name: string;
+  mobile: string;
+  gender: string;
+  date_of_birth?: string;
+  age_years?: number;
+  age_months?: number;
+  age_days?: number;
+  latest_order_id: number;
+  latest_order_number: string;
+  latest_order_created_at: string;
+  current_status: string;
+  can_reprint_receipt: boolean;
+  can_reprint_report: boolean;
+  receipt_pdf_url?: string;
+  report_pdf_url?: string;
 }

@@ -1,0 +1,106 @@
+.container {
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0;
+  color: #1e293b;
+}
+
+.header p {
+  margin: 4px 0 0;
+  color: #64748b;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(2, 1fr) 1fr auto auto;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.quickButton {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.statusBadge {
+  background: #e0f2fe;
+  color: #0f172a;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.patientCell {
+  display: flex;
+  flex-direction: column;
+}
+
+.patientName {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.patientMeta {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.actionButton {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5f5;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.actionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading,
+.noData {
+  text-align: center;
+  padding: 24px;
+  color: #64748b;
+}

@@ -54,6 +54,7 @@ class OrderListSerializer(serializers.ModelSerializer):
             "total_amount",
             "net_amount",
             "is_paid",
+            "referred_by",
             "item_count",
         ]
         read_only_fields = fields
@@ -97,6 +98,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "updated_at",
             "status",
             "notes",
+            "referred_by",
             "total_amount",
             "discount",
             "net_amount",

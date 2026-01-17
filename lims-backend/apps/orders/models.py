@@ -68,6 +68,7 @@ class Order(models.Model):
         max_length=20, choices=PRIORITY_CHOICES, default="ROUTINE"
     )
     notes = models.TextField(blank=True)
+    referred_by = models.CharField(max_length=255, blank=True, null=True)
 
     # Financials
     total_amount = models.DecimalField(

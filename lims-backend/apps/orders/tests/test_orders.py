@@ -198,6 +198,28 @@ class TestOrderViewSet:
         )
         assert response.status_code == status.HTTP_201_CREATED
 
+    def test_create_order_with_referred_by(self, authenticated_client, patient, test_instance):
+        """Test creating an order with referred_by."""
+        response = authenticated_client.post(
+            "/api/v1/orders/orders/",
+            {
+                "patient": patient.id,
+                "test_ids": [test_instance.id],
+                "referred_by": "Dr. Smith",
+            },
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["referred_by"] == "Dr. Smith"
+
+    def test_update_order_referred_by(self, authenticated_client, order):
+        """Test updating referred_by on an order."""
+        response = authenticated_client.patch(
+            f"/api/v1/orders/orders/{order.id}/",
+            {"referred_by": "Clinic A"},
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["referred_by"] == "Clinic A"
+
     def test_retrieve_order(self, authenticated_client, order):
         """Test retrieving an order."""
         response = authenticated_client.get(f"/api/v1/orders/orders/{order.id}/")

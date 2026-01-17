@@ -95,6 +95,18 @@ class SystemSettings(models.Model):
         null=True,
         help_text="Custom footer text for reports",
     )
+    report_header_image = models.ImageField(
+        upload_to="settings/report_headers/",
+        blank=True,
+        null=True,
+        help_text="Optional header image for reports and receipts",
+    )
+    report_footer_image = models.ImageField(
+        upload_to="settings/report_footers/",
+        blank=True,
+        null=True,
+        help_text="Optional footer image for reports and receipts",
+    )
     
     # Financial Settings
     currency = models.CharField(max_length=10, default="PKR")

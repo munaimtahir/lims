@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { systemSettingsApi } from '../../api/services';
 import { normalizeObjectResponse } from '../../utils/apiHelpers';
@@ -7,7 +8,10 @@ import styles from './SystemSettingsPage.module.css';
 
 export default function SystemSettingsPage() {
   const queryClient = useQueryClient();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'lab' | 'reports' | 'email' | 'backup'>('lab');
+  const [headerFile, setHeaderFile] = useState<File | null>(null);
+  const [footerFile, setFooterFile] = useState<File | null>(null);
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ['system-settings'],
@@ -25,8 +29,46 @@ export default function SystemSettingsPage() {
     },
   });
 
+  const uploadHeaderMutation = useMutation({
+    mutationFn: (file: File) => systemSettingsApi.uploadReportHeaderImage(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+      setHeaderFile(null);
+    },
+  });
+
+  const uploadFooterMutation = useMutation({
+    mutationFn: (file: File) => systemSettingsApi.uploadReportFooterImage(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+      setFooterFile(null);
+    },
+  });
+
+  const removeHeaderMutation = useMutation({
+    mutationFn: () => systemSettingsApi.removeReportHeaderImage(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+    },
+  });
+
+  const removeFooterMutation = useMutation({
+    mutationFn: () => systemSettingsApi.removeReportFooterImage(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+    },
+  });
+
   // Use normalizer to handle both wrapped {data: {...}} and plain object responses
   const settings = normalizeObjectResponse<SystemSettings>(settingsData);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup') {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -155,6 +197,36 @@ export default function SystemSettingsPage() {
           <div className={styles.tabContent}>
             <h2>Report Customization</h2>
             <div className={styles.formGroup}>
+              <label>Header Image</label>
+              {settings.report_header_image && (
+                <div className={styles.imagePreview}>
+                  <img src={settings.report_header_image} alt="Report header" />
+                  <button
+                    type="button"
+                    onClick={() => removeHeaderMutation.mutate()}
+                    className={styles.removeButton}
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              <div className={styles.uploadRow}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setHeaderFile(e.target.files?.[0] || null)}
+                />
+                <button
+                  type="button"
+                  className={styles.uploadButton}
+                  disabled={!headerFile || uploadHeaderMutation.isPending}
+                  onClick={() => headerFile && uploadHeaderMutation.mutate(headerFile)}
+                >
+                  {uploadHeaderMutation.isPending ? 'Uploading...' : 'Upload'}
+                </button>
+              </div>
+            </div>
+            <div className={styles.formGroup}>
               <label>Report Header</label>
               <textarea
                 name="report_header"
@@ -173,6 +245,36 @@ export default function SystemSettingsPage() {
                 rows={4}
                 placeholder="Custom footer text for reports"
               />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Footer Image</label>
+              {settings.report_footer_image && (
+                <div className={styles.imagePreview}>
+                  <img src={settings.report_footer_image} alt="Report footer" />
+                  <button
+                    type="button"
+                    onClick={() => removeFooterMutation.mutate()}
+                    className={styles.removeButton}
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              <div className={styles.uploadRow}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFooterFile(e.target.files?.[0] || null)}
+                />
+                <button
+                  type="button"
+                  className={styles.uploadButton}
+                  disabled={!footerFile || uploadFooterMutation.isPending}
+                  onClick={() => footerFile && uploadFooterMutation.mutate(footerFile)}
+                >
+                  {uploadFooterMutation.isPending ? 'Uploading...' : 'Upload'}
+                </button>
+              </div>
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
@@ -315,5 +417,4 @@ export default function SystemSettingsPage() {
     </div>
   );
 }
-
 

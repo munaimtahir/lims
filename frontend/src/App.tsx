@@ -6,7 +6,7 @@ import { DashboardLayout } from './components/dashboard';
 import { LoginPage } from './pages/auth';
 import { DashboardHome } from './pages/dashboard';
 import { PatientsPage } from './pages/patients';
-import { OrdersPage } from './pages/orders';
+import { PatientsWorklistPage } from './pages/patient-worklist';
 import { TestCatalogPage } from './pages/tests';
 import { SamplesPage } from './pages/samples';
 import { CollectionWorklistPage } from './pages/collection';
@@ -52,7 +52,8 @@ function App() {
               
               {/* Implemented pages */}
               <Route path="patients" element={<PatientsPage />} />
-              <Route path="orders" element={<OrdersPage />} />
+              <Route path="patients-worklist" element={<PatientsWorklistPage />} />
+              <Route path="orders" element={<Navigate to="/dashboard/patients" replace />} />
               <Route path="tests" element={<TestCatalogPage />} />
               <Route path="samples" element={<SamplesPage />} />
               <Route path="collection" element={<CollectionWorklistPage />} />
