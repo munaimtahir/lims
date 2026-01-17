@@ -618,6 +618,14 @@ For issues, questions, or contributions:
 
 ---
 
+## 🔒 Clean Baseline
+
+**Baseline Tag:** `v0.0-clean-baseline`
+
+Clean baseline established after repository hygiene. Deployment-specific configuration lives outside the repo. Use templates only (`.env.example`, `.env.production.example`).
+
+---
+
 **Core LIMS v1.0** - Production-ready laboratory information management system.
 
 Built with ❤️ for modern laboratories | [Report Issues](https://github.com/munaimtahir/lims/issues) | [Documentation](./docs/)
