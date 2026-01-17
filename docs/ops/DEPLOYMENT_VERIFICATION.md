@@ -58,18 +58,18 @@
 ## Access Verification
 
 ### Public Domain Access
-✅ **https://portal.alshifalab.pk**
+✅ **https://yourdomain.com**
 - SSL Certificate: Valid (Let's Encrypt)
 - Response: HTTP 200 OK
 - Security Headers: Configured
 
 ### API Endpoints
-✅ **https://portal.alshifalab.pk/api/v1/**
+✅ **https://yourdomain.com/api/v1/**
 - Health: healthy
 - Authentication: Working
 - CORS: Configured
 
-✅ **https://portal.alshifalab.pk/admin/**
+✅ **https://yourdomain.com/admin/**
 - Status: Accessible
 - Login: Working
 
@@ -158,7 +158,7 @@ Internet (HTTPS/443)
     ↓
 Host Caddy (/etc/caddy/Caddyfile)
     ↓ SSL/HTTPS
-portal.alshifalab.pk
+yourdomain.com
     ↓
 Docker Caddy Proxy (lims_proxy)
 localhost:8013
@@ -314,7 +314,7 @@ docker compose --env-file .env.production ps
 ### Test Access
 ```bash
 # Public HTTPS
-curl https://portal.alshifalab.pk/api/v1/health/
+curl https://yourdomain.com/api/v1/health/
 
 # Local
 curl http://localhost:8013/health

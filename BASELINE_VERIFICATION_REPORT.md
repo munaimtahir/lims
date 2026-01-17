@@ -54,8 +54,8 @@ docker compose logs proxy    # No fatal errors
 ### STEP 4 — Hygiene Confirmation ✅
 
 **Deployment Fingerprints Removed:**
-- ❌ `portal.alshifalab.pk` removed from all code files
-- ❌ `34.16.82.13` removed from all code files
+- ❌ Instance-specific domains removed from all code files
+- ❌ Instance-specific IPs removed from all code files
 
 **Files Cleaned:**
 1. `docker-compose.yml` - Generic localhost defaults
@@ -200,7 +200,7 @@ No features, refactors, or deployment changes were made. All changes were hygien
 
 ### Current Deployment Protection
 
-The current production deployment at `portal.alshifalab.pk` continues to work because:
+The current production deployment continues to work because:
 
 1. **`.env.production` file remains on disk** (only untracked from git)
 2. **Docker Compose reads from disk**, not git

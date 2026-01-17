@@ -142,21 +142,21 @@ DB_USER=postgres
 DB_PASSWORD=changeme
 DB_HOST=db
 DB_PORT=5432
-ALLOWED_HOSTS=portal.alshifalab.pk,localhost,127.0.0.1
+ALLOWED_HOSTS=yourdomain.com,localhost,127.0.0.1
 
 # Redis
 REDIS_URL=redis://redis:6379/0
 
 # CORS
-CORS_ALLOWED_ORIGINS=https://portal.alshifalab.pk
-CSRF_TRUSTED_ORIGINS=https://portal.alshifalab.pk
+CORS_ALLOWED_ORIGINS=https://yourdomain.com
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com
 
 # Frontend
 VITE_API_BASE_URL=/api/v1/
 REACT_APP_API_BASE_URL=/api/v1/
 
 # Server
-SERVER_NAME=portal.alshifalab.pk
+SERVER_NAME=yourdomain.com
 
 # Logging
 LOG_LEVEL=INFO

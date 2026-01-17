@@ -1,7 +1,7 @@
 # LIMS Deployment Success Report
 **Date:** January 17, 2026  
-**Domain:** portal.alshifalab.pk  
-**Server IP:** 34.16.82.13  
+**Domain:** yourdomain.com  
+**Server IP:** ${SERVER_IP}  
 **Status:** ✅ DEPLOYED AND OPERATIONAL
 
 ---
@@ -39,7 +39,7 @@ Internet (HTTPS/443)
     ↓
 Host Caddy (/etc/caddy/Caddyfile)
     ↓ SSL Termination
-    ↓ portal.alshifalab.pk → localhost:8013
+    ↓ yourdomain.com → localhost:8013
     ↓
 Docker Container Caddy (lims_proxy)
     ↓
@@ -95,7 +95,7 @@ Docker Container Caddy (lims_proxy)
 
 ### API Health Check
 ```bash
-curl https://portal.alshifalab.pk/health
+curl https://yourdomain.com/health
 # Response: OK
 ```
 
@@ -124,13 +124,13 @@ curl https://portal.alshifalab.pk/health
 
 ### 1. Health Check
 ```bash
-curl https://portal.alshifalab.pk/health
+curl https://yourdomain.com/health
 # ✅ Response: OK
 ```
 
 ### 2. Login API Test
 ```bash
-curl -X POST https://portal.alshifalab.pk/api/v1/auth/login/ \
+curl -X POST https://yourdomain.com/api/v1/auth/login/ \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin123"}'
 # ✅ Response: {"success":true,"message":"Login successful",...}
@@ -144,7 +144,7 @@ curl -I https://portal.alshifalab.pk/
 
 ### 4. SSL Certificate
 ```bash
-curl -I https://portal.alshifalab.pk/ 2>&1 | grep -i "strict-transport"
+curl -I https://yourdomain.com/ 2>&1 | grep -i "strict-transport"
 # ✅ Response: strict-transport-security: max-age=31536000; includeSubDomains; preload
 ```
 
@@ -215,7 +215,7 @@ sudo systemctl status caddy
 
 ### Check Backend Health
 ```bash
-curl https://portal.alshifalab.pk/api/v1/health/
+curl https://yourdomain.com/api/v1/health/
 ```
 
 ### Check Container Resource Usage
@@ -254,7 +254,7 @@ sudo journalctl -u caddy -f
 ## 🎉 Deployment Complete!
 
 The LIMS application is now live and accessible at:
-- **Public URL:** https://portal.alshifalab.pk
+- **Public URL:** https://yourdomain.com
 - **Login:** admin / admin123 (please change!)
 - **Status:** Fully operational
 
