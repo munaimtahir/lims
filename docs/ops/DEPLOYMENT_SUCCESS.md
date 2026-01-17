@@ -15,7 +15,7 @@ The LIMS (Laboratory Information Management System) has been successfully deploy
 - ✅ Deploy application using Docker Compose
 - ✅ Configure Caddy reverse proxy with SSL/HTTPS
 - ✅ Make application publicly accessible at portal.alshifalab.pk
-- ✅ Configure access via server IP with designated port (8013)
+- ✅ Configure access via server IP with designated port (8012)
 - ✅ Create superuser with admin/admin123 credentials
 - ✅ Verify login functionality
 
@@ -30,7 +30,7 @@ The LIMS (Laboratory Information Management System) has been successfully deploy
 | Django Backend | lims_backend | ✅ Running | 8000 (internal) |
 | Celery Worker | lims_celery | ✅ Running | - |
 | React Frontend | lims_frontend | ✅ Running | 80 (internal) |
-| Caddy Proxy | lims_proxy | ✅ Healthy | 8013 (host:127.0.0.1) |
+| Caddy Proxy | lims_proxy | ✅ Healthy | 8012 (host:127.0.0.1) |
 
 ### Network Architecture
 
@@ -39,7 +39,7 @@ Internet (HTTPS/443)
     ↓
 Host Caddy (/etc/caddy/Caddyfile)
     ↓ SSL Termination
-    ↓ yourdomain.com → localhost:8013
+    ↓ yourdomain.com → localhost:8012
     ↓
 Docker Container Caddy (lims_proxy)
     ↓
@@ -90,7 +90,7 @@ Docker Container Caddy (lims_proxy)
 - **Admin Panel:** https://portal.alshifalab.pk/admin/
 
 ### Server IP Access
-- **Internal Port:** http://127.0.0.1:8013 (host machine only)
+- **Internal Port:** http://127.0.0.1:8012 (host machine only)
 - **External Access:** Via domain portal.alshifalab.pk only (for security)
 
 ### API Health Check

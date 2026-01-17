@@ -44,7 +44,7 @@ This release includes **ONLY** core laboratory workflow features:
    - Minimum: 2 CPU cores, 4GB RAM, 20GB disk
    - Recommended: 4 CPU cores, 8GB RAM, 50GB disk
 4. **Network**: 
-   - Port 8013 exposed (or configure Caddy for HTTPS)
+   - Port 8012 exposed (or configure Caddy for HTTPS)
    - Backend binds to localhost only (accessed via Caddy reverse proxy)
 
 ### Environment Configuration
@@ -192,7 +192,7 @@ docker compose exec backend python manage.py seed_test_catalog --clear
 docker compose exec backend python manage.py create_demo_users
 
 # 5. Verify
-curl http://localhost:8013/api/v1/health/
+curl http://localhost:8012/api/v1/health/
 ```
 
 ### Verification Checklist
@@ -242,7 +242,7 @@ docker compose exec db pg_dump -U postgres lims_db > backup_$(date +%Y%m%d).sql
 - Check documentation in `docs/` directory
 - Review troubleshooting guide
 - Check logs: `docker compose logs <service-name>`
-- Health check: `curl http://localhost:8013/api/v1/health/`
+- Health check: `curl http://localhost:8012/api/v1/health/`
 
 ---
 

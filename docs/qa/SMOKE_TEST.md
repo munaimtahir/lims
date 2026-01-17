@@ -49,7 +49,7 @@ The repository includes a comprehensive Python script that automates all test sc
 python smoke_test.py
 
 # Specify custom URL
-python smoke_test.py --url http://your-domain:8013
+python smoke_test.py --url http://your-domain:8012
 ```
 
 **Script Location:** `/smoke_test.py`
@@ -80,7 +80,7 @@ python smoke_test.py --url http://your-domain:8013
 LIMS v1.0 - FULL SMOKE TEST
 ================================================================================
 Started: 2026-01-17 17:41:16
-Target: http://localhost:8013
+Target: http://localhost:8012
 
 Total Tests: 26
 Passed: 24 ✅
@@ -102,7 +102,7 @@ Follow the manual test scenarios below if you prefer hands-on testing or the aut
 
 | Step | Action | Expected Result |
 |------|--------|-----------------|
-| 1 | Navigate to http://localhost:8013 | Login page displayed |
+| 1 | Navigate to http://localhost:8012 | Login page displayed |
 | 2 | Login as receptionist/recep123 | Dashboard displayed, role: Receptionist |
 | 3 | Logout | Return to login page |
 | 4 | Login as phlebotomist/phleb123 | Dashboard displayed, role: Phlebotomist |
@@ -314,7 +314,7 @@ Follow the manual test scenarios below if you prefer hands-on testing or the aut
 
 **Verification:** Test API directly:
 ```bash
-curl http://localhost:8013/api/v1/health/
+curl http://localhost:8012/api/v1/health/
 # If returns {"status":"healthy",...}, system is operational
 ```
 
@@ -449,7 +449,7 @@ A deployment PASSES smoke testing if:
 
 **Solutions:**
 1. Check service health: `docker compose ps`
-2. Verify backend is running: `curl http://localhost:8013/api/v1/health/`
+2. Verify backend is running: `curl http://localhost:8012/api/v1/health/`
 3. Check backend logs: `docker compose logs backend`
 4. Verify .env configuration (ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS)
 

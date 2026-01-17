@@ -1,12 +1,9 @@
-# LIMS Application
-# Caddy configuration for reverse proxy with HTTPS support
+# LIMS Application - Internal Caddy Proxy
+# This Caddy runs inside Docker and routes traffic between services
+# The host Caddy (on port 80/443) proxies lims.alshifalab.pk -> 127.0.0.1:8013 -> this container
 # 
-# For local development, set CADDY_DOMAIN to localhost
-# For production with SSH deployment, set CADDY_DOMAIN to your domain
-# 
-# Environment variable usage:
-#   CADDY_DOMAIN - primary domain (e.g., your-domain.com)
-#   CADDY_DOMAINS_ADDITIONAL - additional domains (e.g., www.your-domain.com)
+# Architecture:
+#   Internet -> Host Caddy (ports 80/443) -> LIMS Proxy (port 8013) -> Backend/Frontend containers
 
 # Global options (must be first)
 {

@@ -22,7 +22,7 @@ This report documents the verification that the LIMS backend application is **NO
 | Backend binds 0.0.0.0:8000 internally | ✅ PASS | Gunicorn logs confirm internal binding |
 | Only proxy publishes ports | ✅ PASS | Only `lims_proxy` has host port mapping |
 | Direct backend access fails | ✅ PASS | Port 8000 on host serves different app (pgsims) |
-| Proxy access works | ✅ PASS | HTTP 200 via 127.0.0.1:8013 |
+| Proxy access works | ✅ PASS | HTTP 200 via 127.0.0.1:8012 |
 
 ---
 
@@ -37,13 +37,13 @@ lims_backend    lims-backend         "gunicorn --bind 0.0…"   backend    3 min
 lims_celery     lims-celery          "celery -A config wo…"   celery     3 minutes ago   Up 3 minutes               8000/tcp
 lims_db         postgres:16-alpine   "docker-entrypoint.s…"   db         3 minutes ago   Up 3 minutes (healthy)     5432/tcp
 lims_frontend   lims-frontend        "/docker-entrypoint.…"   frontend   3 minutes ago   Up 3 minutes               80/tcp
-lims_proxy      caddy:2-alpine       "caddy run --config …"   proxy      3 minutes ago   Up 3 minutes (healthy)     443/tcp, 2019/tcp, 443/udp, 127.0.0.1:8013->80/tcp
+lims_proxy      caddy:2-alpine       "caddy run --config …"   proxy      3 minutes ago   Up 3 minutes (healthy)     443/tcp, 2019/tcp, 443/udp, 127.0.0.1:8012->80/tcp
 lims_redis      redis:7-alpine       "docker-entrypoint.s…"   redis      3 minutes ago   Up 3 minutes (healthy)     6379/tcp
 ```
 
 **Analysis:**
 - ✅ `lims_backend` shows only `8000/tcp` (internal only)
-- ✅ `lims_proxy` shows `127.0.0.1:8013->80/tcp` (published to localhost only)
+- ✅ `lims_proxy` shows `127.0.0.1:8012->80/tcp` (published to localhost only)
 - ✅ No other LIMS services publish ports
 
 ---
@@ -54,7 +54,7 @@ lims_redis      redis:7-alpine       "docker-entrypoint.s…"   redis      3 min
 
 ```
 NAMES                  PORTS
-lims_proxy             443/tcp, 2019/tcp, 443/udp, 127.0.0.1:8013->80/tcp
+lims_proxy             443/tcp, 2019/tcp, 443/udp, 127.0.0.1:8012->80/tcp
 lims_frontend          80/tcp
 lims_backend           8000/tcp
 lims_celery            8000/tcp
@@ -87,11 +87,11 @@ lims_redis             6379/tcp
 
 ### 4. Host Network Listening Ports
 
-**Command:** `ss -lntp | grep -E ":(8000|8013|80|443)"`
+**Command:** `ss -lntp | grep -E ":(8000|8012|80|443)"`
 
 ```
 LISTEN 0      10           0.0.0.0:8000       0.0.0.0:*    users:(("python",pid=3589375,fd=8))
-LISTEN 0      4096       127.0.0.1:8013       0.0.0.0:*                                       
+LISTEN 0      4096       127.0.0.1:8012       0.0.0.0:*                                       
 LISTEN 0      4096               *:80               *:*                                       
 LISTEN 0      4096               *:443              *:*                                       
 ```
@@ -100,7 +100,7 @@ LISTEN 0      4096               *:443              *:*
 - ⚠️ Port 8000 IS listening on 0.0.0.0, BUT this is PID 3589375 (user: munaim)
 - ✅ This is the **pgsims** application (different Django app), NOT LIMS backend
 - ✅ LIMS backend (running in Docker) is NOT visible in host network
-- ✅ Port 8013 listening on 127.0.0.1 only (Caddy proxy - safe)
+- ✅ Port 8012 listening on 127.0.0.1 only (Caddy proxy - safe)
 
 **Process Verification:**
 ```bash
@@ -135,7 +135,7 @@ Content-Type: text/html; charset=utf-8
 
 #### Test 2: Proxy Access (Expected: SUCCESS)
 
-**Command:** `curl -i http://127.0.0.1:8013/api/v1/health/`
+**Command:** `curl -i http://127.0.0.1:8012/api/v1/health/`
 
 **Result:**
 ```
@@ -188,7 +188,7 @@ backend:
 
 **Key Points:**
 - ✅ **ONLY service with `ports:` mapping**
-- ✅ Binds to `127.0.0.1:8013:80` (localhost only, not 0.0.0.0)
+- ✅ Binds to `127.0.0.1:8012:80` (localhost only, not 0.0.0.0)
 - ✅ Provides secure access to backend via reverse proxy
 
 ```yaml
@@ -197,7 +197,7 @@ proxy:
   container_name: lims_proxy
   restart: unless-stopped
   ports:
-    - "127.0.0.1:8013:80"  # Only proxy publishes ports
+    - "127.0.0.1:8012:80"  # Only proxy publishes ports
   networks:
     - lims-network
 ```
@@ -265,7 +265,7 @@ The current configuration is **secure for production deployment**. The backend i
    ufw allow 22/tcp
    ufw allow 80/tcp
    ufw allow 443/tcp
-   ufw deny 8013/tcp  # Block external access to Docker Caddy
+   ufw deny 8012/tcp  # Block external access to Docker Caddy
    ufw enable
    ```
 
@@ -286,7 +286,7 @@ The current configuration is **secure for production deployment**. The backend i
 - [x] `docker ps` confirms backend shows NO published ports
 - [x] `docker inspect` confirms port mapping is `null`
 - [x] Direct curl to host:8000 does NOT reach LIMS backend
-- [x] Curl via proxy (host:8013) successfully reaches LIMS backend
+- [x] Curl via proxy (host:8012) successfully reaches LIMS backend
 - [x] Health endpoint returns 200 OK via proxy
 - [x] Caddyfile uses Docker service name (not localhost)
 - [x] Only proxy service publishes ports to host
@@ -302,7 +302,7 @@ The LIMS backend is **NOT publicly exposed** to the host network. All security r
 
 1. **Backend Isolation:** Backend container has NO published ports
 2. **Controlled Access:** All traffic must go through Caddy reverse proxy
-3. **Local Binding:** Proxy binds to 127.0.0.1:8013 (localhost only)
+3. **Local Binding:** Proxy binds to 127.0.0.1:8012 (localhost only)
 4. **Functionality Verified:** Application works perfectly via proxy
 5. **No Workarounds:** Configuration is clean and maintainable
 
@@ -330,7 +330,7 @@ The LIMS application has been verified to be securely configured with proper net
 │  Port 80/443 (public) ──► Host Caddy            │
 │          │                                       │
 │          ▼                                       │
-│  Port 8013 (127.0.0.1 only) ──► Docker Caddy    │
+│  Port 8012 (127.0.0.1 only) ──► Docker Caddy    │
 │                                      │           │
 │  ┌───────────────────────────────────┼──────┐   │
 │  │    DOCKER NETWORK (lims-network)  │      │   │

@@ -218,15 +218,15 @@ services:
     networks:
       - lims-network
 
-  # Caddy Reverse Proxy (HTTPS/SSL Termination)
+  # Caddy Reverse Proxy (Internal routing only)
+  # Host Caddy handles HTTPS/SSL termination and routes to this container
   proxy:
     image: caddy:2-alpine
     container_name: lims_proxy
     restart: unless-stopped
     ports:
-      # Expose publicly for production access
-      - "80:80"
-      - "443:443"
+      # Expose only to localhost on port 8012 - host Caddy will proxy to this
+      - "127.0.0.1:8012:80"
     volumes:
       # Caddy configuration file
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
@@ -239,9 +239,8 @@ services:
       # Media files (read-only from backend)
       - media_files:/srv/media:ro
     environment:
-      # Domain configuration for Caddy
+      # Internal proxy - host Caddy handles domain routing
       CADDY_DOMAIN: ${SERVER_NAME:-localhost}
-      CADDY_DOMAINS_ADDITIONAL: ${CADDY_DOMAINS_ADDITIONAL:-}
     depends_on:
       - backend
       - frontend

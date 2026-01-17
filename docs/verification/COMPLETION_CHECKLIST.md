@@ -123,10 +123,10 @@ docker compose up -d
 ### Verification After Deployment:
 ```bash
 # 1. Check health
-curl http://localhost:8013/api/v1/health/
+curl http://localhost:8012/api/v1/health/
 
 # 2. Test patients list
-curl -H "Authorization: Bearer $TOKEN" http://localhost:8013/api/v1/patients/
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8012/api/v1/patients/
 
 # 3. Test workflow:
 #    - Login as receptionist

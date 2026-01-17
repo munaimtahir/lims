@@ -79,10 +79,10 @@ cd /home/munaim/srv/apps/lims
 
 After running any of these scripts, the application will be available at:
 
-- **Frontend:** http://localhost:8013/
-- **Backend API:** http://localhost:8013/api/v1/
-- **API Documentation:** http://localhost:8013/api/docs/
-- **Django Admin:** http://localhost:8013/admin/
+- **Frontend:** http://localhost:8012/
+- **Backend API:** http://localhost:8012/api/v1/
+- **API Documentation:** http://localhost:8012/api/docs/
+- **Django Admin:** http://localhost:8012/admin/
 
 ### Test Credentials (Created/Reset by Scripts)
 - **Username:** `admin`
@@ -178,7 +178,7 @@ LOG_LEVEL=INFO
 **Try:**
 1. Check container status: `docker compose ps`
 2. Check logs: `docker compose logs <service-name>`
-3. Verify port 8013 is not blocked: `netstat -tuln | grep 8013`
+3. Verify port 8012 is not blocked: `netstat -tuln | grep 8012`
 4. Wait 30 seconds for services to fully initialize
 
 ### Admin Login Not Working

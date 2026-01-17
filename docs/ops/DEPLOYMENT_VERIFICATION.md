@@ -52,7 +52,7 @@
 
 ✅ **Caddy Proxy**
 - Status: Healthy
-- Port: 127.0.0.1:8013
+- Port: 127.0.0.1:8012
 - Health endpoint: OK
 
 ## Access Verification
@@ -74,10 +74,10 @@
 - Login: Working
 
 ### Internal Endpoints
-✅ **http://localhost:8013/health**
+✅ **http://localhost:8012/health**
 - Response: OK
 
-✅ **http://localhost:8013/api/v1/health/**
+✅ **http://localhost:8012/api/v1/health/**
 - Status: healthy
 
 ## Authentication
@@ -127,14 +127,14 @@
 ### Host Configuration
 ✅ **/srv/proxy/caddy/Caddyfile** - Created
 - SSL termination configured
-- Proxy to localhost:8013
+- Proxy to localhost:8012
 - Security headers enabled
 - HSTS configured
 
 ### Application Configuration
 ✅ **/etc/caddy/Caddyfile** - Updated
 - portal.alshifalab.pk configured
-- Proxying to localhost:8013
+- Proxying to localhost:8012
 - HTTPS enabled
 
 ### Environment Configuration
@@ -161,7 +161,7 @@ Host Caddy (/etc/caddy/Caddyfile)
 yourdomain.com
     ↓
 Docker Caddy Proxy (lims_proxy)
-localhost:8013
+localhost:8012
     ↓
     ├── / → Frontend (React SPA)
     ├── /api/* → Backend (Django)
@@ -317,7 +317,7 @@ docker compose --env-file .env.production ps
 curl https://yourdomain.com/api/v1/health/
 
 # Local
-curl http://localhost:8013/health
+curl http://localhost:8012/health
 ```
 
 ## Sign-Off

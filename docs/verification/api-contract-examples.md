@@ -2,7 +2,7 @@
 
 **Date:** Saturday, January 17, 2026
 **Environment:** Production Docker Stack
-**Base URL:** http://localhost:8013/api/v1/
+**Base URL:** http://localhost:8012/api/v1/
 
 ## Summary of Findings
 
@@ -19,7 +19,7 @@
 
 **Request:**
 ```bash
-curl -H "Authorization: Bearer $TOKEN" "http://localhost:8013/api/v1/patients/?page_size=2"
+curl -H "Authorization: Bearer $TOKEN" "http://localhost:8012/api/v1/patients/?page_size=2"
 ```
 
 **Actual Response:**
@@ -74,7 +74,7 @@ curl -H "Authorization: Bearer $TOKEN" "http://localhost:8013/api/v1/patients/?p
 
 **Request:**
 ```bash
-curl -H "Authorization: Bearer $TOKEN" http://localhost:8013/api/v1/core/settings/
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8012/api/v1/core/settings/
 ```
 
 **Actual Response:**
@@ -103,7 +103,7 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8013/api/v1/core/setting
 
 **Request:**
 ```bash
-curl -H "Authorization: Bearer $TOKEN" http://localhost:8013/api/v1/samples/pending_collections/
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8012/api/v1/samples/pending_collections/
 ```
 
 **Actual Response:**
@@ -128,7 +128,7 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8013/api/v1/samples/pend
 
 **Request:**
 ```bash
-curl -H "Authorization: Bearer $TOKEN" http://localhost:8013/api/v1/results/worklist/
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8012/api/v1/results/worklist/
 ```
 
 **Actual Response:**
@@ -153,7 +153,7 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8013/api/v1/results/work
 
 **Request:**
 ```bash
-curl -H "Authorization: Bearer $TOKEN" http://localhost:8013/api/v1/laboratory/tests/
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8012/api/v1/laboratory/tests/
 ```
 
 **Actual Response:**

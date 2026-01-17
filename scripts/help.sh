@@ -62,10 +62,10 @@ ACCESS INFORMATION
 
 After deployment, access the application at:
 
-   Frontend:     http://localhost:8013/
-   API:          http://localhost:8013/api/v1/
-   API Docs:     http://localhost:8013/api/docs/
-   Admin Panel:  http://localhost:8013/admin/
+   Frontend:     http://localhost:8012/
+   API:          http://localhost:8012/api/v1/
+   API Docs:     http://localhost:8012/api/docs/
+   Admin Panel:  http://localhost:8012/admin/
 
 Test Credentials (auto-created/reset):
    Username: admin

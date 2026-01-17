@@ -338,7 +338,7 @@ verify_access() {
     # Check if proxy is running for external access
     if docker ps --format '{{.Names}}' | grep -q "lims_proxy"; then
         log_info "Testing external API access through proxy..."
-        if curl -f -s http://localhost:8013/api/v1/health/ | grep -q "status"; then
+        if curl -f -s http://localhost:8012/api/v1/health/ | grep -q "status"; then
             log_success "✓ Backend API is publicly accessible"
         else
             log_warning "⚠ External API access check failed"
@@ -351,7 +351,7 @@ verify_access() {
     fi
     
     log_info "Testing Django admin access..."
-    if curl -f -s -o /dev/null http://localhost:8013/admin/; then
+    if curl -f -s -o /dev/null http://localhost:8012/admin/; then
         log_success "✓ Django admin is accessible"
     else
         log_warning "⚠ Django admin access check failed"
@@ -364,10 +364,10 @@ show_summary() {
     log_info "Backend redeployment completed!"
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Access URLs:"
-    log_info "  - API: http://localhost:8013/api/v1/"
-    log_info "  - API Docs: http://localhost:8013/api/docs/"
-    log_info "  - Admin: http://localhost:8013/admin/"
-    log_info "  - Health: http://localhost:8013/api/v1/health/"
+    log_info "  - API: http://localhost:8012/api/v1/"
+    log_info "  - API Docs: http://localhost:8012/api/docs/"
+    log_info "  - Admin: http://localhost:8012/admin/"
+    log_info "  - Health: http://localhost:8012/api/v1/health/"
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Test Credentials:"
     log_info "  Username: admin"

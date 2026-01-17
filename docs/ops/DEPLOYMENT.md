@@ -31,7 +31,7 @@ Backend: lims_backend (Gunicorn on 0.0.0.0:8000 internal)
     └── Background Tasks: lims_celery (Celery Worker)
 ```
 
-**Key Security Feature:** Backend binds to `0.0.0.0:8000` inside the container but is NOT exposed to the host. Only the Caddy proxy is exposed (port 8013 on 127.0.0.1).
+**Key Security Feature:** Backend binds to `0.0.0.0:8000` inside the container but is NOT exposed to the host. Only the Caddy proxy is exposed (port 8012 on 127.0.0.1).
 
 ---
 
@@ -48,7 +48,7 @@ Backend: lims_backend (Gunicorn on 0.0.0.0:8000 internal)
 - **OS:** Linux (Ubuntu 20.04+, Debian 11+, CentOS 8+)
 
 ### Network Requirements
-- Port 8013 available (or configure custom port)
+- Port 8012 available (or configure custom port)
 - (Optional) Port 443 for HTTPS if using host-level Caddy
 
 ---
@@ -106,10 +106,10 @@ DB_PASSWORD=<your-generated-db-password>
 ALLOWED_HOSTS=localhost,127.0.0.1,yourdomain.com,your-server-ip
 
 # MUST match your frontend URL(s)
-CORS_ALLOWED_ORIGINS=http://localhost:8013,https://yourdomain.com
+CORS_ALLOWED_ORIGINS=http://localhost:8012,https://yourdomain.com
 
 # MUST match your frontend URL(s)
-CSRF_TRUSTED_ORIGINS=http://localhost:8013,https://yourdomain.com
+CSRF_TRUSTED_ORIGINS=http://localhost:8012,https://yourdomain.com
 
 # ===================================
 # DATABASE CONFIGURATION
@@ -160,7 +160,7 @@ lims_backend    backend    healthy      -
 lims_celery     celery     running      -
 lims_db         db         healthy      -
 lims_frontend   frontend   running      -
-lims_proxy      proxy      healthy      127.0.0.1:8013->80/tcp
+lims_proxy      proxy      healthy      127.0.0.1:8012->80/tcp
 lims_redis      redis      healthy      -
 ```
 
@@ -198,7 +198,7 @@ docker compose exec backend python manage.py createsuperuser
 
 ```bash
 # Test health endpoint
-curl http://localhost:8013/api/v1/health/
+curl http://localhost:8012/api/v1/health/
 
 # Expected output:
 # {"status":"healthy","service":"LIMS Backend","database":"connected"}
@@ -211,10 +211,10 @@ docker compose logs frontend
 
 ### 7. Access the Application
 
-- **Application:** http://localhost:8013
-- **Admin Panel:** http://localhost:8013/admin/
-- **API Documentation:** http://localhost:8013/api/docs/
-- **Health Check:** http://localhost:8013/api/v1/health/
+- **Application:** http://localhost:8012
+- **Admin Panel:** http://localhost:8012/admin/
+- **API Documentation:** http://localhost:8012/api/docs/
+- **Health Check:** http://localhost:8012/api/v1/health/
 
 ---
 
@@ -222,13 +222,13 @@ docker compose logs frontend
 
 ### Custom Port Configuration
 
-To change the exposed port from 8013 to another port:
+To change the exposed port from 8012 to another port:
 
 1. Edit `docker-compose.yml`:
 ```yaml
 proxy:
   ports:
-    - "127.0.0.1:YOUR_PORT:80"  # Change 8013 to YOUR_PORT
+    - "127.0.0.1:YOUR_PORT:80"  # Change 8012 to YOUR_PORT
 ```
 
 2. Update `.env` to include new port in CORS/CSRF origins:
@@ -259,7 +259,7 @@ sudo apt install caddy
 2. Configure `/etc/caddy/Caddyfile`:
 ```caddyfile
 yourdomain.com {
-    reverse_proxy localhost:8013
+    reverse_proxy localhost:8012
     
     # Optional: custom headers
     header {
@@ -288,7 +288,7 @@ If you're behind nginx or another reverse proxy, ensure these headers are forwar
 Example nginx configuration:
 ```nginx
 location / {
-    proxy_pass http://localhost:8013;
+    proxy_pass http://localhost:8012;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Host $host;
@@ -406,7 +406,7 @@ docker compose logs db
 ```
 
 **Common issues:**
-- Port 8013 already in use → Change port in docker-compose.yml
+- Port 8012 already in use → Change port in docker-compose.yml
 - Database connection failed → Check DB_PASSWORD in .env matches docker-compose.yml
 - Permission denied → Ensure user is in docker group: `sudo usermod -aG docker $USER`
 
@@ -416,7 +416,7 @@ The backend may show "unhealthy" in `docker ps` due to health check timing, but 
 
 ```bash
 # Test API directly
-curl http://localhost:8013/api/v1/health/
+curl http://localhost:8012/api/v1/health/
 
 # If returns {"status":"healthy",...}, system is operational
 ```
@@ -522,7 +522,7 @@ redis:
 
 ```bash
 # API health endpoint
-curl http://localhost:8013/api/v1/health/
+curl http://localhost:8012/api/v1/health/
 
 # Check all service health
 docker compose ps

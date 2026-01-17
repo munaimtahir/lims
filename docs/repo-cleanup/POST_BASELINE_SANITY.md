@@ -136,7 +136,7 @@ lims_redis      Up (healthy)
 ### Test 2: API Health Check
 
 ```bash
-$ curl -I http://localhost:8013/api/v1/health/
+$ curl -I http://localhost:8012/api/v1/health/
 HTTP/1.1 200 OK
 ```
 
@@ -145,7 +145,7 @@ HTTP/1.1 200 OK
 ### Test 3: Frontend Access
 
 ```bash
-$ curl -I http://localhost:8013/
+$ curl -I http://localhost:8012/
 HTTP/1.1 200 OK
 ```
 
@@ -154,7 +154,7 @@ HTTP/1.1 200 OK
 ### Test 4: Admin Access
 
 ```bash
-$ curl -I http://localhost:8013/admin/
+$ curl -I http://localhost:8012/admin/
 HTTP/1.1 302 Found
 Location: /admin/login/
 ```

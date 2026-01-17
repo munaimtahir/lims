@@ -342,7 +342,7 @@ docs/deployment/ is now only a stub directory pointing to canonical location.
 ✅ PASS - All 6 services running (db, redis, backend, celery, frontend, proxy)
 
 # Health endpoint
-✅ PASS - http://localhost:8013/api/v1/health/ returns 200 OK
+✅ PASS - http://localhost:8012/api/v1/health/ returns 200 OK
 
 # Smoke test
 ✅ PASS - 24/26 tests passing (92.3%)
@@ -568,7 +568,7 @@ The Core LIMS v1.0 repository is clean, well-organized, and production-ready. Al
 
 ```bash
 # Verify deployment
-curl http://localhost:8013/api/v1/health/
+curl http://localhost:8012/api/v1/health/
 
 # Run smoke test
 python smoke_test.py

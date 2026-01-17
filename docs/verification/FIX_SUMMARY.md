@@ -78,7 +78,7 @@ return self.get_paginated_response(serializer.data)
 
 **Testing:**
 ```bash
-curl -H "Authorization: Bearer $TOKEN" "http://localhost:8013/api/v1/patients/?page_size=2"
+curl -H "Authorization: Bearer $TOKEN" "http://localhost:8012/api/v1/patients/?page_size=2"
 # Returns properly formatted pagination ✓
 ```
 
@@ -233,20 +233,20 @@ Samples count: 1
 
 ```bash
 # 1. Login
-curl -X POST http://localhost:8013/api/v1/auth/login/ \
+curl -X POST http://localhost:8012/api/v1/auth/login/ \
   -d '{"username":"admin","password":"admin123"}'
 # ✓ Returns JWT token
 
 # 2. List patients
 curl -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8013/api/v1/patients/"
+  "http://localhost:8012/api/v1/patients/"
 # ✓ Returns {count, next, previous, results: [...]}
 
 # 3. Create order (via UI or API)
 # Order created with tests
 
 # 4. Record payment
-curl -X POST http://localhost:8013/api/v1/payments/ \
+curl -X POST http://localhost:8012/api/v1/payments/ \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"order": 1, "amount": "100.00", "payment_method": "cash"}'
 # ✓ Order marked as paid
@@ -254,18 +254,18 @@ curl -X POST http://localhost:8013/api/v1/payments/ \
 
 # 5. Check Collect Sample worklist
 curl -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8013/api/v1/samples/pending_collections/"
+  "http://localhost:8012/api/v1/samples/pending_collections/"
 # ✓ Returns samples awaiting collection
 
 # 6. Collect sample
-curl -X PATCH http://localhost:8013/api/v1/samples/1/ \
+curl -X PATCH http://localhost:8012/api/v1/samples/1/ \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"status": "COLLECTED"}'
 # ✓ Sample status updated
 
 # 7. Check Result Entry worklist
 curl -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8013/api/v1/results/worklist/"
+  "http://localhost:8012/api/v1/results/worklist/"
 # ✓ Returns items ready for result entry
 ```
 
@@ -352,7 +352,7 @@ docker compose build --no-cache backend frontend
 docker compose up -d
 
 # 4. Verify health
-curl http://localhost:8013/api/v1/health/
+curl http://localhost:8012/api/v1/health/
 # Should return: {"status":"healthy",...}
 
 # 5. Test workflow

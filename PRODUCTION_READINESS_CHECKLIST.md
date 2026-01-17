@@ -22,7 +22,7 @@
 - **Status:** PASS
 - **Details:**
   - Backend binds to `127.0.0.1:8000` (localhost only)
-  - Accessed via Caddy reverse proxy on port 8013
+  - Accessed via Caddy reverse proxy on port 8012
   - No direct external access to backend
 - **Files:** `lims-backend/Dockerfile` (line 47)
 

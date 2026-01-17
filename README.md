@@ -256,8 +256,8 @@ DB_PASSWORD=<generate-with-openssl-rand-base64-32>
 
 # CRITICAL - Include your domain and server IP
 ALLOWED_HOSTS=localhost,127.0.0.1,yourdomain.com,your-server-ip
-CORS_ALLOWED_ORIGINS=http://localhost:8013,https://yourdomain.com
-CSRF_TRUSTED_ORIGINS=http://localhost:8013,https://yourdomain.com
+CORS_ALLOWED_ORIGINS=http://localhost:8012,https://yourdomain.com
+CSRF_TRUSTED_ORIGINS=http://localhost:8012,https://yourdomain.com
 
 # Database
 DB_NAME=lims_db
@@ -271,6 +271,8 @@ DJANGO_SETTINGS_MODULE=config.settings.production
 ```
 
 For complete deployment guide, see [docs/ops/DEPLOYMENT.md](./docs/ops/DEPLOYMENT.md).
+
+**Port Configuration**: LIMS uses port 8012 (localhost only) and is proxied by the host Caddy server on ports 80/443. For details on the two-tier proxy architecture and port assignment, see [docs/deployment/PORT_CONFIGURATION.md](./docs/deployment/PORT_CONFIGURATION.md).
 
 #### 2. Build and Start Services
 
@@ -314,7 +316,7 @@ docker compose exec backend python manage.py create_demo_users
 
 ```bash
 # Check health endpoint
-curl http://localhost:8013/api/v1/health/
+curl http://localhost:8012/api/v1/health/
 
 # Check service logs
 docker compose logs backend
@@ -324,10 +326,10 @@ docker compose logs frontend
 
 #### 5. Access the Application
 
-- **Application**: `http://localhost:8013` (or your configured domain)
-- **Admin Panel**: `http://localhost:8013/admin/`
-- **API Documentation**: `http://localhost:8013/api/docs/`
-- **Health Check**: `http://localhost:8013/api/v1/health/`
+- **Application**: `http://localhost:8012` (or your configured domain)
+- **Admin Panel**: `http://localhost:8012/admin/`
+- **API Documentation**: `http://localhost:8012/api/docs/`
+- **Health Check**: `http://localhost:8012/api/v1/health/`
 
 #### 6. Core Workflow (Validated in v1.0)
 
@@ -566,9 +568,9 @@ Historical documentation and phase reports are archived in [archive/](./archive/
 
 ### API Documentation
 
-- Interactive API docs (Swagger UI): `http://localhost:8013/api/docs/`
-- ReDoc format: `http://localhost:8013/api/redoc/`
-- OpenAPI Schema: `http://localhost:8013/api/schema/`
+- Interactive API docs (Swagger UI): `http://localhost:8012/api/docs/`
+- ReDoc format: `http://localhost:8012/api/redoc/`
+- OpenAPI Schema: `http://localhost:8012/api/schema/`
 
 ## 🔐 Security
 
