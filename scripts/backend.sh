@@ -132,7 +132,7 @@ ensure_infrastructure() {
     log_info "Checking if database is running..."
     if ! docker ps --format '{{.Names}}' | grep -q "lims_db"; then
         log_info "Starting database..."
-        docker compose up -d db
+        docker compose --env-file "$ENV_FILE" up -d db
         log_info "Waiting for database to initialize (15 seconds)..."
         sleep 15
     else
@@ -142,7 +142,7 @@ ensure_infrastructure() {
     log_info "Checking if Redis is running..."
     if ! docker ps --format '{{.Names}}' | grep -q "lims_redis"; then
         log_info "Starting Redis..."
-        docker compose up -d redis
+        docker compose --env-file "$ENV_FILE" up -d redis
         log_info "Waiting for Redis to initialize (5 seconds)..."
         sleep 5
     else
@@ -187,7 +187,7 @@ rebuild_backend() {
     set +a
     
     log_info "Building backend Docker image (no cache)..."
-    docker compose build --no-cache backend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" build --no-cache backend 2>&1 | tee -a "$DEPLOY_LOG"
     
     if [ $? -eq 0 ]; then
         log_success "Backend image built successfully"
@@ -197,7 +197,7 @@ rebuild_backend() {
     fi
     
     log_info "Building Celery Docker image (no cache)..."
-    docker compose build --no-cache celery 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" build --no-cache celery 2>&1 | tee -a "$DEPLOY_LOG"
     
     if [ $? -eq 0 ]; then
         log_success "Celery image built successfully"
@@ -211,13 +211,13 @@ start_backend_services() {
     print_header "Starting Backend Services"
     
     log_info "Starting backend container..."
-    docker compose up -d backend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" up -d backend 2>&1 | tee -a "$DEPLOY_LOG"
     
     log_info "Waiting for backend to initialize (20 seconds)..."
     sleep 20
     
     log_info "Starting celery worker..."
-    docker compose up -d celery 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" up -d celery 2>&1 | tee -a "$DEPLOY_LOG"
     
     log_info "Waiting for celery to initialize (10 seconds)..."
     sleep 10
@@ -229,7 +229,7 @@ run_migrations() {
     print_header "Running Database Migrations"
     
     log_info "Applying database migrations..."
-    docker compose exec -T backend python manage.py migrate --noinput 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" exec -T backend python manage.py migrate --noinput 2>&1 | tee -a "$DEPLOY_LOG"
     
     if [ $? -eq 0 ]; then
         log_success "Migrations applied successfully"
@@ -238,7 +238,7 @@ run_migrations() {
     fi
     
     log_info "Collecting static files..."
-    docker compose exec -T backend python manage.py collectstatic --noinput 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" exec -T backend python manage.py collectstatic --noinput 2>&1 | tee -a "$DEPLOY_LOG"
     
     if [ $? -eq 0 ]; then
         log_success "Static files collected"
@@ -255,7 +255,7 @@ ensure_superuser() {
     print_header "Ensuring Superuser Exists"
     
     log_info "Checking for admin user..."
-    USER_EXISTS=$(docker compose exec -T backend python manage.py shell << 'PYEOF'
+    USER_EXISTS=$(docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
 exists = User.objects.filter(username='admin').exists()
@@ -265,7 +265,7 @@ PYEOF
     
     if echo "$USER_EXISTS" | grep -q "EXISTS"; then
         log_info "Admin user already exists. Resetting password to 'admin123'..."
-        docker compose exec -T backend python manage.py shell << 'PYEOF'
+        docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
 admin = User.objects.get(username='admin')
@@ -278,10 +278,10 @@ PYEOF
         log_success "Admin password reset to 'admin123'"
     else
         log_info "Creating superuser admin/admin123..."
-        docker compose exec -T backend python manage.py shell << 'PYEOF'
+        docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
-User.objects.create_superuser('admin', 'admin@lims.local', 'admin123')
+User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
 print("Superuser created successfully")
 PYEOF
         log_success "Superuser created: admin/admin123"
@@ -292,7 +292,7 @@ verify_services() {
     print_header "Verifying Services"
     
     log_info "Checking container status..."
-    docker compose ps | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" ps | tee -a "$DEPLOY_LOG"
     
     # Check if backend is running
     if docker ps --format '{{.Names}}' | grep -q "lims_backend"; then
@@ -329,7 +329,7 @@ verify_access() {
     print_header "Verifying Public Access"
     
     log_info "Testing backend health endpoint..."
-    if docker compose exec -T backend curl -f -s http://localhost:8000/api/v1/health/ | grep -q "status"; then
+    if docker compose --env-file "$ENV_FILE" exec -T backend curl -f -s http://localhost:8000/api/v1/health/ | grep -q "status"; then
         log_success "✓ Backend health check passed (internal)"
     else
         log_warning "⚠ Backend internal health check failed"
@@ -345,7 +345,7 @@ verify_access() {
         fi
     else
         log_info "Proxy not running. Starting proxy for public access..."
-        docker compose up -d proxy
+        docker compose --env-file "$ENV_FILE" up -d proxy
         sleep 10
         log_success "Proxy started"
     fi
@@ -381,11 +381,11 @@ show_logs() {
     print_header "Recent Service Logs"
     
     log_info "Backend logs (last 20 lines):"
-    docker compose logs --tail=20 backend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" logs --tail=20 backend 2>&1 | tee -a "$DEPLOY_LOG"
     
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Celery logs (last 20 lines):"
-    docker compose logs --tail=20 celery 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" logs --tail=20 celery 2>&1 | tee -a "$DEPLOY_LOG"
 }
 
 ###############################################################################

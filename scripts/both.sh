@@ -144,7 +144,7 @@ stop_all_services() {
     print_header "Stopping All Services"
     
     log_info "Stopping all LIMS containers..."
-    docker compose down 2>&1 | tee -a "$DEPLOY_LOG" || true
+    docker compose --env-file "$ENV_FILE" down 2>&1 | tee -a "$DEPLOY_LOG" || true
     
     log_info "Checking for any remaining containers..."
     REMAINING=$(docker ps -a --format '{{.Names}}' | grep "lims_" || true)
@@ -174,15 +174,15 @@ rebuild_all_images() {
     
     # Build backend first
     log_info "Building backend image..."
-    docker compose build --no-cache backend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" build --no-cache backend 2>&1 | tee -a "$DEPLOY_LOG"
     
     # Build celery (uses same image as backend)
     log_info "Building celery image..."
-    docker compose build --no-cache celery 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" build --no-cache celery 2>&1 | tee -a "$DEPLOY_LOG"
     
     # Build frontend
     log_info "Building frontend image..."
-    docker compose build --no-cache frontend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" build --no-cache frontend 2>&1 | tee -a "$DEPLOY_LOG"
     
     if [ $? -eq 0 ]; then
         log_success "All Docker images built successfully"
@@ -196,17 +196,17 @@ start_infrastructure() {
     print_header "Starting Infrastructure Services"
     
     log_info "Starting database and Redis..."
-    docker compose up -d db redis 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" up -d db redis 2>&1 | tee -a "$DEPLOY_LOG"
     
     log_info "Waiting for infrastructure to initialize (20 seconds)..."
     sleep 20
     
     # Verify infrastructure health
     log_info "Checking database health..."
-    docker compose exec -T db pg_isready -U postgres 2>&1 | tee -a "$DEPLOY_LOG" || true
+    docker compose --env-file "$ENV_FILE" exec -T db pg_isready -U postgres 2>&1 | tee -a "$DEPLOY_LOG" || true
     
     log_info "Checking Redis health..."
-    docker compose exec -T redis redis-cli ping 2>&1 | tee -a "$DEPLOY_LOG" || true
+    docker compose --env-file "$ENV_FILE" exec -T redis redis-cli ping 2>&1 | tee -a "$DEPLOY_LOG" || true
     
     log_success "Infrastructure services started"
 }
@@ -215,13 +215,13 @@ start_backend() {
     print_header "Starting Backend Services"
     
     log_info "Starting backend..."
-    docker compose up -d backend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" up -d backend 2>&1 | tee -a "$DEPLOY_LOG"
     
     log_info "Waiting for backend to initialize (25 seconds)..."
     sleep 25
     
     log_info "Starting Celery worker..."
-    docker compose up -d celery 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" up -d celery 2>&1 | tee -a "$DEPLOY_LOG"
     
     log_info "Waiting for Celery to initialize (10 seconds)..."
     sleep 10
@@ -233,10 +233,10 @@ start_frontend() {
     print_header "Starting Frontend Services"
     
     log_info "Starting frontend..."
-    docker compose up -d frontend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" up -d frontend 2>&1 | tee -a "$DEPLOY_LOG"
     
     log_info "Starting proxy..."
-    docker compose up -d proxy 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" up -d proxy 2>&1 | tee -a "$DEPLOY_LOG"
     
     log_info "Waiting for frontend services to initialize (15 seconds)..."
     sleep 15
@@ -248,7 +248,7 @@ run_migrations() {
     print_header "Running Database Migrations"
     
     log_info "Applying database migrations..."
-    docker compose exec -T backend python manage.py migrate --noinput 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" exec -T backend python manage.py migrate --noinput 2>&1 | tee -a "$DEPLOY_LOG"
     
     if [ $? -eq 0 ]; then
         log_success "Migrations applied successfully"
@@ -257,7 +257,7 @@ run_migrations() {
     fi
     
     log_info "Collecting static files..."
-    docker compose exec -T backend python manage.py collectstatic --noinput 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" exec -T backend python manage.py collectstatic --noinput 2>&1 | tee -a "$DEPLOY_LOG"
     
     if [ $? -eq 0 ]; then
         log_success "Static files collected"
@@ -274,7 +274,7 @@ ensure_superuser() {
     print_header "Ensuring Superuser Exists"
     
     log_info "Checking for admin user..."
-    USER_EXISTS=$(docker compose exec -T backend python manage.py shell << 'PYEOF'
+    USER_EXISTS=$(docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
 exists = User.objects.filter(username='admin').exists()
@@ -284,7 +284,7 @@ PYEOF
     
     if echo "$USER_EXISTS" | grep -q "EXISTS"; then
         log_info "Admin user already exists. Resetting password to 'admin123'..."
-        docker compose exec -T backend python manage.py shell << 'PYEOF'
+        docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
 admin = User.objects.get(username='admin')
@@ -297,10 +297,10 @@ PYEOF
         log_success "Admin password reset to 'admin123'"
     else
         log_info "Creating superuser admin/admin123..."
-        docker compose exec -T backend python manage.py shell << 'PYEOF'
+        docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
-User.objects.create_superuser('admin', 'admin@lims.local', 'admin123')
+User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
 print("Superuser created successfully")
 PYEOF
         log_success "Superuser created: admin/admin123"
@@ -311,7 +311,7 @@ verify_all_services() {
     print_header "Verifying All Services"
     
     log_info "Checking container status..."
-    docker compose ps | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" ps | tee -a "$DEPLOY_LOG"
     echo "" | tee -a "$DEPLOY_LOG"
     
     # Check each service
@@ -401,7 +401,7 @@ show_summary() {
     log_success "Complete application redeployment finished!"
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "All Services Status:"
-    docker compose ps 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" ps 2>&1 | tee -a "$DEPLOY_LOG"
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Access URLs:"
     log_info "  - Frontend: http://localhost:8013/"
@@ -422,15 +422,15 @@ show_all_logs() {
     print_header "Recent Service Logs"
     
     log_info "Backend logs (last 15 lines):"
-    docker compose logs --tail=15 backend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" logs --tail=15 backend 2>&1 | tee -a "$DEPLOY_LOG"
     
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Frontend logs (last 15 lines):"
-    docker compose logs --tail=15 frontend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" logs --tail=15 frontend 2>&1 | tee -a "$DEPLOY_LOG"
     
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Proxy logs (last 15 lines):"
-    docker compose logs --tail=15 proxy 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" logs --tail=15 proxy 2>&1 | tee -a "$DEPLOY_LOG"
 }
 
 ###############################################################################

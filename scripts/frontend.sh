@@ -162,7 +162,7 @@ rebuild_frontend() {
     set +a
     
     log_info "Building frontend Docker image (no cache)..."
-    docker compose build --no-cache frontend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" build --no-cache frontend 2>&1 | tee -a "$DEPLOY_LOG"
     
     if [ $? -eq 0 ]; then
         log_success "Frontend image built successfully"
@@ -176,10 +176,10 @@ start_frontend_services() {
     print_header "Starting Frontend Services"
     
     log_info "Starting frontend container..."
-    docker compose up -d frontend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" up -d frontend 2>&1 | tee -a "$DEPLOY_LOG"
     
     log_info "Starting proxy container..."
-    docker compose up -d proxy 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" up -d proxy 2>&1 | tee -a "$DEPLOY_LOG"
     
     log_info "Waiting for services to initialize (15 seconds)..."
     sleep 15
@@ -197,13 +197,13 @@ ensure_superuser() {
     log_info "Checking if backend is running..."
     if ! docker ps --format '{{.Names}}' | grep -q "lims_backend"; then
         log_warning "Backend not running. Starting backend services..."
-        docker compose up -d db redis backend
+        docker compose --env-file "$ENV_FILE" up -d db redis backend
         log_info "Waiting for backend to initialize (20 seconds)..."
         sleep 20
     fi
     
     log_info "Checking for admin user..."
-    USER_EXISTS=$(docker compose exec -T backend python manage.py shell << 'PYEOF'
+    USER_EXISTS=$(docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
 exists = User.objects.filter(username='admin').exists()
@@ -213,7 +213,7 @@ PYEOF
     
     if echo "$USER_EXISTS" | grep -q "EXISTS"; then
         log_info "Admin user already exists. Resetting password to 'admin123'..."
-        docker compose exec -T backend python manage.py shell << 'PYEOF'
+        docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
 admin = User.objects.get(username='admin')
@@ -226,10 +226,10 @@ PYEOF
         log_success "Admin password reset to 'admin123'"
     else
         log_info "Creating superuser admin/admin123..."
-        docker compose exec -T backend python manage.py shell << 'PYEOF'
+        docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
-User.objects.create_superuser('admin', 'admin@lims.local', 'admin123')
+User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
 print("Superuser created successfully")
 PYEOF
         log_success "Superuser created: admin/admin123"
@@ -240,7 +240,7 @@ verify_services() {
     print_header "Verifying Services"
     
     log_info "Checking container status..."
-    docker compose ps | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" ps | tee -a "$DEPLOY_LOG"
     
     # Check if frontend is running
     if docker ps --format '{{.Names}}' | grep -q "lims_frontend"; then
@@ -313,11 +313,11 @@ show_logs() {
     print_header "Recent Service Logs"
     
     log_info "Frontend logs (last 20 lines):"
-    docker compose logs --tail=20 frontend 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" logs --tail=20 frontend 2>&1 | tee -a "$DEPLOY_LOG"
     
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Proxy logs (last 20 lines):"
-    docker compose logs --tail=20 proxy 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" logs --tail=20 proxy 2>&1 | tee -a "$DEPLOY_LOG"
 }
 
 ###############################################################################
