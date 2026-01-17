@@ -262,39 +262,51 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
   });
 
   const handleDobChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, date_of_birth: value }));
-    if (!value) {
-      setFormData((prev) => ({ ...prev, age_years: '', age_months: '', age_days: '' }));
-      return;
-    }
-    const age = calculateAgeFromDob(value);
-    if (age) {
-      setFormData((prev) => ({
-        ...prev,
-        age_years: age.years.toString(),
-        age_months: age.months.toString(),
-        age_days: age.days.toString(),
-      }));
-    }
+    setFormData((prev) => {
+      if (!value) {
+        return {
+          ...prev,
+          date_of_birth: value,
+          age_years: '',
+          age_months: '',
+          age_days: '',
+        };
+      }
+
+      const age = calculateAgeFromDob(value);
+      if (age) {
+        return {
+          ...prev,
+          date_of_birth: value,
+          age_years: age.years.toString(),
+          age_months: age.months.toString(),
+          age_days: age.days.toString(),
+        };
+      }
+
+      return { ...prev, date_of_birth: value };
+    });
   };
 
   const handleAgeChange = (field: 'age_years' | 'age_months' | 'age_days', value: string) => {
-    const next = { ...formData, [field]: value };
-    setFormData(next);
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value };
 
-    const years = next.age_years === '' ? null : Number(next.age_years);
-    const months = Number(next.age_months || 0);
-    const days = Number(next.age_days || 0);
+      const years = next.age_years === '' ? null : Number(next.age_years);
+      const months = Number(next.age_months || 0);
+      const days = Number(next.age_days || 0);
 
-    if (years === null || Number.isNaN(years)) {
-      setFormData((prev) => ({ ...prev, date_of_birth: '' }));
-      return;
-    }
+      if (years === null || Number.isNaN(years)) {
+        return { ...next, date_of_birth: '' };
+      }
 
-    const dob = calculateDobFromAge(years, months, days);
-    if (dob) {
-      setFormData((prev) => ({ ...prev, date_of_birth: dob }));
-    }
+      const dob = calculateDobFromAge(years, months, days);
+      if (dob) {
+        return { ...next, date_of_birth: dob };
+      }
+
+      return next;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -464,19 +476,29 @@ function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; o
   const createMutation = useMutation({
     mutationFn: (data: OrderCreateRequest) => orderApi.create(data),
     onSuccess,
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.detail ??
+        error?.message ??
+        'Failed to create order. Please try again.';
+      alert(message);
+    },
   });
 
   const tests = testsData?.results || [];
   const panels = panelsData?.results || [];
 
   const calculateTotal = () => {
+    const testsById = new Map(tests.map((t) => [t.id, t]));
+    const panelsById = new Map(panels.map((p) => [p.id, p]));
+
     let total = 0;
     selectedTests.forEach((id) => {
-      const test = tests.find((t) => t.id === id);
+      const test = testsById.get(id);
       if (test) total += parseFloat(test.price);
     });
     selectedPanels.forEach((id) => {
-      const panel = panels.find((p) => p.id === id);
+      const panel = panelsById.get(id);
       if (panel) total += parseFloat(panel.price);
     });
     return total - parseFloat(discount || '0');
