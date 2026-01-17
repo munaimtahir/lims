@@ -257,7 +257,7 @@ def get_test_parameters(token, test_id):
     """Get parameters for a test."""
     try:
         response = requests.get(
-            f"{API_BASE}/laboratory/test-parameters/?test={test_id}",
+            f"{API_BASE}/laboratory/parameters/?test={test_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
         if response.status_code == 200:
