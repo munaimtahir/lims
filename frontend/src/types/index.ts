@@ -222,6 +222,7 @@ export type ResultFlag =
   | 'L'
   | 'H'
   | 'C'
+  | 'A'
   | 'normal'
   | 'low'
   | 'high'
