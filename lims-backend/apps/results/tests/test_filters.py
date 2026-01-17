@@ -336,7 +336,7 @@ class TestTestResultFilter:
             entered_by=technician,
         )
         # Update flag directly in DB to bypass validation
-        TestResult.objects.filter(id=result1.id).update(flag="normal")
+        TestResult.objects.filter(id=result1.id).update(flag="L")
         result1.refresh_from_db()
         
         result2 = TestResult.objects.create(
@@ -346,20 +346,20 @@ class TestTestResultFilter:
             entered_by=technician,
         )
         # Update flag directly in DB to bypass validation
-        TestResult.objects.filter(id=result2.id).update(flag="high")
+        TestResult.objects.filter(id=result2.id).update(flag="H")
         result2.refresh_from_db()
         
-        # Filter by flag = normal
+        # Filter by flag = high
         filter_set = TestResultFilter(
-            {"flag": "normal"},
+            {"flag": "H"},
             queryset=TestResult.objects.all()
         )
         results = filter_set.qs
         
-        # Should only include result1
+        # Should only include result2
         result_ids = [r.id for r in results]
-        assert result1.id in result_ids
-        assert result2.id not in result_ids
+        assert result2.id in result_ids
+        assert result1.id not in result_ids
     
     def test_filter_by_status(self, order, test_parameter, technician):
         """Test filtering by status."""

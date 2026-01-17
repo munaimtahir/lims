@@ -201,6 +201,23 @@ export const resultApi = {
     return response.data;
   },
 
+  getExpected: async (orderItemId: number) => {
+    const response = await api.get<{ results: Array<Record<string, unknown>> }>(
+      '/results/expected/',
+      { params: { order_item_id: orderItemId } },
+    );
+    return response.data;
+  },
+
+  ensure: async (orderItemId: number) => {
+    const response = await api.post<{ results: TestResult[] }>(
+      '/results/ensure/',
+      {},
+      { params: { order_item_id: orderItemId } },
+    );
+    return response.data;
+  },
+
   getWorklist: async () => {
     const response = await api.get('/results/worklist/');
     return response.data;
@@ -354,4 +371,3 @@ export const systemSettingsApi = {
     return response.data;
   },
 };
-
