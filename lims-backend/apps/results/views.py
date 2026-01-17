@@ -3,13 +3,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.utils import timezone
+from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.core.export_utils import export_to_csv, export_to_excel
 from .models import TestResult
 from .serializers import TestResultSerializer
 from .filters import TestResultFilter
 from apps.orders.models import OrderItem
-from apps.laboratory.models import TestParameter
+from apps.laboratory.models import TestParameter, ReferenceRange
 from .services.expected_results import (
     ensure_test_results,
     get_orderitem_expected_parameters,
@@ -154,16 +155,13 @@ class TestResultViewSet(viewsets.ModelViewSet):
             OrderItem: The fetched order item with related data
             
         Raises:
-            Response: Returns error response for invalid requests (to be caught by caller)
+            ValidationError: If order_item_id is missing or invalid, or if patient is missing
         """
         order_item_id = request.query_params.get("order_item_id") or request.data.get("order_item_id")
         if not order_item_id:
             raise ValidationError({"order_item_id": "This field is required"})
         
         try:
-            from django.db.models import Prefetch
-            from apps.laboratory.models import ReferenceRange
-            
             # Prefetch active reference ranges for all parameters to avoid N+1 queries
             reference_ranges_prefetch = Prefetch(
                 'reference_ranges',

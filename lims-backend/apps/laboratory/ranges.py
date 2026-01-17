@@ -10,6 +10,13 @@ from django.utils import timezone
 from apps.laboratory.models import ReferenceRange, TestParameter
 
 
+# Common qualitative abnormal result indicators
+ABNORMAL_QUALITATIVE_INDICATORS = [
+    "POSITIVE", "REACTIVE", "DETECTED", "ABNORMAL", 
+    "PRESENT", "HIGH", "LOW", "CRITICAL"
+]
+
+
 def get_patient_age_years(patient, at_date: Optional[date] = None) -> Optional[float]:
     """Return patient age in years, using DOB when available."""
     if not patient:
@@ -146,13 +153,7 @@ def compute_flag(
         # Non-numeric value - check for common qualitative abnormal results
         value_upper = str(result_value).strip().upper()
         
-        # Common abnormal qualitative results
-        abnormal_indicators = [
-            "POSITIVE", "REACTIVE", "DETECTED", "ABNORMAL", 
-            "PRESENT", "HIGH", "LOW", "CRITICAL"
-        ]
-        
-        if any(indicator in value_upper for indicator in abnormal_indicators):
+        if any(indicator in value_upper for indicator in ABNORMAL_QUALITATIVE_INDICATORS):
             return "A"
         
         # Normal qualitative results or unrecognized text

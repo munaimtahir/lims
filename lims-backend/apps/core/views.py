@@ -12,6 +12,14 @@ from django.db import connection
 from .models import SystemSettings
 from .serializers import SystemSettingsSerializer
 from apps.accounts.permissions import IsAdminOrReadOnly
+
+
+# Image upload configuration constants
+ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+MAX_IMAGE_SIZE_MB = 5
+MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024  # 5MB in bytes
+
+
 class SystemSettingsViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing system settings.
