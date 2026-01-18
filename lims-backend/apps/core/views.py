@@ -97,18 +97,16 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
             )
         
         # Validate file type
-        allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
-        if image.content_type not in allowed_types:
+        if image.content_type not in ALLOWED_IMAGE_TYPES:
             return Response(
                 {"error": f"Invalid file type. Allowed types: JPEG, PNG, GIF"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
-        # Validate file size (max 5MB)
-        max_size = 5 * 1024 * 1024  # 5MB in bytes
-        if image.size > max_size:
+        # Validate file size
+        if image.size > MAX_IMAGE_SIZE_BYTES:
             return Response(
-                {"error": f"File size exceeds maximum limit of 5MB"},
+                {"error": f"File size exceeds maximum limit of {MAX_IMAGE_SIZE_MB}MB"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         

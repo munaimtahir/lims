@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { laboratoryApi, orderApi, patientApi } from '../../api/services';
 import type { Order, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
@@ -488,10 +488,11 @@ function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; o
   const tests = testsData?.results || [];
   const panels = panelsData?.results || [];
 
-  const calculateTotal = () => {
-    const testsById = new Map(tests.map((t) => [t.id, t]));
-    const panelsById = new Map(panels.map((p) => [p.id, p]));
+  // Memoize the Maps to avoid recreating them on every render
+  const testsById = useMemo(() => new Map(tests.map((t) => [t.id, t])), [tests]);
+  const panelsById = useMemo(() => new Map(panels.map((p) => [p.id, p])), [panels]);
 
+  const calculateTotal = () => {
     let total = 0;
     selectedTests.forEach((id) => {
       const test = testsById.get(id);
