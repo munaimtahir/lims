@@ -1,17 +1,8 @@
 name: Frontend CI
 
-# Triggers on push and pull_request to main branches
+# Manual trigger only
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci.yml'
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
