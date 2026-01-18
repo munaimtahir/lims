@@ -16,7 +16,7 @@ The LIMS application port conflict has been **completely resolved**. The applica
 
 ### The Solution
 1. **Changed LIMS port** from 80/443 to **8012** (localhost only)
-2. **Updated host Caddy** to route `lims.alshifalab.pk` → `127.0.0.1:8012`
+2. **Updated host Caddy** to route `portal.alshifalab.pk` → `127.0.0.1:8012`
 3. **Separated LIMS** from SIMS configuration (they were incorrectly grouped)
 4. **Updated all scripts** and documentation to use port 8012
 
@@ -106,10 +106,10 @@ http://localhost:8012
 
 ### Public Access (requires DNS)
 Once DNS is configured, access via:
-- **Main app**: https://lims.alshifalab.pk
-- **API**: https://lims.alshifalab.pk/api/v1/
-- **Admin**: https://lims.alshifalab.pk/admin/
-- **API Docs**: https://lims.alshifalab.pk/api/docs/
+- **Main app**: https://portal.alshifalab.pk
+- **API**: https://portal.alshifalab.pk/api/v1/
+- **Admin**: https://portal.alshifalab.pk/admin/
+- **API Docs**: https://portal.alshifalab.pk/api/docs/
 
 (Host Caddy handles HTTPS/SSL automatically)
 
@@ -139,7 +139,7 @@ Internet (HTTPS/HTTP)
          ↓
     Routes traffic:
          ├─ sims.alshifalab.pk → 127.0.0.1:8080
-         ├─ lims.alshifalab.pk → 127.0.0.1:8012 ✅
+         ├─ portal.alshifalab.pk → 127.0.0.1:8012 ✅
          ├─ pgsims.alshifalab.pk → 127.0.0.1:8082
          └─ ... other apps
          ↓

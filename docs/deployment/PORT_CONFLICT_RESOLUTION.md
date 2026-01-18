@@ -8,15 +8,14 @@ The LIMS Docker container `lims_proxy` was attempting to bind to ports 80 and 44
 ## Root Cause
 - Host Caddy runs as a system service and binds to ports 80/443 to handle HTTPS/SSL termination for all applications
 - LIMS was originally configured to bind directly to ports 80/443, creating a port conflict
-- The host Caddyfile had `lims.alshifalab.pk` grouped with SIMS configuration (ports 8080/8010) but LIMS wasn't actually running on those ports
+- The host Caddyfile had `portal.alshifalab.pk` grouped with SIMS configuration (ports 8080/8010) but LIMS wasn't actually running on those ports
 
 ## Solution Implemented
 
 ### 1. Port Assignment
 - **Assigned dedicated port**: LIMS now uses **port 8012** (localhost binding only: `127.0.0.1:8012`)
 - **Host Caddy routing**: Updated `/etc/caddy/Caddyfile` to route traffic:
-  - `lims.alshifalab.pk` → `127.0.0.1:8012`
-  - `api.lims.alshifalab.pk` → `127.0.0.1:8012`
+  - `portal.alshifalab.pk` → `127.0.0.1:8012`
 
 ### 2. Architecture Changes
 **Before:**
@@ -41,17 +40,12 @@ proxy:
 ```
 
 #### /etc/caddy/Caddyfile
-- **Removed** `lims.alshifalab.pk` from SIMS block (was pointing to ports 8080/8010)
-- **Added** dedicated LIMS block:
+- **Removed** old LIMS domain from SIMS block (was pointing to ports 8080/8010)
+- **Added** dedicated LIMS/Portal block:
 ```caddyfile
-lims.alshifalab.pk {
+portal.alshifalab.pk {
     encode gzip zstd
     header { /* security headers */ }
-    reverse_proxy 127.0.0.1:8012 { /* forwarding config */ }
-}
-
-api.lims.alshifalab.pk {
-    encode gzip zstd
     reverse_proxy 127.0.0.1:8012 { /* forwarding config */ }
 }
 ```
@@ -122,8 +116,7 @@ Valid configuration
 | 443  | Host Caddy | HTTPS/SSL termination for all apps |
 | 8010 | SIMS Backend | FMU-PLATFORM Backend API |
 | 8011 | Consult | Referral System |
-| **8012** | **LIMS** | **This Application** ✅ |
-| 8012 | Portal | Portal Application |
+| **8012** | **LIMS/Portal** | **This Application** ✅ |
 | 8014 | PGSIMS Backend | PGSIMS Backend API |
 | 8015 | RIMS Backend | Radiology Backend API |
 | 8016 | PHC | Accred-AI/PHC |
@@ -144,8 +137,8 @@ Valid configuration
    - Updated header comments
 
 3. `/etc/caddy/Caddyfile` (Host)
-   - Removed `lims.alshifalab.pk` from SIMS block
-   - Added dedicated LIMS configuration block
+   - Removed old lims domain from SIMS block
+   - Added dedicated LIMS/Portal configuration block
 
 ### Scripts
 4. `/home/munaim/srv/apps/lims/scripts/both.sh`
@@ -187,10 +180,10 @@ Expected results:
 ## Public Access
 
 When DNS is properly configured, the application will be accessible via:
-- **Frontend**: https://lims.alshifalab.pk
-- **API**: https://lims.alshifalab.pk/api/v1/
-- **API Docs**: https://lims.alshifalab.pk/api/docs/
-- **Admin**: https://lims.alshifalab.pk/admin/
+- **Frontend**: https://portal.alshifalab.pk
+- **API**: https://portal.alshifalab.pk/api/v1/
+- **API Docs**: https://portal.alshifalab.pk/api/docs/
+- **Admin**: https://portal.alshifalab.pk/admin/
 
 Host Caddy handles:
 - HTTPS/SSL termination
@@ -228,7 +221,7 @@ The port conflict has been successfully resolved. LIMS now uses port 8012 exclus
 
 1. **Test full deployment**: Run `./scripts/both.sh` to verify complete rebuild cycle
 2. **Monitor logs**: Check for any issues after deployment
-3. **DNS configuration**: Ensure `lims.alshifalab.pk` points to the server IP
+3. **DNS configuration**: Ensure `portal.alshifalab.pk` points to the server IP
 4. **SSL certificates**: Host Caddy will auto-provision Let's Encrypt certificates
 
 ## Contact

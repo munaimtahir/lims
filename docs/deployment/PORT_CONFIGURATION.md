@@ -12,13 +12,11 @@ Internet (Port 443/80)
 Host Caddy (System Service)
     ├─ sims.alshifalab.pk → 127.0.0.1:8080 (FMU-PLATFORM/SIMS)
     ├─ api.sims.alshifalab.pk → 127.0.0.1:8010 (FMU-PLATFORM/SIMS Backend)
-    ├─ lims.alshifalab.pk → 127.0.0.1:8012 (LIMS)  ← THIS APPLICATION
-    ├─ api.lims.alshifalab.pk → 127.0.0.1:8012 (LIMS)
+    ├─ portal.alshifalab.pk → 127.0.0.1:8012 (LIMS/Portal)  ← THIS APPLICATION
     ├─ pgsims.alshifalab.pk → 127.0.0.1:8082 (PGSIMS Frontend)
     ├─ rims.alshifalab.pk → 127.0.0.1:8081 (RIMS)
     ├─ consult.alshifalab.pk → 127.0.0.1:8011 (Consult)
-    ├─ phc.alshifalab.pk → 127.0.0.1:8016 (PHC)
-    └─ portal.alshifalab.pk → 127.0.0.1:8012 (Portal)
+    └─ phc.alshifalab.pk → 127.0.0.1:8016 (PHC)
     ↓
 LIMS Docker Containers
     ├─ lims_proxy (Internal Caddy) → 127.0.0.1:8012
@@ -34,8 +32,7 @@ LIMS Docker Containers
 - **Service**: System Caddy (`/etc/caddy/Caddyfile`)
 - **Purpose**: Handles HTTPS/SSL termination for all applications
 - **Domain Routing**:
-  - `lims.alshifalab.pk` → `127.0.0.1:8012`
-  - `api.lims.alshifalab.pk` → `127.0.0.1:8012`
+  - `portal.alshifalab.pk` → `127.0.0.1:8012`
 
 ### LIMS Internal Proxy (Port 8012)
 - **Service**: Docker container `lims_proxy`
@@ -71,8 +68,8 @@ Initially, LIMS attempted to bind to ports 80 and 443 directly, conflicting with
 ### Solution
 1. **Removed direct port binding**: LIMS no longer binds to ports 80/443
 2. **Assigned dedicated port**: LIMS now uses port 8012 (localhost only)
-3. **Host Caddy routing**: Updated `/etc/caddy/Caddyfile` to route `lims.alshifalab.pk` → `127.0.0.1:8012`
-4. **Separated from SIMS**: Previously, `lims.alshifalab.pk` was grouped with SIMS configuration - now has dedicated configuration
+3. **Host Caddy routing**: Updated `/etc/caddy/Caddyfile` to route `portal.alshifalab.pk` → `127.0.0.1:8012`
+4. **Separated from SIMS**: Previously, the portal was grouped with SIMS configuration - now has dedicated configuration
 
 ## Occupied Ports on Server
 
@@ -82,8 +79,7 @@ Initially, LIMS attempted to bind to ports 80 and 443 directly, conflicting with
 | 443  | Host Caddy | All HTTPS traffic |
 | 8010 | SIMS Backend | FMU-PLATFORM Backend API |
 | 8011 | Consult | Referral System |
-| **8012** | **LIMS** | **This Application** |
-| 8012 | Portal | Portal Application |
+| **8012** | **LIMS/Portal** | **This Application** |
 | 8014 | PGSIMS Backend | PGSIMS Backend API |
 | 8015 | RIMS Backend | Radiology Backend API |
 | 8016 | PHC | Accred-AI/PHC |
@@ -114,7 +110,7 @@ proxy:
 **File**: `/etc/caddy/Caddyfile`
 
 ```caddyfile
-lims.alshifalab.pk {
+portal.alshifalab.pk {
     encode gzip zstd
     
     # Security headers
@@ -161,7 +157,7 @@ If you need to change LIMS to use a different port:
 2. **Update Host Caddy**:
    ```bash
    sudo nano /etc/caddy/Caddyfile
-   # Find lims.alshifalab.pk block
+   # Find portal.alshifalab.pk block
    # Change: reverse_proxy 127.0.0.1:8012
    # To:     reverse_proxy 127.0.0.1:NEWPORT
    
@@ -200,8 +196,8 @@ curl http://localhost:8012/api/v1/health/
 ### Public Access (requires DNS)
 ```bash
 # Test via domain (HTTPS)
-curl https://lims.alshifalab.pk/health
-curl https://lims.alshifalab.pk/api/v1/health/
+curl https://portal.alshifalab.pk/health
+curl https://portal.alshifalab.pk/api/v1/health/
 ```
 
 ## Troubleshooting

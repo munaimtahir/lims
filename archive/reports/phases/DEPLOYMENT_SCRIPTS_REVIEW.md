@@ -72,7 +72,7 @@ User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
 **Verified:** All scripts now align with current deployment configuration:
 - Use production environment file (`.env.production`)
 - Reference correct domain (`portal.alshifalab.pk`)
-- Use correct port binding (`127.0.0.1:8013`)
+- Use correct port binding (`127.0.0.1:8012`)
 - Proper service dependencies
 
 ## Script Functionality
