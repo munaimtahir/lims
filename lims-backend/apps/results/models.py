@@ -31,6 +31,7 @@ class TestResult(models.Model):
         ("L", "Low"),
         ("H", "High"),
         ("C", "Critical"),
+        ("A", "Abnormal"),
     ]
 
     order_item = models.ForeignKey(

@@ -13,6 +13,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.utils import ImageReader
 from io import BytesIO
 from apps.core.models import SystemSettings
+from apps.core.pdf_utils import add_report_image
 from .models import Payment
 from .serializers import PaymentSerializer
 
@@ -66,19 +67,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
             report_footer = ""
             report_header_image = None
             report_footer_image = None
-
-        def add_report_image(story, image_field, max_width=6 * inch, spacer=0.15 * inch):
-            if not image_field:
-                return
-            try:
-                image_reader = ImageReader(image_field)
-                img_width, img_height = image_reader.getSize()
-                scale = min(max_width / img_width, 1)
-                rendered = Image(image_reader, width=img_width * scale, height=img_height * scale)
-                story.append(rendered)
-                story.append(Spacer(1, spacer))
-            except Exception:
-                return
 
         # Generate PDF receipt
         buffer = BytesIO()

@@ -35,6 +35,13 @@ export default function SystemSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
       setHeaderFile(null);
     },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.error ??
+        error?.message ??
+        'Failed to upload header image. Please try again.';
+      alert(message);
+    },
   });
 
   const uploadFooterMutation = useMutation({
@@ -43,6 +50,13 @@ export default function SystemSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
       setFooterFile(null);
     },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.error ??
+        error?.message ??
+        'Failed to upload footer image. Please try again.';
+      alert(message);
+    },
   });
 
   const removeHeaderMutation = useMutation({
@@ -50,12 +64,26 @@ export default function SystemSettingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
     },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.error ??
+        error?.message ??
+        'Failed to remove header image. Please try again.';
+      alert(message);
+    },
   });
 
   const removeFooterMutation = useMutation({
     mutationFn: () => systemSettingsApi.removeReportFooterImage(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.error ??
+        error?.message ??
+        'Failed to remove footer image. Please try again.';
+      alert(message);
     },
   });
 

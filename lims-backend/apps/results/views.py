@@ -1,13 +1,16 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django.utils import timezone
+from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.core.export_utils import export_to_csv, export_to_excel
 from .models import TestResult
 from .serializers import TestResultSerializer
 from .filters import TestResultFilter
 from apps.orders.models import OrderItem
+from apps.laboratory.models import TestParameter, ReferenceRange
 from .services.expected_results import (
     ensure_test_results,
     get_orderitem_expected_parameters,
@@ -141,26 +144,54 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
         return Response(worklist_data)
 
-    @action(detail=False, methods=["get"])
-    def expected(self, request):
-        """Return expected result rows for an order item without writing."""
-        order_item_id = request.query_params.get("order_item_id")
+    def _get_order_item_from_request(self, request):
+        """
+        Extract and validate order_item_id from request, fetch OrderItem instance.
+        
+        Args:
+            request: DRF request object
+            
+        Returns:
+            OrderItem: The fetched order item with related data
+            
+        Raises:
+            ValidationError: If order_item_id is missing or invalid, or if patient is missing
+        """
+        order_item_id = request.query_params.get("order_item_id") or request.data.get("order_item_id")
         if not order_item_id:
-            return Response(
-                {"error": "order_item_id is required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise ValidationError({"order_item_id": "This field is required"})
+        
         try:
+            # Prefetch active reference ranges for all parameters to avoid N+1 queries
+            reference_ranges_prefetch = Prefetch(
+                'reference_ranges',
+                queryset=ReferenceRange.objects.filter(is_active=True).order_by('-version', '-id'),
+                to_attr='active_reference_ranges'
+            )
+            
             order_item = (
                 OrderItem.objects.select_related("order", "order__patient", "test", "panel")
-                .prefetch_related("panel__tests", "test__parameters", "panel__tests__parameters")
+                .prefetch_related(
+                    "panel__tests",
+                    Prefetch("test__parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
+                    Prefetch("panel__tests__parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
+                )
                 .get(id=order_item_id)
             )
         except (OrderItem.DoesNotExist, ValueError):
-            return Response(
-                {"error": "Order item not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+            raise ValidationError({"order_item_id": "Order item not found"})
+        
+        # Explicitly check for missing patient (select_related ensures these are loaded)
+        if not order_item.order.patient:
+            raise ValidationError({"error": "Order item has no associated patient"})
+        
+        return order_item
 
+    @action(detail=False, methods=["get"])
+    def expected(self, request):
+        """Return expected result rows for an order item without writing."""
+        order_item = self._get_order_item_from_request(request)
+        
         expected = get_orderitem_expected_parameters(
             order_item, order_item.order.patient
         )
@@ -169,23 +200,8 @@ class TestResultViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["post"])
     def ensure(self, request):
         """Ensure result rows exist for an order item."""
-        order_item_id = request.query_params.get("order_item_id")
-        if not order_item_id:
-            return Response(
-                {"error": "order_item_id is required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        try:
-            order_item = (
-                OrderItem.objects.select_related("order", "order__patient", "test", "panel")
-                .prefetch_related("panel__tests", "test__parameters", "panel__tests__parameters")
-                .get(id=order_item_id)
-            )
-        except (OrderItem.DoesNotExist, ValueError):
-            return Response(
-                {"error": "Order item not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-
+        order_item = self._get_order_item_from_request(request)
+        
         results = ensure_test_results(order_item)
         serializer = self.get_serializer(results, many=True)
         return Response({"results": serializer.data})

@@ -3,6 +3,7 @@ API views for Patient management.
 """
 
 from django.utils import timezone
+from django.db import models
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -38,6 +39,32 @@ class PatientViewSet(viewsets.ModelViewSet):
     search_fields = ["patient_id", "first_name", "last_name", "phone", "national_id", "full_name"]
     ordering_fields = ["created_at", "patient_id", "last_name"]
     ordering = ["-created_at"]
+
+    def get_queryset(self):
+        """
+        Optimize queryset with prefetching for list action.
+        
+        For list action, prefetch the latest order to avoid N+1 queries
+        when accessing last_order_referred_by in PatientListSerializer.
+        """
+        queryset = super().get_queryset()
+        if self.action == "list":
+            # Prefetch only the latest order for each patient
+            from django.db.models import Prefetch, Q
+            from apps.orders.models import Order
+            
+            latest_order = Order.objects.filter(
+                patient=models.OuterRef('pk')
+            ).order_by('-created_at')[:1]
+            
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    'orders',
+                    queryset=Order.objects.order_by('-created_at')[:1],
+                    to_attr='latest_orders'
+                )
+            )
+        return queryset
 
     def get_serializer_class(self):
         """

@@ -10,6 +10,13 @@ from django.utils import timezone
 from apps.laboratory.models import ReferenceRange, TestParameter
 
 
+# Common qualitative abnormal result indicators
+ABNORMAL_QUALITATIVE_INDICATORS = [
+    "POSITIVE", "REACTIVE", "DETECTED", "ABNORMAL", 
+    "PRESENT", "HIGH", "LOW", "CRITICAL"
+]
+
+
 def get_patient_age_years(patient, at_date: Optional[date] = None) -> Optional[float]:
     """Return patient age in years, using DOB when available."""
     if not patient:
@@ -129,15 +136,30 @@ def compute_flag(
     critical_low: Optional[Decimal],
     critical_high: Optional[Decimal],
 ) -> str:
-    """Compute the flag for a numeric result value."""
+    """
+    Compute the flag for a result value (numeric or qualitative).
+    
+    For numeric values, checks against reference ranges.
+    For non-numeric qualitative values, recognizes common abnormal indicators.
+    """
     if result_value is None:
         return ""
+    
+    # Try to parse as numeric value
     try:
         cleaned_value = str(result_value).strip().replace(",", "").replace(" ", "")
         value = Decimal(cleaned_value)
     except (InvalidOperation, ValueError, TypeError):
+        # Non-numeric value - check for common qualitative abnormal results
+        value_upper = str(result_value).strip().upper()
+        
+        if any(indicator in value_upper for indicator in ABNORMAL_QUALITATIVE_INDICATORS):
+            return "A"
+        
+        # Normal qualitative results or unrecognized text
         return ""
 
+    # Numeric value - apply range checking
     if critical_low is not None and value <= critical_low:
         return "C"
     if critical_high is not None and value >= critical_high:
