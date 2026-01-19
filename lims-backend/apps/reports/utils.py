@@ -197,7 +197,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
                 flag_text = f"<font color='orange'>{flag_text}</font>"
 
             results_data.append([
-                param.parameter_name,
+                param.effective_parameter_name,
                 result.result_value,
                 param.unit,
                 ref_range,

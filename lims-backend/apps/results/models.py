@@ -86,7 +86,7 @@ class TestResult(models.Model):
         Returns:
             str: A string in the format "parameter_name: result_value".
         """
-        return f"{self.test_parameter.parameter_name}: {self.result_value}"
+        return f"{self.test_parameter.effective_parameter_name}: {self.result_value}"
 
     def save(self, *args, **kwargs):
         """
@@ -111,7 +111,7 @@ class TestResult(models.Model):
         """
         if not self.result_value or not str(self.result_value).strip():
             logger.warning(
-                f"Empty result value for parameter {self.test_parameter.parameter_name} "
+                f"Empty result value for parameter {self.test_parameter.effective_parameter_name} "
                 f"in order {self.order_item.order.order_id}"
             )
             self.flag = ""
