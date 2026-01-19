@@ -36,7 +36,7 @@ set -e  # Exit on any error
 # ============================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="${SCRIPT_DIR}"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env.production"
 DOCKER_COMPOSE_FILE="${PROJECT_ROOT}/docker-compose.yml"
 LOG_DIR="${PROJECT_ROOT}/logs"
@@ -141,8 +141,8 @@ validate_prerequisites() {
     log_success "Docker is installed: $(docker --version)"
     
     # Check Docker Compose
-    if ! command -v docker compose &> /dev/null; then
-        log_error "Docker Compose is not installed. Please install Docker Compose first."
+    if ! docker compose version &> /dev/null; then
+        log_error "Docker Compose (V2) is not installed. Please install Docker Compose first."
         exit 1
     fi
     log_success "Docker Compose is installed: $(docker compose version)"

@@ -24,7 +24,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_ROOT="/home/munaim/srv/apps/lims"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LOG_DIR="$PROJECT_ROOT/logs"
 DEPLOY_LOG="$LOG_DIR/backend_redeploy_$(date +%Y%m%d_%H%M%S).log"
 ENV_FILE="$PROJECT_ROOT/.env.production"
@@ -88,36 +89,9 @@ check_docker() {
 check_env_file() {
     log_info "Checking environment file..."
     if [ ! -f "$ENV_FILE" ]; then
-        log_warning ".env.production not found. Creating default environment file..."
-        cat > "$ENV_FILE" << 'EOF'
-# Django Settings
-SECRET_KEY=change-me-in-production
-DB_NAME=lims_db
-DB_USER=postgres
-DB_PASSWORD=changeme
-DB_HOST=db
-DB_PORT=5432
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-# Redis
-REDIS_URL=redis://redis:6379/0
-
-# CORS
-CORS_ALLOWED_ORIGINS=http://localhost
-CSRF_TRUSTED_ORIGINS=http://localhost
-
-# Frontend
-VITE_API_BASE_URL=/api/v1/
-REACT_APP_API_BASE_URL=/api/v1/
-
-# Server
-SERVER_NAME=localhost
-
-# Logging
-LOG_LEVEL=INFO
-EOF
-        chmod 600 "$ENV_FILE"
-        log_warning "Please update $ENV_FILE with proper values before production use"
+        log_error ".env.production not found in $PROJECT_ROOT"
+        log_info "Please copy .env.production.example to .env.production and configure it before running this script."
+        exit 1
     fi
     log_success "Environment file exists"
 }
@@ -264,18 +238,7 @@ PYEOF
 )
     
     if echo "$USER_EXISTS" | grep -q "EXISTS"; then
-        log_info "Admin user already exists. Resetting password to 'admin123'..."
-        docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
-from django.contrib.auth import get_user_model
-User = get_user_model()
-admin = User.objects.get(username='admin')
-admin.set_password('admin123')
-admin.is_superuser = True
-admin.is_staff = True
-admin.save()
-print("Password reset successfully")
-PYEOF
-        log_success "Admin password reset to 'admin123'"
+        log_info "Admin user already exists. Skipping creation and password reset for security."
     else
         log_info "Creating superuser admin/admin123..."
         docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
@@ -285,6 +248,7 @@ User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
 print("Superuser created successfully")
 PYEOF
         log_success "Superuser created: admin/admin123"
+        log_warning "IMPORTANT: Change your admin password immediately!"
     fi
 }
 
