@@ -119,8 +119,8 @@ class TestParameterViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter,
     ]
     filterset_fields = ["test", "test__category"]
-    search_fields = ["parameter_name", "loinc_code"]
-    ordering_fields = ["parameter_name", "display_order"]
+    search_fields = ["parameter__parameter_id", "parameter__parameter_name", "parameter_name"]
+    ordering_fields = ["parameter__parameter_id", "display_order"]
 
 
 class ReferenceRangeViewSet(viewsets.ModelViewSet):
@@ -138,8 +138,8 @@ class ReferenceRangeViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter,
     ]
     filterset_fields = ["parameter", "parameter__test", "gender", "is_active"]
-    search_fields = ["parameter__parameter_name", "parameter__test__test_name"]
-    ordering_fields = ["parameter", "age_min", "gender", "version", "effective_date"]
+    search_fields = ["parameter__parameter__parameter_name", "parameter__test__test_name"]
+    ordering_fields = ["parameter__parameter__parameter_id", "age_min", "gender", "version", "effective_date"]
     
     @action(detail=False, methods=["get"])
     def for_parameter(self, request):

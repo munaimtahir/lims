@@ -10,7 +10,7 @@ class TestResultSerializer(serializers.ModelSerializer):
     """
 
     parameter_name = serializers.CharField(
-        source="test_parameter.parameter_name", read_only=True
+        source="test_parameter.effective_parameter_name", read_only=True
     )
     unit = serializers.CharField(source="test_parameter.unit", read_only=True)
     entered_by_name = serializers.CharField(

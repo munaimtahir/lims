@@ -25,6 +25,9 @@ def import_tests_from_excel(file):
         "errors": []
     }
 
+    seen_test_ids = set()
+    seen_param_ids = set()
+
     with transaction.atomic():
         # 1. Import Global Parameters
         if "Parameters" in workbook.sheetnames:
@@ -33,8 +36,13 @@ def import_tests_from_excel(file):
                 # Columns: parameter_id, parameter_name, unit
                 if not row[0]: continue
                 
-                param_id, name, unit = row[:3]
-                param_id = str(param_id).strip()
+                param_id = str(row[0]).strip()
+                if param_id in seen_param_ids:
+                    summary["errors"].append(f"Duplicate parameter_id in file: {param_id}")
+                    continue
+                seen_param_ids.add(param_id)
+                
+                name, unit = row[1:3]
 
                 parameter, created = Parameter.objects.update_or_create(
                     parameter_id=param_id,
@@ -57,12 +65,18 @@ def import_tests_from_excel(file):
                 # Columns: test_id, test_code, legacy_test_code, test_name, category, sample_type, price, tat
                 if not row[0]: continue
                 
-                t_id, code, legacy_code, name, cat_name, s_type, price, tat = row[:8]
+                t_id = int(row[0])
+                if t_id in seen_test_ids:
+                    summary["errors"].append(f"Duplicate test_id in file: {t_id}")
+                    continue
+                seen_test_ids.add(t_id)
+
+                code, legacy_code, name, cat_name, s_type, price, tat = row[1:8]
                 
                 category, _ = TestCategory.objects.get_or_create(name=cat_name or "General")
 
                 test, created = Test.objects.update_or_create(
-                    test_id=int(t_id),
+                    test_id=t_id,
                     defaults={
                         "test_code": str(code).strip(),
                         "legacy_test_code": str(legacy_code).strip() if legacy_code else None,
