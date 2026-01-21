@@ -2,9 +2,11 @@ import api from './client';
 import type {
   Patient,
   PatientCreateRequest,
+  PatientLookupResult,
   LabTest,
   TestPanel,
   TestCategory,
+  TestSearchResult,
   Order,
   OrderCreateRequest,
   SampleCollection,
@@ -55,6 +57,13 @@ export const patientApi = {
     });
     return response.data;
   },
+
+  lookup: async (mobile: string) => {
+    const response = await api.get<ApiResponse<PatientLookupResult[]>>('/patients/lookup/', {
+      params: { mobile },
+    });
+    return response.data;
+  },
 };
 
 /**
@@ -92,6 +101,13 @@ export const laboratoryApi = {
   // Parameters
   getParameters: async (params?: Record<string, unknown>) => {
     const response = await api.get<PaginatedResponse<TestParameter>>('/laboratory/parameters/', { params });
+    return response.data;
+  },
+
+  searchTests: async (query: string, limit = 20) => {
+    const response = await api.get<ApiResponse<TestSearchResult[]>>('/laboratory/tests/search/', {
+      params: { q: query, limit },
+    });
     return response.data;
   },
 };
@@ -398,6 +414,35 @@ export const systemSettingsApi = {
   removeReportFooterImage: async (): Promise<SystemSettings> => {
     const response = await api.delete<SystemSettings>('/core/settings/report-footer-image/');
     return response.data;
+  },
+
+  uploadLabLogo: async (file: File): Promise<SystemSettings> => {
+    // Note: The backend viewset updates 'lab_logo' via standard update (PUT/PATCH) 
+    // but requires multipart/form-data. Since we added MultiPartParser to the viewset,
+    // we can use PATCH to update just the logo.
+    const formData = new FormData();
+    formData.append('lab_logo', file);
+    const response = await api.patch<SystemSettings>('/core/settings/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    // The response determines the new settings with the logo URL
+    if (response.data.success && response.data.data) return response.data.data;
+    // Fallback if structure is different (ApiResponse vs direct object)
+    // The interceptor or generic might return differently.
+    // Based on `patch` implementation above: `await api.patch<ApiResponse<SystemSettings>>`
+    // So response.data is ApiResponse.
+    return response.data.data;
+  },
+
+  removeLabLogo: async (): Promise<SystemSettings> => {
+    // To remove, we can send null? Or we might need a specific action.
+    // Django FileField deletion usually requires passing empty or specific flag.
+    // Alternatively, using the 'delete' method on a field if supported, but typically 
+    // we'd used a dedicated action if we want to delete ONLY the file.
+    // Or PATCH with null? DRF handles null if field is nullable.
+    // Let's try PATCH with lab_logo: null.
+    const response = await api.patch<ApiResponse<SystemSettings>>('/core/settings/', { lab_logo: null });
+    return response.data.data;
   },
 };
 

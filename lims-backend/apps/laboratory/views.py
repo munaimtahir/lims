@@ -87,6 +87,57 @@ class TestViewSet(viewsets.ModelViewSet):
     filterset_fields = ["category", "is_active"]
     search_fields = ["test_name", "test_code", "loinc_code"]
     ordering_fields = ["test_code", "test_name", "price"]
+    
+    @action(detail=False, methods=["get"])
+    def search(self, request):
+        """
+        Fast search for tests by name or code for order entry.
+        
+        Query params:
+            - q: Search query (searches test_name and test_code)
+            - limit: Maximum results to return (default: 20)
+        
+        Returns:
+            Response: List of matching tests with essential info.
+        """
+        query = request.query_params.get("q", "").strip()
+        limit = int(request.query_params.get("limit", 20))
+        
+        if not query or len(query) < 2:
+            return Response(
+                {
+                    "success": True,
+                    "data": [],
+                    "message": "Enter at least 2 characters to search"
+                },
+                status=status.HTTP_200_OK,
+            )
+        
+        # Search for tests by name or code (case-insensitive)
+        tests = Test.objects.filter(
+            models.Q(test_name__icontains=query) | models.Q(test_code__icontains=query),
+            is_active=True
+        ).select_related("category").order_by("test_code")[:limit]
+        
+        results = []
+        for test in tests:
+            results.append({
+                "id": test.id,
+                "test_code": test.test_code,
+                "test_name": test.test_name,
+                "category_name": test.category.name if test.category else "",
+                "sample_type": test.sample_type,
+                "price": str(test.price),
+                "type": "test",  # To distinguish from panels
+            })
+        
+        return Response(
+            {
+                "success": True,
+                "data": results,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class TestPanelViewSet(viewsets.ModelViewSet):

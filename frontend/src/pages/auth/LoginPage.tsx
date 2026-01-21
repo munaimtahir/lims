@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBranding } from '../../contexts/BrandingContext';
 import styles from './LoginPage.module.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading } = useAuth();
+  const { branding } = useBranding();
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -44,11 +46,17 @@ export default function LoginPage() {
     );
   }
 
+  const displayName = branding?.lab_display_name || branding?.lab_name || 'LIMS';
+  const logoUrl = branding?.lab_logo;
+
   return (
     <div className={styles.container}>
       <div className={styles.loginBox}>
         <div className={styles.header}>
-          <h1>LIMS</h1>
+          {logoUrl && (
+            <img src={logoUrl} alt={displayName} className={styles.logo} />
+          )}
+          <h1>{displayName}</h1>
           <p>Laboratory Information Management System</p>
         </div>
         

@@ -181,6 +181,55 @@ class PatientViewSet(viewsets.ModelViewSet):
         # For non-paginated responses, return plain array
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=["get"])
+    def lookup(self, request):
+        """
+        Lookup patients by mobile number for quick registration search.
+        
+        Query params:
+            - mobile: Mobile number to search (partial match supported)
+        
+        Returns:
+            Response: List of matching patients with summary info.
+        """
+        mobile = request.query_params.get("mobile", "").strip()
+        
+        if not mobile or len(mobile) < 3:
+            return Response(
+                {
+                    "success": True,
+                    "data": [],
+                    "message": "Enter at least 3 digits to search"
+                },
+                status=status.HTTP_200_OK,
+            )
+        
+        # Search for patients with matching mobile numbers
+        patients = Patient.objects.filter(
+            phone__icontains=mobile
+        ).order_by("-created_at")[:10]  # Limit to 10 results
+        
+        results = []
+        for patient in patients:
+            results.append({
+                "id": patient.id,
+                "patient_id": patient.patient_id,
+                "full_name": patient.get_full_name(),
+                "phone": patient.phone,
+                "age": patient.age,
+                "gender": patient.gender,
+                "last_visit": patient.last_visit.isoformat() if patient.last_visit else None,
+                "total_orders": patient.total_orders,
+            })
+        
+        return Response(
+            {
+                "success": True,
+                "data": results,
+            },
+            status=status.HTTP_200_OK,
+        )
+    
     @action(detail=True, methods=["get"])
     def history(self, request, pk=None):
         """

@@ -17,6 +17,7 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "lab_name",
+            "lab_display_name",
             "lab_address",
             "lab_phone",
             "lab_email",

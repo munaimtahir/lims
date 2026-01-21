@@ -1,9 +1,11 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBranding } from '../../contexts/BrandingContext';
 import styles from './DashboardLayout.module.css';
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
+  const { branding } = useBranding();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -23,6 +25,7 @@ export default function DashboardLayout() {
     switch (user.role) {
       case 'Admin':
         items.push(
+          { to: '/dashboard/registration', label: 'Registration' },
           { to: '/dashboard/patients', label: 'Patients' },
           { to: '/dashboard/patients-worklist', label: 'Worklist' },
           { to: '/dashboard/samples', label: 'Samples' },
@@ -34,6 +37,7 @@ export default function DashboardLayout() {
             to: '/dashboard/settings',
             label: 'Settings',
             children: [
+              { to: '/dashboard/settings?tab=ui', label: 'UI Update' },
               { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
               { to: '/dashboard/tests', label: 'Test Catalog' },
               { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
@@ -43,6 +47,7 @@ export default function DashboardLayout() {
         break;
       case 'Receptionist':
         items.push(
+          { to: '/dashboard/registration', label: 'Registration' },
           { to: '/dashboard/patients', label: 'Patients' },
           { to: '/dashboard/patients-worklist', label: 'Worklist' },
           { to: '/dashboard/payments', label: 'Payments' }
@@ -91,12 +96,18 @@ export default function DashboardLayout() {
     return items;
   };
 
+  const displayName = branding?.lab_display_name || branding?.lab_name || 'LIMS';
+  const logoUrl = branding?.lab_logo;
+
   return (
     <div className={styles.layout}>
       <nav className={styles.sidebar}>
-        <div className={styles.logo}>
-          <h1>LIMS</h1>
-        </div>
+        <Link to="/dashboard" className={styles.logo}>
+          {logoUrl && (
+            <img src={logoUrl} alt={displayName} className={styles.logoImage} />
+          )}
+          <h1>{displayName}</h1>
+        </Link>
         
         <ul className={styles.navList}>
           {getNavItems().map((item) => (

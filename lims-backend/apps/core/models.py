@@ -74,6 +74,12 @@ class SystemSettings(models.Model):
     
     # Lab Information
     lab_name = models.CharField(max_length=255, default="Laboratory")
+    lab_display_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Display name for UI header and login (defaults to lab_name if not set)",
+    )
     lab_address = models.TextField(blank=True, null=True)
     lab_phone = models.CharField(max_length=50, blank=True, null=True)
     lab_email = models.EmailField(blank=True, null=True)
@@ -81,7 +87,7 @@ class SystemSettings(models.Model):
         upload_to="settings/logos/",
         blank=True,
         null=True,
-        help_text="Laboratory logo for reports",
+        help_text="Laboratory logo for reports and UI",
     )
     
     # Report Customization

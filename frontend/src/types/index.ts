@@ -180,6 +180,9 @@ export interface Order {
   referred_by?: string;
   total_amount: string;
   discount: string;
+  discount_percent: string;
+  paid_amount: string;
+  due_amount: string;
   net_amount: string;
   is_paid: boolean;
   items: OrderItem[];
@@ -190,8 +193,14 @@ export interface OrderCreateRequest {
   test_ids?: number[];
   panel_ids?: number[];
   discount?: string;
+  discount_percent?: string;
+  paid_amount?: string;
   notes?: string;
   referred_by?: string;
+}
+
+export interface OrderCreateResponse extends Order {
+  receipt_url?: string;
 }
 
 /**
@@ -350,6 +359,7 @@ export interface ReferenceRangeCreateRequest {
 export interface SystemSettings {
   id: number;
   lab_name: string;
+  lab_display_name?: string;
   lab_address?: string;
   lab_phone?: string;
   lab_email?: string;
@@ -372,6 +382,33 @@ export interface SystemSettings {
   updated_at: string;
   updated_by?: number;
   updated_by_name?: string;
+}
+
+/**
+ * Patient lookup types (for registration quick search)
+ */
+export interface PatientLookupResult {
+  id: number;
+  patient_id: string;
+  full_name: string;
+  phone: string;
+  age?: number;
+  gender: string;
+  last_visit?: string;
+  total_orders: number;
+}
+
+/**
+ * Test search types (for order entry)
+ */
+export interface TestSearchResult {
+  id: number;
+  test_code: string;
+  test_name: string;
+  category_name: string;
+  sample_type: string;
+  price: string;
+  type: 'test' | 'panel';
 }
 
 export interface WorklistPatient {

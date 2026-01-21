@@ -9,9 +9,10 @@ import styles from './SystemSettingsPage.module.css';
 export default function SystemSettingsPage() {
   const queryClient = useQueryClient();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'lab' | 'reports' | 'email' | 'backup'>('lab');
+  const [activeTab, setActiveTab] = useState<'ui' | 'lab' | 'reports' | 'email' | 'backup'>('lab');
   const [headerFile, setHeaderFile] = useState<File | null>(null);
   const [footerFile, setFooterFile] = useState<File | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ['system-settings'],
@@ -87,13 +88,46 @@ export default function SystemSettingsPage() {
     },
   });
 
+  const uploadLogoMutation = useMutation({
+    mutationFn: (file: File) => systemSettingsApi.uploadLabLogo(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['branding'] });
+      setLogoFile(null);
+      alert('Logo updated successfully');
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.error ??
+        error?.message ??
+        'Failed to upload logo. Please try again.';
+      alert(message);
+    },
+  });
+
+  const removeLogoMutation = useMutation({
+    mutationFn: () => systemSettingsApi.removeLabLogo(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['branding'] });
+      alert('Logo removed successfully');
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.error ??
+        error?.message ??
+        'Failed to remove logo. Please try again.';
+      alert(message);
+    },
+  });
+
   // Use normalizer to handle both wrapped {data: {...}} and plain object responses
   const settings = normalizeObjectResponse<SystemSettings>(settingsData);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup') {
+    if (tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup') {
       setActiveTab(tab);
     }
   }, [location.search]);
@@ -105,6 +139,7 @@ export default function SystemSettingsPage() {
 
     // Lab Information
     if (formData.get('lab_name')) data.lab_name = formData.get('lab_name') as string;
+    if (formData.get('lab_display_name')) data.lab_display_name = formData.get('lab_display_name') as string;
     if (formData.get('lab_address')) data.lab_address = formData.get('lab_address') as string;
     if (formData.get('lab_phone')) data.lab_phone = formData.get('lab_phone') as string;
     if (formData.get('lab_email')) data.lab_email = formData.get('lab_email') as string;
@@ -150,6 +185,12 @@ export default function SystemSettingsPage() {
 
       <div className={styles.tabs}>
         <button
+          className={activeTab === 'ui' ? styles.activeTab : styles.tab}
+          onClick={() => setActiveTab('ui')}
+        >
+          UI Update
+        </button>
+        <button
           className={activeTab === 'lab' ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab('lab')}
         >
@@ -176,6 +217,84 @@ export default function SystemSettingsPage() {
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
+        {activeTab === 'ui' && (
+          <div className={styles.tabContent}>
+            <h2>UI Update</h2>
+            <p className={styles.description}>
+              Customize the branding that appears in your application header and login page.
+            </p>
+            
+            <div className={styles.formGroup}>
+              <label>Laboratory Display Name</label>
+              <input
+                type="text"
+                name="lab_display_name"
+                defaultValue={settings.lab_display_name || ''}
+                placeholder="Enter display name for UI (optional, defaults to Lab Name)"
+                className={styles.input}
+              />
+              <small className={styles.hint}>
+                This name will appear in the header and login page. If not set, the Lab Name will be used.
+              </small>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Laboratory Logo</label>
+              {settings.lab_logo && (
+                <div className={styles.brandingPreview}>
+                  <div className={styles.previewCard}>
+                    <img src={settings.lab_logo} alt="Lab logo" />
+                    <div className={styles.previewInfo}>
+                      <strong>{settings.lab_display_name || settings.lab_name}</strong>
+                      <span>Current logo</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeLogoMutation.mutate()}
+                    className={styles.removeButton}
+                    disabled={removeLogoMutation.isPending}
+                  >
+                    {removeLogoMutation.isPending ? 'Removing...' : 'Remove Logo'}
+                  </button>
+                </div>
+              )}
+              <div className={styles.uploadRow}>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+                />
+                <button
+                  type="button"
+                  className={styles.uploadButton}
+                  disabled={!logoFile || uploadLogoMutation.isPending}
+                  onClick={() => logoFile && uploadLogoMutation.mutate(logoFile)}
+                >
+                  {uploadLogoMutation.isPending ? 'Uploading...' : 'Upload Logo'}
+                </button>
+              </div>
+              <small className={styles.hint}>
+                Accepted formats: PNG, JPG, JPEG, WEBP (max 5MB). Logo will appear in header and login page.
+              </small>
+            </div>
+
+            {(settings.lab_logo || settings.lab_display_name) && (
+              <div className={styles.previewSection}>
+                <h3>Preview</h3>
+                <div className={styles.headerPreview}>
+                  {settings.lab_logo && (
+                    <img src={settings.lab_logo} alt="Logo preview" className={styles.previewLogo} />
+                  )}
+                  <span className={styles.previewName}>
+                    {settings.lab_display_name || settings.lab_name}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'lab' && (
           <div className={styles.tabContent}>
             <h2>Laboratory Information</h2>

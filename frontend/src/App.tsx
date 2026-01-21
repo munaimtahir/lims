@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
+import { BrandingProvider } from './contexts/BrandingContext';
 import { ProtectedRoute } from './components/auth';
 import { DashboardLayout } from './components/dashboard';
 import { LoginPage } from './pages/auth';
@@ -18,6 +19,7 @@ import { PaymentsPage } from './pages/payments';
 import { AuditLogsPage } from './pages/audit';
 import ReferenceRangesPage from './pages/reference-ranges';
 import SystemSettingsPage from './pages/settings';
+import RegistrationPage from './pages/registration';
 import './App.css';
 
 // Create a client for React Query
@@ -33,11 +35,12 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
+      <BrandingProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginPage />} />
             
             {/* Protected routes */}
             <Route
@@ -51,6 +54,7 @@ function App() {
               <Route index element={<DashboardHome />} />
               
               {/* Implemented pages */}
+              <Route path="registration" element={<RegistrationPage />} />
               <Route path="patients" element={<PatientsPage />} />
               <Route path="patients-worklist" element={<PatientsWorklistPage />} />
               <Route path="orders" element={<Navigate to="/dashboard/patients" replace />} />
@@ -75,6 +79,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      </BrandingProvider>
     </QueryClientProvider>
   );
 }

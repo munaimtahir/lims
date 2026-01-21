@@ -101,7 +101,10 @@ class OrderSerializer(serializers.ModelSerializer):
             "referred_by",
             "total_amount",
             "discount",
+            "discount_percent",
             "net_amount",
+            "paid_amount",
+            "due_amount",
             "is_paid",
             "items",
             "test_ids",
@@ -113,6 +116,8 @@ class OrderSerializer(serializers.ModelSerializer):
             "updated_at",
             "total_amount",
             "net_amount",
+            "due_amount",
+            "is_paid",
             "ordered_by",
         ]
 

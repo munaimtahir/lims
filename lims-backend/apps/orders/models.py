@@ -77,7 +77,16 @@ class Order(models.Model):
     discount = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0.00")
     )
+    discount_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("0.00")
+    )
     net_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, default=Decimal("0.00")
+    )
+    paid_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, default=Decimal("0.00")
+    )
+    due_amount = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0.00")
     )
     is_paid = models.BooleanField(default=False)
@@ -113,6 +122,12 @@ class Order(models.Model):
 
         # Calculate net amount
         self.net_amount = max(self.total_amount - self.discount, Decimal("0.00"))
+        
+        # Calculate due amount
+        self.due_amount = max(self.net_amount - self.paid_amount, Decimal("0.00"))
+        
+        # Update is_paid status
+        self.is_paid = self.due_amount <= Decimal("0.00")
 
         # Validate status transition if status is being changed
         if self.pk:  # Only validate if this is an update
