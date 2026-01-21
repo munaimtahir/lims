@@ -10,8 +10,8 @@
 The LIMS application has been successfully consolidated to use a **single URL**: `portal.alshifalab.pk`
 
 Previously, the application was configured to use multiple URLs which caused confusion:
-- `lims.alshifalab.pk` (removed)
-- `api.lims.alshifalab.pk` (removed)
+- `portal.alshifalab.pk` (removed)
+- `api.portal.alshifalab.pk` (removed)
 - `portal.alshifalab.pk` (retained - **primary URL**)
 
 ---
@@ -25,7 +25,7 @@ Previously, the application was configured to use multiple URLs which caused con
 
 **Change:** Updated comment to reference the correct URL
 ```diff
-- # The host Caddy (on port 80/443) proxies lims.alshifalab.pk -> 127.0.0.1:8013 -> this container
+- # The host Caddy (on port 80/443) proxies portal.alshifalab.pk -> 127.0.0.1:8013 -> this container
 + # The host Caddy (on port 80/443) proxies portal.alshifalab.pk -> 127.0.0.1:8012 -> this container
 ```
 
@@ -129,7 +129,7 @@ LIMS Docker Container (lims_proxy)
 To verify no old URL references remain:
 
 ```bash
-# Search for old lims.alshifalab.pk references (should return 0 results)
+# Search for old portal.alshifalab.pk references (should return 0 results)
 grep -r "lims\.alshifalab\.pk" . --include="*.md" --include="*.yml" --include="Caddyfile" --include="*.sh" --exclude-dir=archive
 
 # Search for old api.lims references (should return 0 results)
@@ -169,7 +169,7 @@ Ensure your DNS is configured correctly:
 |-------------|------|-------|
 | A | portal.alshifalab.pk | `<SERVER_IP>` |
 
-**Note:** Remove any old DNS records for `lims.alshifalab.pk` or `api.lims.alshifalab.pk` if they exist.
+**Note:** Remove any old DNS records for `portal.alshifalab.pk` or `api.portal.alshifalab.pk` if they exist.
 
 ---
 
@@ -215,8 +215,8 @@ docker compose --env-file .env.production exec backend env | grep ALLOWED_HOSTS
 
 | Item | Before | After |
 |------|--------|-------|
-| **Primary URL** | lims.alshifalab.pk | portal.alshifalab.pk |
-| **API URL** | api.lims.alshifalab.pk | portal.alshifalab.pk/api/v1/ |
+| **Primary URL** | portal.alshifalab.pk | portal.alshifalab.pk |
+| **API URL** | api.portal.alshifalab.pk | portal.alshifalab.pk/api/v1/ |
 | **URL Count** | 2-3 domains | 1 domain |
 | **Configuration Files** | Multiple references | Single consistent reference |
 | **Documentation** | Mixed references | Consistent portal.alshifalab.pk |
@@ -229,7 +229,7 @@ docker compose --env-file .env.production exec backend env | grep ALLOWED_HOSTS
 
 The LIMS application now uses a single, consistent URL: `portal.alshifalab.pk`
 
-All configuration files, documentation, and deployment scripts have been updated to reflect this change. No references to the old `lims.alshifalab.pk` domain remain in active configuration files.
+All configuration files, documentation, and deployment scripts have been updated to reflect this change. No references to the old `portal.alshifalab.pk` domain remain in active configuration files.
 
 ---
 

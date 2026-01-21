@@ -113,7 +113,7 @@ class TestParameter(models.Model):
     """
 
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="test_parameters")
-    parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, related_name="test_mappings")
+    parameter = models.ForeignKey("Parameter", on_delete=models.CASCADE, related_name="test_mappings")
     display_order = models.IntegerField(default=0)
     reportable = models.BooleanField(default=True)
 
@@ -401,7 +401,7 @@ class ParameterReferenceRange(models.Model):
     ]
 
     parameter = models.ForeignKey(
-        Parameter, on_delete=models.CASCADE, related_name="reference_ranges"
+        "Parameter", on_delete=models.CASCADE, related_name="legacy_reference_ranges"
     )
     method_code = models.CharField(max_length=50, blank=True)
     sex = models.CharField(max_length=20, choices=SEX_CHOICES, default="All")
@@ -462,7 +462,7 @@ class ParameterQuickText(models.Model):
     """
 
     parameter = models.ForeignKey(
-        Parameter, on_delete=models.CASCADE, related_name="quick_texts"
+        "Parameter", on_delete=models.CASCADE, related_name="quick_texts"
     )
     template_title = models.CharField(max_length=255)
     template_body = models.TextField()
@@ -512,7 +512,7 @@ class TestParameterLink(models.Model):
         Test, on_delete=models.CASCADE, related_name="parameter_links"
     )
     parameter = models.ForeignKey(
-        Parameter, on_delete=models.CASCADE, related_name="test_links"
+        "Parameter", on_delete=models.CASCADE, related_name="test_links"
     )
     display_order = models.IntegerField(default=0)
     section_header = models.CharField(max_length=255, blank=True)

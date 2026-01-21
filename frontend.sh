@@ -229,10 +229,19 @@ PYEOF
         docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
-User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
-print("Superuser created successfully")
+try:
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
+        print("Superuser created successfully")
+    else:
+        admin = User.objects.get(username='admin')
+        admin.set_password('admin123')
+        admin.save()
+        print("Superuser password updated")
+except Exception as e:
+    print(f"Error managing superuser: {e}")
 PYEOF
-        log_success "Superuser created: admin/admin123"
+        log_success "Superuser ensured: admin/admin123"
     fi
 }
 
@@ -297,9 +306,9 @@ show_summary() {
     log_info "Frontend redeployment completed!"
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Access URLs:"
-    log_info "  - Frontend: http://localhost:8012/"
-    log_info "  - API: http://localhost:8012/api/v1/"
-    log_info "  - Admin: http://localhost:8012/admin/"
+    log_info "  - Production: https://portal.alshifalab.pk"
+    log_info "  - API:        https://portal.alshifalab.pk/api/v1/"
+    log_info "  - Admin:      https://portal.alshifalab.pk/admin/"
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Test Credentials:"
     log_info "  Username: admin"

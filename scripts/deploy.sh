@@ -488,7 +488,7 @@ full_deployment() {
     
     print_header "Deployment Completed Successfully!"
     log_success "LIMS is now running"
-    log_info "Access the application at: http://localhost or your configured domain"
+    log_info "Access the application at: https://portal.alshifalab.pk"
     log_info "Deployment log: $DEPLOY_LOG"
 }
 
