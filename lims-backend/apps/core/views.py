@@ -12,6 +12,14 @@ from django.db import connection
 from .models import SystemSettings
 from .serializers import SystemSettingsSerializer
 from apps.accounts.permissions import IsAdminOrReadOnly
+
+
+# Image upload configuration constants
+ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+MAX_IMAGE_SIZE_MB = 5
+MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024  # 5MB in bytes
+
+
 class SystemSettingsViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing system settings.
@@ -68,6 +76,45 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
         
         return Response(serializer.data)
 
+    def _handle_image_upload(self, request, field_name):
+        """
+        Handle image upload or removal for a given field.
+        
+        Validates file type and size before accepting uploads.
+        """
+        instance = self.get_object()
+        if request.method == "DELETE":
+            field = getattr(instance, field_name)
+            if field:
+                field.delete(save=True)
+            return Response(SystemSettingsSerializer(instance).data)
+
+        image = request.FILES.get(field_name)
+        if not image:
+            return Response(
+                {"error": f"{field_name} file is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # Validate file type
+        if image.content_type not in ALLOWED_IMAGE_TYPES:
+            return Response(
+                {"error": f"Invalid file type. Allowed types: JPEG, PNG, GIF"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # Validate file size
+        if image.size > MAX_IMAGE_SIZE_BYTES:
+            return Response(
+                {"error": f"File size exceeds maximum limit of {MAX_IMAGE_SIZE_MB}MB"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        setattr(instance, field_name, image)
+        instance.updated_by = request.user
+        instance.save()
+        return Response(SystemSettingsSerializer(instance).data)
+
     @action(
         detail=False,
         methods=["post", "delete"],
@@ -76,21 +123,7 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
     )
     def report_header_image(self, request):
         """Upload or remove report header image."""
-        instance = self.get_object()
-        if request.method == "DELETE":
-            instance.report_header_image.delete(save=True)
-            return Response(SystemSettingsSerializer(instance).data)
-
-        image = request.FILES.get("report_header_image")
-        if not image:
-            return Response(
-                {"error": "report_header_image file is required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        instance.report_header_image = image
-        instance.updated_by = request.user
-        instance.save()
-        return Response(SystemSettingsSerializer(instance).data)
+        return self._handle_image_upload(request, "report_header_image")
 
     @action(
         detail=False,
@@ -100,21 +133,7 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
     )
     def report_footer_image(self, request):
         """Upload or remove report footer image."""
-        instance = self.get_object()
-        if request.method == "DELETE":
-            instance.report_footer_image.delete(save=True)
-            return Response(SystemSettingsSerializer(instance).data)
-
-        image = request.FILES.get("report_footer_image")
-        if not image:
-            return Response(
-                {"error": "report_footer_image file is required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        instance.report_footer_image = image
-        instance.updated_by = request.user
-        instance.save()
-        return Response(SystemSettingsSerializer(instance).data)
+        return self._handle_image_upload(request, "report_footer_image")
     
     @action(detail=False, methods=["get"])
     def current(self, request):

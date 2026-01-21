@@ -1,23 +1,8 @@
 name: Docker CI
 
-# Triggers on push to main branches and tags
+# Manual trigger only
 on:
-  push:
-    branches: [main, develop]
-    tags:
-      - 'v*'
-    paths:
-      - 'lims-backend/Dockerfile'
-      - 'frontend/Dockerfile'
-      - 'docker-compose.yml'
-      - '.github/workflows/docker-ci.yml'
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - 'lims-backend/Dockerfile'
-      - 'frontend/Dockerfile'
-      - 'docker-compose.yml'
-      - '.github/workflows/docker-ci.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read

@@ -71,6 +71,8 @@ export default function VerificationQueuePage() {
         return 'High';
       case 'L':
         return 'Low';
+      case 'A':
+        return 'Abnormal';
       case '':
         return 'Normal';
       default:

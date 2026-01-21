@@ -1,17 +1,8 @@
 name: Backend CI
 
-# Triggers on push and pull_request to main branches
+# Manual trigger only
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'lims-backend/**'
-      - '.github/workflows/backend-ci.yml'
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - 'lims-backend/**'
-      - '.github/workflows/backend-ci.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read

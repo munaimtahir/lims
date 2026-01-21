@@ -10,6 +10,13 @@ from django.utils import timezone
 from apps.laboratory.models import ReferenceRange, TestParameter
 
 
+# Common qualitative abnormal result indicators
+ABNORMAL_QUALITATIVE_INDICATORS = [
+    "POSITIVE", "REACTIVE", "DETECTED", "ABNORMAL", 
+    "PRESENT", "HIGH", "LOW", "CRITICAL"
+]
+
+
 def get_patient_age_years(patient, at_date: Optional[date] = None) -> Optional[float]:
     """Return patient age in years, using DOB when available."""
     if not patient:
@@ -37,24 +44,37 @@ def format_reference_display(ref_min: Optional[Decimal], ref_max: Optional[Decim
 
 
 def _fallback_parameter_range(
-    parameter: TestParameter, gender: Optional[str]
+    parameter_mapping: TestParameter, gender: Optional[str]
 ) -> dict[str, Any]:
+    """Fallback logic when no age-specific ReferenceRange exists."""
+    # In the new global parameter model, fallbacks are looked up from the Parameter model.
+    # Note: If Parameter model doesn't have these fields, we return None.
+    param = parameter_mapping.parameter
+    
+    # We check if these fields exist on the Parameter model (they were moved from TestParameter)
+    ref_min = None
+    ref_max = None
+    critical_low = getattr(param, "critical_low", None)
+    critical_high = getattr(param, "critical_high", None)
+
     if gender == "Male":
-        ref_min = parameter.reference_min_male
-        ref_max = parameter.reference_max_male
+        ref_min = getattr(param, "reference_min_male", None)
+        ref_max = getattr(param, "reference_max_male", None)
     elif gender == "Female":
-        ref_min = parameter.reference_min_female
-        ref_max = parameter.reference_max_female
-    else:
-        ref_min = parameter.reference_min_male or parameter.reference_min_female
-        ref_max = parameter.reference_max_male or parameter.reference_max_female
+        ref_min = getattr(param, "reference_min_female", None)
+        ref_max = getattr(param, "reference_max_female", None)
+    
+    # Fallback to male if both are missing
+    if ref_min is None: ref_min = getattr(param, "reference_min_male", None)
+    if ref_max is None: ref_max = getattr(param, "reference_max_male", None)
+
     return {
         "ref_min": ref_min,
         "ref_max": ref_max,
         "display": format_reference_display(ref_min, ref_max),
         "source": "parameter_fallback",
-        "critical_low": parameter.critical_low,
-        "critical_high": parameter.critical_high,
+        "critical_low": critical_low,
+        "critical_high": critical_high,
     }
 
 
@@ -129,15 +149,30 @@ def compute_flag(
     critical_low: Optional[Decimal],
     critical_high: Optional[Decimal],
 ) -> str:
-    """Compute the flag for a numeric result value."""
+    """
+    Compute the flag for a result value (numeric or qualitative).
+    
+    For numeric values, checks against reference ranges.
+    For non-numeric qualitative values, recognizes common abnormal indicators.
+    """
     if result_value is None:
         return ""
+    
+    # Try to parse as numeric value
     try:
         cleaned_value = str(result_value).strip().replace(",", "").replace(" ", "")
         value = Decimal(cleaned_value)
     except (InvalidOperation, ValueError, TypeError):
+        # Non-numeric value - check for common qualitative abnormal results
+        value_upper = str(result_value).strip().upper()
+        
+        if any(indicator in value_upper for indicator in ABNORMAL_QUALITATIVE_INDICATORS):
+            return "A"
+        
+        # Normal qualitative results or unrecognized text
         return ""
 
+    # Numeric value - apply range checking
     if critical_low is not None and value <= critical_low:
         return "C"
     if critical_high is not None and value >= critical_high:

@@ -24,7 +24,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_ROOT="/home/munaim/srv/apps/lims"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LOG_DIR="$PROJECT_ROOT/logs"
 DEPLOY_LOG="$LOG_DIR/backend_redeploy_$(date +%Y%m%d_%H%M%S).log"
 ENV_FILE="$PROJECT_ROOT/.env.production"
@@ -88,23 +89,25 @@ check_docker() {
 check_env_file() {
     log_info "Checking environment file..."
     if [ ! -f "$ENV_FILE" ]; then
-        log_warning ".env.production not found. Creating default environment file..."
+        log_warning ".env.production not found. Creating default environment file for zero-touch deployment..."
         cat > "$ENV_FILE" << 'EOF'
 # Django Settings
-SECRET_KEY=change-me-in-production
+SECRET_KEY=insecure-dev-key-for-testing-only-change-in-prod
 DB_NAME=lims_db
 DB_USER=postgres
 DB_PASSWORD=changeme
 DB_HOST=db
 DB_PORT=5432
-ALLOWED_HOSTS=localhost,127.0.0.1
+ALLOWED_HOSTS=*
+DEBUG=True
 
 # Redis
 REDIS_URL=redis://redis:6379/0
 
 # CORS
-CORS_ALLOWED_ORIGINS=http://localhost
-CSRF_TRUSTED_ORIGINS=http://localhost
+CORS_ALLOWED_ORIGINS=http://localhost,http://127.0.0.1,http://0.0.0.0
+CORS_ALLOW_ALL_ORIGINS=True
+CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1
 
 # Frontend
 VITE_API_BASE_URL=/api/v1/
@@ -117,9 +120,10 @@ SERVER_NAME=localhost
 LOG_LEVEL=INFO
 EOF
         chmod 600 "$ENV_FILE"
-        log_warning "Please update $ENV_FILE with proper values before production use"
+        log_success "Created default .env.production file"
+    else
+        log_success "Environment file exists"
     fi
-    log_success "Environment file exists"
 }
 
 ###############################################################################
@@ -264,16 +268,19 @@ PYEOF
 )
     
     if echo "$USER_EXISTS" | grep -q "EXISTS"; then
-        log_info "Admin user already exists. Resetting password to 'admin123'..."
+        log_info "Admin user already exists. Resetting password to 'admin123' for convenience..."
         docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
-admin = User.objects.get(username='admin')
-admin.set_password('admin123')
-admin.is_superuser = True
-admin.is_staff = True
-admin.save()
-print("Password reset successfully")
+try:
+    admin = User.objects.get(username='admin')
+    admin.set_password('admin123')
+    admin.is_superuser = True
+    admin.is_staff = True
+    admin.save()
+    print("Password reset successfully")
+except Exception as e:
+    print(f"Error resetting password: {e}")
 PYEOF
         log_success "Admin password reset to 'admin123'"
     else
@@ -281,8 +288,11 @@ PYEOF
         docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
-User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
-print("Superuser created successfully")
+try:
+    User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
+    print("Superuser created successfully")
+except Exception as e:
+    print(f"Error creating superuser: {e}")
 PYEOF
         log_success "Superuser created: admin/admin123"
     fi

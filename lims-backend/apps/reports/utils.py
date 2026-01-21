@@ -2,7 +2,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.utils import ImageReader
@@ -13,21 +13,7 @@ from django.conf import settings
 from apps.orders.models import Order
 from apps.laboratory.ranges import pick_reference_range
 from apps.core.models import SystemSettings
-
-
-def add_report_image(story, image_field, max_width=6 * inch, spacer=0.15 * inch):
-    """Add a header/footer image to the story with preserved aspect ratio."""
-    if not image_field:
-        return
-    try:
-        image_reader = ImageReader(image_field)
-        img_width, img_height = image_reader.getSize()
-        scale = min(max_width / img_width, 1)
-        rendered = Image(image_reader, width=img_width * scale, height=img_height * scale)
-        story.append(rendered)
-        story.append(Spacer(1, spacer))
-    except Exception:
-        return
+from apps.core.pdf_utils import add_report_image
 
 
 def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=None, lab_email=None):
@@ -211,7 +197,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
                 flag_text = f"<font color='orange'>{flag_text}</font>"
 
             results_data.append([
-                param.parameter_name,
+                param.effective_parameter_name,
                 result.result_value,
                 param.unit,
                 ref_range,

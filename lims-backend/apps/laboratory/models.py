@@ -48,25 +48,22 @@ class Test(models.Model):
     Represents an individual laboratory test.
 
     Attributes:
-        category (TestCategory): The category this test belongs to.
+        test_id (int): Primary key, internal system identifier.
         test_code (str): A unique code for the test.
+        legacy_test_code (str, optional): Original numeric or old code for backward compatibility.
         test_name (str): The full name of the test.
-        loinc_code (str, optional): The LOINC code for the test.
-        sample_type (str): The required sample type (e.g., "EDTA Blood", "Serum").
-        sample_volume (str, optional): The required sample volume (e.g., "3-5 mL").
-        price (Decimal): The price of the test.
-        turnaround_time (int): The expected turnaround time in hours.
-        instructions (str, optional): Any special instructions for the test.
-        is_active (bool): Whether the test is currently available.
-        created_at (datetime): The timestamp of when the test was created.
-        updated_at (datetime): The timestamp of the last update.
+        category (TestCategory): The category this test belongs to.
+        # ... other attributes ...
     """
 
+    test_id = models.AutoField(primary_key=True)
+    test_code = models.CharField(max_length=20, unique=True, db_index=True)
+    legacy_test_code = models.CharField(max_length=50, blank=True, null=True, db_index=True)
+    test_name = models.CharField(max_length=200)
+    
     category = models.ForeignKey(
         TestCategory, on_delete=models.PROTECT, related_name="tests"
     )
-    test_code = models.CharField(max_length=20, unique=True, db_index=True)
-    test_name = models.CharField(max_length=200)
     loinc_code = models.CharField(max_length=20, blank=True, null=True)
 
     # Sample requirements
@@ -106,70 +103,43 @@ class Test(models.Model):
 
 class TestParameter(models.Model):
     """
-    Represents a measurable parameter within a laboratory test.
-
-    Each parameter includes reference ranges and critical values.
+    Junction table representing the mapping between a Test and a Parameter.
 
     Attributes:
-        test (Test): The test this parameter belongs to.
-        parameter_name (str): The name of the parameter.
-        loinc_code (str, optional): The LOINC code for the parameter.
-        unit (str): The unit of measurement for the parameter.
-        reference_min_male (Decimal, optional): The minimum reference value for males.
-        reference_max_male (Decimal, optional): The maximum reference value for males.
-        reference_min_female (Decimal, optional): The minimum reference value for females.
-        reference_max_female (Decimal, optional): The maximum reference value for females.
-        critical_low (Decimal, optional): The critical low value for the parameter.
-        critical_high (Decimal, optional): The critical high value for the parameter.
-        decimal_places (int): The number of decimal places to display for the result.
-        display_order (int): The order in which to display the parameter.
+        test (Test): The test in the relationship.
+        parameter (Parameter): The global parameter in the relationship.
+        display_order (int): The order in which the parameter is displayed for this test.
+        reportable (bool): Whether the parameter is shown on the final report.
     """
 
-    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="parameters")
-    parameter_name = models.CharField(max_length=200)
-    loinc_code = models.CharField(max_length=20, blank=True, null=True)
-    unit = models.CharField(max_length=50)
-
-    # Reference ranges (gender-specific)
-    reference_min_male = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
-    reference_max_male = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
-    reference_min_female = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
-    reference_max_female = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
-
-    # Critical values
-    critical_low = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
-    critical_high = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
-
-    # Display settings
-    decimal_places = models.IntegerField(default=2)
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="test_parameters")
+    parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, related_name="test_mappings")
     display_order = models.IntegerField(default=0)
+    reportable = models.BooleanField(default=True)
+
+    # Legacy field preserved for backward compatibility/migration
+    parameter_name = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
         db_table = "test_parameters"
-        verbose_name = "Test Parameter"
-        verbose_name_plural = "Test Parameters"
-        ordering = ["test", "display_order", "parameter_name"]
+        verbose_name = "Test Parameter Mapping"
+        verbose_name_plural = "Test Parameter Mappings"
+        unique_together = [["test", "parameter"]]
+        ordering = ["test", "display_order"]
 
     def __str__(self):
-        """
-        Return a string representation of the test parameter.
+        """Return a string representation of the test-parameter relationship."""
+        return f"{self.test.test_code} - {self.parameter.parameter_id}"
 
-        Returns:
-            str: A string in the format "test_code - parameter_name".
-        """
-        return f"{self.test.test_code} - {self.parameter_name}"
+    @property
+    def effective_parameter_name(self):
+        """Returns parameter name from linked Parameter or legacy field."""
+        return self.parameter.parameter_name if self.parameter else self.parameter_name
+
+    @property
+    def unit(self):
+        """Returns unit from linked Parameter."""
+        return self.parameter.unit if self.parameter else ""
 
 
 class ReferenceRange(models.Model):
@@ -345,43 +315,35 @@ class TestPanel(models.Model):
 
 class Parameter(models.Model):
     """
-    Represents a parameter or analyte that can be measured in a test.
-
-    This is a standalone parameter model that can be linked to multiple tests
-    via TestParameterLink. This model supports Excel import functionality.
+    Represents a global parameter or analyte that can be measured in any test.
 
     Attributes:
-        code (str): A unique code for the parameter.
-        name (str): The full name of the parameter.
-        short_name (str, optional): A shorter name for the parameter.
+        parameter_id (str): Primary key (e.g., 'p1', 'p2').
+        parameter_name (str): The full name of the parameter.
         unit (str, optional): The unit of measurement for the parameter.
         data_type (str): The data type of the result (e.g., "Numeric", "Text").
-        editor_type (str): The type of editor to use for result entry.
-        decimal_places (int): The number of decimal places for numeric results.
-        allowed_values (str): A list of allowed values for the result.
-        is_calculated (bool): Whether the parameter is calculated from others.
-        calculation_formula (str): The formula used for calculation.
-        flag_direction (str): The direction for flagging abnormal results.
-        has_quick_text (bool): Whether the parameter has quick text templates.
-        external_code_type (str): The type of external code (e.g., "LOINC").
-        external_code_value (str): The value of the external code.
-        active (bool): Whether the parameter is currently in use.
+        # ... other attributes ...
     """
 
-    code = models.CharField(max_length=100, unique=True, db_index=True)
-    name = models.CharField(max_length=255)
+    parameter_id = models.CharField(max_length=100, primary_key=True)
+    parameter_name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=100, blank=True)
-    unit = models.CharField(max_length=50, blank=True)
+    unit = models.CharField(max_length=50, blank=True, null=True)
+    
     data_type = models.CharField(max_length=50, default="Numeric")
     editor_type = models.CharField(max_length=50, default="Plain")
     decimal_places = models.IntegerField(default=2, null=True, blank=True)
     allowed_values = models.TextField(blank=True)
+    
     is_calculated = models.BooleanField(default=False)
     calculation_formula = models.TextField(blank=True)
+    
     flag_direction = models.CharField(max_length=20, default="Both")
     has_quick_text = models.BooleanField(default=False)
+    
     external_code_type = models.CharField(max_length=50, blank=True)
     external_code_value = models.CharField(max_length=100, blank=True)
+    
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -390,15 +352,15 @@ class Parameter(models.Model):
         db_table = "parameters"
         verbose_name = "Parameter"
         verbose_name_plural = "Parameters"
-        ordering = ["code"]
+        ordering = ["parameter_id"]
         indexes = [
-            models.Index(fields=["code"]),
+            models.Index(fields=["parameter_id"]),
             models.Index(fields=["active"]),
         ]
 
     def __str__(self):
         """Return a string representation of the parameter."""
-        return f"{self.code} - {self.name}"
+        return f"{self.parameter_id} - {self.parameter_name}"
 
 
 class ParameterReferenceRange(models.Model):

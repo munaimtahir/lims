@@ -44,7 +44,8 @@ export default function ResultsPage() {
     if (selectedOrderItem) {
       ensureMutation.mutate();
     }
-  }, [ensureMutation, selectedOrderItem]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedOrderItem]);
 
   // Fetch existing results for this order item
   const { data: existingResultsData } = useQuery({

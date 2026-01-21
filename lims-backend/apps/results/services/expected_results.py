@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.db import transaction
 from apps.laboratory.ranges import pick_reference_range
 from apps.results.models import TestResult
 
@@ -37,7 +38,20 @@ def get_orderitem_expected_parameters(order_item, patient) -> list[dict[str, Any
     return expected
 
 
+@transaction.atomic
 def ensure_test_results(order_item) -> list[TestResult]:
+    """
+    Ensure test result rows exist for an order item.
+    
+    Uses transaction.atomic() to prevent race conditions and ensure
+    consistency when multiple requests process the same order_item concurrently.
+    
+    Args:
+        order_item: The OrderItem to create results for
+        
+    Returns:
+        List of TestResult instances (created or existing)
+    """
     patient = getattr(order_item.order, "patient", None)
     expected = get_orderitem_expected_parameters(order_item, patient)
     results = []

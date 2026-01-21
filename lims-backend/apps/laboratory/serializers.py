@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db import models
-from .models import TestCategory, Test, TestParameter, TestPanel, ReferenceRange
+from .models import TestCategory, Test, Parameter, TestParameter, TestPanel, ReferenceRange
 
 
 class TestCategorySerializer(serializers.ModelSerializer):
@@ -13,14 +13,26 @@ class TestCategorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class TestParameterSerializer(serializers.ModelSerializer):
+class ParameterSerializer(serializers.ModelSerializer):
     """
-    Serializer for the TestParameter model.
+    Serializer for the global Parameter model.
     """
 
     class Meta:
-        model = TestParameter
+        model = Parameter
         fields = "__all__"
+
+
+class TestParameterSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the TestParameter junction model.
+    """
+    parameter_name = serializers.CharField(source="parameter.parameter_name", read_only=True)
+    unit = serializers.CharField(source="parameter.unit", read_only=True)
+
+    class Meta:
+        model = TestParameter
+        fields = ["parameter", "parameter_name", "unit", "display_order", "reportable"]
 
 
 class TestSerializer(serializers.ModelSerializer):
@@ -30,12 +42,25 @@ class TestSerializer(serializers.ModelSerializer):
     Includes nested serialization for test parameters and the category name.
     """
 
-    parameters = TestParameterSerializer(many=True, read_only=True)
+    parameters = TestParameterSerializer(source="test_parameters", many=True, read_only=True)
     category_name = serializers.CharField(source="category.name", read_only=True)
 
     class Meta:
         model = Test
-        fields = "__all__"
+        fields = [
+            "test_id",
+            "test_code",
+            "legacy_test_code",
+            "test_name",
+            "category",
+            "category_name",
+            "sample_type",
+            "sample_volume",
+            "price",
+            "turnaround_time",
+            "is_active",
+            "parameters",
+        ]
 
 
 class TestPanelSerializer(serializers.ModelSerializer):
@@ -64,7 +89,7 @@ class ReferenceRangeSerializer(serializers.ModelSerializer):
     Includes parameter details for easier display.
     """
     
-    parameter_name = serializers.CharField(source="parameter.parameter_name", read_only=True)
+    parameter_name = serializers.CharField(source="parameter.parameter.parameter_name", read_only=True)
     test_name = serializers.CharField(source="parameter.test.test_name", read_only=True)
     test_code = serializers.CharField(source="parameter.test.test_code", read_only=True)
     created_by_name = serializers.CharField(source="created_by.full_name", read_only=True)

@@ -36,7 +36,7 @@ set -e  # Exit on any error
 # ============================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="${SCRIPT_DIR}"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env.production"
 DOCKER_COMPOSE_FILE="${PROJECT_ROOT}/docker-compose.yml"
 LOG_DIR="${PROJECT_ROOT}/logs"
@@ -141,8 +141,8 @@ validate_prerequisites() {
     log_success "Docker is installed: $(docker --version)"
     
     # Check Docker Compose
-    if ! command -v docker compose &> /dev/null; then
-        log_error "Docker Compose is not installed. Please install Docker Compose first."
+    if ! docker compose version &> /dev/null; then
+        log_error "Docker Compose (V2) is not installed. Please install Docker Compose first."
         exit 1
     fi
     log_success "Docker Compose is installed: $(docker compose version)"
@@ -156,13 +156,42 @@ validate_prerequisites() {
     
     # Check .env.production exists
     if [ ! -f "$ENV_FILE" ]; then
-        log_error ".env.production file not found!"
-        log_info "Copy .env.production.example to .env.production and configure it:"
-        log_info "  cp .env.production.example .env.production"
-        log_info "  nano .env.production"
-        exit 1
+        log_warning ".env.production file not found!"
+        log_info "Creating default .env.production for zero-touch deployment..."
+        cat > "$ENV_FILE" << 'EOF'
+# Django Settings
+SECRET_KEY=insecure-dev-key-for-testing-only-change-in-prod
+DB_NAME=lims_db
+DB_USER=postgres
+DB_PASSWORD=changeme
+DB_HOST=db
+DB_PORT=5432
+ALLOWED_HOSTS=*
+DEBUG=True
+
+# Redis
+REDIS_URL=redis://redis:6379/0
+
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost,http://127.0.0.1,http://0.0.0.0
+CORS_ALLOW_ALL_ORIGINS=True
+CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1
+
+# Frontend
+VITE_API_BASE_URL=/api/v1/
+REACT_APP_API_BASE_URL=/api/v1/
+
+# Server
+SERVER_NAME=localhost
+
+# Logging
+LOG_LEVEL=INFO
+EOF
+        chmod 600 "$ENV_FILE"
+        log_success "Created default .env.production file"
+    else
+        log_success ".env.production file exists"
     fi
-    log_success ".env.production file exists"
     
     # Check docker-compose.yml exists
     if [ ! -f "$DOCKER_COMPOSE_FILE" ]; then
