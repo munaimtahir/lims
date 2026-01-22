@@ -84,6 +84,24 @@ class BulkImportViewSet(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    @action(detail=False, methods=["get"])
+    def download_template(self, request):
+        """
+        Download the Excel template for bulk import.
+        """
+        from django.http import HttpResponse
+        from .utils import generate_import_template
+        
+        workbook = generate_import_template()
+        
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="LIMS_Import_Template.xlsx"'
+        
+        workbook.save(response)
+        return response
+
 
 class TestCategoryViewSet(viewsets.ModelViewSet):
     """

@@ -41,9 +41,9 @@ export default function TestCatalogPage() {
       <div className={styles.header}>
         <h1>Test Catalog</h1>
         <div className={styles.actions}>
-           <button onClick={() => setIsImportModalOpen(true)} className={styles.actionButton}>
-             Import Excel
-           </button>
+          <button onClick={() => setIsImportModalOpen(true)} className={styles.actionButton}>
+            Import Excel
+          </button>
         </div>
       </div>
 
@@ -180,9 +180,9 @@ export default function TestCatalogPage() {
         <BulkImportModal
           onClose={() => setIsImportModalOpen(false)}
           onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ['tests'] });
-              queryClient.invalidateQueries({ queryKey: ['test-categories'] });
-              setIsImportModalOpen(false);
+            queryClient.invalidateQueries({ queryKey: ['tests'] });
+            queryClient.invalidateQueries({ queryKey: ['test-categories'] });
+            setIsImportModalOpen(false);
           }}
         />
       )}
@@ -195,84 +195,133 @@ interface BulkImportModalProps {
   onSuccess: () => void;
 }
 
-function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
-    const [file, setFile] = useState<File | null>(null);
-    const [uploading, setUploading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+const [validationErrors, setValidationErrors] = useState<any[]>([]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setFile(e.target.files[0]);
-            setError(null);
-        }
-    };
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files && e.target.files.length > 0) {
+    setFile(e.target.files[0]);
+    setError(null);
+    setValidationErrors([]);
+  }
+};
 
-    const handleUpload = async () => {
-        if (!file) return;
+const handleDownloadTemplate = async () => {
+  try {
+    const response = await api.get('/laboratory/import/download_template/', {
+      responseType: 'blob',
+    });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'LIMS_Import_Template.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode?.removeChild(link);
+  } catch (err) {
+    console.error("Failed to download template", err);
+    setError("Failed to download template");
+  }
+};
 
-        setUploading(true);
-        setError(null);
+const handleUpload = async () => {
+  if (!file) return;
 
-        const formData = new FormData();
-        formData.append('file', file);
+  setUploading(true);
+  setError(null);
+  setValidationErrors([]);
 
-        try {
-            const response = await api.post('/laboratory/import/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+  const formData = new FormData();
+  formData.append('file', file);
+  // Default to safe mode (dry_run=true first? No, user wants to import. But effectively we could add a verify step. 
+  // For now, let's just do the import as requested, but maybe add dry_run toggle later if needed.
+  // The user asked to "update the logic to fail or pass with a specific reason".
 
-            setSuccessMessage(response.data.message);
-            setTimeout(() => {
-                onSuccess();
-            }, 1500);
-        } catch (err: any) {
-            setError(err.response?.data?.error || "Failed to upload file");
-        } finally {
-            setUploading(false);
-        }
-    };
+  try {
+    const response = await api.post('/laboratory/import/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
-    return (
-        <div className={styles.modalOverlay}>
-            <div className={styles.modal}>
-                <div className={styles.modalHeader}>
-                    <h2>Bulk Import Tests</h2>
-                    <button onClick={onClose} className={styles.closeButton}>×</button>
-                </div>
-                <div className={styles.modalBody}>
-                    <p>Upload an Excel file (.xlsx) containing "Tests", "Parameters", and "ReferenceRanges" sheets.</p>
+    setSuccessMessage(response.data.message);
+    setTimeout(() => {
+      onSuccess();
+    }, 1500);
+  } catch (err: any) {
+    const errorData = err.response?.data;
+    setError(errorData?.message || errorData?.error || "Failed to upload file");
 
-                    <div className={styles.dropZone}>
-                        <input
-                            type="file"
-                            accept=".xlsx"
-                            onChange={handleFileChange}
-                            disabled={uploading}
-                        />
-                    </div>
+    if (errorData?.summary?.errors) {
+      setValidationErrors(errorData.summary.errors);
+    }
+  } finally {
+    setUploading(false);
+  }
+};
 
-                    {file && <p>Selected file: {file.name}</p>}
-
-                    {error && <div className={styles.error}>{error}</div>}
-                    {successMessage && <div className={styles.success}>{successMessage}</div>}
-
-                    <div className={styles.modalActions}>
-                        <button onClick={onClose} disabled={uploading} className={styles.cancelButton}>
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleUpload}
-                            disabled={!file || uploading}
-                            className={styles.submitButton}
-                        >
-                            {uploading ? "Uploading..." : "Import"}
-                        </button>
-                    </div>
-                </div>
-            </div>
+return (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modal}>
+      <div className={styles.modalHeader}>
+        <h2>Bulk Import Tests</h2>
+        <button onClick={onClose} className={styles.closeButton}>×</button>
+      </div>
+      <div className={styles.modalBody}>
+        <div className={styles.templateSection}>
+          <p>Need a starting point? Download the Excel template.</p>
+          <button onClick={handleDownloadTemplate} className={styles.secondaryButton}>
+            Download Template
+          </button>
         </div>
-    );
+
+        <div className={styles.uploadSection}>
+          <p>Upload an Excel file (.xlsx) containing "Tests", "Parameters", "Mapping", and "ReferenceRanges" sheets.</p>
+
+          <div className={styles.dropZone}>
+            <input
+              type="file"
+              accept=".xlsx"
+              onChange={handleFileChange}
+              disabled={uploading}
+            />
+          </div>
+
+          {file && <p className={styles.fileName}>Selected file: {file.name}</p>}
+        </div>
+
+        {error && <div className={styles.error}>{error}</div>}
+
+        {validationErrors.length > 0 && (
+          <div className={styles.validationErrors}>
+            <h4>Validation Errors:</h4>
+            <ul>
+              {validationErrors.slice(0, 10).map((err, idx) => (
+                <li key={idx}>
+                  Assuming Sheet <strong>{err.sheet}</strong>, Row <strong>{err.row}</strong>: {err.message}
+                  {err.example_fix && <span className={styles.fixHint}> (Fix: {err.example_fix})</span>}
+                </li>
+              ))}
+              {validationErrors.length > 10 && <li>...and {validationErrors.length - 10} more errors</li>}
+            </ul>
+          </div>
+        )}
+
+        {successMessage && <div className={styles.success}>{successMessage}</div>}
+
+        <div className={styles.modalActions}>
+          <button onClick={onClose} disabled={uploading} className={styles.cancelButton}>
+            Cancel
+          </button>
+          <button
+            onClick={handleUpload}
+            disabled={!file || uploading}
+            className={styles.submitButton}
+          >
+            {uploading ? "Uploading..." : "Import"}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 }

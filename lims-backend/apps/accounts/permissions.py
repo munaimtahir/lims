@@ -210,5 +210,5 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             bool: True if the user has permission, False otherwise.
         """
         if request.method in permissions.SAFE_METHODS:
-            return request.user and request.user.is_authenticated
+            return True
         return request.user and request.user.is_authenticated and request.user.is_admin

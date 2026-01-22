@@ -378,3 +378,52 @@ def import_tests_from_excel(file, dry_run=False):
             summary["status"] = "FAIL"
     
     return summary
+
+
+def generate_import_template():
+    """
+    Generate a blank Excel template for bulk import.
+    """
+    workbook = openpyxl.Workbook()
+    
+    # Remove default sheet
+    default_sheet = workbook.active
+    workbook.remove(default_sheet)
+    
+    # 1. Tests Sheet
+    tests_sheet = workbook.create_sheet("Tests")
+    tests_headers = [
+        "test_id", "test_code", "legacy_test_code", "test_name", 
+        "category", "sample_type", "price", "turnaround_time"
+    ]
+    tests_sheet.append(tests_headers)
+    # Add example
+    tests_sheet.append([
+        1, "CBC", "1001", "Complete Blood Count", "Hematology", "Whole Blood", 500, 24
+    ])
+    
+    # 2. Parameters Sheet
+    params_sheet = workbook.create_sheet("Parameters")
+    params_headers = ["parameter_id", "parameter_name", "unit"]
+    params_sheet.append(params_headers)
+    # Add example
+    params_sheet.append(["p1", "Hemoglobin", "g/dL"])
+    
+    # 3. Mapping Sheet
+    mapping_sheet = workbook.create_sheet("Mapping")
+    mapping_headers = ["test_id", "parameter_id", "display_order", "reportable"]
+    mapping_sheet.append(mapping_headers)
+    # Add example
+    mapping_sheet.append([1, "p1", 1, True])
+    
+    # 4. ReferenceRanges Sheet
+    ranges_sheet = workbook.create_sheet("ReferenceRanges")
+    ranges_headers = [
+        "test_id", "parameter_id", "gender", "age_min", "age_max", 
+        "reference_min", "reference_max", "critical_low", "critical_high"
+    ]
+    ranges_sheet.append(ranges_headers)
+    # Add example
+    ranges_sheet.append([1, "p1", "Both", 0, 999, 12.0, 16.0, 7.0, 20.0])
+    
+    return workbook
