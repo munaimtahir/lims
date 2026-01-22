@@ -422,7 +422,7 @@ export const systemSettingsApi = {
     // we can use PATCH to update just the logo.
     const formData = new FormData();
     formData.append('lab_logo', file);
-    const response = await api.patch<SystemSettings>('/core/settings/', formData, {
+    const response = await api.patch<ApiResponse<SystemSettings>>('/core/settings/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     // The response determines the new settings with the logo URL
@@ -431,7 +431,7 @@ export const systemSettingsApi = {
     // The interceptor or generic might return differently.
     // Based on `patch` implementation above: `await api.patch<ApiResponse<SystemSettings>>`
     // So response.data is ApiResponse.
-    return response.data.data;
+    return response.data.data as SystemSettings;
   },
 
   removeLabLogo: async (): Promise<SystemSettings> => {

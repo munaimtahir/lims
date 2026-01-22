@@ -175,7 +175,41 @@ stop_backend_services() {
         log_info "Celery container not running"
     fi
     
+    # Check for any other backend-related containers
+    OTHER_BACKEND=$(docker ps -a --format '{{.Names}}' | grep "lims-backend" || true)
+    if [ -n "$OTHER_BACKEND" ]; then
+        log_info "Found additional backend containers. Cleaning up..."
+        echo "$OTHER_BACKEND" | while read container; do
+            log_info "Removing $container..."
+            docker stop "$container" 2>&1 | tee -a "$DEPLOY_LOG" || true
+            docker rm "$container" 2>&1 | tee -a "$DEPLOY_LOG" || true
+        done
+    fi
+    
     log_success "All backend services stopped"
+}
+
+cleanup_backend_images() {
+    print_header "Cleaning Up Old Backend Images"
+    
+    log_info "Removing old lims-backend and lims-celery Docker images..."
+    
+    # Remove lims-backend image
+    if docker images | grep -q "lims-backend"; then
+        log_info "Removing lims-backend image..."
+        docker rmi -f lims-backend:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
+    fi
+    
+    # Remove lims-celery image
+    if docker images | grep -q "lims-celery"; then
+        log_info "Removing lims-celery image..."
+        docker rmi -f lims-celery:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
+    fi
+    
+    log_info "Pruning dangling images..."
+    docker image prune -f 2>&1 | tee -a "$DEPLOY_LOG" || true
+    
+    log_success "Old backend images cleaned up"
 }
 
 rebuild_backend() {
@@ -415,6 +449,9 @@ main() {
     
     # Stop services
     stop_backend_services
+    
+    # Clean up old images
+    cleanup_backend_images
     
     # Rebuild and deploy
     rebuild_backend

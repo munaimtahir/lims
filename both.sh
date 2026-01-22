@@ -147,7 +147,7 @@ stop_all_services() {
     docker compose --env-file "$ENV_FILE" down 2>&1 | tee -a "$DEPLOY_LOG" || true
     
     log_info "Checking for any remaining containers..."
-    REMAINING=$(docker ps -a --format '{{.Names}}' | grep "lims_" || true)
+    REMAINING=$(docker ps -a --format '{{.Names}}' | grep "lims" || true)
     
     if [ -n "$REMAINING" ]; then
         log_warning "Found remaining containers. Cleaning up..."
@@ -159,6 +159,45 @@ stop_all_services() {
     fi
     
     log_success "All services stopped"
+}
+
+cleanup_old_images() {
+    print_header "Cleaning Up Old Docker Images"
+    
+    log_info "Removing old LIMS Docker images..."
+    
+    # Remove lims-backend image
+    if docker images | grep -q "lims-backend"; then
+        log_info "Removing lims-backend image..."
+        docker rmi -f lims-backend:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
+    fi
+    
+    # Remove lims-celery image
+    if docker images | grep -q "lims-celery"; then
+        log_info "Removing lims-celery image..."
+        docker rmi -f lims-celery:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
+    fi
+    
+    # Remove lims-frontend image
+    if docker images | grep -q "lims-frontend"; then
+        log_info "Removing lims-frontend image..."
+        docker rmi -f lims-frontend:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
+    fi
+    
+    # Remove lims compose project images
+    LIMS_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "lims-" || true)
+    if [ -n "$LIMS_IMAGES" ]; then
+        log_info "Removing additional LIMS images..."
+        echo "$LIMS_IMAGES" | while read image; do
+            log_info "Removing $image..."
+            docker rmi -f "$image" 2>&1 | tee -a "$DEPLOY_LOG" || true
+        done
+    fi
+    
+    log_info "Pruning dangling images..."
+    docker image prune -f 2>&1 | tee -a "$DEPLOY_LOG" || true
+    
+    log_success "Old images cleaned up"
 }
 
 rebuild_all_images() {
@@ -457,6 +496,9 @@ main() {
     
     # Stop everything
     stop_all_services
+    
+    # Clean up old images
+    cleanup_old_images
     
     # Rebuild all images
     rebuild_all_images

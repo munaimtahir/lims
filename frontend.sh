@@ -153,6 +153,23 @@ stop_frontend_services() {
     log_success "All frontend services stopped"
 }
 
+cleanup_frontend_image() {
+    print_header "Cleaning Up Old Frontend Image"
+    
+    log_info "Removing old lims-frontend Docker image..."
+    
+    # Remove lims-frontend image
+    if docker images | grep -q "lims-frontend"; then
+        log_info "Removing lims-frontend image..."
+        docker rmi -f lims-frontend:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
+    fi
+    
+    log_info "Pruning dangling images..."
+    docker image prune -f 2>&1 | tee -a "$DEPLOY_LOG" || true
+    
+    log_success "Old frontend image cleaned up"
+}
+
 rebuild_frontend() {
     print_header "Rebuilding Frontend"
     
@@ -344,6 +361,9 @@ main() {
     
     # Stop services
     stop_frontend_services
+    
+    # Clean up old image
+    cleanup_frontend_image
     
     # Rebuild and deploy
     rebuild_frontend
