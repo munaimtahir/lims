@@ -1,0 +1,11 @@
+# Production requirements
+-r base.txt
+
+# Static files
+whitenoise==6.6.0
+
+# Logging
+python-json-logger==2.0.7
+
+# WSGI Server
+gunicorn==21.2.0
