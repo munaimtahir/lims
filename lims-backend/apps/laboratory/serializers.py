@@ -15,12 +15,27 @@ class TestCategorySerializer(serializers.ModelSerializer):
 
 class ParameterSerializer(serializers.ModelSerializer):
     """
-    Serializer for the global Parameter model.
+    Serializer for the global Parameter model with parameter_id validation.
     """
 
     class Meta:
         model = Parameter
         fields = "__all__"
+    
+    def validate_parameter_id(self, value):
+        """
+        Validate parameter_id format and normalize to lowercase.
+        """
+        from .models import validate_parameter_id
+        
+        if not value:
+            raise serializers.ValidationError("parameter_id cannot be empty")
+        
+        try:
+            normalized = validate_parameter_id(value)
+            return normalized
+        except Exception as e:
+            raise serializers.ValidationError(str(e))
 
 
 class TestParameterSerializer(serializers.ModelSerializer):

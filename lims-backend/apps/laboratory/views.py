@@ -17,11 +17,16 @@ from .utils import import_tests_from_excel
 class BulkImportViewSet(viewsets.ViewSet):
     """
     ViewSet for bulk importing laboratory data from Excel.
+    
+    Supports dry-run mode for validation without writing to database.
     """
 
     def create(self, request):
         """
         Import data from an uploaded Excel file.
+        
+        Query params:
+            - dry_run: If 'true', validates the file without writing to database
         """
         file = request.FILES.get("file")
         if not file:
@@ -30,27 +35,47 @@ class BulkImportViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # if not file.name.endswith(".xlsx"):
-        #     return Response(
-        #         {"error": "Invalid file format. Please upload an Excel (.xlsx) file."},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
+        # Check for dry_run parameter
+        dry_run = request.query_params.get("dry_run", "").lower() == "true"
 
         try:
-            summary = import_tests_from_excel(file)
+            summary = import_tests_from_excel(file, dry_run=dry_run)
+            
+            # If there are validation errors, return 400
+            if not summary.get("validation_passed", True):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Import validation failed. Please fix the errors and try again.",
+                        "summary": summary
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
             return Response(
                 {
                     "success": True,
-                    "message": "Import completed successfully",
+                    "message": summary.get(
+                        "message", "Import completed successfully"
+                    ),
                     "summary": summary
                 },
-                status=status.HTTP_201_CREATED
+                status=(
+                    status.HTTP_201_CREATED if not dry_run
+                    else status.HTTP_200_OK
+                )
             )
         except Exception as e:
-            # If it's a validation error (like invalid file format handled by openpyxl), we might want to return 400
-            if "does not support the old .xls file format" in str(e) or "is not a valid Zip file" in str(e):
-                 return Response(
-                    {"error": "Invalid Excel file format."},
+            # Check for invalid file format errors
+            if ("does not support the old .xls file format" in str(e) or
+                    "is not a valid Zip file" in str(e)):
+                return Response(
+                    {
+                        "error": (
+                            "Invalid Excel file format. "
+                            "Please use .xlsx format."
+                        )
+                    },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 

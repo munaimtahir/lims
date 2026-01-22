@@ -6,7 +6,28 @@ and the comprehensive models (Parameter, ParameterReferenceRange, ParameterQuick
 advanced laboratory workflows with Excel import support.
 """
 
+import re
 from django.db import models
+from django.core.exceptions import ValidationError
+
+
+def validate_parameter_id(value):
+    """
+    Validate parameter_id format: must match pattern p<number> (e.g., p1, p2, p53).
+    Case-insensitive but stored as lowercase.
+    """
+    if not value:
+        raise ValidationError("parameter_id cannot be empty")
+    
+    # Normalize to lowercase for validation
+    normalized = value.lower().strip()
+    
+    if not re.match(r'^p[0-9]+$', normalized):
+        raise ValidationError(
+            f"parameter_id must be in format 'p<number>' (e.g., p1, p2, p53). Got: {value}"
+        )
+    
+    return normalized
 
 
 class TestCategory(models.Model):
@@ -318,14 +339,19 @@ class Parameter(models.Model):
     Represents a global parameter or analyte that can be measured in any test.
 
     Attributes:
-        parameter_id (str): Primary key (e.g., 'p1', 'p2').
+        parameter_id (str): Primary key (e.g., 'p1', 'p2'). Must match pattern p<number>.
         parameter_name (str): The full name of the parameter.
         unit (str, optional): The unit of measurement for the parameter.
         data_type (str): The data type of the result (e.g., "Numeric", "Text").
         # ... other attributes ...
     """
 
-    parameter_id = models.CharField(max_length=100, primary_key=True)
+    parameter_id = models.CharField(
+        max_length=100, 
+        primary_key=True,
+        validators=[validate_parameter_id],
+        help_text="Parameter ID in format p<number> (e.g., p1, p2, p53)"
+    )
     parameter_name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=100, blank=True)
     unit = models.CharField(max_length=50, blank=True, null=True)
@@ -357,6 +383,18 @@ class Parameter(models.Model):
             models.Index(fields=["parameter_id"]),
             models.Index(fields=["active"]),
         ]
+
+    def clean(self):
+        """Validate and normalize parameter_id."""
+        if self.parameter_id:
+            self.parameter_id = validate_parameter_id(self.parameter_id)
+
+    def save(self, *args, **kwargs):
+        """Override save to ensure parameter_id is normalized to lowercase."""
+        if self.parameter_id:
+            self.parameter_id = self.parameter_id.lower().strip()
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         """Return a string representation of the parameter."""
@@ -440,7 +478,7 @@ class ParameterReferenceRange(models.Model):
     def __str__(self):
         """Return a string representation of the reference range."""
         return (
-            f"{self.parameter.code} - {self.sex} "
+            f"{self.parameter.parameter_id} - {self.sex} "
             f"({self.age_min}-{self.age_max} {self.age_unit})"
         )
 
@@ -484,7 +522,7 @@ class ParameterQuickText(models.Model):
 
     def __str__(self):
         """Return a string representation of the quick text template."""
-        return f"{self.parameter.code} - {self.template_title}"
+        return f"{self.parameter.parameter_id} - {self.template_title}"
 
 
 class TestParameterLink(models.Model):
@@ -542,4 +580,4 @@ class TestParameterLink(models.Model):
 
     def __str__(self):
         """Return a string representation of the test-parameter relationship."""
-        return f"{self.test.test_code} - {self.parameter.code}"
+        return f"{self.test.test_code} - {self.parameter.parameter_id}"
