@@ -82,6 +82,10 @@ def import_tests_from_excel(file, dry_run=False):
                 
                 param_id = str(row[0]).strip()
                 
+                # Auto-fix: If numeric, add 'p' prefix
+                if param_id.isdigit():
+                    param_id = f"p{param_id}"
+                
                 # Validate parameter_id is not empty
                 if not param_id:
                     add_error("Parameters", row_num, "parameter_id", 
@@ -99,9 +103,7 @@ def import_tests_from_excel(file, dry_run=False):
                 
                 # Check for duplicates within the file
                 if normalized_id in seen_param_ids:
-                    add_error("Parameters", row_num, "parameter_id",
-                             f"Duplicate parameter_id in file: {param_id}",
-                             "Each parameter_id must be unique")
+                    # Skip duplicates silently (or could warn)
                     continue
                 
                 seen_param_ids.add(normalized_id)
@@ -233,6 +235,11 @@ def import_tests_from_excel(file, dry_run=False):
                 
                 # Normalize and validate parameter_id
                 p_id_str = str(p_id).strip()
+                
+                # Auto-fix: If numeric, add 'p' prefix
+                if p_id_str.isdigit():
+                    p_id_str = f"p{p_id_str}"
+                    
                 try:
                     normalized_p_id = validate_parameter_id(p_id_str)
                 except ValidationError as e:
@@ -315,6 +322,11 @@ def import_tests_from_excel(file, dry_run=False):
                 
                 # Normalize and validate parameter_id
                 p_id_str = str(p_id).strip()
+                
+                # Auto-fix: If numeric, add 'p' prefix
+                if p_id_str.isdigit():
+                    p_id_str = f"p{p_id_str}"
+                    
                 try:
                     normalized_p_id = validate_parameter_id(p_id_str)
                 except ValidationError as e:
