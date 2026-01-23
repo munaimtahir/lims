@@ -299,7 +299,7 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
               <ul>
                 {validationErrors.slice(0, 10).map((err, idx) => (
                   <li key={idx}>
-                    Sheet <strong>{err.sheet}</strong>, Row <strong>{err.row}</strong>: {err.message}
+                    Assuming Sheet <strong>{err.sheet}</strong>, Row <strong>{err.row}</strong>: {err.message}
                     {err.example_fix && <span className={styles.fixHint}> (Fix: {err.example_fix})</span>}
                   </li>
                 ))}
