@@ -14,7 +14,6 @@ Usage:
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from apps.laboratory.models import Test, Parameter, TestParameter
-import re
 
 
 class Command(BaseCommand):
@@ -85,6 +84,20 @@ class Command(BaseCommand):
         # These are high numbers to avoid conflicts with real parameters
         if not dry_run:
             with transaction.atomic():
+                # Check if p998 or p999 already exist with different meanings
+                existing_p998 = Parameter.objects.filter(parameter_id='p998').first()
+                existing_p999 = Parameter.objects.filter(parameter_id='p999').first()
+                
+                if existing_p998 and existing_p998.parameter_name != 'Result':
+                    self.stdout.write(self.style.WARNING(
+                        f"  ⚠ WARNING: p998 already exists with name '{existing_p998.parameter_name}'"
+                    ))
+                
+                if existing_p999 and existing_p999.parameter_name != 'Result':
+                    self.stdout.write(self.style.WARNING(
+                        f"  ⚠ WARNING: p999 already exists with name '{existing_p999.parameter_name}'"
+                    ))
+                
                 # Create p999 parameter for qualitative tests if needed
                 if tests_for_p_qual:
                     p_qual, created = Parameter.objects.get_or_create(

@@ -126,20 +126,27 @@ phase0_docker_setup() {
     }
     
     log_info "Waiting for services to be healthy..."
-    sleep 10
     
-    # Check if services are running
-    if docker compose ps | grep -q "lims_db.*Up"; then
-        log_info "✓ Database is running"
-    else
-        log_error "Database is not running"
-        return 1
-    fi
+    # Health check loop with retries instead of fixed sleep
+    local services_healthy=false
+    local MAX_RETRIES=30
+    local SLEEP_INTERVAL=2
     
-    if docker compose ps | grep -q "lims_redis.*Up"; then
-        log_info "✓ Redis is running"
-    else
-        log_error "Redis is not running"
+    for attempt in $(seq 1 "$MAX_RETRIES"); do
+        if docker compose ps | grep -q "lims_db.*Up" && docker compose ps | grep -q "lims_redis.*Up"; then
+            log_info "✓ Database is running"
+            log_info "✓ Redis is running"
+            services_healthy=true
+            break
+        else
+            log_info "Services not healthy yet (attempt ${attempt}/${MAX_RETRIES}), waiting ${SLEEP_INTERVAL}s..."
+            sleep "$SLEEP_INTERVAL"
+        fi
+    done
+    
+    if [ "$services_healthy" != true ]; then
+        log_error "Services failed to become healthy after ${MAX_RETRIES} attempts"
+        docker compose ps || true
         return 1
     fi
 }
