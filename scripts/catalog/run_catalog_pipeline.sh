@@ -16,7 +16,12 @@ echo "2. Converting Excel Contract..."
 # Assuming source_catalog.xlsx is at /app/source_catalog.xlsx (copied manually or via pipeline setup)
 # Ensure script is present
 docker cp scripts/catalog/convert_excel_to_import_contract.py lims_backend:/app/scripts/catalog/
-docker exec lims_backend python -u scripts/catalog/convert_excel_to_import_contract.py source_catalog.xlsx derived_catalog.xlsx
+# Copy auxiliary CSV if present
+if [ -f parameters.csv ]; then
+    docker cp parameters.csv lims_backend:/app/parameters.csv
+fi
+
+docker exec lims_backend python -u scripts/catalog/convert_excel_to_import_contract.py source_catalog.xlsx derived_catalog.xlsx parameters.csv
 
 echo "3. Importing Catalog (Dry Run)..."
 docker exec lims_backend python manage.py catalog_import_excel --path derived_catalog.xlsx --dry-run

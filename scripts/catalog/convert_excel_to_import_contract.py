@@ -106,6 +106,11 @@ def main(input_file, output_file):
                 ws_params_out.append([pid, name, unit])
                 valid_param_ids.add(pid)
     
+    # 2b. Add 'p_result' default parameter
+    if 'p_result' not in valid_param_ids:
+        ws_params_out.append(['p_result', 'Result', ''])
+        valid_param_ids.add('p_result')
+    
     print(f"Processed {len(valid_param_ids)} parameters.")
 
     # --- 3. Mapping AND ReferenceRanges (from Parameters Sheet) ---
@@ -118,6 +123,7 @@ def main(input_file, output_file):
     
     # Ranges count
     rr_count = 0
+    test_param_name_to_id = {}
     
     if 'Parameters' in wb_in.sheetnames:
         ws_map_in = wb_in['Parameters']
@@ -165,6 +171,8 @@ def main(input_file, output_file):
                 ws_params_out.append([pid, pname, ""])
                 valid_param_ids.add(pid)
             
+            test_param_name_to_id[(tid, pname)] = pid
+            
             ws_map_out.append([tid, pid, order, True])
             row_count += 1
             
@@ -206,10 +214,166 @@ def main(input_file, output_file):
                 add_range("Female", rmin_f, rmax_f)
                 rr_count += 1
             
-        print(f"Processed {row_count} mappings. extracted {rr_count} ranges.")
+    print(f"Processed {row_count} mappings. extracted {rr_count} ranges (Excel).")
+
+    # --- 3b. Aux CSV Ranges (Fallback) ---
+    csv_file = "parameters.csv"
+    if len(sys.argv) > 3:
+        csv_file = sys.argv[3]
+    
+    if os.path.exists(csv_file):
+        print(f"Loading secondary ranges from {csv_file}...")
+        csv_ranges_added = 0
         
+        # Helper to parse range text
+        # Returns list of dicts: {'gender':..., 'rmin':..., 'rmax':...}
+        def parse_range_text(text):
+            results = []
+            text = text.replace('\n', ' ').strip()
+            if not text: return results
+
+            # Regex patterns
+            pat_range = r'([\d\.]+)\s*-\s*([\d\.]+)'
+            pat_less = r'(?:<|Less Than)\s*([\d\.]+)'
+            pat_greater = r'(?:>|Greater Than)\s*([\d\.]+)'
+
+            def extract_vals(subtext):
+                try:
+                    # Try range X - Y
+                    m = re.search(pat_range, subtext)
+                    if m: return (float(m.group(1)), float(m.group(2)))
+                    # Try < X
+                    m = re.search(pat_less, subtext, re.IGNORECASE)
+                    if m: return (0.0, float(m.group(1))) # Assuming 0 floor
+                    # Try > X
+                    m = re.search(pat_greater, subtext, re.IGNORECASE)
+                    if m: return (float(m.group(1)), 99999.0) # Arbitrary ceiling
+                except ValueError:
+                    pass
+                return (None, None)
+
+            # Check for Gender split
+            # Simple heuristic: "Male: ... Female: ..."
+            upper_t = text.upper()
+            if 'MALE:' in upper_t or 'FEMALE:' in upper_t:
+                # Split parts
+                # Find indices
+                idx_m = upper_t.find('MALE:')
+                idx_f = upper_t.find('FEMALE:')
+                
+                parts = []
+                if idx_m != -1 and idx_f != -1:
+                    if idx_m < idx_f:
+                        parts.append(('Male', text[idx_m:idx_f]))
+                        parts.append(('Female', text[idx_f:]))
+                    else:
+                        parts.append(('Female', text[idx_f:idx_m]))
+                        parts.append(('Male', text[idx_m:]))
+                elif idx_m != -1:
+                    parts.append(('Male', text[idx_m:]))
+                elif idx_f != -1:
+                    parts.append(('Female', text[idx_f:]))
+                
+                for gender, part in parts:
+                    rmin, rmax = extract_vals(part)
+                    if rmin is not None:
+                        results.append({'gender': gender, 'rmin': rmin, 'rmax': rmax})
+            else:
+                # Assume "Both"
+                rmin, rmax = extract_vals(text)
+                if rmin is not None:
+                    results.append({'gender': 'Both', 'rmin': rmin, 'rmax': rmax})
+                    
+            return results
+
+        # Load CSV into lookup: matched_test_id -> range_text
+        # We need to map CSV "Test Name" to our Test IDs.
+        # Strategy: Normalize CSV Name and match against normalization map of extracted Tests.
+        
+        # Build map: normalized_test_name -> test_id
+        # We constructed ws_tests_out earlier.
+        # We need to remember test names. 
+        # Re-iterate valid_test_ids is hard as we didn't store names mapping in a dict.
+        # Let's deduce it from ws_tests_out rows if possible, or build it during Test scan?
+        # Simpler: We can just use the `ws_tests_out` rows we just wrote? No, `append` doesn't return data.
+        # We'll just rely on `test_param_name_to_id` which maps (tid, pname) -> pid.
+        # But we need Name -> ID.
+        
+        # Re-scan Tests sheet in memory is dirty.
+        # Let's just look at the `ws_tests_in` again? Or build a cache.
+        # Let's build a separate lookup map: name_norm -> test_id
+        test_name_map = {}
+        for row in ws_tests_in.iter_rows(min_row=2, values_only=True):
+            if not row[idx_tid]: continue
+            tid = safe_str(row[idx_tid])
+            tname = row[idx_name]
+            if tname:
+                test_name_map[normalize_header(tname)] = tid
+                
+        # Now read CSV
+        import csv
+        with open(csv_file, 'r', encoding='utf-8-sig', errors='ignore') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # CSV Headers: "Test Name", "Normal Range"
+                csv_tname = row.get("Test Name", "").strip()
+                csv_range = row.get("Normal Range", "").strip()
+                
+                if not csv_tname or not csv_range: continue
+                
+                # Match Test
+                norm_name = normalize_header(csv_tname)
+                tid = test_name_map.get(norm_name)
+                if not tid: continue
+                
+                # We have a TID and a Range. We need a PID.
+                # Find the 'main' parameter for this test.
+                # Check `test_param_name_to_id` keys: (tid, pname)
+                # This is tricky without knowing the parameter name.
+                # Heuristic: Pick the first parameter associated with this TID in our Mappings.
+                
+                # Let's find associated PIDs for this TID from our `ws_map_out` buffer?
+                # No, we can't read `ws_map_out`. 
+                # We can iterate `test_param_name_to_id`?
+                # Let's find associated PIDs for this TID
+                candidate_pids = [pid for (t, p), pid in test_param_name_to_id.items() if t == tid]
+                
+                target_pid = None
+                if candidate_pids:
+                    target_pid = candidate_pids[0]
+                else:
+                    # No existing mapping! Create default mapping to p_result
+                    # Only do this once per test to avoid duplicates if CSV has multiple rows
+                    # Check if we already mapped this in this loop?
+                    # We need a tracker.
+                    # Hack: just check if we have a provisional tracking?
+                    # Let's update test_param_name_to_id so we know it's mapped.
+                    target_pid = 'p_result'
+                    # Add to Mapping Sheet
+                    ws_map_out.append([tid, target_pid, 1, True])
+                    # Update lookup so next row for same test uses it
+                    test_param_name_to_id[(tid, 'Result')] = target_pid
+                
+                if not target_pid: continue
+
+                
+                # Parse Range
+                parsed = parse_range_text(csv_range)
+                for p in parsed:
+                    # Check duplication? We assume Excel didn't provide ranges (count was 0).
+                    # Add to output
+                    # headers: ["test_id", "parameter_id", "gender", "age_min", "age_max", "reference_min", "reference_max", "critical_low", "critical_high"]
+                    ws_rr_out.append([tid, target_pid, p['gender'], 0, 120, p['rmin'], p['rmax'], None, None])
+                    csv_ranges_added += 1
+
+        print(f"Processed CSV. Added {csv_ranges_added} ranges.")
+
     wb_out.save(output_file)
     print(f"Success. Saved to {output_file}")
 
 if __name__ == "__main__":
+    import re
+    if len(sys.argv) < 3:
+        print("Usage: python script.py <in_excel> <out_excel> [in_csv]")
+        sys.exit(1)
     main(sys.argv[1], sys.argv[2])
