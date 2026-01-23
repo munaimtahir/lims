@@ -2,7 +2,6 @@
 Utility functions for importing laboratory tests, parameters, and reference ranges from Excel.
 """
 import openpyxl
-import re
 from decimal import Decimal, InvalidOperation
 from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
@@ -11,20 +10,21 @@ from .models import TestCategory, Test, Parameter, TestParameter, ReferenceRange
 
 class DummyContext:
     """A no-op context manager for dry-run mode to avoid actual transactions."""
-    
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         return False
+
 
 def get_header_map(sheet):
     """
     Extract header mappings from the first row of an Excel sheet.
-    
+
     Args:
         sheet: An openpyxl worksheet object.
-        
+
     Returns:
         dict: A mapping of normalized header names to column indices.
     """
@@ -37,16 +37,17 @@ def get_header_map(sheet):
             headers[h] = i
     return headers
 
+
 def safe_get(row, headers, keys, default=None):
     """
     Safely retrieve a cell value from a row by checking multiple possible header names.
-    
+
     Args:
         row: The row tuple from iter_rows(values_only=True).
         headers: The header mapping from get_header_map.
         keys: List of possible column names to check.
         default: The value to return if no matching column is found.
-        
+
     Returns:
         The cell value if found, otherwise default.
     """
@@ -56,13 +57,14 @@ def safe_get(row, headers, keys, default=None):
             return val if val is not None else default
     return default
 
+
 def to_decimal(val):
     """
     Convert a value to Decimal, handling None and empty strings.
-    
+
     Args:
         val: The value to convert (can be str, int, float, or None).
-        
+
     Returns:
         Decimal object if conversion succeeds, None otherwise.
     """
@@ -73,10 +75,11 @@ def to_decimal(val):
     except (InvalidOperation, ValueError):
         return None
 
+
 def import_tests_from_excel(file, dry_run=False):
     """
     Import tests, parameters, test-parameter mappings, and reference ranges from Excel.
-    
+
     This function processes an Excel file with up to four sheets:
     - Tests: Defines laboratory tests with columns test_id, test_code, legacy_test_code,
              test_name, category, sample_type, price, turnaround_time
@@ -86,11 +89,11 @@ def import_tests_from_excel(file, dry_run=False):
               Only needed if Parameters sheet doesn't include test_id column
     - ReferenceRanges: Defines normal ranges (test_id, parameter_id, gender, age_min,
                       age_max, reference_min, reference_max, critical_low, critical_high)
-    
+
     Args:
         file: File-like object or path to the Excel file.
         dry_run: If True, validates data without saving to database.
-        
+
     Returns:
         dict: Summary with counts of created/updated records and any validation errors.
     """
@@ -114,12 +117,13 @@ def import_tests_from_excel(file, dry_run=False):
 
     def add_error(sheet, row_num, column, message, example_fix=None):
         error = {"sheet": sheet, "row": row_num, "column": column, "message": message}
-        if example_fix: error["example_fix"] = example_fix
+        if example_fix:
+            error["example_fix"] = example_fix
         summary["errors"].append(error)
         summary["validation_passed"] = False
 
     transaction_context = transaction.atomic() if not dry_run else DummyContext()
-    
+
     with transaction_context:
         # 1. IMPORT TESTS
         if "Tests" in workbook.sheetnames:
@@ -134,8 +138,9 @@ def import_tests_from_excel(file, dry_run=False):
                 except (ValueError, TypeError):
                     add_error("Tests", row_num, "test_id", f"Invalid test ID: {t_id_raw!r}")
                     continue
-                
-                if t_id in seen_test_ids: continue
+
+                if t_id in seen_test_ids:
+                    continue
                 seen_test_ids.add(t_id)
                 test_ids_in_file.add(t_id)
 
@@ -181,14 +186,16 @@ def import_tests_from_excel(file, dry_run=False):
             sheet = workbook["Parameters"]
             headers = get_header_map(sheet)
             is_flat = 'test_id' in headers
-            
+
             for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), 2):
                 p_id_raw = safe_get(row, headers, ['parameter_id', 'param_id', 'id'])
-                if not p_id_raw: continue
-                
+                if not p_id_raw:
+                    continue
+
                 p_id_str = str(p_id_raw).strip()
-                if p_id_str.isdigit(): p_id_str = f"p{p_id_str}"
-                
+                if p_id_str.isdigit():
+                    p_id_str = f"p{p_id_str}"
+
                 try:
                     p_id = validate_parameter_id(p_id_str)
                 except ValidationError:
@@ -239,13 +246,13 @@ def import_tests_from_excel(file, dry_run=False):
                                 )
                                 if created:
                                     summary["mappings_created"] += 1
-                                
+
                                 # Ranges in flat file
                                 rm_min = to_decimal(safe_get(row, headers, ['ref_min_male', 'min_male']))
                                 rm_max = to_decimal(safe_get(row, headers, ['ref_max_male', 'max_male']))
                                 rf_min = to_decimal(safe_get(row, headers, ['ref_min_female', 'min_female']))
                                 rf_max = to_decimal(safe_get(row, headers, ['ref_max_female', 'max_female']))
-                                
+
                                 if rm_min is not None or rm_max is not None:
                                     ReferenceRange.objects.update_or_create(
                                         parameter=tp,
@@ -266,7 +273,8 @@ def import_tests_from_excel(file, dry_run=False):
                                     summary["ranges_created"] += 1
                                 if safe_get(row, headers, ['ref_min_female']):
                                     summary["ranges_created"] += 1
-                        except (Test.DoesNotExist, Parameter.DoesNotExist, IntegrityError, ValidationError, ValueError, TypeError) as e:
+                        except (Test.DoesNotExist, Parameter.DoesNotExist, IntegrityError,
+                                ValidationError, ValueError, TypeError) as e:
                             # Record structured error so users can correct problematic mappings
                             summary.setdefault("errors", []).append({
                                 "sheet": "Parameters",
@@ -297,10 +305,10 @@ def import_tests_from_excel(file, dry_run=False):
             for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), 2):
                 t_id_raw = safe_get(row, headers, ['test_id'])
                 p_id_raw = safe_get(row, headers, ['parameter_id', 'param_id'])
-                
+
                 if not t_id_raw or not p_id_raw:
                     continue
-                
+
                 try:
                     t_id = int(t_id_raw)
                     p_id_str = str(p_id_raw).strip()
@@ -322,7 +330,7 @@ def import_tests_from_excel(file, dry_run=False):
                             reportable = False
                         else:
                             reportable = True
-                        
+
                         tp, created = TestParameter.objects.update_or_create(
                             test=test,
                             parameter=param,
@@ -330,7 +338,7 @@ def import_tests_from_excel(file, dry_run=False):
                         )
                         if created:
                             summary["mappings_created"] += 1
-                    except (Test.DoesNotExist, Parameter.DoesNotExist) as e:
+                    except (Test.DoesNotExist, Parameter.DoesNotExist):
                         add_error(
                             "Mapping",
                             row_num,
@@ -350,8 +358,9 @@ def import_tests_from_excel(file, dry_run=False):
             for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), 2):
                 t_id_raw = safe_get(row, headers, ['test_id'])
                 p_id_raw = safe_get(row, headers, ['parameter_id', 'param_id'])
-                if not t_id_raw or not p_id_raw: continue
-                
+                if not t_id_raw or not p_id_raw:
+                    continue
+
                 try:
                     t_id = int(t_id_raw)
                     p_id_str = str(p_id_raw).strip()
@@ -401,11 +410,13 @@ def import_tests_from_excel(file, dry_run=False):
                 else:
                     summary["ranges_created"] += 1
 
-    if summary["errors"]: summary["validation_passed"] = False
+    if summary["errors"]:
+        summary["validation_passed"] = False
     if dry_run:
         summary["message"] = "Dry-run verification completed."
         summary["status"] = "PASS" if summary["validation_passed"] else "FAIL"
     return summary
+
 
 def generate_import_template():
     """
@@ -420,7 +431,7 @@ def generate_import_template():
 
     Each sheet includes a header row and a single example row to guide users
     on the expected structure and values.
-    
+
     Returns:
         openpyxl.Workbook: A workbook with four properly formatted sheets.
     """
