@@ -6,7 +6,6 @@ Usage:
 """
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
 from apps.laboratory.utils import import_tests_from_excel
 import os
 

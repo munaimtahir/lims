@@ -6,8 +6,11 @@ from django.core.exceptions import ValidationError
 from .models import TestCategory, Test, Parameter, TestParameter, ReferenceRange, validate_parameter_id
 
 class DummyContext:
-    def __enter__(self): return self
-    def __exit__(self, exc_type, exc_val, exc_tb): return False
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
 
 def get_header_map(sheet):
     headers = {}
@@ -64,7 +67,8 @@ def import_tests_from_excel(file, dry_run=False):
                 if t_id_raw is None: continue
                 try:
                     t_id = int(t_id_raw)
-                except: continue
+                except (ValueError, TypeError):
+                    continue
                 
                 if t_id in seen_test_ids: continue
                 seen_test_ids.add(t_id)
@@ -116,7 +120,8 @@ def import_tests_from_excel(file, dry_run=False):
                 
                 try:
                     p_id = validate_parameter_id(p_id_str)
-                except: continue
+                except (ValueError, ValidationError):
+                    continue
 
                 # Create Parameter if new
                 if p_id not in seen_param_ids:
@@ -173,12 +178,9 @@ def import_tests_from_excel(file, dry_run=False):
                                 summary["mappings_created"] += 1
                                 if safe_get(row, headers, ['ref_min_male']): summary["ranges_created"] += 1
                                 if safe_get(row, headers, ['ref_min_female']): summary["ranges_created"] += 1
-                        except: pass
-
-        # 3. IMPORT MAPPING (Explicit)
-        if "Mapping" in workbook.sheetnames and 'test_id' not in get_header_map(workbook.get_sheet_by_name("Parameters")):
-            # Only if not already handled by flat sheet
-            pass
+                        except Exception:
+                            # Intentionally ignore errors for this row so that other rows can still be processed.
+                            pass
 
         # 4. IMPORT REFERENCE RANGES (Explicit)
         if "ReferenceRanges" in workbook.sheetnames:
@@ -194,7 +196,8 @@ def import_tests_from_excel(file, dry_run=False):
                     p_id_str = str(p_id_raw).strip()
                     if p_id_str.isdigit(): p_id_str = f"p{p_id_str}"
                     p_id = validate_parameter_id(p_id_str)
-                except: continue
+                except (ValueError, TypeError, ValidationError):
+                    continue
 
                 gender = str(safe_get(row, headers, ['gender'], 'Both')).strip()
                 a_min = safe_get(row, headers, ['age_min_years', 'age_min'], 0)
@@ -217,7 +220,9 @@ def import_tests_from_excel(file, dry_run=False):
                             }
                         )
                         summary["ranges_created"] += 1
-                    except: pass
+                    except (Test.DoesNotExist, Parameter.DoesNotExist, TestParameter.DoesNotExist, ValidationError, IntegrityError) as exc:
+                        # Silently skip errors during reference range creation to allow other rows to process
+                        pass
                 else:
                     summary["ranges_created"] += 1
 
@@ -228,4 +233,105 @@ def import_tests_from_excel(file, dry_run=False):
     return summary
 
 def generate_import_template():
-    return openpyxl.Workbook()
+    """
+    Generate an Excel workbook template for importing tests, parameters,
+    their mappings, and reference ranges.
+
+    The template includes:
+      - Tests sheet
+      - Parameters sheet
+      - TestParameters sheet
+      - ReferenceRanges sheet
+
+    Each sheet contains header rows that match the expected import format
+    and a single example row to guide users.
+    """
+    # Create a new workbook
+    workbook = openpyxl.Workbook()
+
+    # --- Tests sheet ---
+    tests_sheet = workbook.active
+    tests_sheet.title = "Tests"
+    tests_headers = [
+        "Test ID",
+        "Test Name",
+        "Category Name",
+        "Description",
+        "Is Active",
+    ]
+    tests_sheet.append(tests_headers)
+    # Example test row
+    tests_sheet.append([
+        "CBC",
+        "Complete Blood Count",
+        "Hematology",
+        "Basic blood count panel",
+        "TRUE",
+    ])
+
+    # --- Parameters sheet ---
+    params_sheet = workbook.create_sheet(title="Parameters")
+    params_headers = [
+        "Parameter ID",
+        "Parameter Name",
+        "Unit",
+        "Decimal Places",
+        "Is Active",
+    ]
+    params_sheet.append(params_headers)
+    # Example parameter row
+    params_sheet.append([
+        "WBC",
+        "White Blood Cell Count",
+        "x10^9/L",
+        1,
+        "TRUE",
+    ])
+
+    # --- TestParameters (mappings) sheet ---
+    mappings_sheet = workbook.create_sheet(title="TestParameters")
+    mappings_headers = [
+        "Test ID",
+        "Parameter ID",
+        "Display Order",
+        "Is Mandatory",
+        "Is Active",
+    ]
+    mappings_sheet.append(mappings_headers)
+    # Example mapping row
+    mappings_sheet.append([
+        "CBC",
+        "WBC",
+        1,
+        "TRUE",
+        "TRUE",
+    ])
+
+    # --- ReferenceRanges sheet ---
+    ranges_sheet = workbook.create_sheet(title="ReferenceRanges")
+    ranges_headers = [
+        "Test ID",
+        "Parameter ID",
+        "Gender",
+        "Age Min",
+        "Age Max",
+        "Reference Min",
+        "Reference Max",
+        "Critical Low",
+        "Critical High",
+    ]
+    ranges_sheet.append(ranges_headers)
+    # Example reference range row
+    ranges_sheet.append([
+        "CBC",     # Test ID
+        "WBC",     # Parameter ID
+        "Any",     # Gender
+        18,        # Age Min
+        65,        # Age Max
+        4.0,       # Reference Min
+        11.0,      # Reference Max
+        2.0,       # Critical Low
+        30.0,      # Critical High
+    ])
+
+    return workbook

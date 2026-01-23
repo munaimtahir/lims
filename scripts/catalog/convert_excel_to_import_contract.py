@@ -12,6 +12,7 @@ This script ensures the Excel format matches what the importer expects.
 """
 
 import sys
+import re
 import openpyxl
 from openpyxl import Workbook
 from pathlib import Path
@@ -161,7 +162,6 @@ def convert_excel(input_path, output_path):
             param_id_str = f"p{param_id_str}"
         elif not param_id_str.lower().startswith('p'):
             # Try to extract number and add p prefix
-            import re
             match = re.search(r'\d+', param_id_str)
             if match:
                 param_id_str = f"p{match.group()}"
@@ -198,7 +198,6 @@ def convert_excel(input_path, output_path):
         if param_id_str.isdigit():
             param_id_str = f"p{param_id_str}"
         elif not param_id_str.lower().startswith('p'):
-            import re
             match = re.search(r'\d+', param_id_str)
             if param_id_str and match:
                 param_id_str = f"p{match.group()}"
@@ -246,7 +245,6 @@ def convert_excel(input_path, output_path):
                 if param_id_str.isdigit():
                     param_id_str = f"p{param_id_str}"
                 elif not param_id_str.lower().startswith('p'):
-                    import re
                     match = re.search(r'\d+', param_id_str)
                     if match:
                         param_id_str = f"p{match.group()}"
@@ -274,7 +272,6 @@ def convert_excel(input_path, output_path):
                     if param_id_str.isdigit():
                         param_id_str = f"p{param_id_str}"
                     elif not param_id_str.lower().startswith('p'):
-                        import re
                         match = re.search(r'\d+', param_id_str)
                         if match:
                             param_id_str = f"p{match.group()}"
@@ -323,12 +320,10 @@ def convert_excel(input_path, output_path):
         print("  These will be handled by catalog_ensure_minimum_parameters command")
     
     # Check for orphaned mappings
-    orphaned_mappings = []
+    orphaned_mappings = set()
     for test_id, param_id in test_param_mappings:
-        if test_id not in test_ids:
-            orphaned_mappings.append((test_id, param_id))
-        if param_id not in parameter_ids:
-            orphaned_mappings.append((test_id, param_id))
+        if test_id not in test_ids or param_id not in parameter_ids:
+            orphaned_mappings.add((test_id, param_id))
     
     if orphaned_mappings:
         print(f"\nERROR: {len(orphaned_mappings)} orphaned mappings found")
