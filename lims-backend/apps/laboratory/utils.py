@@ -176,9 +176,44 @@ def import_tests_from_excel(file, dry_run=False):
                         except: pass
 
         # 3. IMPORT MAPPING (Explicit)
-        if "Mapping" in workbook.sheetnames and 'test_id' not in get_header_map(workbook.get_sheet_by_name("Parameters")):
-            # Only if not already handled by flat sheet
-            pass
+        # 3. IMPORT MAPPING (Explicit)
+        if "Mapping" in workbook.sheetnames:
+            # Check if Parameters sheet is NOT flat (i.e. global definition only)
+            params_header = get_header_map(workbook["Parameters"]) if "Parameters" in workbook.sheetnames else {}
+            if 'test_id' not in params_header:
+                sheet = workbook["Mapping"]
+                headers = get_header_map(sheet)
+                for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), 2):
+                    t_id_raw = safe_get(row, headers, ['test_id'])
+                    p_id_raw = safe_get(row, headers, ['parameter_id', 'param_id'])
+                    
+                    if not t_id_raw or not p_id_raw: continue
+                    
+                    try:
+                        t_id = int(t_id_raw)
+                        p_id = validate_parameter_id(str(p_id_raw).strip())
+                    except: continue
+
+                    if not dry_run:
+                        # Ensure Test and Parameter exist
+                        try:
+                            test = Test.objects.get(test_id=t_id)
+                            param = Parameter.objects.get(parameter_id=p_id)
+                            order = int(safe_get(row, headers, ['display_order', 'order'], 0) or 0)
+                            reportable = safe_get(row, headers, ['reportable'], True)
+                            if str(reportable).lower() in ['false', '0', 'no']: reportable = False
+                            else: reportable = True
+                            
+                            tp, created = TestParameter.objects.update_or_create(
+                                test=test, parameter=param,
+                                defaults={"display_order": order, "reportable": reportable}
+                            )
+                            if created: summary["mappings_created"] += 1
+                        except Exception as e:
+                            # add_error("Mapping", row_num, "test/param", f"Link failed: {e}")
+                            pass
+                    else:
+                        summary["mappings_created"] += 1
 
         # 4. IMPORT REFERENCE RANGES (Explicit)
         if "ReferenceRanges" in workbook.sheetnames:
