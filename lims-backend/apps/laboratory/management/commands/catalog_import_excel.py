@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 from apps.laboratory.utils import import_tests_from_excel
-import json
 
 class Command(BaseCommand):
     help = "Import catalog from Excel using standard contract"
