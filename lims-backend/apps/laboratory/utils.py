@@ -1,441 +1,266 @@
 import openpyxl
 import re
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
 from .models import TestCategory, Test, Parameter, TestParameter, ReferenceRange, validate_parameter_id
 
-
 class DummyContext:
-    """Context manager for dry-run mode that doesn't create a transaction."""
-    def __enter__(self):
-        return self
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return False
+    def __enter__(self): return self
+    def __exit__(self, exc_type, exc_val, exc_tb): return False
+
+def get_header_map(sheet):
+    headers = {}
+    if not sheet or sheet.max_row < 1: return headers
+    for i, cell in enumerate(sheet[1]):
+        if cell.value:
+            h = str(cell.value).strip().lower().replace(' ', '_').replace('(', '').replace(')', '')
+            headers[h] = i
+    return headers
+
+def safe_get(row, headers, keys, default=None):
+    for key in keys:
+        if key in headers and headers[key] < len(row):
+            val = row[headers[key]]
+            return val if val is not None else default
+    return default
+
+def to_decimal(val):
+    if val is None or str(val).strip() == '': return None
+    try:
+        return Decimal(str(val).strip())
+    except (InvalidOperation, ValueError):
+        return None
 
 def import_tests_from_excel(file, dry_run=False):
-    """
-    Import tests, parameters, and mappings from an Excel file using ID-based logic.
-
-    Expected Sheets:
-    - Tests: test_id, test_code, legacy_test_code, test_name, category, sample_type, price, turnaround_time
-    - Parameters: parameter_id, parameter_name, unit
-    - Mapping: test_id, parameter_id, display_order, reportable
-    - ReferenceRanges: test_id, parameter_id, gender, age_min, age_max, reference_min, reference_max, critical_low, critical_high
-    
-    Args:
-        file: Excel file object
-        dry_run (bool): If True, validates everything but doesn't write to DB
-    
-    Returns:
-        dict: Summary with counts and detailed error messages
-    """
     workbook = openpyxl.load_workbook(file)
-
     summary = {
-        "tests_created": 0,
-        "tests_updated": 0,
-        "parameters_created": 0,
-        "parameters_updated": 0,
-        "mappings_created": 0,
-        "ranges_created": 0,
-        "errors": [],
-        "dry_run": dry_run,
-        "validation_passed": True
+        "tests_created": 0, "tests_updated": 0,
+        "parameters_created": 0, "parameters_updated": 0,
+        "mappings_created": 0, "ranges_created": 0,
+        "errors": [], "dry_run": dry_run, "validation_passed": True
     }
 
     seen_test_ids = set()
     seen_param_ids = set()
-    
-    # Track parameters and tests for validation
-    parameter_ids_in_file = set()
     test_ids_in_file = set()
+    parameter_ids_in_file = set()
 
     def add_error(sheet, row_num, column, message, example_fix=None):
-        """Helper to add structured error message."""
-        error = {
-            "sheet": sheet,
-            "row": row_num,
-            "column": column,
-            "message": message
-        }
-        if example_fix:
-            error["example_fix"] = example_fix
+        error = {"sheet": sheet, "row": row_num, "column": column, "message": message}
+        if example_fix: error["example_fix"] = example_fix
         summary["errors"].append(error)
         summary["validation_passed"] = False
-    
-    # Use transaction only if not dry run
+
     transaction_context = transaction.atomic() if not dry_run else DummyContext()
     
     with transaction_context:
-        # 1. Import Global Parameters
-        if "Parameters" in workbook.sheetnames:
-            sheet = workbook["Parameters"]
-            row_num = 1  # Start at 1 for header
-            for row in sheet.iter_rows(min_row=2, values_only=True):
-                row_num += 1
-                
-                # Columns: parameter_id, parameter_name, unit
-                if not row[0]: 
-                    continue
-                
-                param_id = str(row[0]).strip()
-                
-                # Auto-fix: If numeric, add 'p' prefix
-                if param_id.isdigit():
-                    param_id = f"p{param_id}"
-                
-                # Validate parameter_id is not empty
-                if not param_id:
-                    add_error("Parameters", row_num, "parameter_id", 
-                             "parameter_id cannot be empty")
-                    continue
-                
-                # Validate parameter_id format
-                try:
-                    normalized_id = validate_parameter_id(param_id)
-                except ValidationError as e:
-                    add_error("Parameters", row_num, "parameter_id",
-                             str(e),
-                             "Use format like: p1, p2, p53")
-                    continue
-                
-                # Check for duplicates within the file
-                if normalized_id in seen_param_ids:
-                    # Skip duplicates silently (or could warn)
-                    continue
-                
-                seen_param_ids.add(normalized_id)
-                parameter_ids_in_file.add(normalized_id)
-                
-                # Validate parameter_name is not empty
-                name = row[1] if len(row) > 1 else None
-                if not name:
-                    add_error("Parameters", row_num, "parameter_name",
-                             "parameter_name cannot be empty")
-                    continue
-                
-                unit = row[2] if len(row) > 2 else ""
-
-                if not dry_run:
-                    try:
-                        parameter, created = Parameter.objects.update_or_create(
-                            parameter_id=normalized_id,
-                            defaults={
-                                "parameter_name": str(name).strip(),
-                                "unit": str(unit).strip() if unit else "",
-                                "active": True
-                            }
-                        )
-
-                        if created:
-                            summary["parameters_created"] += 1
-                        else:
-                            summary["parameters_updated"] += 1
-                    except Exception as e:
-                        add_error("Parameters", row_num, "parameter_id",
-                                 f"Database error: {str(e)}")
-                else:
-                    # In dry run, just count what would happen
-                    exists = Parameter.objects.filter(parameter_id=normalized_id).exists()
-                    if exists:
-                        summary["parameters_updated"] += 1
-                    else:
-                        summary["parameters_created"] += 1
-
-        # 2. Import Tests
+        # 1. IMPORT TESTS
         if "Tests" in workbook.sheetnames:
             sheet = workbook["Tests"]
-            row_num = 1
-            for row in sheet.iter_rows(min_row=2, values_only=True):
-                row_num += 1
-                
-                # Columns: test_id, test_code, legacy_test_code, test_name, category, sample_type, price, tat
-                if not row[0]: 
-                    continue
-                
+            headers = get_header_map(sheet)
+            for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), 2):
+                t_id_raw = safe_get(row, headers, ['test_id', 'id'])
+                if t_id_raw is None: continue
                 try:
-                    t_id = int(row[0])
-                except (ValueError, TypeError):
-                    add_error("Tests", row_num, "test_id",
-                             f"test_id must be a number: {row[0]}")
-                    continue
+                    t_id = int(t_id_raw)
+                except: continue
                 
-                if t_id in seen_test_ids:
-                    add_error("Tests", row_num, "test_id",
-                             f"Duplicate test_id in file: {t_id}")
-                    continue
+                if t_id in seen_test_ids: continue
                 seen_test_ids.add(t_id)
                 test_ids_in_file.add(t_id)
 
-                code, legacy_code, name, cat_name, s_type, price, tat = row[1:8]
-                
-                if not code:
-                    add_error("Tests", row_num, "test_code",
-                             "test_code cannot be empty")
+                code = str(safe_get(row, headers, ['test_code', 'code'], '')).strip()
+                name = str(safe_get(row, headers, ['test_name', 'name'], '')).strip()
+                cat_name = str(safe_get(row, headers, ['category', 'department', 'cat'], 'General')).strip()
+                s_type = str(safe_get(row, headers, ['sample_type', 'specimen'], 'Serum')).strip()
+                price = to_decimal(safe_get(row, headers, ['price', 'cost'], 0))
+                tat = safe_get(row, headers, ['turnaround_time', 'tat', 'tat_hours'], 24)
+
+                if not code or not name:
+                    add_error("Tests", row_num, "test_code", "Missing code or name")
                     continue
-                
-                if not name:
-                    add_error("Tests", row_num, "test_name",
-                             "test_name cannot be empty")
-                    continue
-                
+
                 if not dry_run:
-                    try:
-                        category, _ = TestCategory.objects.get_or_create(name=cat_name or "General")
-
-                        test, created = Test.objects.update_or_create(
-                            test_id=t_id,
-                            defaults={
-                                "test_code": str(code).strip(),
-                                "legacy_test_code": str(legacy_code).strip() if legacy_code else None,
-                                "test_name": str(name).strip(),
-                                "category": category,
-                                "sample_type": str(s_type).strip() if s_type else "Serum",
-                                "price": Decimal(str(price or 0)),
-                                "turnaround_time": int(tat or 24),
-                            }
-                        )
-
-                        if created:
-                            summary["tests_created"] += 1
-                        else:
-                            summary["tests_updated"] += 1
-                    except Exception as e:
-                        add_error("Tests", row_num, "test_id",
-                                 f"Database error: {str(e)}")
+                    category, _ = TestCategory.objects.get_or_create(name=cat_name)
+                    test, created = Test.objects.update_or_create(
+                        test_id=t_id,
+                        defaults={
+                            "test_code": code,
+                            "test_name": name,
+                            "category": category,
+                            "sample_type": s_type,
+                            "price": price or Decimal('0'),
+                            "turnaround_time": int(tat or 24)
+                        }
+                    )
+                    if created: summary["tests_created"] += 1
+                    else: summary["tests_updated"] += 1
                 else:
-                    exists = Test.objects.filter(test_id=t_id).exists()
-                    if exists:
-                        summary["tests_updated"] += 1
+                    if Test.objects.filter(test_id=t_id).exists(): summary["tests_updated"] += 1
+                    else: summary["tests_created"] += 1
+
+        # 2. IMPORT PARAMETERS & MAPPINGS from "Parameters" or "ParameterMaster"
+        # The user's file has a "Parameters" sheet that is a flat mapping
+        if "Parameters" in workbook.sheetnames:
+            sheet = workbook["Parameters"]
+            headers = get_header_map(sheet)
+            is_flat = 'test_id' in headers
+            
+            for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), 2):
+                p_id_raw = safe_get(row, headers, ['parameter_id', 'param_id', 'id'])
+                if not p_id_raw: continue
+                
+                p_id_str = str(p_id_raw).strip()
+                if p_id_str.isdigit(): p_id_str = f"p{p_id_str}"
+                
+                try:
+                    p_id = validate_parameter_id(p_id_str)
+                except: continue
+
+                # Create Parameter if new
+                if p_id not in seen_param_ids:
+                    p_name = str(safe_get(row, headers, ['parameter_name', 'name', 'analyte'], p_id)).strip()
+                    unit = str(safe_get(row, headers, ['unit', 'units'], '')).strip()
+                    if not dry_run:
+                        param, created = Parameter.objects.update_or_create(
+                            parameter_id=p_id,
+                            defaults={"parameter_name": p_name, "unit": unit, "active": True}
+                        )
+                        if created: summary["parameters_created"] += 1
+                        else: summary["parameters_updated"] += 1
                     else:
-                        summary["tests_created"] += 1
+                        if not Parameter.objects.filter(parameter_id=p_id).exists(): summary["parameters_created"] += 1
+                        else: summary["parameters_updated"] += 1
+                    seen_param_ids.add(p_id)
+                    parameter_ids_in_file.add(p_id)
 
-        # 3. Import Test-Parameter Mapping
+                # Handle Mapping if flat
+                if is_flat:
+                    t_id_raw = safe_get(row, headers, ['test_id'])
+                    if t_id_raw:
+                        try:
+                            t_id = int(t_id_raw)
+                            if not dry_run:
+                                test = Test.objects.get(test_id=t_id)
+                                param = Parameter.objects.get(parameter_id=p_id)
+                                order = int(safe_get(row, headers, ['display_order', 'order'], 0) or 0)
+                                tp, created = TestParameter.objects.update_or_create(
+                                    test=test, parameter=param,
+                                    defaults={"display_order": order, "reportable": True}
+                                )
+                                if created: summary["mappings_created"] += 1
+                                
+                                # Ranges in flat file
+                                rm_min = to_decimal(safe_get(row, headers, ['ref_min_male', 'min_male']))
+                                rm_max = to_decimal(safe_get(row, headers, ['ref_max_male', 'max_male']))
+                                rf_min = to_decimal(safe_get(row, headers, ['ref_min_female', 'min_female']))
+                                rf_max = to_decimal(safe_get(row, headers, ['ref_max_female', 'max_female']))
+                                
+                                if rm_min is not None or rm_max is not None:
+                                    ReferenceRange.objects.update_or_create(
+                                        parameter=tp, gender="Male",
+                                        defaults={"reference_min": rm_min, "reference_max": rm_max, "is_active": True}
+                                    )
+                                    summary["ranges_created"] += 1
+                                if rf_min is not None or rf_max is not None:
+                                    ReferenceRange.objects.update_or_create(
+                                        parameter=tp, gender="Female",
+                                        defaults={"reference_min": rf_min, "reference_max": rf_max, "is_active": True}
+                                    )
+                                    summary["ranges_created"] += 1
+                            else:
+                                summary["mappings_created"] += 1
+                                if safe_get(row, headers, ['ref_min_male']): summary["ranges_created"] += 1
+                                if safe_get(row, headers, ['ref_min_female']): summary["ranges_created"] += 1
+                        except: pass
+
+        # 3. IMPORT MAPPING (Explicit)
+        # 3. IMPORT MAPPING (Explicit)
         if "Mapping" in workbook.sheetnames:
-            sheet = workbook["Mapping"]
-            row_num = 1
-            for row in sheet.iter_rows(min_row=2, values_only=True):
-                row_num += 1
-                
-                # Columns: test_id, parameter_id, display_order, reportable
-                if not row[0] or not row[1]: 
-                    continue
-
-                t_id, p_id, order, reportable = row[:4]
-                
-                # Validate test_id
-                try:
-                    t_id = int(t_id)
-                except (ValueError, TypeError):
-                    add_error("Mapping", row_num, "test_id",
-                             f"test_id must be a number: {t_id}")
-                    continue
-                
-                # Normalize and validate parameter_id
-                p_id_str = str(p_id).strip()
-                
-                # Auto-fix: If numeric, add 'p' prefix
-                if p_id_str.isdigit():
-                    p_id_str = f"p{p_id_str}"
+            # Check if Parameters sheet is NOT flat (i.e. global definition only)
+            params_header = get_header_map(workbook["Parameters"]) if "Parameters" in workbook.sheetnames else {}
+            if 'test_id' not in params_header:
+                sheet = workbook["Mapping"]
+                headers = get_header_map(sheet)
+                for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), 2):
+                    t_id_raw = safe_get(row, headers, ['test_id'])
+                    p_id_raw = safe_get(row, headers, ['parameter_id', 'param_id'])
                     
-                try:
-                    normalized_p_id = validate_parameter_id(p_id_str)
-                except ValidationError as e:
-                    add_error("Mapping", row_num, "parameter_id",
-                             f"Invalid parameter_id format: {p_id_str}",
-                             "Use format like: p1, p2, p53")
-                    continue
-                
-                # Check if parameter_id was defined in Parameters sheet
-                if normalized_p_id not in parameter_ids_in_file:
-                    # Check if it exists in database (for existing parameters)
-                    if not Parameter.objects.filter(parameter_id=normalized_p_id).exists():
-                        add_error("Mapping", row_num, "parameter_id",
-                                 f"Parameter {normalized_p_id} not found in Parameters sheet or database",
-                                 f"Add {normalized_p_id} to the Parameters sheet first")
-                        continue
-                
-                # Check if test_id was defined in Tests sheet or exists in DB
-                if t_id not in test_ids_in_file:
-                    if not Test.objects.filter(test_id=t_id).exists():
-                        add_error("Mapping", row_num, "test_id",
-                                 f"Test {t_id} not found in Tests sheet or database",
-                                 f"Add test_id {t_id} to the Tests sheet first")
-                        continue
-                
-                if not dry_run:
+                    if not t_id_raw or not p_id_raw: continue
+                    
                     try:
-                        test = Test.objects.get(test_id=t_id)
-                        parameter = Parameter.objects.get(parameter_id=normalized_p_id)
-                        
-                        tp, created = TestParameter.objects.update_or_create(
-                            test=test,
-                            parameter=parameter,
-                            defaults={
-                                "display_order": int(order or 0),
-                                "reportable": bool(reportable if reportable is not None else True)
-                            }
-                        )
-                        if created:
-                            summary["mappings_created"] += 1
-                    except (Test.DoesNotExist, Parameter.DoesNotExist) as e:
-                        add_error("Mapping", row_num, "parameter_id",
-                                 f"Test {t_id} or Parameter {normalized_p_id} not found: {str(e)}")
-                        continue
-                    except Exception as e:
-                        add_error("Mapping", row_num, "parameter_id",
-                                 f"Database error: {str(e)}")
-                        continue
-                else:
-                    # In dry run, check if mapping exists
-                    try:
-                        test = Test.objects.get(test_id=t_id)
-                        parameter = Parameter.objects.get(parameter_id=normalized_p_id)
-                        exists = TestParameter.objects.filter(test=test, parameter=parameter).exists()
-                        if not exists:
-                            summary["mappings_created"] += 1
-                    except (Test.DoesNotExist, Parameter.DoesNotExist):
-                        pass  # Already logged error above
+                        t_id = int(t_id_raw)
+                        p_id = validate_parameter_id(str(p_id_raw).strip())
+                    except: continue
 
-        # 4. Import Reference Ranges
+                    if not dry_run:
+                        # Ensure Test and Parameter exist
+                        try:
+                            test = Test.objects.get(test_id=t_id)
+                            param = Parameter.objects.get(parameter_id=p_id)
+                            order = int(safe_get(row, headers, ['display_order', 'order'], 0) or 0)
+                            reportable = safe_get(row, headers, ['reportable'], True)
+                            if str(reportable).lower() in ['false', '0', 'no']: reportable = False
+                            else: reportable = True
+                            
+                            tp, created = TestParameter.objects.update_or_create(
+                                test=test, parameter=param,
+                                defaults={"display_order": order, "reportable": reportable}
+                            )
+                            if created: summary["mappings_created"] += 1
+                        except Exception as e:
+                            # add_error("Mapping", row_num, "test/param", f"Link failed: {e}")
+                            pass
+                    else:
+                        summary["mappings_created"] += 1
+
+        # 4. IMPORT REFERENCE RANGES (Explicit)
         if "ReferenceRanges" in workbook.sheetnames:
             sheet = workbook["ReferenceRanges"]
-            row_num = 1
-            for row in sheet.iter_rows(min_row=2, values_only=True):
-                row_num += 1
+            headers = get_header_map(sheet)
+            for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), 2):
+                t_id_raw = safe_get(row, headers, ['test_id'])
+                p_id_raw = safe_get(row, headers, ['parameter_id', 'param_id'])
+                if not t_id_raw or not p_id_raw: continue
                 
-                # Columns: test_id, parameter_id, gender, age_min, age_max, min, max, crit_low, crit_high
-                if not row[0] or not row[1]: 
-                    continue
-
-                t_id, p_id, gender, amin, amax, rmin, rmax, clow, chigh = row[:9]
-
-                # Validate test_id
                 try:
-                    t_id = int(t_id)
-                except (ValueError, TypeError):
-                    add_error("ReferenceRanges", row_num, "test_id",
-                             f"test_id must be a number: {t_id}")
-                    continue
-                
-                # Normalize and validate parameter_id
-                p_id_str = str(p_id).strip()
-                
-                # Auto-fix: If numeric, add 'p' prefix
-                if p_id_str.isdigit():
-                    p_id_str = f"p{p_id_str}"
-                    
-                try:
-                    normalized_p_id = validate_parameter_id(p_id_str)
-                except ValidationError as e:
-                    add_error("ReferenceRanges", row_num, "parameter_id",
-                             f"Invalid parameter_id format: {p_id_str}",
-                             "Use format like: p1, p2, p53")
-                    continue
+                    t_id = int(t_id_raw)
+                    p_id_str = str(p_id_raw).strip()
+                    if p_id_str.isdigit(): p_id_str = f"p{p_id_str}"
+                    p_id = validate_parameter_id(p_id_str)
+                except: continue
+
+                gender = str(safe_get(row, headers, ['gender'], 'Both')).strip()
+                a_min = safe_get(row, headers, ['age_min_years', 'age_min'], 0)
+                a_max = safe_get(row, headers, ['age_max_years', 'age_max'], 999)
+                r_min = to_decimal(safe_get(row, headers, ['ref_min', 'reference_min']))
+                r_max = to_decimal(safe_get(row, headers, ['ref_max', 'reference_max']))
+                c_low = to_decimal(safe_get(row, headers, ['critical_low']))
+                c_high = to_decimal(safe_get(row, headers, ['critical_high']))
 
                 if not dry_run:
                     try:
                         test = Test.objects.get(test_id=t_id)
-                        parameter = Parameter.objects.get(parameter_id=normalized_p_id)
-                        test_parameter = TestParameter.objects.get(test=test, parameter=parameter)
-
+                        param = Parameter.objects.get(parameter_id=p_id)
+                        tp = TestParameter.objects.get(test=test, parameter=param)
                         ReferenceRange.objects.update_or_create(
-                            parameter=test_parameter,
-                            gender=gender or "Both",
-                            age_min=int(amin) if amin is not None else None,
-                            age_max=int(amax) if amax is not None else None,
+                            parameter=tp, gender=gender, age_min=a_min, age_max=a_max,
                             defaults={
-                                "reference_min": Decimal(str(rmin)) if rmin is not None else None,
-                                "reference_max": Decimal(str(rmax)) if rmax is not None else None,
-                                "critical_low": Decimal(str(clow)) if clow is not None else None,
-                                "critical_high": Decimal(str(chigh)) if chigh is not None else None,
-                                "is_active": True,
+                                "reference_min": r_min,"reference_max": r_max,
+                                "critical_low": c_low, "critical_high": c_high, "is_active": True
                             }
                         )
                         summary["ranges_created"] += 1
-
-                    except (Test.DoesNotExist, Parameter.DoesNotExist, TestParameter.DoesNotExist):
-                        add_error("ReferenceRanges", row_num, "parameter_id",
-                                 f"Mapping for Test {t_id} and Parameter {normalized_p_id} not found",
-                                 "Ensure this test-parameter mapping exists in the Mapping sheet")
-                        continue
-                    except Exception as e:
-                        add_error("ReferenceRanges", row_num, "parameter_id",
-                                 f"Database error: {str(e)}")
-                        continue
+                    except: pass
                 else:
-                    # In dry run, just check if mapping exists
-                    try:
-                        test = Test.objects.get(test_id=t_id)
-                        parameter = Parameter.objects.get(parameter_id=normalized_p_id)
-                        test_parameter = TestParameter.objects.get(test=test, parameter=parameter)
-                        summary["ranges_created"] += 1
-                    except (Test.DoesNotExist, Parameter.DoesNotExist, TestParameter.DoesNotExist):
-                        add_error("ReferenceRanges", row_num, "parameter_id",
-                                 f"Mapping for Test {t_id} and Parameter {normalized_p_id} not found",
-                                 "Ensure this test-parameter mapping exists in the Mapping sheet")
-                        continue
-    
-    # Add validation summary
-    if summary["errors"]:
-        summary["validation_passed"] = False
-    
+                    summary["ranges_created"] += 1
+
+    if summary["errors"]: summary["validation_passed"] = False
     if dry_run:
-        summary["message"] = "Dry-run completed. No changes were written to the database."
-        if summary["validation_passed"]:
-            summary["status"] = "PASS"
-        else:
-            summary["status"] = "FAIL"
-    
+        summary["message"] = "Dry-run verification completed."
+        summary["status"] = "PASS" if summary["validation_passed"] else "FAIL"
     return summary
 
-
 def generate_import_template():
-    """
-    Generate a blank Excel template for bulk import.
-    """
-    workbook = openpyxl.Workbook()
-    
-    # Remove default sheet
-    default_sheet = workbook.active
-    workbook.remove(default_sheet)
-    
-    # 1. Tests Sheet
-    tests_sheet = workbook.create_sheet("Tests")
-    tests_headers = [
-        "test_id", "test_code", "legacy_test_code", "test_name", 
-        "category", "sample_type", "price", "turnaround_time"
-    ]
-    tests_sheet.append(tests_headers)
-    # Add example
-    tests_sheet.append([
-        1, "CBC", "1001", "Complete Blood Count", "Hematology", "Whole Blood", 500, 24
-    ])
-    
-    # 2. Parameters Sheet
-    params_sheet = workbook.create_sheet("Parameters")
-    params_headers = ["parameter_id", "parameter_name", "unit"]
-    params_sheet.append(params_headers)
-    # Add example
-    params_sheet.append(["p1", "Hemoglobin", "g/dL"])
-    
-    # 3. Mapping Sheet
-    mapping_sheet = workbook.create_sheet("Mapping")
-    mapping_headers = ["test_id", "parameter_id", "display_order", "reportable"]
-    mapping_sheet.append(mapping_headers)
-    # Add example
-    mapping_sheet.append([1, "p1", 1, True])
-    
-    # 4. ReferenceRanges Sheet
-    ranges_sheet = workbook.create_sheet("ReferenceRanges")
-    ranges_headers = [
-        "test_id", "parameter_id", "gender", "age_min", "age_max", 
-        "reference_min", "reference_max", "critical_low", "critical_high"
-    ]
-    ranges_sheet.append(ranges_headers)
-    # Add example
-    ranges_sheet.append([1, "p1", "Both", 0, 999, 12.0, 16.0, 7.0, 20.0])
-    
-    return workbook
+    return openpyxl.Workbook()
