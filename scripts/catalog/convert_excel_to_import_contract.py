@@ -5,6 +5,7 @@ sys.stdout.flush()
 import openpyxl
 import os
 import re
+import csv
 
 def normalize_header(h):
     return str(h).strip().lower()
@@ -312,7 +313,6 @@ def main(input_file, output_file):
                 test_name_map[normalize_header(tname)] = tid
                 
         # Now read CSV
-        import csv
         with open(csv_file, 'r', encoding='utf-8-sig', errors='ignore') as f:
             reader = csv.DictReader(f)
             for row in reader:
