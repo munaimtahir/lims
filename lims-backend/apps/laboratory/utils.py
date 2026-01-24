@@ -10,13 +10,11 @@ from .models import TestCategory, Test, Parameter, TestParameter, ReferenceRange
 
 class DummyContext:
     """A no-op context manager for dry-run mode to avoid actual transactions."""
-
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         return False
-
 
 def get_header_map(sheet):
     """
@@ -276,24 +274,20 @@ def import_tests_from_excel(file, dry_run=False):
                         except (Test.DoesNotExist, Parameter.DoesNotExist, IntegrityError,
                                 ValidationError, ValueError, TypeError) as e:
                             # Record structured error so users can correct problematic mappings
-                            summary.setdefault("errors", []).append({
-                                "sheet": "Parameters",
-                                "row": row_num,
-                                "test_id": t_id_raw,
-                                "parameter_id": p_id,
-                                "error": str(e),
-                                "error_type": e.__class__.__name__,
-                            })
+                            add_error(
+                                "Parameters",
+                                row_num,
+                                "mapping",
+                                f"Failed to create mapping: {str(e)}"
+                            )
                         except Exception as e:
                             # Catch-all to avoid breaking the entire import, but still surface the issue
-                            summary.setdefault("errors", []).append({
-                                "sheet": "Parameters",
-                                "row": row_num,
-                                "test_id": t_id_raw,
-                                "parameter_id": p_id,
-                                "error": str(e),
-                                "error_type": e.__class__.__name__,
-                            })
+                            add_error(
+                                "Parameters",
+                                row_num,
+                                "mapping",
+                                f"Unexpected error: {str(e)}"
+                            )
 
         # 3. IMPORT MAPPING (Explicit)
         if "Mapping" in workbook.sheetnames and (

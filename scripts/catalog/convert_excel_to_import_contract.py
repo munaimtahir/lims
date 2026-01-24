@@ -1,379 +1,358 @@
+#!/usr/bin/env python3
+"""
+Excel Contract Adapter: Converts authoritative Excel to importer contract format.
+
+Reads the authoritative Excel file with sheets:
+- Tests, Parameters (mapping), ParameterMaster, ReferenceRanges
+
+Outputs a new Excel file with sheets:
+- Tests, Parameters, Mapping, ReferenceRanges
+
+This script ensures the Excel format matches what the importer expects.
+"""
+
 import sys
-print("Script start")
-sys.stdout.flush()
-
+import re
 import openpyxl
-import os
+from openpyxl import Workbook
+from pathlib import Path
+from decimal import Decimal, InvalidOperation
 
-def normalize_header(h):
-    return str(h).strip().lower()
 
-def safe_str(v):
-    if v is None: return ""
-    return str(v).strip()
-
-def get_str_val(v):
-    if v is None: return ""
-    return str(v).strip()
-
-def main(input_file, output_file):
-    print(f"Reading {input_file}...")
-    sys.stdout.flush()
+def safe_decimal(value):
+    """Convert value to Decimal, return None if invalid."""
+    if value is None or str(value).strip() == '':
+        return None
     try:
-        wb_in = openpyxl.load_workbook(input_file, data_only=True)
-    except Exception as e:
-        print(f"Error loading workbook: {e}")
-        sys.exit(1)
+        return Decimal(str(value).strip())
+    except (InvalidOperation, ValueError, TypeError):
+        return None
 
-    wb_out = openpyxl.Workbook()
-    if 'Sheet' in wb_out.sheetnames:
-        del wb_out['Sheet']
 
-    print("Workbook loaded.")
-    sys.stdout.flush()
+def safe_int(value, default=0):
+    """Convert value to int, return default if invalid."""
+    if value is None or str(value).strip() == '':
+        return default
+    try:
+        return int(float(str(value).strip()))
+    except (ValueError, TypeError):
+        return default
 
-    # --- 1. Tests Sheet ---
-    if 'Tests' not in wb_in.sheetnames:
-        print("FAIL: 'Tests' sheet missing")
-        sys.exit(1)
+
+def safe_str(value, default=''):
+    """Convert value to string, return default if None."""
+    if value is None:
+        return default
+    return str(value).strip()
+
+
+def get_header_map(sheet):
+    """Get column index map from first row."""
+    headers = {}
+    if not sheet or sheet.max_row < 1:
+        return headers
+    for i, cell in enumerate(sheet[1], 1):
+        if cell.value:
+            key = str(cell.value).strip().lower().replace(' ', '_').replace('(', '').replace(')', '')
+            headers[key] = i
+    return headers
+
+
+def safe_get(row, headers, keys, default=None):
+    """Get value from row using header map, trying multiple key variations."""
+    for key in keys:
+        if key in headers:
+            col_idx = headers[key] - 1  # Convert to 0-based
+            if 0 <= col_idx < len(row):
+                val = row[col_idx]
+                if val is not None and str(val).strip() != '':
+                    return val
+    return default
+
+
+def convert_excel(input_path, output_path):
+    """
+    Convert authoritative Excel to importer contract format.
     
-    ws_tests_in = wb_in['Tests']
-    ws_tests_out = wb_out.create_sheet("Tests")
-    tests_headers = ["test_id", "test_code", "legacy_test_code", "test_name", "category", "sample_type", "price", "turnaround_time"]
-    ws_tests_out.append(tests_headers)
+    Args:
+        input_path: Path to authoritative Excel file
+        output_path: Path to output Excel file
+    """
+    print(f"Reading authoritative Excel: {input_path}")
+    wb_in = openpyxl.load_workbook(input_path, data_only=True)
     
-    in_headers = [normalize_header(c.value) for c in ws_tests_in[1]]
+    # Validate required sheets exist
+    required_sheets = ['Tests', 'Parameters', 'ParameterMaster']
+    missing = [s for s in required_sheets if s not in wb_in.sheetnames]
+    if missing:
+        print(f"ERROR: Missing required sheets: {missing}")
+        return False
     
-    def get_col_idx(name, optional=False, headers=in_headers):
-        try:
-            return headers.index(name)
-        except ValueError:
-            if optional: return -1
-            print(f"FAIL: Sheet missing column '{name}'")
-            sys.exit(1)
-            
-    idx_tid = get_col_idx("test_id")
-    idx_tcode = get_col_idx("test_code")
-    idx_leg = get_col_idx("legacy_test_code", True)
-    idx_name = get_col_idx("test_name")
-    idx_cat = get_col_idx("category")
-    idx_samp = get_col_idx("sample_type", True)
-    idx_price = get_col_idx("price")
-    idx_tat = get_col_idx("tat_hours")
-    if idx_tat == -1: idx_tat = get_col_idx("turnaround_time", True)
-
-    valid_test_ids = set()
-
-    for row in ws_tests_in.iter_rows(min_row=2, values_only=True):
-        if not row[idx_tid]: continue
+    # Create output workbook
+    wb_out = Workbook()
+    wb_out.remove(wb_out.active)  # Remove default sheet
+    
+    # Track data for validation
+    test_ids = set()
+    parameter_ids = set()
+    test_param_mappings = set()
+    
+    # ===== 1. PROCESS TESTS SHEET =====
+    print("Processing Tests sheet...")
+    tests_sheet = wb_in['Tests']
+    tests_headers = get_header_map(tests_sheet)
+    
+    ws_tests = wb_out.create_sheet("Tests")
+    ws_tests.append([
+        'test_id', 'test_code', 'legacy_test_code', 'test_name', 
+        'category', 'sample_type', 'price', 'turnaround_time'
+    ])
+    
+    for row_num, row in enumerate(tests_sheet.iter_rows(min_row=2, values_only=True), 2):
+        test_id = safe_int(safe_get(row, tests_headers, ['test_id', 'id']))
+        if not test_id:
+            continue
         
-        test_id = safe_str(row[idx_tid])
-        valid_test_ids.add(test_id)
+        test_code = safe_str(safe_get(row, tests_headers, ['test_code', 'code']))
+        legacy_test_code = safe_str(safe_get(row, tests_headers, ['legacy_test_code', 'legacy_code']))
+        test_name = safe_str(safe_get(row, tests_headers, ['test_name', 'name']))
+        category = safe_str(safe_get(row, tests_headers, ['category', 'department']), 'General')
+        sample_type = safe_str(safe_get(row, tests_headers, ['sample_type', 'specimen']), 'Serum')
+        price = safe_decimal(safe_get(row, tests_headers, ['price', 'cost'])) or Decimal('0')
+        turnaround_time = safe_int(safe_get(row, tests_headers, ['turnaround_time', 'tat_hours', 'tat']), 24)
         
-        test_code = row[idx_tcode]
-        test_name = row[idx_name]
-        category = row[idx_cat] if idx_cat != -1 and row[idx_cat] else "General"
-        legacy = row[idx_leg] if idx_leg != -1 and row[idx_leg] else ""
-        sample = row[idx_samp] if idx_samp != -1 and row[idx_samp] else "Serum"
-        price = row[idx_price] if row[idx_price] is not None else 0
-        tat = row[idx_tat] if idx_tat != -1 and row[idx_tat] else 24
+        # Infer sample_type from department if not set
+        if sample_type == 'Serum':
+            dept = safe_str(safe_get(row, tests_headers, ['department']), '').lower()
+            if 'urine' in dept:
+                sample_type = 'Urine'
+            elif 'semen' in dept:
+                sample_type = 'Semen'
+            elif 'stool' in dept:
+                sample_type = 'Stool'
         
-        ws_tests_out.append([test_id, test_code, legacy, test_name, category, sample, price, tat])
+        if not test_code or not test_name:
+            print(f"  WARNING: Row {row_num}: Missing test_code or test_name, skipping")
+            continue
+        
+        ws_tests.append([
+            test_id, test_code, legacy_test_code, test_name,
+            category, sample_type, float(price), turnaround_time
+        ])
+        test_ids.add(test_id)
     
-    print(f"Processed {len(valid_test_ids)} tests.")
-
-    # --- 2. Parameters Sheet (from ParameterMaster) ---
-    ws_params_out = wb_out.create_sheet("Parameters")
-    ws_params_out.append(["parameter_id", "parameter_name", "unit"])
+    print(f"  Processed {len(test_ids)} tests")
     
-    valid_param_ids = set()
-
-    if 'ParameterMaster' in wb_in.sheetnames:
-        ws_pm_in = wb_in['ParameterMaster']
-        pm_headers = [normalize_header(c.value) for c in ws_pm_in[1]]
-        
-        p_idx_pid = get_col_idx("parameter_id", headers=pm_headers)
-        p_idx_name = get_col_idx("parameter_name", headers=pm_headers)
-        p_idx_unit = get_col_idx("unit", headers=pm_headers)
-        
-        for row in ws_pm_in.iter_rows(min_row=2, values_only=True):
-            if not row[p_idx_pid]: continue
-            pid = safe_str(row[p_idx_pid]).lower()
-            name = row[p_idx_name]
-            unit = row[p_idx_unit] if row[p_idx_unit] else ""
-            
-            if pid not in valid_param_ids:
-                ws_params_out.append([pid, name, unit])
-                valid_param_ids.add(pid)
+    # ===== 2. PROCESS PARAMETERMASTER -> PARAMETERS SHEET =====
+    print("Processing ParameterMaster -> Parameters sheet...")
+    param_master_sheet = wb_in['ParameterMaster']
+    param_master_headers = get_header_map(param_master_sheet)
     
-    # 2b. Add 'p_result' default parameter
-    if 'p_result' not in valid_param_ids:
-        ws_params_out.append(['p_result', 'Result', ''])
-        valid_param_ids.add('p_result')
+    ws_params = wb_out.create_sheet("Parameters")
+    ws_params.append(['parameter_id', 'parameter_name', 'unit'])
     
-    print(f"Processed {len(valid_param_ids)} parameters.")
-
-    # --- 3. Mapping AND ReferenceRanges (from Parameters Sheet) ---
-    ws_map_out = wb_out.create_sheet("Mapping")
-    ws_map_out.append(["test_id", "parameter_id", "display_order", "reportable"])
-
-    ws_rr_out = wb_out.create_sheet("ReferenceRanges")
-    rr_out_headers = ["test_id", "parameter_id", "gender", "age_min", "age_max", "reference_min", "reference_max", "critical_low", "critical_high"]
-    ws_rr_out.append(rr_out_headers)
-    
-    # Ranges count
-    rr_count = 0
-    test_param_name_to_id = {}
-    
-    if 'Parameters' in wb_in.sheetnames:
-        ws_map_in = wb_in['Parameters']
-        map_headers = [normalize_header(c.value) for c in ws_map_in[1]]
+    for row_num, row in enumerate(param_master_sheet.iter_rows(min_row=2, values_only=True), 2):
+        param_id_raw = safe_get(row, param_master_headers, ['parameter_id', 'param_id', 'id'])
+        if not param_id_raw:
+            continue
         
-        m_idx_tid = get_col_idx("test_id", headers=map_headers)
-        m_idx_pid = get_col_idx("parameter_id", headers=map_headers)
-        m_idx_pname = get_col_idx("parameter_name", headers=map_headers)
-        m_idx_ord = get_col_idx("display_order", headers=map_headers)
-        
-        # Range columns
-        m_idx_rmin_m = get_col_idx("ref_min_male", True, headers=map_headers)
-        m_idx_rmax_m = get_col_idx("ref_max_male", True, headers=map_headers)
-        m_idx_rmin_f = get_col_idx("ref_min_female", True, headers=map_headers)
-        m_idx_rmax_f = get_col_idx("ref_max_female", True, headers=map_headers)
-        m_idx_clow = get_col_idx("critical_low", True, headers=map_headers)
-        m_idx_chigh = get_col_idx("critical_high", True, headers=map_headers)
-        
-        row_count = 0
-        for row in ws_map_in.iter_rows(min_row=2, values_only=True):
-            if not row[m_idx_tid]: continue
-            
-            tid = safe_str(row[m_idx_tid])
-            if tid not in valid_test_ids: continue
-
-            # Parameter ID might be missing in 'Parameters' sheet if it's purely legacy
-            # But inspect showed 'p1', 'p2'.
-            pid_raw = row[m_idx_pid]
-            pname = get_str_val(row[m_idx_pname])
-            
-            if pid_raw:
-                pid = safe_str(pid_raw).lower()
+        param_id_str = safe_str(param_id_raw)
+        # Normalize parameter_id: if numeric, add 'p' prefix
+        if param_id_str.isdigit():
+            param_id_str = f"p{param_id_str}"
+        elif not param_id_str.lower().startswith('p'):
+            # Try to extract number and add p prefix
+            match = re.search(r'\d+', param_id_str)
+            if match:
+                param_id_str = f"p{match.group()}"
             else:
-                # If missing parameter_id, generate one or skip?
-                # User says "Parameter model MUST have parameter_id".
-                # If missing, we can't reliably map.
-                # Just skip or warn.
-                print(f"WARNING: Mapping missing parameter_id for Test {tid}, PName {pname}")
+                print(f"  WARNING: Row {row_num}: Invalid parameter_id format: {param_id_str}, skipping")
                 continue
-                
-            order = row[m_idx_ord] if row[m_idx_ord] else 0
-            
-            # Ensure p_id in Parameters list
-            if pid not in valid_param_ids:
-                ws_params_out.append([pid, pname, ""])
-                valid_param_ids.add(pid)
-            
-            test_param_name_to_id[(tid, pname)] = pid
-            
-            ws_map_out.append([tid, pid, order, True])
-            row_count += 1
-            
-            # Extract Reference Ranges
-            clow = row[m_idx_clow] if m_idx_clow != -1 else None
-            chigh = row[m_idx_chigh] if m_idx_chigh != -1 else None
-            
-            # Male
-            rmin_m = row[m_idx_rmin_m] if m_idx_rmin_m != -1 else None
-            rmax_m = row[m_idx_rmax_m] if m_idx_rmax_m != -1 else None
-            
-            # Female
-            rmin_f = row[m_idx_rmin_f] if m_idx_rmin_f != -1 else None
-            rmax_f = row[m_idx_rmax_f] if m_idx_rmax_f != -1 else None
-            
-            # Helper to add range
-            def add_range(gender, rmin, rmax):
-                # 0-120 years default
-                ws_rr_out.append([tid, pid, gender, 0, 120, rmin, rmax, clow, chigh])
-            
-            has_male = (rmin_m is not None or rmax_m is not None)
-            has_female = (rmin_f is not None or rmax_f is not None)
-            
-            if has_male and has_female:
-                # Check if values are identical
-                if rmin_m == rmin_f and rmax_m == rmax_f:
-                    add_range("Both", rmin_m, rmax_m)
-                    rr_count += 1
-                else:
-                    add_range("Male", rmin_m, rmax_m)
-                    add_range("Female", rmin_f, rmax_f)
-                    rr_count += 2
-            elif has_male:
-                add_range("Male", rmin_m, rmax_m) # Or Both? Safer to say Male if only male col pop?
-                # Actually if only male is populated but female is empty, usually implies male-specific or female implies same?
-                # Let's stick to Male.
-                rr_count += 1
-            elif has_female:
-                add_range("Female", rmin_f, rmax_f)
-                rr_count += 1
-            
-    print(f"Processed {row_count} mappings. extracted {rr_count} ranges (Excel).")
-
-    # --- 3b. Aux CSV Ranges (Fallback) ---
-    csv_file = "parameters.csv"
-    if len(sys.argv) > 3:
-        csv_file = sys.argv[3]
+        
+        param_id = param_id_str.lower()
+        param_name = safe_str(safe_get(row, param_master_headers, ['parameter_name', 'name']), param_id)
+        unit = safe_str(safe_get(row, param_master_headers, ['unit', 'units']))
+        
+        ws_params.append([param_id, param_name, unit])
+        parameter_ids.add(param_id)
     
-    if os.path.exists(csv_file):
-        print(f"Loading secondary ranges from {csv_file}...")
-        csv_ranges_added = 0
+    print(f"  Processed {len(parameter_ids)} parameters")
+    
+    # ===== 3. PROCESS PARAMETERS (MAPPING) -> MAPPING SHEET =====
+    print("Processing Parameters (mapping) -> Mapping sheet...")
+    params_sheet = wb_in['Parameters']
+    params_headers = get_header_map(params_sheet)
+    
+    ws_mapping = wb_out.create_sheet("Mapping")
+    ws_mapping.append(['test_id', 'parameter_id', 'display_order', 'reportable'])
+    
+    for row_num, row in enumerate(params_sheet.iter_rows(min_row=2, values_only=True), 2):
+        test_id = safe_int(safe_get(row, params_headers, ['test_id']))
+        param_id_raw = safe_get(row, params_headers, ['parameter_id', 'param_id'])
         
-        # Helper to parse range text
-        # Returns list of dicts: {'gender':..., 'rmin':..., 'rmax':...}
-        def parse_range_text(text):
-            results = []
-            text = text.replace('\n', ' ').strip()
-            if not text: return results
-
-            # Regex patterns
-            pat_range = r'([\d\.]+)\s*-\s*([\d\.]+)'
-            pat_less = r'(?:<|Less Than)\s*([\d\.]+)'
-            pat_greater = r'(?:>|Greater Than)\s*([\d\.]+)'
-
-            def extract_vals(subtext):
-                try:
-                    # Try range X - Y
-                    m = re.search(pat_range, subtext)
-                    if m: return (float(m.group(1)), float(m.group(2)))
-                    # Try < X
-                    m = re.search(pat_less, subtext, re.IGNORECASE)
-                    if m: return (0.0, float(m.group(1))) # Assuming 0 floor
-                    # Try > X
-                    m = re.search(pat_greater, subtext, re.IGNORECASE)
-                    if m: return (float(m.group(1)), 99999.0) # Arbitrary ceiling
-                except ValueError:
-                    pass
-                return (None, None)
-
-            # Check for Gender split
-            # Simple heuristic: "Male: ... Female: ..."
-            upper_t = text.upper()
-            if 'MALE:' in upper_t or 'FEMALE:' in upper_t:
-                # Split parts
-                # Find indices
-                idx_m = upper_t.find('MALE:')
-                idx_f = upper_t.find('FEMALE:')
-                
-                parts = []
-                if idx_m != -1 and idx_f != -1:
-                    if idx_m < idx_f:
-                        parts.append(('Male', text[idx_m:idx_f]))
-                        parts.append(('Female', text[idx_f:]))
-                    else:
-                        parts.append(('Female', text[idx_f:idx_m]))
-                        parts.append(('Male', text[idx_m:]))
-                elif idx_m != -1:
-                    parts.append(('Male', text[idx_m:]))
-                elif idx_f != -1:
-                    parts.append(('Female', text[idx_f:]))
-                
-                for gender, part in parts:
-                    rmin, rmax = extract_vals(part)
-                    if rmin is not None:
-                        results.append({'gender': gender, 'rmin': rmin, 'rmax': rmax})
+        if not test_id or not param_id_raw:
+            continue
+        
+        param_id_str = safe_str(param_id_raw)
+        # Normalize parameter_id
+        if param_id_str.isdigit():
+            param_id_str = f"p{param_id_str}"
+        elif not param_id_str.lower().startswith('p'):
+            match = re.search(r'\d+', param_id_str)
+            if param_id_str and match:
+                param_id_str = f"p{match.group()}"
             else:
-                # Assume "Both"
-                rmin, rmax = extract_vals(text)
-                if rmin is not None:
-                    results.append({'gender': 'Both', 'rmin': rmin, 'rmax': rmax})
-                    
-            return results
-
-        # Load CSV into lookup: matched_test_id -> range_text
-        # We need to map CSV "Test Name" to our Test IDs.
-        # Strategy: Normalize CSV Name and match against normalization map of extracted Tests.
+                continue
         
-        # Build map: normalized_test_name -> test_id
-        # We constructed ws_tests_out earlier.
-        # We need to remember test names. 
-        # Re-iterate valid_test_ids is hard as we didn't store names mapping in a dict.
-        # Let's deduce it from ws_tests_out rows if possible, or build it during Test scan?
-        # Simpler: We can just use the `ws_tests_out` rows we just wrote? No, `append` doesn't return data.
-        # We'll just rely on `test_param_name_to_id` which maps (tid, pname) -> pid.
-        # But we need Name -> ID.
+        param_id = param_id_str.lower()
+        display_order = safe_int(safe_get(row, params_headers, ['display_order', 'order']), 0)
+        reportable = safe_get(row, params_headers, ['reportable', 'is_active'])
+        reportable = True if (reportable is True or str(reportable).lower() in ['true', '1', 'yes', 'y']) else True
         
-        # Re-scan Tests sheet in memory is dirty.
-        # Let's just look at the `ws_tests_in` again? Or build a cache.
-        # Let's build a separate lookup map: name_norm -> test_id
-        test_name_map = {}
-        for row in ws_tests_in.iter_rows(min_row=2, values_only=True):
-            if not row[idx_tid]: continue
-            tid = safe_str(row[idx_tid])
-            tname = row[idx_name]
-            if tname:
-                test_name_map[normalize_header(tname)] = tid
-                
-        # Now read CSV
-        import csv
-        with open(csv_file, 'r', encoding='utf-8-sig', errors='ignore') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                # CSV Headers: "Test Name", "Normal Range"
-                csv_tname = row.get("Test Name", "").strip()
-                csv_range = row.get("Normal Range", "").strip()
-                
-                if not csv_tname or not csv_range: continue
-                
-                # Match Test
-                norm_name = normalize_header(csv_tname)
-                tid = test_name_map.get(norm_name)
-                if not tid: continue
-                
-                # We have a TID and a Range. We need a PID.
-                # Find the 'main' parameter for this test.
-                # Check `test_param_name_to_id` keys: (tid, pname)
-                # This is tricky without knowing the parameter name.
-                # Heuristic: Pick the first parameter associated with this TID in our Mappings.
-                
-                # Let's find associated PIDs for this TID from our `ws_map_out` buffer?
-                # No, we can't read `ws_map_out`. 
-                # We can iterate `test_param_name_to_id`?
-                # Let's find associated PIDs for this TID
-                candidate_pids = [pid for (t, p), pid in test_param_name_to_id.items() if t == tid]
-                
-                target_pid = None
-                if candidate_pids:
-                    target_pid = candidate_pids[0]
-                else:
-                    # No existing mapping! Create default mapping to p_result
-                    # Only do this once per test to avoid duplicates if CSV has multiple rows
-                    # Check if we already mapped this in this loop?
-                    # We need a tracker.
-                    # Hack: just check if we have a provisional tracking?
-                    # Let's update test_param_name_to_id so we know it's mapped.
-                    target_pid = 'p_result'
-                    # Add to Mapping Sheet
-                    ws_map_out.append([tid, target_pid, 1, True])
-                    # Update lookup so next row for same test uses it
-                    test_param_name_to_id[(tid, 'Result')] = target_pid
-                
-                if not target_pid: continue
+        # Validate test_id and parameter_id exist
+        if test_id not in test_ids:
+            print(f"  WARNING: Row {row_num}: test_id {test_id} not found in Tests sheet")
+            continue
+        if param_id not in parameter_ids:
+            print(f"  WARNING: Row {row_num}: parameter_id {param_id} not found in Parameters sheet")
+            continue
+        
+        ws_mapping.append([test_id, param_id, display_order, reportable])
+        test_param_mappings.add((test_id, param_id))
+    
+    print(f"  Processed {len(test_param_mappings)} mappings")
+    
+    # ===== 4. PROCESS REFERENCERANGES SHEET =====
+    print("Processing ReferenceRanges sheet...")
+    ws_ranges = wb_out.create_sheet("ReferenceRanges")
+    ws_ranges.append([
+        'test_id', 'parameter_id', 'gender', 'age_min', 'age_max',
+        'reference_min', 'reference_max', 'critical_low', 'critical_high'
+    ])
+    
+    ranges_count = 0
+    if 'ReferenceRanges' in wb_in.sheetnames:
+        ranges_sheet = wb_in['ReferenceRanges']
+        ranges_headers = get_header_map(ranges_sheet)
+        
+        # Build parameter_name -> parameter_id mapping from Parameters sheet
+        param_name_to_id = {}
+        for row in params_sheet.iter_rows(min_row=2, values_only=True):
+            param_id_raw = safe_get(row, params_headers, ['parameter_id', 'param_id'])
+            param_name = safe_str(safe_get(row, params_headers, ['parameter_name', 'name']))
+            if param_id_raw and param_name:
+                param_id_str = safe_str(param_id_raw)
+                if param_id_str.isdigit():
+                    param_id_str = f"p{param_id_str}"
+                elif not param_id_str.lower().startswith('p'):
+                    match = re.search(r'\d+', param_id_str)
+                    if match:
+                        param_id_str = f"p{match.group()}"
+                    else:
+                        continue
+                param_name_to_id[param_name.lower()] = param_id_str.lower()
+        
+        for row_num, row in enumerate(ranges_sheet.iter_rows(min_row=2, values_only=True), 2):
+            test_id = safe_int(safe_get(row, ranges_headers, ['test_id']))
+            param_name = safe_str(safe_get(row, ranges_headers, ['parameter_name', 'name']))
+            
+            if not test_id:
+                continue
+            
+            # Try to get parameter_id from parameter_name
+            param_id = None
+            if param_name:
+                param_id = param_name_to_id.get(param_name.lower())
+            
+            # If not found, try direct parameter_id column
+            if not param_id:
+                param_id_raw = safe_get(row, ranges_headers, ['parameter_id', 'param_id'])
+                if param_id_raw:
+                    param_id_str = safe_str(param_id_raw)
+                    if param_id_str.isdigit():
+                        param_id_str = f"p{param_id_str}"
+                    elif not param_id_str.lower().startswith('p'):
+                        match = re.search(r'\d+', param_id_str)
+                        if match:
+                            param_id_str = f"p{match.group()}"
+                    param_id = param_id_str.lower()
+            
+            if not param_id:
+                continue
+            
+            gender = safe_str(safe_get(row, ranges_headers, ['gender', 'sex']), 'Both')
+            age_min = safe_int(safe_get(row, ranges_headers, ['age_min_years', 'age_min']), 0)
+            age_max = safe_int(safe_get(row, ranges_headers, ['age_max_years', 'age_max']), 999)
+            ref_min = safe_decimal(safe_get(row, ranges_headers, ['ref_min', 'reference_min']))
+            ref_max = safe_decimal(safe_get(row, ranges_headers, ['ref_max', 'reference_max']))
+            crit_low = safe_decimal(safe_get(row, ranges_headers, ['critical_low']))
+            crit_high = safe_decimal(safe_get(row, ranges_headers, ['critical_high']))
+            
+            # Validate test_id and parameter_id exist
+            if test_id not in test_ids:
+                continue
+            if param_id not in parameter_ids:
+                continue
+            
+            ws_ranges.append([
+                test_id, param_id, gender, age_min, age_max,
+                float(ref_min) if ref_min else None,
+                float(ref_max) if ref_max else None,
+                float(crit_low) if crit_low else None,
+                float(crit_high) if crit_high else None
+            ])
+            ranges_count += 1
+    
+    print(f"  Processed {ranges_count} reference ranges")
+    
+    # ===== VALIDATION =====
+    print("\n=== Validation Summary ===")
+    print(f"Tests: {len(test_ids)}")
+    print(f"Parameters: {len(parameter_ids)}")
+    print(f"Test-Parameter Mappings: {len(test_param_mappings)}")
+    print(f"Reference Ranges: {ranges_count}")
+    
+    # Check for tests without mappings
+    tests_with_mappings = {t_id for t_id, _ in test_param_mappings}
+    tests_without_mappings = test_ids - tests_with_mappings
+    if tests_without_mappings:
+        print(f"\nWARNING: {len(tests_without_mappings)} tests have no parameter mappings")
+        print("  These will be handled by catalog_ensure_minimum_parameters command")
+    
+    # Check for orphaned mappings
+    orphaned_mappings = set()
+    for test_id, param_id in test_param_mappings:
+        if test_id not in test_ids or param_id not in parameter_ids:
+            orphaned_mappings.add((test_id, param_id))
+    
+    if orphaned_mappings:
+        print(f"\nERROR: {len(orphaned_mappings)} orphaned mappings found")
+        return False
+    
+    # Save output file
+    print(f"\nSaving output to: {output_path}")
+    wb_out.save(output_path)
+    print("✓ Conversion completed successfully")
+    
+    return True
 
-                
-                # Parse Range
-                parsed = parse_range_text(csv_range)
-                for p in parsed:
-                    # Check duplication? We assume Excel didn't provide ranges (count was 0).
-                    # Add to output
-                    # headers: ["test_id", "parameter_id", "gender", "age_min", "age_max", "reference_min", "reference_max", "critical_low", "critical_high"]
-                    ws_rr_out.append([tid, target_pid, p['gender'], 0, 120, p['rmin'], p['rmax'], None, None])
-                    csv_ranges_added += 1
 
-        print(f"Processed CSV. Added {csv_ranges_added} ranges.")
-
-    wb_out.save(output_file)
-    print(f"Success. Saved to {output_file}")
-
-if __name__ == "__main__":
-    import re
+def main():
+    """Main entry point."""
     if len(sys.argv) < 3:
-        print("Usage: python script.py <in_excel> <out_excel> [in_csv]")
+        print("Usage: convert_excel_to_import_contract.py <input.xlsx> <output.xlsx>")
         sys.exit(1)
-    main(sys.argv[1], sys.argv[2])
+    
+    input_path = Path(sys.argv[1])
+    output_path = Path(sys.argv[2])
+    
+    if not input_path.exists():
+        print(f"ERROR: Input file not found: {input_path}")
+        sys.exit(1)
+    
+    success = convert_excel(input_path, output_path)
+    sys.exit(0 if success else 1)
+
+
+if __name__ == '__main__':
+    main()
