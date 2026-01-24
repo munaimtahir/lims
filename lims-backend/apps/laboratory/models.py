@@ -19,9 +19,12 @@ def validate_parameter_id(value):
     if not value:
         raise ValidationError("parameter_id cannot be empty")
     
-    # Normalize to lowercase for validation
     normalized = value.lower().strip()
     
+    # Allow special system parameters
+    if normalized in ['p_result', 'p_qual']:
+        return normalized
+
     if not re.match(r'^p[0-9]+$', normalized):
         raise ValidationError(
             f"parameter_id must be in format 'p<number>' (e.g., p1, p2, p53). Got: {value}"

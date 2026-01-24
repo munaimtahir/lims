@@ -148,7 +148,7 @@ class OrderSerializer(serializers.ModelSerializer):
             # Add tests
             for test_id in test_ids:
                 try:
-                    test = Test.objects.get(id=test_id)
+                    test = Test.objects.get(pk=test_id)
                     OrderItem.objects.create(order=order, test=test, price=test.price)
                 except Test.DoesNotExist:
                     pass
@@ -156,7 +156,7 @@ class OrderSerializer(serializers.ModelSerializer):
             # Add panels
             for panel_id in panel_ids:
                 try:
-                    panel = TestPanel.objects.get(id=panel_id)
+                    panel = TestPanel.objects.get(pk=panel_id)
                     OrderItem.objects.create(
                         order=order, panel=panel, price=panel.price
                     )

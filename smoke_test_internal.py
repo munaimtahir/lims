@@ -12,8 +12,12 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "http://localhost:8012"
+BASE_URL = "http://localhost:8000"
 API_BASE = f"{BASE_URL}/api/v1"
+
+# Session setup
+session = requests.Session()
+session.headers.update({"X-Forwarded-Proto": "https"})
 
 # Track test results
 test_results = []
@@ -39,7 +43,7 @@ def log_test(step, result, message, details=None):
 def login(username, password, role_name):
     """Login and return auth token."""
     try:
-        response = requests.post(
+        response = session.post(
             f"{API_BASE}/auth/login/",
             json={"username": username, "password": password}
         )
@@ -65,7 +69,7 @@ def login(username, password, role_name):
 def create_patient(token):
     """Create a patient and return patient ID."""
     try:
-        response = requests.post(
+        response = session.post(
             f"{API_BASE}/patients/",
             headers={"Authorization": f"Bearer {token}"},
             json={
@@ -98,7 +102,7 @@ def create_patient(token):
 def get_available_tests(token):
     """Get list of available tests."""
     try:
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/laboratory/tests/",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -106,7 +110,7 @@ def get_available_tests(token):
             tests = response.json()
             if isinstance(tests, dict) and "results" in tests:
                 tests = tests["results"]
-            test_ids = [t["id"] for t in tests[:2]] if len(tests) >= 2 else []
+            test_ids = [t["test_id"] for t in tests[:2]] if len(tests) >= 2 else []
             log_test("TEST-LIST", "PASS", f"Found {len(tests)} tests, using IDs: {test_ids}")
             return test_ids
         else:
@@ -120,7 +124,7 @@ def get_available_tests(token):
 def create_order(token, patient_id, test_ids):
     """Create order with tests and return order ID."""
     try:
-        response = requests.post(
+        response = session.post(
             f"{API_BASE}/orders/orders/",
             headers={"Authorization": f"Bearer {token}"},
             json={
@@ -150,7 +154,7 @@ def verify_samples_auto_created(token, order_id, expected_count):
     This should work WITHOUT any manual workarounds.
     """
     try:
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/samples/?order_item__order={order_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -193,7 +197,7 @@ def get_pending_collections(token):
     """Get pending collection worklist."""
     try:
         # Try the main samples endpoint with status filter
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/samples/?status=PENDING",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -213,7 +217,7 @@ def get_pending_collections(token):
 def collect_sample(token, sample_id):
     """Mark sample as collected."""
     try:
-        response = requests.patch(
+        response = session.patch(
             f"{API_BASE}/samples/{sample_id}/",
             headers={"Authorization": f"Bearer {token}"},
             json={
@@ -236,7 +240,7 @@ def get_result_worklist(token):
     """Get result entry worklist."""
     try:
         # Use samples with COLLECTED status
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/samples/?status=COLLECTED",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -256,7 +260,7 @@ def get_result_worklist(token):
 def get_test_parameters(token, test_id):
     """Get parameters for a test."""
     try:
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/laboratory/parameters/?test={test_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -279,7 +283,7 @@ def enter_result_bulk(token, order_item_id, test_parameter_id, value):
     REGRESSION TEST for Issue #2: Verify status is saved as ENTERED, not DRAFT.
     """
     try:
-        response = requests.post(
+        response = session.post(
             f"{API_BASE}/results/bulk_entry/",
             headers={"Authorization": f"Bearer {token}"},
             json={
@@ -317,7 +321,7 @@ def verify_result_status_entered(token, order_item_id, test_parameter_id):
     REGRESSION TEST for Issue #2: Verify result status is ENTERED in DB, not DRAFT.
     """
     try:
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/results/?order_item={order_item_id}&test_parameter={test_parameter_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -351,7 +355,7 @@ def verify_result_status_entered(token, order_item_id, test_parameter_id):
 def get_verification_queue(token):
     """Get verification queue."""
     try:
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/results/verification_queue/",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -371,7 +375,7 @@ def get_verification_queue(token):
 def verify_result(token, result_id):
     """Verify a result."""
     try:
-        response = requests.post(
+        response = session.post(
             f"{API_BASE}/results/{result_id}/verify/",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -389,7 +393,7 @@ def verify_result(token, result_id):
 def generate_report(token, order_id):
     """Generate report PDF."""
     try:
-        response = requests.post(
+        response = session.post(
             f"{API_BASE}/reports/",
             headers={"Authorization": f"Bearer {token}"},
             json={"order": order_id}
@@ -410,7 +414,7 @@ def generate_report(token, order_id):
 def download_report(token, report_id):
     """Download report PDF."""
     try:
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/reports/{report_id}/download/",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -429,7 +433,7 @@ def download_report(token, report_id):
 def record_payment(token, order_id, amount):
     """Record payment."""
     try:
-        response = requests.post(
+        response = session.post(
             f"{API_BASE}/payments/",
             headers={"Authorization": f"Bearer {token}"},
             json={
@@ -454,7 +458,7 @@ def record_payment(token, order_id, amount):
 def download_receipt(token, payment_id):
     """Download receipt PDF."""
     try:
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/payments/{payment_id}/download_receipt/",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -473,7 +477,7 @@ def download_receipt(token, payment_id):
 def check_audit_logs(token):
     """Check audit logs."""
     try:
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/audit/logs/",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -494,7 +498,7 @@ def check_audit_logs(token):
 def check_health(token):
     """Check health endpoint."""
     try:
-        response = requests.get(
+        response = session.get(
             f"{API_BASE}/health/",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -542,10 +546,13 @@ def main():
     print("PHASE 2: ORDER CREATION (REGRESSION TEST FOR ISSUE #1)")
     print("=" * 80)
     
-    # Use hardcoded patient ID (patient fetching has issues due to response format)
-    patient_id = 12
-    mrn = "PAT-20260117-0007"
-    log_test("PATIENT-EXISTING", "PASS", f"Using existing patient (ID: {patient_id}, MRN: {mrn})")
+    # Create a fresh patient
+    patient_id, mrn = create_patient(receptionist_token)
+    if not patient_id:
+        print("\n❌ CRITICAL: Patient creation failed. Cannot proceed.")
+        return False
+    
+    log_test("PATIENT-CREATE", "PASS", f"Created patient (ID: {patient_id}, MRN: {mrn})")
     
     test_ids = get_available_tests(receptionist_token)
     if len(test_ids) < 2:
@@ -600,7 +607,7 @@ def main():
         print("\n❌ CRITICAL: No test parameters found.")
         return False
     
-    test_parameter_id = parameters[0]["id"]
+    test_parameter_id = parameters[0]["parameter_id"]
     
     # Enter result via bulk_entry (the UI endpoint)
     result_id = enter_result_bulk(labtech_token, order_item_id, test_parameter_id, "999.0")

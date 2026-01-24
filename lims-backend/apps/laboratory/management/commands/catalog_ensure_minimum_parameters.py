@@ -3,9 +3,9 @@ Management command to ensure all active tests have at least one parameter mappin
 
 This command:
 1. Finds tests with no parameter mappings
-2. Creates a default parameter mapping for each (using p_result or p_qual)
-3. Uses p_qual for qualitative tests (ELISA, Rapid, Screen, etc.)
-4. Uses p_result for all other tests
+2. Creates a default parameter mapping for each (using p998 or p999)
+3. Uses p999 for qualitative tests (ELISA, Rapid, Screen, etc.)
+4. Uses p998 for all other tests
 
 Usage:
     python manage.py catalog_ensure_minimum_parameters [--dry-run]
