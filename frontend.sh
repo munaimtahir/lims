@@ -158,10 +158,20 @@ cleanup_frontend_image() {
     
     log_info "Removing old lims-frontend Docker image..."
     
-    # Remove lims-frontend image
-    if docker images | grep -q "lims-frontend"; then
+    # Remove lims-frontend image by name
+    if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "lims-frontend"; then
         log_info "Removing lims-frontend image..."
-        docker rmi -f lims-frontend:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
+        docker images --format "{{.Repository}}:{{.Tag}}" | grep "lims-frontend" | xargs -r docker rmi -f 2>&1 | tee -a "$DEPLOY_LOG" || true
+    fi
+    
+    # Remove any images with lims-frontend in the name
+    LIMS_FRONTEND_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -i "lims.*frontend" || true)
+    if [ -n "$LIMS_FRONTEND_IMAGES" ]; then
+        log_info "Removing additional frontend-related images..."
+        echo "$LIMS_FRONTEND_IMAGES" | while read image; do
+            log_info "Removing $image..."
+            docker rmi -f "$image" 2>&1 | tee -a "$DEPLOY_LOG" || true
+        done
     fi
     
     log_info "Pruning dangling images..."
@@ -220,27 +230,49 @@ ensure_superuser() {
     fi
     
     log_info "Checking for admin user..."
-    USER_EXISTS=$(docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
+    RESULT=$(docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate
 User = get_user_model()
-exists = User.objects.filter(username='admin').exists()
-print('EXISTS' if exists else 'NOTEXISTS')
+try:
+    if User.objects.filter(username='admin').exists():
+        admin = User.objects.get(username='admin')
+        # Check if password is correct
+        if admin.check_password('admin123'):
+            # Verify authentication works
+            user = authenticate(username='admin', password='admin123')
+            if user and user.is_superuser and user.is_staff and user.is_active:
+                print("EXISTS_VALID")
+            else:
+                print("EXISTS_INVALID")
+        else:
+            print("EXISTS_WRONG_PASSWORD")
+    else:
+        print("NOTEXISTS")
+except Exception as e:
+    print(f"ERROR: {e}")
 PYEOF
 )
     
-    if echo "$USER_EXISTS" | grep -q "EXISTS"; then
-        log_info "Admin user already exists. Resetting password to 'admin123'..."
+    if echo "$RESULT" | grep -q "EXISTS_VALID"; then
+        log_success "Admin user exists and credentials are valid (admin/admin123)"
+    elif echo "$RESULT" | grep -q "EXISTS_INVALID\|EXISTS_WRONG_PASSWORD"; then
+        log_info "Admin user exists but needs password reset or permission update..."
         docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
-admin = User.objects.get(username='admin')
-admin.set_password('admin123')
-admin.is_superuser = True
-admin.is_staff = True
-admin.save()
-print("Password reset successfully")
+try:
+    admin = User.objects.get(username='admin')
+    admin.set_password('admin123')
+    admin.is_superuser = True
+    admin.is_staff = True
+    admin.is_active = True
+    admin.save()
+    print("Password and permissions updated successfully")
+except Exception as e:
+    print(f"Error updating user: {e}")
 PYEOF
-        log_success "Admin password reset to 'admin123'"
+        log_success "Admin user updated: admin/admin123"
     else
         log_info "Creating superuser admin/admin123..."
         docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
@@ -253,12 +285,39 @@ try:
     else:
         admin = User.objects.get(username='admin')
         admin.set_password('admin123')
+        admin.is_superuser = True
+        admin.is_staff = True
+        admin.is_active = True
         admin.save()
-        print("Superuser password updated")
+        print("Superuser password and permissions updated")
 except Exception as e:
     print(f"Error managing superuser: {e}")
+    import traceback
+    traceback.print_exc()
 PYEOF
-        log_success "Superuser ensured: admin/admin123"
+        log_success "Superuser created: admin/admin123"
+    fi
+    
+    # Verify the user can authenticate
+    log_info "Verifying admin user authentication..."
+    AUTH_RESULT=$(docker compose --env-file "$ENV_FILE" exec -T backend python manage.py shell << 'PYEOF'
+from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+user = authenticate(username='admin', password='admin123')
+if user and user.is_superuser and user.is_staff and user.is_active:
+    print("AUTH_SUCCESS")
+else:
+    print("AUTH_FAILED")
+PYEOF
+)
+    
+    if echo "$AUTH_RESULT" | grep -q "AUTH_SUCCESS"; then
+        log_success "✓ Admin user authentication verified: admin/admin123"
+    else
+        log_error "✗ Admin user authentication verification failed"
+        return 1
     fi
 }
 
