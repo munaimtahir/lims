@@ -39,6 +39,14 @@
 # HTTP configuration for Docker container (host Caddy handles HTTPS)
 :80 {
     import common
+    
+    # Enable access logging
+    log {
+        output stdout
+        level info
+    }
+
+
 
      # Frontend - React SPA
      @frontend {

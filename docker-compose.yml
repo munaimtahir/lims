@@ -225,8 +225,8 @@ services:
     container_name: lims_proxy
     restart: unless-stopped
     ports:
-      # Expose only to localhost on port 8012 - host Caddy will proxy to this
-      - "127.0.0.1:8012:80"
+      # Expose on port 8012 (Host Caddy proxies to this)
+      - "8012:80"
     volumes:
       # Caddy configuration file
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
