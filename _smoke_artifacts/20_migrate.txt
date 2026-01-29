@@ -1,0 +1,11 @@
+time="2026-01-29T02:36:39+05:00" level=warning msg="/home/munaim/srv/apps/lims/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+System check identified some issues:
+
+WARNINGS:
+?: (staticfiles.W004) The directory '/app/static' in the STATICFILES_DIRS setting does not exist.
+Operations to perform:
+  Apply all migrations: accounts, admin, audit, auth, billing, contenttypes, core, laboratory, orders, patients, reports, results, samples, sessions
+Running migrations:
+  No migrations to apply.
+  Your models in app(s): 'core' have changes that are not yet reflected in a migration, and so won't be applied.
+  Run 'manage.py makemigrations' to make new migrations, and then re-run 'manage.py migrate' to apply them.

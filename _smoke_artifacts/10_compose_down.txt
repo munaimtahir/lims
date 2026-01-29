@@ -1,0 +1,15 @@
+time="2026-01-29T02:30:51+05:00" level=warning msg="/home/munaim/srv/apps/lims/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Volume lims_redis_data Removing 
+ Volume lims_caddy_config Removing 
+ Volume lims_postgres_data Removing 
+ Volume lims_static_files Removing 
+ Volume lims_media_files Removing 
+ Volume lims_caddy_data Removing 
+ Network lims_network Removing 
+ Volume lims_static_files Removed 
+ Volume lims_media_files Removed 
+ Volume lims_caddy_config Removed 
+ Volume lims_redis_data Removed 
+ Volume lims_postgres_data Removed 
+ Volume lims_caddy_data Removed 
+ Network lims_network Removed 

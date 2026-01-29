@@ -1,0 +1,21 @@
+================================================================================
+LIMS v1.0 - SMOKE TEST V2 (CONTRACT AWARE)
+================================================================================
+Target: http://localhost:8013
+✅ AUTH-Admin: Login successful for admin
+✅ AUTH-Receptionist: Login successful for receptionist
+✅ AUTH-Phlebotomist: Login successful for phlebotomist
+✅ AUTH-LabTech: Login successful for labtech
+✅ AUTH-Pathologist: Login successful for pathologist
+✅ PATIENT-CREATE: Patient created (ID: 10, MRN: PAT-20260129-0010)
+✅ TEST-LIST: Found 3 tests, using IDs: [1, 2]
+✅ ORDER-CREATE: Order created (ID: 10, Number: ORD-20260129-0010, Items: 2)
+✅ REGRESSION-ISSUE1: Samples auto-created (2/2)
+✅ SAMPLE-COLLECT: Sample 19 collected
+✅ TEST-PARAMS: Found 4 parameters
+✅ RESULT-ENTRY: Result entered (ID: 1)
+✅ RESULT-VERIFY: Result 1 verified
+
+================================================================================
+✅ SMOKE TEST V2 PASSED
+================================================================================

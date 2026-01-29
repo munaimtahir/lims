@@ -19,7 +19,7 @@ export default function RegistrationPage() {
   });
 
   // Order form state
-  const [showOrderForm, setShowOrderForm] = useState(false);
+
   const [testQuery, setTestQuery] = useState('');
   const [testSuggestions, setTestSuggestions] = useState<TestSearchResult[]>([]);
   const [showTestSuggestions, setShowTestSuggestions] = useState(false);
@@ -188,7 +188,7 @@ export default function RegistrationPage() {
     onSuccess: (response) => {
       const patient = response.data;
       setSelectedPatient(patient);
-      setShowOrderForm(true);
+
       // Focus test search after short delay
       setTimeout(() => testSearchRef.current?.focus(), 100);
     },
@@ -210,7 +210,7 @@ export default function RegistrationPage() {
       setDiscountAmount('0');
       setPaidAmount('0');
       setReferredBy('');
-      setShowOrderForm(false);
+
       mobileInputRef.current?.focus();
     },
     onError: (error: any) => {

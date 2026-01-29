@@ -47,7 +47,7 @@ class TestParameterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TestParameter
-        fields = ["parameter", "parameter_name", "unit", "display_order", "reportable"]
+        fields = ["id", "parameter", "parameter_name", "unit", "display_order", "reportable"]
 
 
 class TestSerializer(serializers.ModelSerializer):
