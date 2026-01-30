@@ -144,15 +144,15 @@ stop_all_services() {
     print_header "Stopping All Services"
     
     log_info "Stopping all LIMS containers..."
-    docker compose --env-file "$ENV_FILE" down 2>&1 | tee -a "$DEPLOY_LOG" || true
+    docker compose --env-file "$ENV_FILE" down -v 2>&1 | tee -a "$DEPLOY_LOG" || true
     
     log_info "Checking for any remaining containers..."
-    REMAINING=$(docker ps -a --format '{{.Names}}' | grep "lims" || true)
+    REMAINING=$(docker ps -a --format '{{.Names}}' | grep -E "lims_|lims-" || true)
     
     if [ -n "$REMAINING" ]; then
         log_warning "Found remaining containers. Cleaning up..."
         echo "$REMAINING" | while read container; do
-            log_info "Removing $container..."
+            log_info "Stopping and removing $container..."
             docker stop "$container" 2>&1 | tee -a "$DEPLOY_LOG" || true
             docker rm "$container" 2>&1 | tee -a "$DEPLOY_LOG" || true
         done
@@ -166,36 +166,29 @@ cleanup_old_images() {
     
     log_info "Removing old LIMS Docker images..."
     
-    # Remove lims-backend image
-    if docker images | grep -q "lims-backend"; then
-        log_info "Removing lims-backend image..."
-        docker rmi -f lims-backend:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
-    fi
-    
-    # Remove lims-celery image
-    if docker images | grep -q "lims-celery"; then
-        log_info "Removing lims-celery image..."
-        docker rmi -f lims-celery:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
-    fi
-    
-    # Remove lims-frontend image
-    if docker images | grep -q "lims-frontend"; then
-        log_info "Removing lims-frontend image..."
-        docker rmi -f lims-frontend:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
-    fi
-    
-    # Remove lims compose project images
-    LIMS_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "lims-" || true)
+    # Remove all LIMS-related images (backend, celery, frontend)
+    LIMS_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "lims-|lims_" || true)
     if [ -n "$LIMS_IMAGES" ]; then
-        log_info "Removing additional LIMS images..."
+        log_info "Removing all LIMS images..."
         echo "$LIMS_IMAGES" | while read image; do
             log_info "Removing $image..."
             docker rmi -f "$image" 2>&1 | tee -a "$DEPLOY_LOG" || true
         done
     fi
     
-    log_info "Pruning dangling images..."
+    # Also check for images with different naming patterns
+    ALTERNATIVE_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -iE "lims.*(backend|celery|frontend)" || true)
+    if [ -n "$ALTERNATIVE_IMAGES" ]; then
+        log_info "Removing alternative-named LIMS images..."
+        echo "$ALTERNATIVE_IMAGES" | while read image; do
+            log_info "Removing $image..."
+            docker rmi -f "$image" 2>&1 | tee -a "$DEPLOY_LOG" || true
+        done
+    fi
+    
+    log_info "Pruning dangling images and build cache..."
     docker image prune -f 2>&1 | tee -a "$DEPLOY_LOG" || true
+    docker builder prune -f 2>&1 | tee -a "$DEPLOY_LOG" || true
     
     log_success "Old images cleaned up"
 }

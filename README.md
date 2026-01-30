@@ -272,7 +272,7 @@ DJANGO_SETTINGS_MODULE=config.settings.production
 
 For complete deployment guide, see [docs/ops/DEPLOYMENT.md](./docs/ops/DEPLOYMENT.md).
 
-**Port Configuration**: LIMS uses port 8012 (localhost only) and is proxied by the host Caddy server on ports 80/443. For details on the two-tier proxy architecture and port assignment, see [docs/deployment/PORT_CONFIGURATION.md](./docs/deployment/PORT_CONFIGURATION.md).
+**Port Configuration**: LIMS uses port 8013 (localhost only) and is proxied by the host Caddy server on ports 80/443. For details on the two-tier proxy architecture and port assignment, see [docs/deployment/PORT_CONFIGURATION.md](./docs/deployment/PORT_CONFIGURATION.md).
 
 #### 2. Build and Start Services
 

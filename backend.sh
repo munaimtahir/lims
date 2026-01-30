@@ -194,16 +194,24 @@ cleanup_backend_images() {
     
     log_info "Removing old lims-backend and lims-celery Docker images..."
     
-    # Remove lims-backend image
-    if docker images | grep -q "lims-backend"; then
-        log_info "Removing lims-backend image..."
-        docker rmi -f lims-backend:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
+    # Remove lims-backend images
+    BACKEND_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -i "lims.*backend" || true)
+    if [ -n "$BACKEND_IMAGES" ]; then
+        log_info "Removing backend images..."
+        echo "$BACKEND_IMAGES" | while read image; do
+            log_info "Removing $image..."
+            docker rmi -f "$image" 2>&1 | tee -a "$DEPLOY_LOG" || true
+        done
     fi
     
-    # Remove lims-celery image
-    if docker images | grep -q "lims-celery"; then
-        log_info "Removing lims-celery image..."
-        docker rmi -f lims-celery:latest 2>&1 | tee -a "$DEPLOY_LOG" || true
+    # Remove lims-celery images
+    CELERY_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -i "lims.*celery" || true)
+    if [ -n "$CELERY_IMAGES" ]; then
+        log_info "Removing celery images..."
+        echo "$CELERY_IMAGES" | while read image; do
+            log_info "Removing $image..."
+            docker rmi -f "$image" 2>&1 | tee -a "$DEPLOY_LOG" || true
+        done
     fi
     
     log_info "Pruning dangling images..."

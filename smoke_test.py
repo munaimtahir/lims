@@ -12,7 +12,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "http://localhost:8013"
+BASE_URL = "http://localhost:8012"
 API_BASE = f"{BASE_URL}/api/v1"
 
 # Track test results

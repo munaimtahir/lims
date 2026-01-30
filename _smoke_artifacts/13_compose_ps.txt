@@ -1,0 +1,7 @@
+NAME            IMAGE                COMMAND                  SERVICE    CREATED              STATUS                             PORTS
+lims_backend    lims-backend         "gunicorn --bind 0.0…"   backend    About a minute ago   Up 58 seconds (health: starting)   8000/tcp
+lims_celery     lims-celery          "celery -A config wo…"   celery     About a minute ago   Up 58 seconds                      8000/tcp
+lims_db         postgres:16-alpine   "docker-entrypoint.s…"   db         2 minutes ago        Up 2 minutes (healthy)             5432/tcp
+lims_frontend   lims-frontend        "/docker-entrypoint.…"   frontend   59 seconds ago       Up 58 seconds                      80/tcp
+lims_proxy      caddy:2-alpine       "caddy run --config …"   proxy      59 seconds ago       Up 58 seconds (healthy)            443/tcp, 2019/tcp, 443/udp, 0.0.0.0:8012->80/tcp, [::]:8012->80/tcp
+lims_redis      redis:7-alpine       "docker-entrypoint.s…"   redis      2 minutes ago        Up 2 minutes (healthy)             6379/tcp

@@ -1,0 +1,29 @@
+time="2026-01-29T02:36:56+05:00" level=warning msg="/home/munaim/srv/apps/lims/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+System check identified some issues:
+
+WARNINGS:
+?: (staticfiles.W004) The directory '/app/static' in the STATICFILES_DIRS setting does not exist.
+Creating demo users...
+  Updated user: admin (Admin)
+  Updated user: receptionist (Receptionist)
+  Updated user: cashier (Cashier)
+  Updated user: phlebotomist (Phlebotomist)
+  Updated user: labtech (Lab Technician)
+  Updated user: pathologist (Pathologist)
+  Updated user: manager (Manager)
+
+============================================================
+DEMO USERS SUMMARY
+============================================================
+
+Username        Role                 Password       
+------------------------------------------------------------
+admin           Admin                admin123       
+receptionist    Receptionist         recep123       
+cashier         Cashier              cash123        
+phlebotomist    Phlebotomist         phleb123       
+labtech         Lab Technician       labtech123     
+pathologist     Pathologist          patho123       
+manager         Manager              manager123     
+
+Successfully created/updated 7 demo users

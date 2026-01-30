@@ -20,9 +20,55 @@
 }
 
 .sectionsContainer {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 2rem;
-  grid-template-columns: 1fr;
+}
+
+.splitView {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.globalSearchSection {
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 50;
+}
+
+.globalSearchWrapper {
+  position: relative;
+  max-width: 600px;
+}
+
+.globalSearchInput {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  font-size: 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s;
+  background-color: white;
+}
+
+.globalSearchInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-light);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  width: 1.25rem;
+  height: 1.25rem;
+  pointer-events: none;
 }
 
 .card {
@@ -57,6 +103,15 @@
   border-radius: 9999px;
   background: var(--color-bg-secondary);
   color: var(--color-text-secondary);
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .statusSuccess {
@@ -136,7 +191,8 @@
   border-bottom: none;
 }
 
-.suggestionItem:hover, .suggestionActive {
+.suggestionItem:hover,
+.suggestionActive {
   background-color: var(--color-bg-secondary);
 }
 

@@ -1,0 +1,11 @@
+HTTP/1.1 301 Moved Permanently
+Server: gunicorn
+Date: Thu, 29 Jan 2026 08:38:57 GMT
+Connection: close
+Transfer-Encoding: chunked
+Content-Type: text/html; charset=utf-8
+Location: https://localhost:8000/api/v1/health/
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
