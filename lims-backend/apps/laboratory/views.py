@@ -3,15 +3,18 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import TestCategory, Test, TestPanel, TestParameter, ReferenceRange
+from .models import TestCategory, Test, TestPanel, TestParameter, ReferenceRange, CatalogImportJob, Parameter
 from .serializers import (
     TestCategorySerializer,
     TestSerializer,
     TestPanelSerializer,
     TestParameterSerializer,
     ReferenceRangeSerializer,
+    CatalogImportJobSerializer,
 )
-from .utils import import_tests_from_excel
+from .catalog_io import import_catalog_from_excel, export_catalog_workbook
+from apps.accounts.permissions import IsAdmin
+from django.http import HttpResponse
 
 
 class BulkImportViewSet(viewsets.ViewSet):
@@ -20,13 +23,17 @@ class BulkImportViewSet(viewsets.ViewSet):
     
     Supports dry-run mode for validation without writing to database.
     """
+    permission_classes = [IsAdmin]
 
     def create(self, request):
         """
         Import data from an uploaded Excel file.
         
         Query params:
-            - dry_run: If 'true', validates the file without writing to database
+            - strict: If 'true', missing required values are errors (default true)
+            - allow_defaults: If 'true', apply defaults for optional fields (default false)
+            - mode: Only 'upsert' is supported (default upsert)
+            - dry_run: If 'true', validates the file without writing to database (default true)
         """
         file = request.FILES.get("file")
         if not file:
@@ -35,19 +42,45 @@ class BulkImportViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check for dry_run parameter
-        dry_run = request.query_params.get("dry_run", "").lower() == "true"
+        def parse_bool(value, default):
+            if value is None:
+                return default
+            return str(value).lower() in ["true", "1", "yes"]
+
+        strict = parse_bool(request.query_params.get("strict"), True)
+        allow_defaults = parse_bool(request.query_params.get("allow_defaults"), False)
+        mode = request.query_params.get("mode", "upsert")
+        dry_run = parse_bool(request.query_params.get("dry_run"), True)
 
         try:
-            summary = import_tests_from_excel(file, dry_run=dry_run)
+            summary = import_catalog_from_excel(
+                file,
+                strict=strict,
+                allow_defaults=allow_defaults,
+                mode=mode,
+                dry_run=dry_run,
+            )
+
+            job = CatalogImportJob.objects.create(
+                created_by=request.user if request.user.is_authenticated else None,
+                strict=strict,
+                allow_defaults=allow_defaults,
+                mode=mode,
+                dry_run=dry_run,
+                summary_json=summary,
+                errors_json=summary.get("errors", []),
+                warnings_json=summary.get("warnings", []),
+                source_filename=getattr(file, "name", ""),
+            )
             
             # If there are validation errors, return 400
-            if not summary.get("validation_passed", True):
+            if summary.get("errors"):
                 return Response(
                     {
                         "success": False,
                         "message": "Import validation failed. Please fix the errors and try again.",
-                        "summary": summary
+                        "summary": summary,
+                        "job_id": job.id,
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
@@ -55,10 +88,9 @@ class BulkImportViewSet(viewsets.ViewSet):
             return Response(
                 {
                     "success": True,
-                    "message": summary.get(
-                        "message", "Import completed successfully"
-                    ),
-                    "summary": summary
+                    "message": "Import completed successfully" if not dry_run else "Dry-run validation completed",
+                    "summary": summary,
+                    "job_id": job.id,
                 },
                 status=(
                     status.HTTP_201_CREATED if not dry_run
@@ -89,7 +121,6 @@ class BulkImportViewSet(viewsets.ViewSet):
         """
         Download the Excel template for bulk import.
         """
-        from django.http import HttpResponse
         from .utils import generate_import_template
         
         workbook = generate_import_template()
@@ -165,7 +196,8 @@ class TestViewSet(viewsets.ModelViewSet):
         results = []
         for test in tests:
             results.append({
-                "id": test.id,
+                "id": test.test_id,
+                "test_id": test.test_id,
                 "test_code": test.test_code,
                 "test_name": test.test_name,
                 "category_name": test.category.name if test.category else "",
@@ -291,3 +323,112 @@ class ReferenceRangeViewSet(viewsets.ModelViewSet):
             {"status": "Reference range deactivated"},
             status=status.HTTP_200_OK,
         )
+
+
+class CatalogImportJobViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = CatalogImportJob.objects.all()
+    serializer_class = CatalogImportJobSerializer
+    permission_classes = [IsAdmin]
+
+
+class CatalogExportView(viewsets.ViewSet):
+    permission_classes = [IsAdmin]
+
+    def list(self, request):
+        workbook = export_catalog_workbook()
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="LIMS_Catalog_Export.xlsx"'
+        workbook.save(response)
+        return response
+
+
+class CatalogAuditView(viewsets.ViewSet):
+    permission_classes = [IsAdmin]
+
+    def list(self, request):
+        duplicate_test_codes = (
+            Test.objects.values("test_code")
+            .annotate(count=models.Count("test_id"))
+            .filter(count__gt=1)
+        )
+        duplicate_param_codes = (
+            Parameter.objects.values("parameter_id")
+            .annotate(count=models.Count("parameter_id"))
+            .filter(count__gt=1)
+        )
+        tests_without_parameters = (
+            Test.objects.filter(test_parameters__isnull=True)
+            .values("test_id", "test_code", "test_name")[:10]
+        )
+        orphan_mappings = (
+            TestParameter.objects.filter(
+                models.Q(test__isnull=True) | models.Q(parameter__isnull=True)
+            )
+        )
+        missing_ranges = (
+            TestParameter.objects.filter(reference_ranges__isnull=True)
+            .values("test_id", "parameter_id")[:10]
+        )
+        invalid_ranges = (
+            ReferenceRange.objects.filter(
+                models.Q(reference_min__isnull=True, reference_max__isnull=True)
+                | models.Q(age_min__gte=models.F("age_max"))
+            )
+        )
+        serum_defaults = Test.objects.filter(sample_type__iexact="Serum")
+        zero_price = Test.objects.filter(price=0)
+        default_tat = Test.objects.filter(turnaround_time=24)
+        panels_without_tests = TestPanel.objects.filter(tests__isnull=True)
+
+        return Response({
+            "duplicates": {
+                "test_code": {
+                    "count": duplicate_test_codes.count(),
+                    "samples": list(duplicate_test_codes[:10]),
+                },
+                "parameter_code": {
+                    "count": duplicate_param_codes.count(),
+                    "samples": list(duplicate_param_codes[:10]),
+                },
+            },
+            "orphans": {
+                "mappings": {
+                    "count": orphan_mappings.count(),
+                    "samples": list(orphan_mappings.values("id", "test_id", "parameter_id")[:10]),
+                },
+            },
+            "tests_without_parameters": {
+                "count": Test.objects.filter(test_parameters__isnull=True).count(),
+                "samples": list(tests_without_parameters),
+            },
+            "reference_ranges": {
+                "missing": {
+                    "count": TestParameter.objects.filter(reference_ranges__isnull=True).count(),
+                    "samples": list(missing_ranges),
+                },
+                "invalid": {
+                    "count": invalid_ranges.count(),
+                    "samples": list(invalid_ranges.values("id", "parameter_id", "gender")[:10]),
+                },
+            },
+            "suspicious_defaults": {
+                "sample_type_serum": {
+                    "count": serum_defaults.count(),
+                    "samples": list(serum_defaults.values("test_id", "test_code")[:10]),
+                },
+                "price_zero": {
+                    "count": zero_price.count(),
+                    "samples": list(zero_price.values("test_id", "test_code")[:10]),
+                },
+                "turnaround_time_24": {
+                    "count": default_tat.count(),
+                    "samples": list(default_tat.values("test_id", "test_code")[:10]),
+                },
+            },
+            "panels_without_tests": {
+                "count": panels_without_tests.count(),
+                "samples": list(panels_without_tests.values("panel_code", "panel_name")[:10]),
+            },
+        })

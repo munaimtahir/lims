@@ -20,6 +20,9 @@ import type {
   SystemSettings,
   TestParameter,
   WorklistPatient,
+  PrintTemplate,
+  CatalogImportSummary,
+  CatalogAuditSummary,
 } from '../types';
 
 /**
@@ -108,6 +111,33 @@ export const laboratoryApi = {
     const response = await api.get<ApiResponse<TestSearchResult[]>>('/laboratory/tests/search/', {
       params: { q: query, limit },
     });
+    return response.data;
+  },
+
+  exportCatalog: async () => {
+    const response = await api.get('/laboratory/export/', { responseType: 'blob' });
+    return response.data as Blob;
+  },
+
+  importCatalog: async (
+    file: File,
+    options: { strict: boolean; allow_defaults: boolean; mode: string; dry_run: boolean }
+  ) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post<{ summary: CatalogImportSummary }>(
+      '/laboratory/import/',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        params: options,
+      }
+    );
+    return response.data;
+  },
+
+  auditCatalog: async () => {
+    const response = await api.get<CatalogAuditSummary>('/laboratory/catalog/audit/');
     return response.data;
   },
 };
@@ -443,6 +473,17 @@ export const systemSettingsApi = {
     // Let's try PATCH with lab_logo: null.
     const response = await api.patch<ApiResponse<SystemSettings>>('/core/settings/', { lab_logo: null });
     return response.data.data;
+  },
+};
+
+export const printTemplateApi = {
+  list: async () => {
+    const response = await api.get<PrintTemplate[]>('/core/print-templates/');
+    return response.data;
+  },
+  update: async (id: number, data: Partial<PrintTemplate>) => {
+    const response = await api.patch<PrintTemplate>(`/core/print-templates/${id}/`, data);
+    return response.data;
   },
 };
 

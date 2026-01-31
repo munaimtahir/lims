@@ -9,8 +9,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.views import APIView
 from django.db import connection
-from .models import SystemSettings
-from .serializers import SystemSettingsSerializer
+from .models import SystemSettings, PrintTemplate
+from .serializers import SystemSettingsSerializer, PrintTemplateSerializer
 from apps.accounts.permissions import IsAdminOrReadOnly
 
 
@@ -172,3 +172,16 @@ class HealthCheckView(APIView):
                 "service": "LIMS Backend",
                 "database": "disconnected"
             }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+
+class PrintTemplateViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing print templates.
+    """
+
+    queryset = PrintTemplate.objects.all()
+    serializer_class = PrintTemplateSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save()

@@ -15,6 +15,15 @@ BASE_URL = os.environ.get("BASE_URL", "http://localhost:8013")
 API_BASE = f"{BASE_URL}/api/v1"
 ARTIFACTS_DIR = "_smoke_artifacts"
 
+# Session setup
+HOST_HEADER = os.environ.get("HOST_HEADER", "")
+FORWARDED_PROTO = os.environ.get("FORWARDED_PROTO", "")
+SESSION = requests.Session()
+if HOST_HEADER:
+    SESSION.headers.update({"Host": HOST_HEADER})
+if FORWARDED_PROTO:
+    SESSION.headers.update({"X-Forwarded-Proto": FORWARDED_PROTO})
+
 # Ensure artifacts dir exists
 os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
@@ -60,7 +69,7 @@ def log_test(step, result, message, details=None):
 def login(username, password, role_name):
     """Login and return auth token."""
     try:
-        response = requests.post(
+        response = SESSION.post(
             f"{API_BASE}/auth/login/",
             json={"username": username, "password": password}
         )
@@ -96,7 +105,7 @@ def create_patient(token):
             "gender": "Male",
             "phone": f"0300{datetime.now().strftime('%H%M%S%f')[:7]}"
         }
-        response = requests.post(
+        response = SESSION.post(
             f"{API_BASE}/patients/",
             headers={"Authorization": f"Bearer {token}"},
             json=payload
@@ -119,7 +128,7 @@ def create_patient(token):
 def get_available_tests(token):
     """Get list of available tests."""
     try:
-        response = requests.get(
+        response = SESSION.get(
             f"{API_BASE}/laboratory/tests/",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -145,7 +154,7 @@ def get_available_tests(token):
 def create_order(token, patient_id, test_ids):
     """Create order with tests and return order ID."""
     try:
-        response = requests.post(
+        response = SESSION.post(
             f"{API_BASE}/orders/orders/",
             headers={"Authorization": f"Bearer {token}"},
             json={
@@ -171,7 +180,7 @@ def create_order(token, patient_id, test_ids):
 def verify_samples_auto_created(token, order_id, expected_count):
     """Verify samples were auto-created."""
     try:
-        response = requests.get(
+        response = SESSION.get(
             f"{API_BASE}/samples/?order_item__order={order_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -206,7 +215,7 @@ def verify_samples_auto_created(token, order_id, expected_count):
 def get_test_parameters(token, test_id):
     """Get parameters for a test."""
     try:
-        response = requests.get(
+        response = SESSION.get(
             f"{API_BASE}/laboratory/parameters/?test={test_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -231,7 +240,7 @@ def get_test_parameters(token, test_id):
 def collect_sample(token, sample_id):
     """Mark sample as collected."""
     try:
-        response = requests.patch(
+        response = SESSION.patch(
             f"{API_BASE}/samples/{sample_id}/",
             headers={"Authorization": f"Bearer {token}"},
             json={
@@ -252,7 +261,7 @@ def collect_sample(token, sample_id):
 def enter_result_bulk(token, order_item_id, test_parameter_id, value):
     """Enter result via bulk_entry."""
     try:
-        response = requests.post(
+        response = SESSION.post(
             f"{API_BASE}/results/bulk_entry/",
             headers={"Authorization": f"Bearer {token}"},
             json={
@@ -284,7 +293,7 @@ def enter_result_bulk(token, order_item_id, test_parameter_id, value):
 def verify_result(token, result_id):
     """Verify a result."""
     try:
-        response = requests.post(
+        response = SESSION.post(
             f"{API_BASE}/results/{result_id}/verify/",
             headers={"Authorization": f"Bearer {token}"}
         )

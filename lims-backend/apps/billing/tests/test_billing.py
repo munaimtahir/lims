@@ -203,6 +203,9 @@ class TestPaymentViewSet:
         assert "Receipt" in response["Content-Disposition"]
         # FileResponse is a streaming response, verify it's set up correctly
         assert hasattr(response, 'streaming_content') or hasattr(response, 'file')
+
+        content = b"".join(response.streaming_content)
+        assert content[:4] == b"%PDF"
     
     def test_receipt_with_lab_info(self, authenticated_client, payment):
         """Test receipt generation with lab information."""
@@ -218,6 +221,8 @@ class TestPaymentViewSet:
         assert response.status_code == status.HTTP_200_OK
         assert response["Content-Type"] == "application/pdf"
         # Verify PDF content exists
+        content = b"".join(response.streaming_content)
+        assert b"Test Lab" in content
         content = b''.join(response.streaming_content) if hasattr(response, 'streaming_content') else getattr(response, 'content', b'')
         assert len(content) > 0
     

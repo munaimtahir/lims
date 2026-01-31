@@ -205,6 +205,26 @@ class TestPDFGeneration:
         pdf_content = generate_pdf_report(order_with_results.id)
         assert isinstance(pdf_content, bytes)
         assert len(pdf_content) > 0
+
+    def test_generate_pdf_contains_lab_name(self, order_with_results):
+        """PDF should contain lab name text."""
+        from apps.core.models import SystemSettings
+        settings = SystemSettings.get_settings()
+        settings.lab_name = "Acme Lab"
+        settings.save()
+
+        pdf_content = generate_pdf_report(order_with_results.id)
+        assert b"Acme Lab" in pdf_content
+
+    def test_generate_pdf_with_empty_signatories(self, order_with_results):
+        """PDF generation should not fail with empty signatories."""
+        from apps.core.models import PrintTemplate
+        template = PrintTemplate.get_active(PrintTemplate.TYPE_REPORT)
+        if template:
+            template.signatories = []
+            template.save()
+        pdf_content = generate_pdf_report(order_with_results.id)
+        assert pdf_content[:4] == b"%PDF"
     
     def test_generate_pdf_with_panel_items(self, order_with_results, pathologist_user):
         """Test PDF generation with panel items."""

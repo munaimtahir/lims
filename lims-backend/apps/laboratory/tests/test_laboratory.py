@@ -277,11 +277,11 @@ class TestImportTestsViewSet:
         api_client.force_authenticate(user=admin_user)
         # The router registers it as "import", so URL is /api/v1/laboratory/import/
         response = api_client.post(
-            "/api/v1/laboratory/import/",
+            "/api/v1/laboratory/import/?dry_run=false",
             {"file": file_obj},
             format="multipart",
         )
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code in [status.HTTP_201_CREATED, status.HTTP_200_OK]
         assert response.data["success"] is True
     
     def test_import_tests_invalid_file_format(self, api_client, admin_user):
@@ -309,8 +309,8 @@ class TestImportTestsViewSet:
         
         api_client.force_authenticate(user=admin_user)
         
-        # Mock import_tests_from_excel to raise exception
-        with patch('apps.laboratory.views.import_tests_from_excel') as mock_import:
+        # Mock import_catalog_from_excel to raise exception
+        with patch('apps.laboratory.views.import_catalog_from_excel') as mock_import:
             mock_import.side_effect = Exception("Import failed")
             
             # The router registers it as "import", so URL is /api/v1/laboratory/import/

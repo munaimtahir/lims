@@ -2,14 +2,25 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { laboratoryApi } from '../../api/services';
 import api from '../../api/client';
+import { useBranding } from '../../contexts/BrandingContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { formatCurrency } from '../../utils/currency';
+import type { CatalogAuditSummary, CatalogImportSummary } from '../../types';
 import styles from './TestCatalogPage.module.css';
 
 export default function TestCatalogPage() {
   const queryClient = useQueryClient();
+  const { branding } = useBranding();
+  const { user } = useAuth();
+  const currency = branding?.currency || 'PKR';
+  const isAdmin = user?.role === 'Admin';
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'tests' | 'panels'>('tests');
   const [searchQuery, setSearchQuery] = useState('');
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [auditSummary, setAuditSummary] = useState<CatalogAuditSummary | null>(null);
+  const [auditError, setAuditError] = useState<string | null>(null);
+  const [auditLoading, setAuditLoading] = useState(false);
 
   const { data: categoriesData } = useQuery({
     queryKey: ['test-categories'],
@@ -36,15 +47,53 @@ export default function TestCatalogPage() {
   const tests = testsData?.results || [];
   const panels = panelsData?.results || [];
 
+  const handleExport = async () => {
+    try {
+      const blob = await laboratoryApi.exportCatalog();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'LIMS_Catalog_Export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch (err) {
+      console.error('Export failed', err);
+      alert('Failed to export catalog');
+    }
+  };
+
+  const handleAudit = async () => {
+    setAuditLoading(true);
+    setAuditError(null);
+    try {
+      const summary = await laboratoryApi.auditCatalog();
+      setAuditSummary(summary);
+    } catch (err) {
+      console.error('Audit failed', err);
+      setAuditError('Failed to run catalog audit');
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h1>Test Catalog</h1>
-        <div className={styles.actions}>
-          <button onClick={() => setIsImportModalOpen(true)} className={styles.actionButton}>
-            Import Excel
-          </button>
-        </div>
+        {isAdmin && (
+          <div className={styles.actions}>
+            <button onClick={handleExport} className={styles.secondaryButton}>
+              Export Catalog
+            </button>
+            <button onClick={() => setIsImportModalOpen(true)} className={styles.actionButton}>
+              Import Catalog
+            </button>
+            <button onClick={handleAudit} className={styles.secondaryButton}>
+              Audit Catalog
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles.filters}>
@@ -97,7 +146,7 @@ export default function TestCatalogPage() {
           ) : (
             <div className={styles.grid}>
               {tests.map((test) => (
-                <div key={test.id} className={styles.card}>
+                <div key={test.test_id} className={styles.card}>
                   <div className={styles.cardHeader}>
                     <h3>{test.test_name}</h3>
                     <span className={styles.code}>{test.test_code}</span>
@@ -108,7 +157,7 @@ export default function TestCatalogPage() {
                     {test.sample_volume && (
                       <p><strong>Volume:</strong> {test.sample_volume}</p>
                     )}
-                    <p><strong>Price:</strong> ${test.price}</p>
+                    <p><strong>Price:</strong> {formatCurrency(test.price, currency)}</p>
                     <p><strong>Turnaround:</strong> {test.turnaround_time} hours</p>
                     {test.parameters && test.parameters.length > 0 && (
                       <div className={styles.parameters}>
@@ -150,14 +199,14 @@ export default function TestCatalogPage() {
                     {panel.sample_volume && (
                       <p><strong>Volume:</strong> {panel.sample_volume}</p>
                     )}
-                    <p><strong>Price:</strong> ${panel.price}</p>
+                    <p><strong>Price:</strong> {formatCurrency(panel.price, currency)}</p>
                     <p><strong>Turnaround:</strong> {panel.turnaround_time} hours</p>
                     {panel.tests && panel.tests.length > 0 && (
                       <div className={styles.parameters}>
                         <strong>Tests ({panel.tests.length}):</strong>
                         <ul>
                           {panel.tests.slice(0, 3).map((test) => (
-                            <li key={test.id}>{test.test_name}</li>
+                            <li key={test.test_id}>{test.test_name}</li>
                           ))}
                           {panel.tests.length > 3 && (
                             <li>+{panel.tests.length - 3} more</li>
@@ -176,16 +225,48 @@ export default function TestCatalogPage() {
         </div>
       )}
 
-      {isImportModalOpen && (
+      {isAdmin && isImportModalOpen && (
         <BulkImportModal
           onClose={() => setIsImportModalOpen(false)}
           onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: ['tests'] });
             queryClient.invalidateQueries({ queryKey: ['test-categories'] });
+            queryClient.invalidateQueries({ queryKey: ['panels'] });
             setIsImportModalOpen(false);
           }}
         />
       )}
+
+      {auditSummary && (
+        <div className={styles.auditPanel}>
+          <h2>Catalog Audit Summary</h2>
+          <div className={styles.auditGrid}>
+            <div>
+              <h4>Duplicates</h4>
+              <p>Test Codes: {auditSummary.duplicates.test_code.count}</p>
+              <p>Parameter Codes: {auditSummary.duplicates.parameter_code.count}</p>
+            </div>
+            <div>
+              <h4>Missing/Invalid</h4>
+              <p>Tests w/ No Params: {auditSummary.tests_without_parameters.count}</p>
+              <p>Missing Ranges: {auditSummary.reference_ranges.missing.count}</p>
+              <p>Invalid Ranges: {auditSummary.reference_ranges.invalid.count}</p>
+            </div>
+            <div>
+              <h4>Defaults</h4>
+              <p>Sample Type Serum: {auditSummary.suspicious_defaults.sample_type_serum.count}</p>
+              <p>Price Zero: {auditSummary.suspicious_defaults.price_zero.count}</p>
+              <p>TAT 24h: {auditSummary.suspicious_defaults.turnaround_time_24.count}</p>
+            </div>
+            <div>
+              <h4>Panels</h4>
+              <p>Panels w/ No Tests: {auditSummary.panels_without_tests.count}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      {auditLoading && <div className={styles.loading}>Running audit...</div>}
+      {auditError && <div className={styles.error}>{auditError}</div>}
     </div>
   );
 }
@@ -200,13 +281,19 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [validationSummary, setValidationSummary] = useState<CatalogImportSummary | null>(null);
   const [validationErrors, setValidationErrors] = useState<any[]>([]);
+  const [validationWarnings, setValidationWarnings] = useState<any[]>([]);
+  const [strict, setStrict] = useState(true);
+  const [allowDefaults, setAllowDefaults] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
       setError(null);
       setValidationErrors([]);
+      setValidationWarnings([]);
+      setValidationSummary(null);
     }
   };
 
@@ -228,31 +315,66 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
     }
   };
 
-  const handleUpload = async () => {
+  const handleValidate = async () => {
     if (!file) return;
 
     setUploading(true);
     setError(null);
     setValidationErrors([]);
+    setValidationWarnings([]);
 
     const formData = new FormData();
     formData.append('file', file);
 
     try {
       const response = await api.post('/laboratory/import/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        params: {
+          strict,
+          allow_defaults: allowDefaults,
+          mode: 'upsert',
+          dry_run: true,
         },
       });
-
-      setSuccessMessage(response.data.message);
-      setTimeout(() => {
-        onSuccess();
-      }, 1500);
+      setValidationSummary(response.data.summary);
+      setValidationErrors(response.data.summary.errors || []);
+      setValidationWarnings(response.data.summary.warnings || []);
     } catch (err: any) {
       const errorData = err.response?.data;
       setError(errorData?.message || errorData?.error || "Failed to upload file");
 
+      if (errorData?.summary?.errors) {
+        setValidationErrors(errorData.summary.errors);
+        setValidationWarnings(errorData.summary.warnings || []);
+        setValidationSummary(errorData.summary);
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleApply = async () => {
+    if (!file || !validationSummary) return;
+    setUploading(true);
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await api.post('/laboratory/import/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        params: {
+          strict,
+          allow_defaults: allowDefaults,
+          mode: 'upsert',
+          dry_run: false,
+        },
+      });
+      setSuccessMessage(response.data.message || 'Import applied');
+      setTimeout(() => onSuccess(), 1200);
+    } catch (err: any) {
+      const errorData = err.response?.data;
+      setError(errorData?.message || errorData?.error || 'Import failed');
       if (errorData?.summary?.errors) {
         setValidationErrors(errorData.summary.errors);
       }
@@ -291,6 +413,17 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
             {file && <p className={styles.fileName}>Selected file: {file.name}</p>}
           </div>
 
+          <div className={styles.optionsRow}>
+            <label>
+              <input type="checkbox" checked={strict} onChange={(e) => setStrict(e.target.checked)} />
+              Strict (required fields enforced)
+            </label>
+            <label>
+              <input type="checkbox" checked={allowDefaults} onChange={(e) => setAllowDefaults(e.target.checked)} />
+              Allow defaults
+            </label>
+          </div>
+
           {error && <div className={styles.error}>{error}</div>}
 
           {validationErrors.length > 0 && (
@@ -299,12 +432,41 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
               <ul>
                 {validationErrors.slice(0, 10).map((err, idx) => (
                   <li key={idx}>
-                    Assuming Sheet <strong>{err.sheet}</strong>, Row <strong>{err.row}</strong>: {err.message}
-                    {err.example_fix && <span className={styles.fixHint}> (Fix: {err.example_fix})</span>}
+                    Sheet <strong>{err.sheet}</strong>, Row <strong>{err.row}</strong>, Field <strong>{err.field}</strong>: {err.message}
                   </li>
                 ))}
                 {validationErrors.length > 10 && <li>...and {validationErrors.length - 10} more errors</li>}
               </ul>
+            </div>
+          )}
+
+          {validationWarnings.length > 0 && (
+            <div className={styles.validationWarnings}>
+              <h4>Warnings:</h4>
+              <ul>
+                {validationWarnings.slice(0, 10).map((warn, idx) => (
+                  <li key={idx}>
+                    Sheet <strong>{warn.sheet}</strong>, Row <strong>{warn.row}</strong>, Field <strong>{warn.field}</strong>: {warn.message}
+                  </li>
+                ))}
+                {validationWarnings.length > 10 && <li>...and {validationWarnings.length - 10} more warnings</li>}
+              </ul>
+            </div>
+          )}
+
+          {validationSummary && (
+            <div className={styles.summaryBox}>
+              <h4>Diff Summary</h4>
+              <div className={styles.summaryGrid}>
+                {Object.entries(validationSummary.counts).map(([key, counts]) => (
+                  <div key={key}>
+                    <strong>{key}</strong>
+                    <div>Created: {counts.created}</div>
+                    <div>Updated: {counts.updated}</div>
+                    <div>Unchanged: {counts.unchanged}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -315,11 +477,18 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
               Cancel
             </button>
             <button
-              onClick={handleUpload}
+              onClick={handleValidate}
               disabled={!file || uploading}
               className={styles.submitButton}
             >
-              {uploading ? "Uploading..." : "Import"}
+              {uploading ? "Validating..." : "Validate"}
+            </button>
+            <button
+              onClick={handleApply}
+              disabled={!file || uploading || (validationErrors.length > 0) || !validationSummary}
+              className={styles.actionButton}
+            >
+              {uploading ? "Applying..." : "Apply"}
             </button>
           </div>
         </div>

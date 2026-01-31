@@ -6,7 +6,7 @@ Usage:
 """
 
 from django.core.management.base import BaseCommand, CommandError
-from apps.laboratory.utils import import_tests_from_excel
+from apps.laboratory.catalog_io import import_catalog_from_excel
 import os
 
 
@@ -47,26 +47,39 @@ class Command(BaseCommand):
         self.stdout.write(f"Importing from: {file_path}\n")
         
         try:
-            summary = import_tests_from_excel(file_path, dry_run=dry_run)
+            summary = import_catalog_from_excel(
+                file_path,
+                strict=True,
+                allow_defaults=False,
+                mode="upsert",
+                dry_run=dry_run,
+            )
             
             # Display summary
             self.stdout.write("\n" + "="*60)
             self.stdout.write("IMPORT SUMMARY")
             self.stdout.write("="*60)
             
+            counts = summary["counts"]
             self.stdout.write(f"\nTests:")
-            self.stdout.write(f"  Created: {summary['tests_created']}")
-            self.stdout.write(f"  Updated: {summary['tests_updated']}")
+            self.stdout.write(f"  Created: {counts['tests']['created']}")
+            self.stdout.write(f"  Updated: {counts['tests']['updated']}")
+            self.stdout.write(f"  Unchanged: {counts['tests']['unchanged']}")
             
             self.stdout.write(f"\nParameters:")
-            self.stdout.write(f"  Created: {summary['parameters_created']}")
-            self.stdout.write(f"  Updated: {summary['parameters_updated']}")
+            self.stdout.write(f"  Created: {counts['parameters']['created']}")
+            self.stdout.write(f"  Updated: {counts['parameters']['updated']}")
+            self.stdout.write(f"  Unchanged: {counts['parameters']['unchanged']}")
             
             self.stdout.write(f"\nMappings:")
-            self.stdout.write(f"  Created: {summary['mappings_created']}")
+            self.stdout.write(f"  Created: {counts['mappings']['created']}")
+            self.stdout.write(f"  Updated: {counts['mappings']['updated']}")
+            self.stdout.write(f"  Unchanged: {counts['mappings']['unchanged']}")
             
             self.stdout.write(f"\nReference Ranges:")
-            self.stdout.write(f"  Created: {summary['ranges_created']}")
+            self.stdout.write(f"  Created: {counts['reference_ranges']['created']}")
+            self.stdout.write(f"  Updated: {counts['reference_ranges']['updated']}")
+            self.stdout.write(f"  Unchanged: {counts['reference_ranges']['unchanged']}")
             
             # Display errors if any
             if summary['errors']:
@@ -82,7 +95,7 @@ class Command(BaseCommand):
             
             # Final status
             self.stdout.write("\n" + "="*60)
-            if summary['validation_passed']:
+            if not summary['errors']:
                 self.stdout.write(self.style.SUCCESS("✓ Import completed successfully"))
                 if dry_run:
                     self.stdout.write(self.style.WARNING("  (Dry run - no changes were made)"))
@@ -92,7 +105,7 @@ class Command(BaseCommand):
             
             self.stdout.write("="*60 + "\n")
             
-            return 0 if summary['validation_passed'] else 1
+            return 0 if not summary['errors'] else 1
             
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"\n✗ Import failed with error: {str(e)}"))

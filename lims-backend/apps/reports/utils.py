@@ -1,5 +1,5 @@
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, letter
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, Image
@@ -12,8 +12,20 @@ from django.utils import timezone
 from django.conf import settings
 from apps.orders.models import Order
 from apps.laboratory.ranges import pick_reference_range
-from apps.core.models import SystemSettings
+from apps.core.models import SystemSettings, PrintTemplate, default_print_template_config
 from apps.core.pdf_utils import add_report_image
+
+
+def _merge_template_config(config):
+    base = default_print_template_config()
+    if not isinstance(config, dict):
+        return base
+    for key, value in config.items():
+        if isinstance(value, dict) and isinstance(base.get(key), dict):
+            base[key].update(value)
+        else:
+            base[key] = value
+    return base
 
 
 def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=None, lab_email=None):
@@ -56,6 +68,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
         report_footer = system_settings.report_footer or ""
         report_header_image = system_settings.report_header_image
         report_footer_image = system_settings.report_footer_image
+        lab_logo = system_settings.lab_logo
     except Exception:
         # Fallback to environment variables if settings don't exist
         lab_name = lab_name or os.environ.get("LAB_NAME", "Laboratory")
@@ -66,9 +79,24 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
         report_footer = ""
         report_header_image = None
         report_footer_image = None
+        lab_logo = None
+
+    template = PrintTemplate.get_active(PrintTemplate.TYPE_REPORT)
+    template_config = _merge_template_config(template.config if template else None)
+    font_scale = float(template_config.get("font_scale", 1.0) or 1.0)
+    margins = template_config.get("margins", {})
+    page_size = A4 if template_config.get("paper_size") == "A4" else letter
+
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72,
-                           topMargin=72, bottomMargin=72)
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=page_size,
+        rightMargin=float(margins.get("right", 1.0)) * inch,
+        leftMargin=float(margins.get("left", 1.0)) * inch,
+        topMargin=float(margins.get("top", 1.0)) * inch,
+        bottomMargin=float(margins.get("bottom", 1.0)) * inch,
+        pageCompression=0,
+    )
     story = []
     styles = getSampleStyleSheet()
 
@@ -83,7 +111,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
-        fontSize=18,
+        fontSize=18 * font_scale,
         textColor=colors.HexColor('#1a1a1a'),
         spaceAfter=30,
         alignment=TA_CENTER,
@@ -92,7 +120,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
     heading_style = ParagraphStyle(
         'CustomHeading',
         parent=styles['Heading2'],
-        fontSize=12,
+        fontSize=12 * font_scale,
         textColor=colors.HexColor('#333333'),
         spaceAfter=12,
         spaceBefore=12,
@@ -106,7 +134,11 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
         header_data.append([Paragraph(report_header, styles['Normal'])])
         header_data.append([Spacer(1, 0.1*inch)])
 
-    add_report_image(story, report_header_image)
+    if template_config.get("show_header_image", True):
+        add_report_image(story, report_header_image)
+
+    if template_config.get("show_logo", True):
+        add_report_image(story, lab_logo, max_width=2.0 * inch, spacer=0.1 * inch)
     
     header_data.append([Paragraph(f"<b>{lab_name}</b>", title_style)])
     if lab_address:
@@ -150,7 +182,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
         ('ALIGN', (0, 0), (0, -1), 'LEFT'),
         ('ALIGN', (1, 0), (1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('FONTSIZE', (0, 0), (-1, -1), 10 * font_scale),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
         ('TOPPADDING', (0, 0), (-1, -1), 8),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
@@ -211,8 +243,8 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
-                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('FONTSIZE', (0, 0), (-1, 0), 10 * font_scale),
+                ('FONTSIZE', (0, 1), (-1, -1), 9 * font_scale),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
                 ('TOPPADDING', (0, 0), (-1, -1), 8),
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
@@ -225,29 +257,51 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
         story.append(Spacer(1, 0.2*inch))
 
     # Footer with signatures
-    story.append(Spacer(1, 0.3*inch))
-    story.append(Paragraph("<b>Authorized Signatures</b>", heading_style))
-    
-    signature_data = [
-        ['Lab Technician:', '___________________', 'Pathologist:', '___________________'],
-        ['', '', '', ''],
-        ['Date:', '___________________', 'Date:', '___________________'],
-    ]
-    signature_table = Table(signature_data, colWidths=[1.5*inch, 2*inch, 1.5*inch, 2*inch])
-    signature_table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-    ]))
-    story.append(signature_table)
-    
-    add_report_image(story, report_footer_image, spacer=0.1 * inch)
+    if template_config.get("show_signatures", True):
+        story.append(Spacer(1, 0.3*inch))
+        story.append(Paragraph("<b>Authorized Signatures</b>", heading_style))
+        signatories = template.signatories if template and isinstance(template.signatories, list) else []
+        signature_rows = []
+        for entry in signatories:
+            name = entry.get("name", "")
+            title = entry.get("title", "")
+            reg_no = entry.get("reg_no", "")
+            line1 = entry.get("line1", "")
+            line2 = entry.get("line2", "")
+            signature_rows.append([f"{title}:", f"{name} {reg_no}".strip()])
+            if line1:
+                signature_rows.append(["", line1])
+            if line2:
+                signature_rows.append(["", line2])
+            signature_rows.append(["Signature:", "___________________"])
+            signature_rows.append(["", ""])
+        if not signature_rows:
+            signature_rows = [
+                ['Authorized By:', '___________________'],
+                ['Date:', '___________________'],
+            ]
+        signature_table = Table(signature_rows, colWidths=[2.0*inch, 4.0*inch])
+        signature_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10 * font_scale),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        story.append(signature_table)
+
+    if template_config.get("show_footer_image", True):
+        add_report_image(story, report_footer_image, spacer=0.1 * inch)
 
     # Custom footer from settings
     if report_footer:
         story.append(Spacer(1, 0.1*inch))
         story.append(Paragraph(report_footer, styles['Normal']))
+
+    if template_config.get("show_disclaimer", True):
+        disclaimer = template.disclaimer_text if template else ""
+        if disclaimer:
+            story.append(Spacer(1, 0.1*inch))
+            story.append(Paragraph(disclaimer, styles["Normal"]))
 
     # Build PDF
     doc.build(story)

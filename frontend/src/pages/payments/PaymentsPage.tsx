@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentApi } from '../../api/services';
 import type { Payment, PaymentMethod } from '../../types';
+import { useBranding } from '../../contexts/BrandingContext';
+import { formatCurrency } from '../../utils/currency';
 import styles from './PaymentsPage.module.css';
 
 export default function PaymentsPage() {
   const queryClient = useQueryClient();
+  const { branding } = useBranding();
+  const currency = branding?.currency || 'PKR';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [amount, setAmount] = useState('');
@@ -98,7 +102,7 @@ export default function PaymentsPage() {
             {payments.map((payment) => (
               <tr key={payment.id}>
                 <td>Order #{payment.order}</td>
-                <td className={styles.amount}>${payment.amount}</td>
+                <td className={styles.amount}>{formatCurrency(payment.amount, currency)}</td>
                 <td>
                   <span className={styles.methodBadge}>
                     {payment.payment_method.replace('_', ' ')}

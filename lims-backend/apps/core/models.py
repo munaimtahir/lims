@@ -3,6 +3,29 @@
 from django.db import models
 from django.conf import settings
 
+def default_print_template_config():
+    return {
+        "paper_size": "A4",
+        "margins": {
+            "top": 1.0,
+            "right": 1.0,
+            "bottom": 1.0,
+            "left": 1.0,
+        },
+        "font_scale": 1.0,
+        "show_logo": True,
+        "show_header_image": True,
+        "show_footer_image": True,
+        "show_disclaimer": True,
+        "show_signatures": True,
+        "show_qr": False,
+        "show_barcode": False,
+    }
+
+
+def default_print_signatories():
+    return []
+
 
 class LabTerminal(models.Model):
     """
@@ -192,3 +215,47 @@ class SystemSettings(models.Model):
         """
         settings, created = cls.objects.get_or_create(pk=1)
         return settings
+
+
+class PrintTemplate(models.Model):
+    """
+    Configurable print template for reports and receipts.
+    """
+
+    TYPE_REPORT = "REPORT"
+    TYPE_RECEIPT = "RECEIPT"
+
+    TYPE_CHOICES = [
+        (TYPE_REPORT, "Report"),
+        (TYPE_RECEIPT, "Receipt"),
+    ]
+
+    template_key = models.CharField(max_length=100, unique=True)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=False)
+    config = models.JSONField(default=default_print_template_config)
+    disclaimer_text = models.TextField(blank=True)
+    signatories = models.JSONField(default=default_print_signatories)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "print_templates"
+        verbose_name = "Print Template"
+        verbose_name_plural = "Print Templates"
+        ordering = ["type", "name"]
+
+    def save(self, *args, **kwargs):
+        """Ensure only one active template per type."""
+        super().save(*args, **kwargs)
+        if self.is_active:
+            PrintTemplate.objects.filter(type=self.type).exclude(pk=self.pk).update(is_active=False)
+
+    @classmethod
+    def get_active(cls, template_type):
+        return cls.objects.filter(type=template_type, is_active=True).first()
+
+    def __str__(self):
+        return f"{self.type} - {self.name}"

@@ -39,6 +39,7 @@ export default function DashboardLayout() {
             children: [
               { to: '/dashboard/settings?tab=ui', label: 'UI Update' },
               { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
+              { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
               { to: '/dashboard/tests', label: 'Test Catalog' },
               { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
             ],
@@ -85,6 +86,7 @@ export default function DashboardLayout() {
             label: 'Settings',
             children: [
               { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
+              { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
               { to: '/dashboard/tests', label: 'Test Catalog' },
               { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
             ],

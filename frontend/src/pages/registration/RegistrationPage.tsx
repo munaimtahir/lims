@@ -3,9 +3,13 @@ import type { KeyboardEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { patientApi, laboratoryApi, orderApi } from '../../api/services';
 import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest } from '../../types';
+import { useBranding } from '../../contexts/BrandingContext';
+import { formatCurrency } from '../../utils/currency';
 import styles from './RegistrationPage.module.css';
 
 export default function RegistrationPage() {
+  const { branding } = useBranding();
+  const currency = branding?.currency || 'PKR';
   // Patient form state
   const [mobileNumber, setMobileNumber] = useState('');
   const [patientSuggestions, setPatientSuggestions] = useState<PatientLookupResult[]>([]);
@@ -253,8 +257,9 @@ export default function RegistrationPage() {
   };
 
   const addTest = (test: TestSearchResult) => {
-    if (!addedTests.find((t) => t.id === test.id)) {
-      setAddedTests([...addedTests, test]);
+    const testId = test.test_id ?? test.id;
+    if (!addedTests.find((t) => (t.test_id ?? t.id) === testId)) {
+      setAddedTests([...addedTests, { ...test, id: testId }]);
     }
     setTestQuery('');
     setShowTestSuggestions(false);
@@ -263,7 +268,7 @@ export default function RegistrationPage() {
   };
 
   const removeTest = (testId: number) => {
-    setAddedTests(addedTests.filter((t) => t.id !== testId));
+    setAddedTests(addedTests.filter((t) => (t.test_id ?? t.id) !== testId));
   };
 
   const handleDiscountPercentChange = (value: string) => {
@@ -292,7 +297,7 @@ export default function RegistrationPage() {
 
     const orderData = {
       patient: selectedPatient.id,
-      test_ids: addedTests.map((t) => t.id),
+      test_ids: addedTests.map((t) => t.test_id ?? t.id),
       discount: discountAmount,
       discount_percent: discountPercent,
       paid_amount: paidAmount,
@@ -508,7 +513,7 @@ export default function RegistrationPage() {
                 <div className={styles.suggestions}>
                   {testSuggestions.map((test, index) => (
                     <div
-                      key={test.id}
+                      key={test.test_id ?? test.id}
                       className={`${styles.suggestionItem} ${index === selectedTestIndex ? styles.suggestionActive : ''
                         }`}
                       onClick={() => addTest(test)}
@@ -517,7 +522,7 @@ export default function RegistrationPage() {
                         {test.test_code} - {test.test_name}
                       </div>
                       <div className={styles.suggestionMeta}>
-                        {test.category_name} • Rs. {test.price}
+                        {test.category_name} • {formatCurrency(test.price, currency)}
                       </div>
                     </div>
                   ))}
@@ -531,15 +536,15 @@ export default function RegistrationPage() {
               <h3>Added Tests</h3>
               <div className={styles.testsTable}>
                 {addedTests.map((test) => (
-                  <div key={test.id} className={styles.testRow}>
+                  <div key={test.test_id ?? test.id} className={styles.testRow}>
                     <div className={styles.testInfo}>
                       <strong>{test.test_code}</strong>
                       <span>{test.test_name}</span>
                     </div>
-                    <div className={styles.testPrice}>Rs. {test.price}</div>
+                    <div className={styles.testPrice}>{formatCurrency(test.price, currency)}</div>
                     <button
                       type="button"
-                      onClick={() => removeTest(test.id)}
+                      onClick={() => removeTest(test.test_id ?? test.id)}
                       className={styles.removeButton}
                     >
                       Remove
@@ -558,7 +563,7 @@ export default function RegistrationPage() {
               <div className={styles.paymentSummary}>
                 <div className={styles.paymentRow}>
                   <span>Total Amount:</span>
-                  <strong>Rs. {totalAmount.toFixed(2)}</strong>
+                  <strong>{formatCurrency(totalAmount.toFixed(2), currency)}</strong>
                 </div>
 
                 <div className={styles.formRow}>
@@ -589,7 +594,7 @@ export default function RegistrationPage() {
 
                 <div className={styles.paymentRow}>
                   <span>Net Payable:</span>
-                  <strong className={styles.highlightAmount}>Rs. {netAmount.toFixed(2)}</strong>
+                  <strong className={styles.highlightAmount}>{formatCurrency(netAmount.toFixed(2), currency)}</strong>
                 </div>
 
                 <div className={styles.formGroup}>
@@ -607,7 +612,7 @@ export default function RegistrationPage() {
                 <div className={styles.paymentRow}>
                   <span>Due Amount:</span>
                   <strong className={dueAmount > 0 ? styles.dueAmount : ''}>
-                    Rs. {dueAmount.toFixed(2)}
+                    {formatCurrency(dueAmount.toFixed(2), currency)}
                   </strong>
                 </div>
               </div>

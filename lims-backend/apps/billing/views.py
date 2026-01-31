@@ -4,7 +4,7 @@ from django.http import FileResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
 import os
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, letter
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, Image
@@ -12,11 +12,22 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.utils import ImageReader
 from io import BytesIO
-from apps.core.models import SystemSettings
+from apps.core.models import SystemSettings, PrintTemplate, default_print_template_config
 from apps.core.pdf_utils import add_report_image
 from .models import Payment
 from .serializers import PaymentSerializer
 
+
+def _merge_template_config(config):
+    base = default_print_template_config()
+    if not isinstance(config, dict):
+        return base
+    for key, value in config.items():
+        if isinstance(value, dict) and isinstance(base.get(key), dict):
+            base[key].update(value)
+        else:
+            base[key] = value
+    return base
 
 class PaymentViewSet(viewsets.ModelViewSet):
     """
@@ -57,6 +68,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
             report_footer = system_settings.report_footer or ""
             report_header_image = system_settings.report_header_image
             report_footer_image = system_settings.report_footer_image
+            lab_logo = system_settings.lab_logo
+            currency = system_settings.currency or "PKR"
         except Exception:
             # Fallback to query params or env if SystemSettings fails
             lab_name = request.query_params.get("lab_name") or os.environ.get("LAB_NAME", "Laboratory")
@@ -67,11 +80,26 @@ class PaymentViewSet(viewsets.ModelViewSet):
             report_footer = ""
             report_header_image = None
             report_footer_image = None
+            lab_logo = None
+            currency = "PKR"
+
+        template = PrintTemplate.get_active(PrintTemplate.TYPE_RECEIPT)
+        template_config = _merge_template_config(template.config if template else None)
+        font_scale = float(template_config.get("font_scale", 1.0) or 1.0)
+        margins = template_config.get("margins", {})
+        page_size = A4 if template_config.get("paper_size") == "A4" else letter
 
         # Generate PDF receipt
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72,
-                               topMargin=72, bottomMargin=72)
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=page_size,
+            rightMargin=float(margins.get("right", 1.0)) * inch,
+            leftMargin=float(margins.get("left", 1.0)) * inch,
+            topMargin=float(margins.get("top", 1.0)) * inch,
+            bottomMargin=float(margins.get("bottom", 1.0)) * inch,
+            pageCompression=0,
+        )
         story = []
         styles = getSampleStyleSheet()
 
@@ -79,7 +107,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
         title_style = ParagraphStyle(
             'ReceiptTitle',
             parent=styles['Heading1'],
-            fontSize=20,
+            fontSize=20 * font_scale,
             textColor=colors.HexColor('#1a1a1a'),
             spaceAfter=30,
             alignment=TA_CENTER,
@@ -88,7 +116,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
         heading_style = ParagraphStyle(
             'ReceiptHeading',
             parent=styles['Heading2'],
-            fontSize=12,
+            fontSize=12 * font_scale,
             textColor=colors.HexColor('#333333'),
             spaceAfter=12,
             spaceBefore=12,
@@ -99,7 +127,11 @@ class PaymentViewSet(viewsets.ModelViewSet):
             story.append(Paragraph(report_header, styles['Normal']))
             story.append(Spacer(1, 0.1*inch))
 
-        add_report_image(story, report_header_image)
+        if template_config.get("show_header_image", True):
+            add_report_image(story, report_header_image)
+
+        if template_config.get("show_logo", True):
+            add_report_image(story, lab_logo, max_width=2.0 * inch, spacer=0.1 * inch)
 
         header_data = [
             [Paragraph(f"<b>{lab_name}</b>", title_style)],
@@ -146,7 +178,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
             ('ALIGN', (0, 0), (0, -1), 'LEFT'),
             ('ALIGN', (1, 0), (1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('FONTSIZE', (0, 0), (-1, -1), 10 * font_scale),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
             ('TOPPADDING', (0, 0), (-1, -1), 8),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
@@ -160,8 +192,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
         # Calculate totals
         total_paid = sum(p.amount for p in payment.order.payments.all())
         remaining = payment.order.net_amount - total_paid
-        currency = "PKR"  # Default currency, can be from settings
-
         payment_details_data = [
             ['Description', 'Amount'],
             ['Subtotal', f"{currency} {payment.order.total_amount:.2f}"],
@@ -185,8 +215,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
             ('ALIGN', (0, 0), (0, -1), 'LEFT'),
             ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 11),
-            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('FONTSIZE', (0, 0), (-1, 0), 11 * font_scale),
+            ('FONTSIZE', (0, 1), (-1, -1), 10 * font_scale),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
             ('TOPPADDING', (0, 0), (-1, -1), 10),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
@@ -204,10 +234,16 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
         # Footer
         story.append(Spacer(1, 0.3*inch))
-        add_report_image(story, report_footer_image, spacer=0.1 * inch)
+        if template_config.get("show_footer_image", True):
+            add_report_image(story, report_footer_image, spacer=0.1 * inch)
         if report_footer:
             story.append(Paragraph(report_footer, styles['Normal']))
             story.append(Spacer(1, 0.1*inch))
+        if template_config.get("show_disclaimer", True):
+            disclaimer = template.disclaimer_text if template else ""
+            if disclaimer:
+                story.append(Paragraph(disclaimer, styles["Normal"]))
+                story.append(Spacer(1, 0.1*inch))
         footer_text = f"Recorded by: {payment.recorded_by.full_name if payment.recorded_by else 'System'}"
         story.append(Paragraph(footer_text, styles['Normal']))
         story.append(Spacer(1, 0.1*inch))

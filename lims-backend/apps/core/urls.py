@@ -4,10 +4,10 @@ URL configuration for core app.
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import SystemSettingsViewSet, HealthCheckView
+from .views import SystemSettingsViewSet, HealthCheckView, PrintTemplateViewSet
 
 router = DefaultRouter()
-# Don't register settings in router - handle manually for singleton pattern
+router.register("print-templates", PrintTemplateViewSet, basename="print-template")
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -20,4 +20,3 @@ urlpatterns = [
     # Health check endpoint
     path("health/", HealthCheckView.as_view(), name="health-check"),
 ]
-

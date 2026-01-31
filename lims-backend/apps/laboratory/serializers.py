@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db import models
-from .models import TestCategory, Test, Parameter, TestParameter, TestPanel, ReferenceRange
+from .models import TestCategory, Test, Parameter, TestParameter, TestPanel, ReferenceRange, CatalogImportJob
 
 
 class TestCategorySerializer(serializers.ModelSerializer):
@@ -189,3 +189,21 @@ class ReferenceRangeSerializer(serializers.ModelSerializer):
             validated_data["created_by"] = request.user
         
         return super().create(validated_data)
+
+
+class CatalogImportJobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CatalogImportJob
+        fields = [
+            "id",
+            "created_at",
+            "created_by",
+            "strict",
+            "allow_defaults",
+            "mode",
+            "dry_run",
+            "summary_json",
+            "errors_json",
+            "warnings_json",
+            "source_filename",
+        ]

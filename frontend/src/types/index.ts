@@ -104,7 +104,8 @@ export interface TestCategory {
 
 export interface TestParameter {
   id: number;
-  test: number;
+  test?: number;
+  parameter?: string;
   parameter_name: string;
   loinc_code?: string;
   unit: string;
@@ -119,7 +120,8 @@ export interface TestParameter {
 }
 
 export interface LabTest {
-  id: number;
+  test_id: number;
+  id?: number;
   category: number;
   category_name: string;
   test_code: string;
@@ -403,12 +405,76 @@ export interface PatientLookupResult {
  */
 export interface TestSearchResult {
   id: number;
+  test_id?: number;
   test_code: string;
   test_name: string;
   category_name: string;
   sample_type: string;
   price: string;
   type: 'test' | 'panel';
+}
+
+export interface PrintTemplateConfig {
+  paper_size: 'A4' | 'Letter';
+  margins: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  font_scale: number;
+  show_logo: boolean;
+  show_header_image: boolean;
+  show_footer_image: boolean;
+  show_disclaimer: boolean;
+  show_signatures: boolean;
+  show_qr?: boolean;
+  show_barcode?: boolean;
+}
+
+export interface PrintSignatory {
+  name: string;
+  title: string;
+  reg_no?: string;
+  line1?: string;
+  line2?: string;
+}
+
+export interface PrintTemplate {
+  id: number;
+  template_key: string;
+  type: 'REPORT' | 'RECEIPT';
+  name: string;
+  description?: string;
+  is_active: boolean;
+  config: PrintTemplateConfig;
+  disclaimer_text?: string;
+  signatories: PrintSignatory[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CatalogImportSummary {
+  dry_run: boolean;
+  strict: boolean;
+  allow_defaults: boolean;
+  mode: string;
+  counts: Record<string, { created: number; updated: number; unchanged: number }>;
+  errors: Array<{ sheet: string; row: number; field: string; message: string }>;
+  warnings: Array<{ sheet: string; row: number; field: string; message: string }>;
+  diff: Array<{ sheet: string; key: string; action: string; changes: Record<string, any> }>;
+}
+
+export interface CatalogAuditSummary {
+  duplicates: Record<string, { count: number; samples: any[] }>;
+  orphans: Record<string, { count: number; samples: any[] }>;
+  tests_without_parameters: { count: number; samples: any[] };
+  reference_ranges: {
+    missing: { count: number; samples: any[] };
+    invalid: { count: number; samples: any[] };
+  };
+  suspicious_defaults: Record<string, { count: number; samples: any[] }>;
+  panels_without_tests: { count: number; samples: any[] };
 }
 
 export interface WorklistPatient {

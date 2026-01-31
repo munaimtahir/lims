@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderApi, patientApi, laboratoryApi, paymentApi } from '../../api/services';
 import type { Order, Patient, OrderCreateRequest } from '../../types';
+import { useBranding } from '../../contexts/BrandingContext';
+import { formatCurrency } from '../../utils/currency';
 import styles from './OrdersPage.module.css';
 
 export default function OrdersPage() {
   const queryClient = useQueryClient();
+  const { branding } = useBranding();
+  const currency = branding?.currency || 'PKR';
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -90,7 +94,7 @@ export default function OrdersPage() {
                 <td>{order.order_id}</td>
                 <td>{order.patient_name}</td>
                 <td>{order.items.length} items</td>
-                <td>PKR {order.net_amount}</td>
+                <td>{formatCurrency(order.net_amount, currency)}</td>
                 <td>
                   <span className={`${styles.statusBadge} ${getStatusColor(order.status)}`}>
                     {order.status.replace('_', ' ')}
@@ -174,6 +178,8 @@ export default function OrdersPage() {
 }
 
 function CreateOrderModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const { branding } = useBranding();
+  const currency = branding?.currency || 'PKR';
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [patientSearch, setPatientSearch] = useState('');
   const [selectedTests, setSelectedTests] = useState<number[]>([]);
@@ -208,7 +214,7 @@ function CreateOrderModal({ onClose, onSuccess }: { onClose: () => void; onSucce
   const calculateTotal = () => {
     let total = 0;
     selectedTests.forEach((id) => {
-      const test = tests.find((t) => t.id === id);
+      const test = tests.find((t) => t.test_id === id);
       if (test) total += parseFloat(test.price);
     });
     selectedPanels.forEach((id) => {
@@ -279,19 +285,19 @@ function CreateOrderModal({ onClose, onSuccess }: { onClose: () => void; onSucce
             <label>Tests</label>
             <div className={styles.checkboxGrid}>
               {tests.map((test) => (
-                <label key={test.id} className={styles.checkboxLabel}>
+                <label key={test.test_id} className={styles.checkboxLabel}>
                   <input
                     type="checkbox"
-                    checked={selectedTests.includes(test.id)}
+                    checked={selectedTests.includes(test.test_id)}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedTests([...selectedTests, test.id]);
+                        setSelectedTests([...selectedTests, test.test_id]);
                       } else {
-                        setSelectedTests(selectedTests.filter((id) => id !== test.id));
+                        setSelectedTests(selectedTests.filter((id) => id !== test.test_id));
                       }
                     }}
                   />
-                  <span>{test.test_name} - PKR {test.price}</span>
+                  <span>{test.test_name} - {formatCurrency(test.price, currency)}</span>
                 </label>
               ))}
             </div>
@@ -314,7 +320,7 @@ function CreateOrderModal({ onClose, onSuccess }: { onClose: () => void; onSucce
                       }
                     }}
                   />
-                  <span>{panel.panel_name} - PKR {panel.price}</span>
+                  <span>{panel.panel_name} - {formatCurrency(panel.price, currency)}</span>
                 </label>
               ))}
             </div>
@@ -322,7 +328,7 @@ function CreateOrderModal({ onClose, onSuccess }: { onClose: () => void; onSucce
 
           {/* Discount */}
           <div className={styles.formGroup}>
-            <label>Discount (PKR)</label>
+            <label>Discount ({currency})</label>
             <input
               type="number"
               value={discount}
@@ -334,7 +340,7 @@ function CreateOrderModal({ onClose, onSuccess }: { onClose: () => void; onSucce
           {/* Total */}
           <div className={styles.totalSection}>
             <span>Total Amount:</span>
-            <span className={styles.totalAmount}>PKR {calculateTotal().toFixed(2)}</span>
+            <span className={styles.totalAmount}>{formatCurrency(calculateTotal().toFixed(2), currency)}</span>
           </div>
 
           <div className={styles.formActions}>
@@ -356,6 +362,8 @@ function CreateOrderModal({ onClose, onSuccess }: { onClose: () => void; onSucce
 }
 
 function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => void }) {
+  const { branding } = useBranding();
+  const currency = branding?.currency || 'PKR';
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
@@ -378,15 +386,15 @@ function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => voi
           </div>
           <div className={styles.detailRow}>
             <span className={styles.detailLabel}>Total:</span>
-            <span className={styles.detailValue}>PKR {order.total_amount}</span>
+            <span className={styles.detailValue}>{formatCurrency(order.total_amount, currency)}</span>
           </div>
           <div className={styles.detailRow}>
             <span className={styles.detailLabel}>Discount:</span>
-            <span className={styles.detailValue}>PKR {order.discount}</span>
+            <span className={styles.detailValue}>{formatCurrency(order.discount, currency)}</span>
           </div>
           <div className={styles.detailRow}>
             <span className={styles.detailLabel}>Net Amount:</span>
-            <span className={styles.detailValue}>PKR {order.net_amount}</span>
+            <span className={styles.detailValue}>{formatCurrency(order.net_amount, currency)}</span>
           </div>
           <div className={styles.detailRow}>
             <span className={styles.detailLabel}>Payment Status:</span>
@@ -398,7 +406,7 @@ function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => voi
             {order.items.map((item) => (
               <div key={item.id} className={styles.orderItem}>
                 <span>{item.test_name || item.panel_name}</span>
-                <span>PKR {item.price}</span>
+                <span>{formatCurrency(item.price, currency)}</span>
               </div>
             ))}
           </div>
@@ -409,6 +417,8 @@ function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => voi
 }
 
 function PaymentModal({ order, onClose, onSuccess }: { order: Order; onClose: () => void; onSuccess: () => void }) {
+  const { branding } = useBranding();
+  const currency = branding?.currency || 'PKR';
   const [amount, setAmount] = useState(order.net_amount);
   const [paymentMethod, setPaymentMethod] = useState('cash');
 
@@ -441,7 +451,7 @@ function PaymentModal({ order, onClose, onSuccess }: { order: Order; onClose: ()
           </div>
           <div className={styles.detailRow}>
             <span className={styles.detailLabel}>Amount Due:</span>
-            <span className={styles.detailValue}>PKR {order.net_amount}</span>
+            <span className={styles.detailValue}>{formatCurrency(order.net_amount, currency)}</span>
           </div>
 
           <div className={styles.formGroup}>
