@@ -16,15 +16,17 @@ class Migration(migrations.Migration):
             name='testparameter',
             options={'ordering': ['test', 'display_order'], 'verbose_name': 'Test Parameter Mapping', 'verbose_name_plural': 'Test Parameter Mappings'},
         ),
-        migrations.RemoveIndex(
-            model_name='parameter',
-            name='parameters_code_38502b_idx',
-        ),
+        # Removed RemoveIndex because 0003 already handled index cleanup
+        # migrations.RemoveIndex(
+        #    model_name='parameter',
+        #    name='parameters_code_38502b_idx',
+        # ),
         migrations.RenameField(
             model_name='parameter',
             old_name='name',
             new_name='parameter_name',
         ),
+        # Fix Test Model PK
         migrations.RemoveField(
             model_name='test',
             name='id',
@@ -40,6 +42,7 @@ class Migration(migrations.Migration):
             field=models.AutoField(primary_key=True, serialize=False),
             preserve_default=False,
         ),
+        # Link TestParameter to Parameter
         migrations.AddField(
             model_name='testparameter',
             name='parameter',
