@@ -6,7 +6,7 @@ from decimal import Decimal
 from rest_framework import status
 from rest_framework.test import APIClient
 from apps.accounts.models import User
-from apps.laboratory.models import TestCategory, Test, TestParameter, TestPanel
+from apps.laboratory.models import TestCategory, Test, TestParameter, TestPanel, Parameter
 
 
 @pytest.fixture
@@ -57,19 +57,21 @@ def test_instance(db, test_category):
 
 
 @pytest.fixture
-def test_parameter(db, test_instance):
+def parameter(db):
+    """Create a parameter."""
+    return Parameter.objects.create(
+        parameter_id="p1",
+        parameter_name="Hemoglobin",
+        unit="g/dL",
+    )
+
+
+@pytest.fixture
+def test_parameter(db, test_instance, parameter):
     """Create and return a test parameter."""
     return TestParameter.objects.create(
         test=test_instance,
-        parameter_name="Hemoglobin",
-        loinc_code="718-7",
-        unit="g/dL",
-        reference_min_male=Decimal("13.5"),
-        reference_max_male=Decimal("17.5"),
-        reference_min_female=Decimal("12.0"),
-        reference_max_female=Decimal("15.5"),
-        critical_low=Decimal("7.0"),
-        critical_high=Decimal("20.0"),
+        parameter=parameter,
         display_order=1,
     )
 
@@ -127,16 +129,16 @@ class TestTestParameterModel:
 
     def test_create_parameter(self, test_instance):
         """Test creating a test parameter."""
-        param = TestParameter.objects.create(
-            test=test_instance,
+        parameter = Parameter.objects.create(
+            parameter_id="p2",
             parameter_name="WBC",
             unit="x10^9/L",
-            reference_min_male=Decimal("4.0"),
-            reference_max_male=Decimal("11.0"),
-            reference_min_female=Decimal("4.0"),
-            reference_max_female=Decimal("11.0"),
         )
-        assert param.parameter_name == "WBC"
+        param = TestParameter.objects.create(
+            test=test_instance,
+            parameter=parameter,
+        )
+        assert param.parameter.parameter_name == "WBC"
         assert param.test == test_instance
 
 
@@ -191,7 +193,7 @@ class TestTestViewSet:
     ):
         """Test retrieving a test with its parameters."""
         response = authenticated_client.get(
-            f"/api/v1/laboratory/tests/{test_instance.id}/"
+            f"/api/v1/laboratory/tests/{test_instance.test_id}/"
         )
         assert response.status_code == status.HTTP_200_OK
         assert "parameters" in response.data

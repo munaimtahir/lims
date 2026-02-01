@@ -94,22 +94,44 @@ def test_instance(db, test_category):
     )
 
 
+from apps.laboratory.models import TestCategory, Test, TestParameter, Parameter, ReferenceRange
+
 @pytest.fixture
 def test_parameter(db, test_instance):
-    """Create and return a test parameter."""
-    return TestParameter.objects.create(
-        test=test_instance,
+    """Create and return a test parameter with associated reference ranges."""
+    parameter = Parameter.objects.create(
+        parameter_id="p1",
         parameter_name="Hemoglobin",
-        loinc_code="718-7",
         unit="g/dL",
-        reference_min_male=Decimal("13.5"),
-        reference_max_male=Decimal("17.5"),
-        reference_min_female=Decimal("12.0"),
-        reference_max_female=Decimal("15.5"),
-        critical_low=Decimal("7.0"),
-        critical_high=Decimal("20.0"),
+    )
+    test_param = TestParameter.objects.create(
+        test=test_instance,
+        parameter=parameter,
         display_order=1,
     )
+    # Reference ranges for Male
+    ReferenceRange.objects.create(
+        parameter=test_param,
+        gender="Male",
+        min_value=13.5,
+        max_value=17.5,
+        min_critical=7.0,
+        max_critical=20.0,
+        age_min=0,
+        age_max=150,
+    )
+    # Reference ranges for Female (example values)
+    ReferenceRange.objects.create(
+        parameter=test_param,
+        gender="Female",
+        min_value=12.0,
+        max_value=15.5,
+        min_critical=6.0,
+        max_critical=19.0,
+        age_min=0,
+        age_max=150,
+    )
+    return test_param
 
 
 @pytest.fixture
@@ -236,7 +258,7 @@ class TestTestResultViewSet:
         response = api_client.post(f"/api/v1/results/{test_result.id}/verify/")
         assert response.status_code == status.HTTP_200_OK
         test_result.refresh_from_db()
-        assert test_result.status == "verified"
+        assert test_result.status == "VERIFIED"
         assert test_result.verified_by == pathologist_user
 
     def test_reject_result(self, api_client, pathologist_user, test_result):
@@ -245,7 +267,7 @@ class TestTestResultViewSet:
         response = api_client.post(f"/api/v1/results/{test_result.id}/reject/")
         assert response.status_code == status.HTTP_200_OK
         test_result.refresh_from_db()
-        assert test_result.status == "rejected"
+        assert test_result.status == "REJECTED"
 
     def test_verify_result_non_pathologist_fails(
         self, api_client, technician_user, test_result

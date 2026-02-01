@@ -2,11 +2,12 @@
 Tests for result filters.
 """
 import pytest
+from datetime import date
 from decimal import Decimal
 from django.utils import timezone
 from apps.accounts.models import User
 from apps.patients.models import Patient
-from apps.laboratory.models import TestCategory, Test, TestParameter
+from apps.laboratory.models import TestCategory, Test, TestParameter, Parameter
 from apps.orders.models import Order, OrderItem
 from apps.results.models import TestResult
 from apps.results.filters import TestResultFilter
@@ -23,7 +24,7 @@ class TestTestResultFilter:
             patient_id="PAT-001",
             first_name="John",
             last_name="Doe",
-            date_of_birth="1990-01-01",
+            date_of_birth=date(1990, 1, 1),
             gender="Male",
             phone="1234567890",
         )
@@ -40,10 +41,14 @@ class TestTestResultFilter:
             price=Decimal("50.00"),
             turnaround_time=24,
         )
-        return TestParameter.objects.create(
-            test=test,
+        parameter = Parameter.objects.create(
+            parameter_id="p1",
             parameter_name="WBC",
             unit="10*3/uL",
+        )
+        return TestParameter.objects.create(
+            test=test,
+            parameter=parameter,
         )
     
     @pytest.fixture

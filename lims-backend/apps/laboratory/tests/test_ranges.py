@@ -2,8 +2,13 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-
-from apps.laboratory.models import ReferenceRange, Test, TestCategory, TestParameter
+from apps.laboratory.models import (
+    Parameter,
+    ReferenceRange,
+    Test,
+    TestCategory,
+    TestParameter,
+)
 from apps.laboratory.ranges import pick_reference_range
 from apps.patients.models import Patient
 
@@ -19,16 +24,14 @@ def test_parameter(db):
         price=Decimal("100.00"),
         turnaround_time=2,
     )
-    return TestParameter.objects.create(
-        test=test,
+    parameter = Parameter.objects.create(
+        parameter_id="p1",
         parameter_name="Glucose",
         unit="mg/dL",
-        reference_min_male=Decimal("70"),
-        reference_max_male=Decimal("110"),
-        reference_min_female=Decimal("65"),
-        reference_max_female=Decimal("105"),
-        critical_low=Decimal("40"),
-        critical_high=Decimal("400"),
+    )
+    return TestParameter.objects.create(
+        test=test,
+        parameter=parameter,
         display_order=1,
     )
 
@@ -123,24 +126,19 @@ def test_pick_reference_range_missing_dob_fallback(test_parameter):
 
     range_info = pick_reference_range(test_parameter, patient)
 
-    assert range_info["source"] == "parameter_fallback"
-    assert range_info["ref_min"] == Decimal("70")
-    assert range_info["ref_max"] == Decimal("110")
+    assert range_info["source"] == "empty"
+    assert range_info["ref_min"] is None
+    assert range_info["ref_max"] is None
+
 
 
 @pytest.mark.django_db
 def test_pick_reference_range_missing_ranges_returns_empty(test_parameter, male_patient):
-    test_parameter.reference_min_male = None
-    test_parameter.reference_max_male = None
-    test_parameter.reference_min_female = None
-    test_parameter.reference_max_female = None
-    test_parameter.save()
-
     range_info = pick_reference_range(
         test_parameter, male_patient, at_date=date(2024, 1, 1)
     )
 
-    assert range_info["source"] == "parameter_fallback"
+    assert range_info["source"] == "empty"
     assert range_info["ref_min"] is None
     assert range_info["ref_max"] is None
     assert range_info["display"] == ""

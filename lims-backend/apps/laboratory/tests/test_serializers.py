@@ -5,7 +5,7 @@ import pytest
 from decimal import Decimal
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from apps.laboratory.serializers import ReferenceRangeSerializer
-from apps.laboratory.models import TestCategory, Test, TestParameter, ReferenceRange
+from apps.laboratory.models import TestCategory, Test, TestParameter, ReferenceRange, Parameter
 from apps.accounts.models import User
 
 
@@ -44,10 +44,14 @@ class TestReferenceRangeSerializer:
     @pytest.fixture
     def parameter(self, test_instance):
         """Create test parameter."""
-        return TestParameter.objects.create(
-            test=test_instance,
+        parameter = Parameter.objects.create(
+            parameter_id="p1",
             parameter_name="WBC",
             unit="10*3/uL",
+        )
+        return TestParameter.objects.create(
+            test=test_instance,
+            parameter=parameter,
         )
     
     def test_validate_age_min_greater_than_max(self, parameter, user):

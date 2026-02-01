@@ -50,32 +50,14 @@ class Payment(models.Model):
     def save(self, *args, **kwargs):
         """
         Override the save method to update the order's payment status.
-
-        Args:
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
         """
         super().save(*args, **kwargs)
-        self.update_order_payment_status()
+        self.order.update_payment_status()
 
-    def update_order_payment_status(self):
+    def delete(self, *args, **kwargs):
         """
-        Check if the associated order is fully paid and update its status.
-
-        If the total payments for the order are greater than or equal to the
-        order's net amount, the order's `is_paid` status is set to True.
-        
-        Additionally, when an order becomes fully paid, this automatically triggers
-        sample generation for all order items.
+        Override the delete method to update the order's payment status.
         """
-        total_paid = sum(p.amount for p in self.order.payments.all())
-        was_paid_before = self.order.is_paid
-        
-        if total_paid >= self.order.net_amount:
-            self.order.is_paid = True
-            self.order.save()
-            
-            # Auto-generate samples when order becomes paid
-            if not was_paid_before and self.order.is_paid:
-                from apps.samples.services import ensure_samples_for_paid_order
-                ensure_samples_for_paid_order(self.order, created_by=self.recorded_by)
+        order = self.order
+        super().delete(*args, **kwargs)
+        order.update_payment_status()

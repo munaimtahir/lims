@@ -128,7 +128,7 @@ class Order(models.Model):
         
         # Update is_paid status
         self.is_paid = self.due_amount <= Decimal("0.00")
-
+        
         # Validate status transition if status is being changed
         if self.pk:  # Only validate if this is an update
             try:
@@ -250,6 +250,26 @@ class Order(models.Model):
         total = sum(item.price for item in self.items.all())
         self.total_amount = total
         self.save()
+
+    def update_payment_status(self):
+        """
+        Update the order's paid amount and recalculate payment status.
+        This should be called whenever a related Payment is saved or deleted.
+        """
+        from apps.billing.models import Payment
+        
+        was_paid_before = self.is_paid
+        
+        # Sum up all related payments
+        total_paid = self.payments.aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+        self.paid_amount = total_paid
+        self.save()
+
+        # If the order has just become paid, trigger sample generation
+        if not was_paid_before and self.is_paid:
+            from apps.samples.services import ensure_samples_for_paid_order
+            # Assuming the last user to update the order is the one to credit for creation
+            ensure_samples_for_paid_order(self, created_by=self.ordered_by)
 
 
 class OrderItem(models.Model):

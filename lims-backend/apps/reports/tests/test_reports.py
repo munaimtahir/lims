@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from apps.accounts.models import User
 from apps.patients.models import Patient
-from apps.laboratory.models import TestCategory, Test, TestParameter
+from apps.laboratory.models import TestCategory, Test, TestParameter, Parameter
 from apps.orders.models import Order, OrderItem
 from apps.results.models import TestResult
 from apps.reports.models import Report
@@ -99,15 +99,14 @@ def test_instance(db, test_category):
 @pytest.fixture
 def test_parameter(db, test_instance):
     """Create and return a test parameter."""
+    parameter = Parameter.objects.create(
+        parameter_id="p1",
+        parameter_name="Hemoglobin",
+        unit="g/dL",
+    )
     return TestParameter.objects.create(
         test=test_instance,
-        parameter_name="Hemoglobin",
-        loinc_code="718-7",
-        unit="g/dL",
-        reference_min_male=Decimal("13.5"),
-        reference_max_male=Decimal("17.5"),
-        reference_min_female=Decimal("12.0"),
-        reference_max_female=Decimal("15.5"),
+        parameter=parameter,
         display_order=1,
     )
 
@@ -251,18 +250,20 @@ class TestPDFGeneration:
         assert isinstance(pdf_content, bytes)
         assert len(pdf_content) > 0
     
-    def test_generate_pdf_with_partial_reference_ranges(self, order_with_results):
+    def test_generate_pdf_with_partial_reference_ranges(self, order_with_results, test_parameter):
         """Test PDF generation with partial reference ranges (only min or max)."""
-        from apps.laboratory.models import TestParameter
+        from apps.laboratory.models import ReferenceRange
         
-        # Get a parameter and set only min or max
-        order_item = order_with_results.items.first()
-        if order_item.test:
-            param = order_item.test.parameters.first()
-            if param:
-                param.reference_min_male = 10.0
-                param.reference_max_male = None
-                param.save()
+        # Create a ReferenceRange for the test_parameter
+        ref_range = ReferenceRange.objects.create(
+            parameter=test_parameter,
+            age_min=0,
+            age_max=120,
+            gender="Both",
+            reference_min=10.0,
+            reference_max=None, # Only min set
+            is_active=True,
+        )
         
         pdf_content = generate_pdf_report(order_with_results.id)
         assert isinstance(pdf_content, bytes)
