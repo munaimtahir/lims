@@ -2,7 +2,7 @@ import openpyxl
 import sys
 
 try:
-    file_path = "LIMS_TestCatalog_MVP_FINAL (1).xlsx"
+    file_path = sys.argv[1]
     wb = openpyxl.load_workbook(file_path)
     
     print(f"Sheet names: {wb.sheetnames}")

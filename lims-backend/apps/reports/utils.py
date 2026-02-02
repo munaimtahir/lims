@@ -308,3 +308,4 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
     pdf = buffer.getvalue()
     buffer.close()
     return pdf
+

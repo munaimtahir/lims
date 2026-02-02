@@ -37,7 +37,10 @@ RUN mkdir -p staticfiles media
 RUN python manage.py collectstatic --noinput
 
 # Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+ARG UID=1000
+ARG GID=1000
+RUN groupadd -g $GID -o appuser
+RUN useradd -m -u $UID -g $GID -o -s /bin/bash appuser && chown -R appuser:appuser /app
 USER appuser
 
 # Expose port

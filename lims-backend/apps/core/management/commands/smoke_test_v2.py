@@ -84,6 +84,7 @@ class Command(BaseCommand):
                 files=files,
             )
             if resp.status_code not in [200, 201]:
+                print(resp.text)
                 fail("CATALOG-SEED", f"Failed to import catalog ({resp.status_code})")
             ok("CATALOG-SEED", "Catalog seeded")
 

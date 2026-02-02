@@ -290,16 +290,13 @@ def import_catalog_from_excel(
         for field in fields:
             current = getattr(existing_obj, field)
             incoming_val = incoming[field]
-            if isinstance(current, Decimal):
-                current_val = str(current)
-            else:
-                current_val = current
-            if isinstance(incoming_val, Decimal):
-                incoming_val = str(incoming_val)
-            if current_val != incoming_val:
-                changes[field] = {"from": current_val, "to": incoming_val}
+            
+            current_for_diff = str(current) if isinstance(current, Decimal) else current
+            incoming_for_diff = str(incoming_val) if isinstance(incoming_val, Decimal) else incoming_val
+    
+            if str(current) != str(incoming_val):
+                changes[field] = {"from": current_for_diff, "to": incoming_for_diff}
         return changes
-
     transaction_context = transaction.atomic() if not dry_run else DummyContext()
 
     with transaction_context:
