@@ -170,7 +170,7 @@ check_redis() {
 check_frontend() {
     print_section "Frontend Status"
     
-    local response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/index.html)
+    local response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8012/index.html)
     
     if [ "$response" = "200" ]; then
         log_success "Frontend: Accessible (HTTP $response)"
@@ -188,7 +188,7 @@ check_caddy() {
         log_success "Caddy: Running"
         
         # Check if health endpoint responds
-        if curl -sf http://localhost/health > /dev/null 2>&1; then
+        if curl -sf http://localhost:8012/health > /dev/null 2>&1; then
             log_success "Health endpoint: Responding"
             return 0
         else
@@ -322,7 +322,7 @@ run_detailed_checks() {
     # Port availability
     log_message ""
     log_message "Port Availability:"
-    for port in 80 443 8000 5432 6379; do
+    for port in 80 443 8012 8000 5432 6379; do
         if netstat -tuln 2>/dev/null | grep -q ":$port " || ss -tuln 2>/dev/null | grep -q ":$port "; then
             log_success "Port $port: In use"
         fi

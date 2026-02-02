@@ -107,16 +107,16 @@ DEBUG=True
 REDIS_URL=redis://redis:6379/0
 
 # CORS (Allow all for zero-friction)
-CORS_ALLOWED_ORIGINS=http://localhost,http://127.0.0.1,http://0.0.0.0
+CORS_ALLOWED_ORIGINS=http://localhost,http://127.0.0.1,http://0.0.0.0,https://lims.alshifalab.pk
 CORS_ALLOW_ALL_ORIGINS=True
-CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1,https://lims.alshifalab.pk
 
 # Frontend
 VITE_API_BASE_URL=/api/v1/
 REACT_APP_API_BASE_URL=/api/v1/
 
 # Server
-SERVER_NAME=localhost
+SERVER_NAME=lims.alshifalab.pk
 
 # Logging
 LOG_LEVEL=INFO
@@ -308,7 +308,7 @@ PYEOF
 from django.contrib.auth import get_user_model
 User = get_user_model()
 try:
-    User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
+    User.objects.create_superuser('admin', 'admin@lims.alshifalab.pk', 'admin123')
     print("Superuser created successfully")
 except Exception as e:
     print(f"Error creating superuser: {e}")
@@ -377,28 +377,28 @@ verify_full_access() {
     print_header "Verifying Full Application Access"
     
     log_info "Testing frontend access..."
-    if curl -f -s -o /dev/null http://localhost:8012/; then
+    if curl -f -s -o /dev/null http://lims.alshifalab.pk:8012/; then
         log_success "✓ Frontend is accessible"
     else
         log_warning "⚠ Frontend access check failed"
     fi
     
     log_info "Testing backend API health..."
-    if curl -f -s http://localhost:8012/api/v1/health/ | grep -q "status"; then
+    if curl -f -s http://lims.alshifalab.pk:8012/api/v1/health/ | grep -q "status"; then
         log_success "✓ Backend API is accessible"
     else
         log_warning "⚠ Backend API health check failed"
     fi
     
     log_info "Testing Django admin access..."
-    if curl -f -s -o /dev/null http://localhost:8012/admin/; then
+    if curl -f -s -o /dev/null http://lims.alshifalab.pk:8012/admin/; then
         log_success "✓ Django admin is accessible"
     else
         log_warning "⚠ Django admin access check failed"
     fi
     
     log_info "Testing proxy health..."
-    if curl -f -s -o /dev/null http://localhost:8012/health; then
+    if curl -f -s -o /dev/null http://lims.alshifalab.pk:8012/health; then
         log_success "✓ Proxy health check passed"
     else
         log_warning "⚠ Proxy health check failed"
@@ -414,11 +414,11 @@ show_summary() {
     docker compose --env-file "$ENV_FILE" ps 2>&1 | tee -a "$DEPLOY_LOG"
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Access URLs:"
-    log_info "  - Frontend: http://localhost:8012/"
-    log_info "  - API: http://localhost:8012/api/v1/"
-    log_info "  - API Docs: http://localhost:8012/api/docs/"
-    log_info "  - Admin: http://localhost:8012/admin/"
-    log_info "  - Health: http://localhost:8012/api/v1/health/"
+    log_info "  - Frontend: http://lims.alshifalab.pk:8012/"
+    log_info "  - API: http://lims.alshifalab.pk:8012/api/v1/"
+    log_info "  - API Docs: http://lims.alshifalab.pk:8012/api/docs/"
+    log_info "  - Admin: http://lims.alshifalab.pk:8012/admin/"
+    log_info "  - Health: http://lims.alshifalab.pk:8012/api/v1/health/"
     echo "" | tee -a "$DEPLOY_LOG"
     log_info "Test Credentials:"
     log_info "  Username: admin"

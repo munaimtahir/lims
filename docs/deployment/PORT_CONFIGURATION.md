@@ -32,7 +32,7 @@ LIMS Docker Containers
 - **Service**: System Caddy (`/etc/caddy/Caddyfile`)
 - **Purpose**: Handles HTTPS/SSL termination for all applications
 - **Domain Routing**:
-  - `portal.alshifalab.pk` → `127.0.0.1:8012`
+  - `lims.alshifalab.pk` → `127.0.0.1:8012`
 
 ### LIMS Internal Proxy (Port 8012)
 - **Service**: Docker container `lims_proxy`
@@ -68,7 +68,7 @@ Initially, LIMS attempted to bind to ports 80 and 443 directly, conflicting with
 ### Solution
 1. **Removed direct port binding**: LIMS no longer binds to ports 80/443
 2. **Assigned dedicated port**: LIMS now uses port 8012 (localhost only)
-3. **Host Caddy routing**: Updated `/etc/caddy/Caddyfile` to route `portal.alshifalab.pk` → `127.0.0.1:8012`
+3. **Host Caddy routing**: Updated `/etc/caddy/Caddyfile` to route `lims.alshifalab.pk` → `127.0.0.1:8012`
 4. **Separated from SIMS**: Previously, the portal was grouped with SIMS configuration - now has dedicated configuration
 
 ## Occupied Ports on Server
@@ -110,7 +110,7 @@ proxy:
 **File**: `/etc/caddy/Caddyfile`
 
 ```caddyfile
-portal.alshifalab.pk {
+lims.alshifalab.pk {
     encode gzip zstd
     
     # Security headers
@@ -157,7 +157,7 @@ If you need to change LIMS to use a different port:
 2. **Update Host Caddy**:
    ```bash
    sudo nano /etc/caddy/Caddyfile
-   # Find portal.alshifalab.pk block
+   # Find lims.alshifalab.pk block
    # Change: reverse_proxy 127.0.0.1:8012
    # To:     reverse_proxy 127.0.0.1:NEWPORT
    
@@ -196,8 +196,8 @@ curl http://localhost:8012/api/v1/health/
 ### Public Access (requires DNS)
 ```bash
 # Test via domain (HTTPS)
-curl https://portal.alshifalab.pk/health
-curl https://portal.alshifalab.pk/api/v1/health/
+curl https://lims.alshifalab.pk/health
+curl https://lims.alshifalab.pk/api/v1/health/
 ```
 
 ## Troubleshooting

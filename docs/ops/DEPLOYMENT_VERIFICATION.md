@@ -58,18 +58,18 @@
 ## Access Verification
 
 ### Public Domain Access
-✅ **https://yourdomain.com**
+✅ **https://lims.alshifalab.pk:8012**
 - SSL Certificate: Valid (Let's Encrypt)
 - Response: HTTP 200 OK
 - Security Headers: Configured
 
 ### API Endpoints
-✅ **https://yourdomain.com/api/v1/**
+✅ **https://lims.alshifalab.pk:8012/api/v1/**
 - Health: healthy
 - Authentication: Working
 - CORS: Configured
 
-✅ **https://yourdomain.com/admin/**
+✅ **https://lims.alshifalab.pk:8012/admin/**
 - Status: Accessible
 - Login: Working
 
@@ -85,7 +85,7 @@
 ### Superuser Account
 ✅ **Username:** admin
 ✅ **Password:** admin123
-✅ **Email:** admin@alshifalab.pk
+✅ **Email:** admin@lims.alshifalab.pk
 ✅ **Superuser Status:** True
 ✅ **Staff Status:** True
 ✅ **Login Test:** Successful
@@ -133,7 +133,7 @@
 
 ### Application Configuration
 ✅ **/etc/caddy/Caddyfile** - Updated
-- portal.alshifalab.pk configured
+- lims.alshifalab.pk configured
 - Proxying to localhost:8012
 - HTTPS enabled
 
@@ -158,7 +158,7 @@ Internet (HTTPS/443)
     ↓
 Host Caddy (/etc/caddy/Caddyfile)
     ↓ SSL/HTTPS
-yourdomain.com
+lims.alshifalab.pk
     ↓
 Docker Caddy Proxy (lims_proxy)
 localhost:8012
@@ -314,7 +314,7 @@ docker compose --env-file .env.production ps
 ### Test Access
 ```bash
 # Public HTTPS
-curl https://yourdomain.com/api/v1/health/
+curl https://lims.alshifalab.pk:8012/api/v1/health/
 
 # Local
 curl http://localhost:8012/health

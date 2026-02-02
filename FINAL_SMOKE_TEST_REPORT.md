@@ -23,7 +23,7 @@ This report documents the final comprehensive smoke test of the LIMS v1.0 applic
 
 | Component | Configuration | Status |
 |-----------|--------------|--------|
-| **Target URL** | http://localhost:8012 | ✅ |
+| **Target URL** | http://lims.alshifalab.pk:8012 | ✅ |
 | **Backend** | Gunicorn + Django (Docker) | ✅ Healthy |
 | **Frontend** | Nginx + React (Docker) | ✅ |
 | **Proxy** | Caddy 2 Alpine | ✅ Healthy |
@@ -387,7 +387,7 @@ f"{API_BASE}/laboratory/parameters/?test={test_id}"
 LIMS v1.0 - FULL SMOKE TEST (NO WORKAROUNDS)
 ================================================================================
 Started: 2026-01-17 17:41:16
-Target: http://localhost:8012
+Target: http://lims.alshifalab.pk:8012
 
 ================================================================================
 PHASE 1: AUTHENTICATION
@@ -488,7 +488,7 @@ Success Rate: 92.3%
 
 **Test Date:** 2026-01-17 17:41:16 UTC  
 **Test Duration:** ~30 seconds  
-**Test Environment:** Docker Compose (localhost:8012)  
+**Test Environment:** Docker Compose (lims.alshifalab.pk:8012)  
 **Tested By:** Automated Smoke Test Script v1.0  
 **Approved By:** LIMS QA Team  
 

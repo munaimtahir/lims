@@ -20,7 +20,7 @@ Repository: /home/munaim/srv/apps/lims
 - `docker compose up -d` -> stack booted.
 - `docker compose exec -T backend python manage.py migrate` -> migrations applied.
 - `docker compose exec -T backend python manage.py seed_minimal_catalog` -> catalog seeded.
-- `curl -s http://localhost:8013/api/v1/health/` -> 200 JSON.
+- `curl -s http://lims.alshifalab.pk:8012/api/v1/health/` -> 200 JSON.
 - `docker compose exec -T backend python manage.py catalog_round_trip_verify` -> PASS.
 - `docker compose exec -T backend python manage.py smoke_test_v2` -> PASS.
 - `docker compose exec -T backend env DJANGO_SETTINGS_MODULE=config.settings.development python -m pytest` -> FAIL (timeout/known failures).

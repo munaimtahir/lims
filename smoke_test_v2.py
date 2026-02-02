@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BASE_URL = os.environ.get("BASE_URL", "http://localhost:8013")
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:8012")
 API_BASE = f"{BASE_URL}/api/v1"
 ARTIFACTS_DIR = "_smoke_artifacts"
 

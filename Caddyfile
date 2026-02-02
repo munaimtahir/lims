@@ -1,6 +1,6 @@
 # LIMS Application - Internal Caddy Proxy
 # This Caddy runs inside Docker and routes traffic between services
-# The host Caddy (on port 80/443) proxies portal.alshifalab.pk -> 127.0.0.1:8012 -> this container
+# The host Caddy (on port 80/443) proxies lims.alshifalab.pk -> 127.0.0.1:8012 -> this container
 # 
 # Architecture:
 #   Internet -> Host Caddy (ports 80/443) -> LIMS Proxy (port 8012) -> Backend/Frontend containers

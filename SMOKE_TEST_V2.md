@@ -26,7 +26,7 @@ docker compose exec -T backend python manage.py smoke_test_v2 --base-url http://
 
 ## Run (standalone script)
 ```bash
-BASE_URL=http://localhost:8013 HOST_HEADER=localhost FORWARDED_PROTO=https ADMIN_USERNAME=admin ADMIN_PASSWORD=admin123 python smoke_test_v2.py
+BASE_URL=http://localhost:8012 HOST_HEADER=localhost FORWARDED_PROTO=https ADMIN_USERNAME=admin ADMIN_PASSWORD=admin123 python smoke_test_v2.py
 ```
 
 ## Exit Codes

@@ -7,12 +7,12 @@
 
 ## Summary
 
-The LIMS application has been successfully consolidated to use a **single URL**: `portal.alshifalab.pk`
+The LIMS application has been successfully consolidated to use a **single URL**: `lims.alshifalab.pk`
 
 Previously, the application was configured to use multiple URLs which caused confusion:
 - `portal.alshifalab.pk` (removed)
 - `api.portal.alshifalab.pk` (removed)
-- `portal.alshifalab.pk` (retained - **primary URL**)
+- `lims.alshifalab.pk` (retained - **primary URL**)
 
 ---
 
@@ -26,12 +26,12 @@ Previously, the application was configured to use multiple URLs which caused con
 **Change:** Updated comment to reference the correct URL
 ```diff
 - # The host Caddy (on port 80/443) proxies portal.alshifalab.pk -> 127.0.0.1:8013 -> this container
-+ # The host Caddy (on port 80/443) proxies portal.alshifalab.pk -> 127.0.0.1:8012 -> this container
++ # The host Caddy (on port 80/443) proxies lims.alshifalab.pk -> 127.0.0.1:8012 -> this container
 ```
 
 ### 2. Documentation Updates
 
-All documentation files have been updated to reference only `portal.alshifalab.pk`:
+All documentation files have been updated to reference only `lims.alshifalab.pk`:
 
 #### Updated Files:
 1. `Caddyfile` - Updated comments
@@ -53,20 +53,20 @@ The following files in the `archive/` directory contain historical references th
 ## Current Configuration
 
 ### Production URL
-**Primary Domain:** `portal.alshifalab.pk`
+**Primary Domain:** `lims.alshifalab.pk`
 
 ### Endpoints
 All application endpoints are now accessed via the single domain:
-- **Frontend:** https://portal.alshifalab.pk
-- **API:** https://portal.alshifalab.pk/api/v1/
-- **Admin Panel:** https://portal.alshifalab.pk/admin/
-- **API Documentation:** https://portal.alshifalab.pk/api/docs/
+- **Frontend:** https://lims.alshifalab.pk:8012
+- **API:** https://lims.alshifalab.pk:8012/api/v1/
+- **Admin Panel:** https://lims.alshifalab.pk:8012/admin/
+- **API Documentation:** https://lims.alshifalab.pk:8012/api/docs/
 
 ### Host Caddy Configuration
 The host Caddy server at `/etc/caddy/Caddyfile` should be configured as:
 
 ```caddyfile
-portal.alshifalab.pk {
+lims.alshifalab.pk {
     encode gzip zstd
     
     # Security headers
@@ -94,12 +94,12 @@ Ensure your `.env.production` file contains:
 
 ```bash
 # Server Configuration
-ALLOWED_HOSTS=portal.alshifalab.pk,<SERVER_IP>,localhost,127.0.0.1
-SERVER_NAME=portal.alshifalab.pk
+ALLOWED_HOSTS=lims.alshifalab.pk,<SERVER_IP>,localhost,127.0.0.1
+SERVER_NAME=lims.alshifalab.pk
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS=https://portal.alshifalab.pk
-CSRF_TRUSTED_ORIGINS=https://portal.alshifalab.pk
+CORS_ALLOWED_ORIGINS=https://lims.alshifalab.pk
+CSRF_TRUSTED_ORIGINS=https://lims.alshifalab.pk
 ```
 
 ---
@@ -111,7 +111,7 @@ Internet (HTTPS)
     ↓
 Host Caddy (Ports 80/443)
     ↓
-portal.alshifalab.pk → 127.0.0.1:8012
+lims.alshifalab.pk → 127.0.0.1:8012
     ↓
 LIMS Docker Container (lims_proxy)
     ↓
@@ -130,13 +130,13 @@ To verify no old URL references remain:
 
 ```bash
 # Search for old portal.alshifalab.pk references (should return 0 results)
-grep -r "lims\.alshifalab\.pk" . --include="*.md" --include="*.yml" --include="Caddyfile" --include="*.sh" --exclude-dir=archive
+grep -r "portal\.alshifalab\.pk" . --include="*.md" --include="*.yml" --include="Caddyfile" --include="*.sh" --exclude-dir=archive
 
 # Search for old api.lims references (should return 0 results)
 grep -r "api\.lims\.alshifalab" . --include="*.md" --include="*.yml" --include="Caddyfile" --include="*.sh" --exclude-dir=archive
 
-# Verify portal.alshifalab.pk is present (should return results)
-grep -r "portal\.alshifalab\.pk" . --include="*.md" --include="*.yml" --include="Caddyfile" --include="*.sh"
+# Verify lims.alshifalab.pk is present (should return results)
+grep -r "lims\.alshifalab\.pk" . --include="*.md" --include="*.yml" --include="Caddyfile" --include="*.sh"
 ```
 
 ### Test Access
@@ -145,8 +145,8 @@ grep -r "portal\.alshifalab\.pk" . --include="*.md" --include="*.yml" --include=
 curl http://localhost:8012/health
 
 # Public access (requires DNS)
-curl https://portal.alshifalab.pk/health
-curl https://portal.alshifalab.pk/api/v1/health/
+curl https://lims.alshifalab.pk:8012/health
+curl https://lims.alshifalab.pk:8012/api/v1/health/
 ```
 
 ---
@@ -167,7 +167,7 @@ Ensure your DNS is configured correctly:
 
 | Record Type | Name | Value |
 |-------------|------|-------|
-| A | portal.alshifalab.pk | `<SERVER_IP>` |
+| A | lims.alshifalab.pk | `<SERVER_IP>` |
 
 **Note:** Remove any old DNS records for `portal.alshifalab.pk` or `api.portal.alshifalab.pk` if they exist.
 
@@ -177,14 +177,14 @@ Ensure your DNS is configured correctly:
 
 When deploying to a new server or updating configuration:
 
-- [ ] Update `/etc/caddy/Caddyfile` with `portal.alshifalab.pk` configuration
-- [ ] Set `ALLOWED_HOSTS=portal.alshifalab.pk,<SERVER_IP>,localhost,127.0.0.1` in `.env.production`
-- [ ] Set `CORS_ALLOWED_ORIGINS=https://portal.alshifalab.pk` in `.env.production`
-- [ ] Set `CSRF_TRUSTED_ORIGINS=https://portal.alshifalab.pk` in `.env.production`
-- [ ] Set `SERVER_NAME=portal.alshifalab.pk` in `.env.production`
+- [ ] Update `/etc/caddy/Caddyfile` with `lims.alshifalab.pk` configuration
+- [ ] Set `ALLOWED_HOSTS=lims.alshifalab.pk,<SERVER_IP>,localhost,127.0.0.1` in `.env.production`
+- [ ] Set `CORS_ALLOWED_ORIGINS=https://lims.alshifalab.pk` in `.env.production`
+- [ ] Set `CSRF_TRUSTED_ORIGINS=https://lims.alshifalab.pk` in `.env.production`
+- [ ] Set `SERVER_NAME=lims.alshifalab.pk` in `.env.production`
 - [ ] Verify DNS points to your server IP
 - [ ] Reload Caddy: `sudo systemctl reload caddy`
-- [ ] Test access: `curl https://portal.alshifalab.pk/health`
+- [ ] Test access: `curl https://lims.alshifalab.pk/health`
 
 ---
 
@@ -198,13 +198,13 @@ sudo journalctl -u caddy -f
 ```
 
 ### Issue: CORS errors
-**Solution:** Verify `CORS_ALLOWED_ORIGINS` includes `https://portal.alshifalab.pk`:
+**Solution:** Verify `CORS_ALLOWED_ORIGINS` includes `https://lims.alshifalab.pk`:
 ```bash
 docker compose --env-file .env.production exec backend env | grep CORS
 ```
 
 ### Issue: Bad Request (400)
-**Solution:** Verify `ALLOWED_HOSTS` includes `portal.alshifalab.pk`:
+**Solution:** Verify `ALLOWED_HOSTS` includes `lims.alshifalab.pk`:
 ```bash
 docker compose --env-file .env.production exec backend env | grep ALLOWED_HOSTS
 ```
@@ -215,11 +215,11 @@ docker compose --env-file .env.production exec backend env | grep ALLOWED_HOSTS
 
 | Item | Before | After |
 |------|--------|-------|
-| **Primary URL** | portal.alshifalab.pk | portal.alshifalab.pk |
-| **API URL** | api.portal.alshifalab.pk | portal.alshifalab.pk/api/v1/ |
+| **Primary URL** | portal.alshifalab.pk | lims.alshifalab.pk |
+| **API URL** | api.portal.alshifalab.pk | lims.alshifalab.pk/api/v1/ |
 | **URL Count** | 2-3 domains | 1 domain |
 | **Configuration Files** | Multiple references | Single consistent reference |
-| **Documentation** | Mixed references | Consistent portal.alshifalab.pk |
+| **Documentation** | Mixed references | Consistent lims.alshifalab.pk |
 
 ---
 
@@ -227,7 +227,7 @@ docker compose --env-file .env.production exec backend env | grep ALLOWED_HOSTS
 
 ✅ **URL consolidation is complete.**
 
-The LIMS application now uses a single, consistent URL: `portal.alshifalab.pk`
+The LIMS application now uses a single, consistent URL: `lims.alshifalab.pk`
 
 All configuration files, documentation, and deployment scripts have been updated to reflect this change. No references to the old `portal.alshifalab.pk` domain remain in active configuration files.
 

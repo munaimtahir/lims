@@ -228,7 +228,7 @@ services:
     restart: unless-stopped
     ports:
       # Expose on port 8012 (Host Caddy proxies to this)
-      - "8013:80"
+      - "8012:80"
     volumes:
       # Caddy configuration file
       - ./Caddyfile:/etc/caddy/Caddyfile:ro

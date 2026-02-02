@@ -1,6 +1,6 @@
 # LIMS Deployment Success Report
 **Date:** January 17, 2026  
-**Domain:** yourdomain.com  
+**Domain:** lims.alshifalab.pk  
 **Server IP:** ${SERVER_IP}  
 **Status:** ✅ DEPLOYED AND OPERATIONAL
 
@@ -14,7 +14,7 @@ The LIMS (Laboratory Information Management System) has been successfully deploy
 
 - ✅ Deploy application using Docker Compose
 - ✅ Configure Caddy reverse proxy with SSL/HTTPS
-- ✅ Make application publicly accessible at portal.alshifalab.pk
+- ✅ Make application publicly accessible at lims.alshifalab.pk
 - ✅ Configure access via server IP with designated port (8012)
 - ✅ Create superuser with admin/admin123 credentials
 - ✅ Verify login functionality
@@ -39,7 +39,7 @@ Internet (HTTPS/443)
     ↓
 Host Caddy (/etc/caddy/Caddyfile)
     ↓ SSL Termination
-    ↓ yourdomain.com → localhost:8012
+    ↓ lims.alshifalab.pk → localhost:8012
     ↓
 Docker Container Caddy (lims_proxy)
     ↓
@@ -76,26 +76,26 @@ Docker Container Caddy (lims_proxy)
 **Created and Verified:**
 - Username: `admin`
 - Password: `admin123`
-- Email: admin@alshifalab.pk
+- Email: admin@lims.alshifalab.pk
 - Role: Administrator/Superuser
 - Status: ✅ Login verified and working
 
 ## 🌐 Access Points
 
 ### Primary Domain (Production)
-- **URL:** https://portal.alshifalab.pk
+- **URL:** https://lims.alshifalab.pk:8012
 - **Status:** ✅ Publicly accessible
 - **SSL:** ✅ Valid certificate
-- **API Endpoint:** https://portal.alshifalab.pk/api/v1/
-- **Admin Panel:** https://portal.alshifalab.pk/admin/
+- **API Endpoint:** https://lims.alshifalab.pk:8012/api/v1/
+- **Admin Panel:** https://lims.alshifalab.pk:8012/admin/
 
 ### Server IP Access
 - **Internal Port:** http://127.0.0.1:8012 (host machine only)
-- **External Access:** Via domain portal.alshifalab.pk only (for security)
+- **External Access:** Via domain lims.alshifalab.pk only (for security)
 
 ### API Health Check
 ```bash
-curl https://yourdomain.com/health
+curl https://lims.alshifalab.pk:8012/health
 # Response: OK
 ```
 
@@ -124,13 +124,13 @@ curl https://yourdomain.com/health
 
 ### 1. Health Check
 ```bash
-curl https://yourdomain.com/health
+curl https://lims.alshifalab.pk:8012/health
 # ✅ Response: OK
 ```
 
 ### 2. Login API Test
 ```bash
-curl -X POST https://yourdomain.com/api/v1/auth/login/ \
+curl -X POST https://lims.alshifalab.pk:8012/api/v1/auth/login/ \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin123"}'
 # ✅ Response: {"success":true,"message":"Login successful",...}
@@ -138,13 +138,13 @@ curl -X POST https://yourdomain.com/api/v1/auth/login/ \
 
 ### 3. Frontend Access
 ```bash
-curl -I https://portal.alshifalab.pk/
+curl -I https://lims.alshifalab.pk:8012/
 # ✅ Response: HTTP/2 200
 ```
 
 ### 4. SSL Certificate
 ```bash
-curl -I https://yourdomain.com/ 2>&1 | grep -i "strict-transport"
+curl -I https://lims.alshifalab.pk:8012/ 2>&1 | grep -i "strict-transport"
 # ✅ Response: strict-transport-security: max-age=31536000; includeSubDomains; preload
 ```
 
@@ -215,7 +215,7 @@ sudo systemctl status caddy
 
 ### Check Backend Health
 ```bash
-curl https://yourdomain.com/api/v1/health/
+curl https://lims.alshifalab.pk:8012/api/v1/health/
 ```
 
 ### Check Container Resource Usage
@@ -254,7 +254,7 @@ sudo journalctl -u caddy -f
 ## 🎉 Deployment Complete!
 
 The LIMS application is now live and accessible at:
-- **Public URL:** https://yourdomain.com
+- **Public URL:** https://lims.alshifalab.pk:8012
 - **Login:** admin / admin123 (please change!)
 - **Status:** Fully operational
 

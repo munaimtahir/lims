@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Docker + Docker Compose
-- Port 8013 available (proxy)
+- Port 8012 available (proxy)
 
 ## Start the Stack (local)
 ```bash
@@ -25,9 +25,9 @@ docker compose exec -T backend python manage.py shell -c "from django.contrib.au
 ```
 
 ## Access
-- UI: `http://localhost:8013/`
-- API: `http://localhost:8013/api/v1/`
-- Health: `http://localhost:8013/api/v1/health/`
+- UI: `http://lims.alshifalab.pk:8012/`
+- API: `http://lims.alshifalab.pk:8012/api/v1/`
+- Health: `http://lims.alshifalab.pk:8012/api/v1/health/`
 
 ## Common Dev Commands
 ```bash

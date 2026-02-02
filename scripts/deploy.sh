@@ -173,16 +173,16 @@ DEBUG=True
 REDIS_URL=redis://redis:6379/0
 
 # CORS
-CORS_ALLOWED_ORIGINS=http://localhost,http://127.0.0.1,http://0.0.0.0
+CORS_ALLOWED_ORIGINS=http://localhost,http://127.0.0.1,http://0.0.0.0,https://lims.alshifalab.pk
 CORS_ALLOW_ALL_ORIGINS=True
-CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1,https://lims.alshifalab.pk
 
 # Frontend
 VITE_API_BASE_URL=/api/v1/
 REACT_APP_API_BASE_URL=/api/v1/
 
 # Server
-SERVER_NAME=localhost
+SERVER_NAME=lims.alshifalab.pk
 
 # Logging
 LOG_LEVEL=INFO
@@ -488,7 +488,7 @@ full_deployment() {
     
     print_header "Deployment Completed Successfully!"
     log_success "LIMS is now running"
-    log_info "Access the application at: https://portal.alshifalab.pk"
+    log_info "Access the application at: https://lims.alshifalab.pk:8012"
     log_info "Deployment log: $DEPLOY_LOG"
 }
 

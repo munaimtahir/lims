@@ -16,7 +16,7 @@ The LIMS application port conflict has been **completely resolved**. The applica
 
 ### The Solution
 1. **Changed LIMS port** from 80/443 to **8012** (localhost only)
-2. **Updated host Caddy** to route `portal.alshifalab.pk` → `127.0.0.1:8012`
+2. **Updated host Caddy** to route `lims.alshifalab.pk` → `127.0.0.1:8012`
 3. **Separated LIMS** from SIMS configuration (they were incorrectly grouped)
 4. **Updated all scripts** and documentation to use port 8012
 
@@ -51,7 +51,7 @@ Your server now has the following port allocation:
 | 443  | Host Caddy | HTTPS (all apps) |
 | 8010 | SIMS Backend | FMU-PLATFORM |
 | 8011 | Consult | Referral System |
-| **8012** | **LIMS** | **This application** ✅ |
+| **8012** | **LIMS/Portal** | **This application** ✅ |
 | 8013 | Portal | Portal app |
 | 8014 | PGSIMS Backend | PGSIMS |
 | 8015 | RIMS Backend | Radiology |
@@ -106,10 +106,10 @@ http://localhost:8012
 
 ### Public Access (requires DNS)
 Once DNS is configured, access via:
-- **Main app**: https://portal.alshifalab.pk
-- **API**: https://portal.alshifalab.pk/api/v1/
-- **Admin**: https://portal.alshifalab.pk/admin/
-- **API Docs**: https://portal.alshifalab.pk/api/docs/
+- **Main app**: https://lims.alshifalab.pk:8012
+- **API**: https://lims.alshifalab.pk:8012/api/v1/
+- **Admin**: https://lims.alshifalab.pk:8012/admin/
+- **API Docs**: https://lims.alshifalab.pk:8012/api/docs/
 
 (Host Caddy handles HTTPS/SSL automatically)
 
@@ -139,7 +139,7 @@ Internet (HTTPS/HTTP)
          ↓
     Routes traffic:
          ├─ sims.alshifalab.pk → 127.0.0.1:8080
-         ├─ portal.alshifalab.pk → 127.0.0.1:8012 ✅
+         ├─ lims.alshifalab.pk → 127.0.0.1:8012 ✅
          ├─ pgsims.alshifalab.pk → 127.0.0.1:8082
          └─ ... other apps
          ↓
@@ -156,7 +156,7 @@ Internet (HTTPS/HTTP)
 - ✅ **Localhost binding**: Port 8012 only binds to `127.0.0.1` (not externally accessible)
 - ✅ **SSL handled by host**: All HTTPS/SSL at host Caddy level
 - ✅ **Internal isolation**: Backend, database, Redis only accessible within Docker network
-- ✅ **Security headers**: Applied by host Caddy
+- ✅ **Security headers**: Applied by Host Caddy
 - ✅ **No direct exposure**: Internal services not exposed to internet
 
 ## Troubleshooting

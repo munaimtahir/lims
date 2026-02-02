@@ -46,10 +46,10 @@ build:
 
 # Runtime environment (from .env.production via env_file)
 environment:
-  ALLOWED_HOSTS: portal.alshifalab.pk,34.16.82.13,localhost,127.0.0.1
-  CORS_ALLOWED_ORIGINS: https://portal.alshifalab.pk
-  CSRF_TRUSTED_ORIGINS: https://portal.alshifalab.pk
-  SERVER_NAME: portal.alshifalab.pk
+  ALLOWED_HOSTS: lims.alshifalab.pk,34.16.82.13,localhost,127.0.0.1
+  CORS_ALLOWED_ORIGINS: https://lims.alshifalab.pk
+  CSRF_TRUSTED_ORIGINS: https://lims.alshifalab.pk
+  SERVER_NAME: lims.alshifalab.pk
   DB_PASSWORD: s/5kg3v4k7UsKPYj+sJHb8ZQAJZ1u4uJ2mdrTx0bBVY=
 ```
 
@@ -84,7 +84,7 @@ cp .env.production .env
 ### Scope
 
 Scanned all tracked documentation files for instance-specific values:
-- `portal.alshifalab.pk` (production domain)
+- `lims.alshifalab.pk` (production domain)
 - `34.16.82.13` (server IP)
 - Any IPv4 patterns
 
@@ -108,7 +108,7 @@ Historical documentation in `archive/` directory:
 ### Sanitization Applied
 
 **Replacements:**
-- `portal.alshifalab.pk` → `yourdomain.com`
+- `lims.alshifalab.pk` → `yourdomain.com`
 - `34.16.82.13` → `${SERVER_IP}`
 - Preserved all procedural steps and command structures
 - Maintained documentation meaning and utility
@@ -290,7 +290,7 @@ When tagging future baselines:
 
 ```bash
 # Scan tracked docs for fingerprints (excluding archive/)
-$ git ls-files docs/ scripts/ | grep "\.md$" | xargs grep -l "portal\.alshifalab\.pk\|34\.16\.82\.13" 2>/dev/null
+$ git ls-files docs/ scripts/ | grep "\.md$" | xargs grep -l "lims\.alshifalab\.pk\|34\.16\.82\.13" 2>/dev/null
 
 # Result: (empty - all sanitized)
 ```

@@ -3,7 +3,7 @@
 ## Prerequisites
 - Docker + Docker Compose
 - A `.env.production` file (see `.env.production.example`)
-- Port 8013 available (proxy container)
+- Port 8012 available (proxy container)
 
 ## Bring Up the Stack
 ```bash
@@ -27,7 +27,7 @@ docker compose exec -T backend python manage.py createsuperuser
 
 ## Health Checks
 ```bash
-curl -s http://localhost:8013/api/v1/health/
+curl -s http://localhost:8012/api/v1/health/
 ```
 
 ## Backups

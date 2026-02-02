@@ -62,10 +62,10 @@ ACCESS INFORMATION
 
 After deployment, access the application at:
 
-   Frontend:     http://localhost:8012/
-   API:          http://localhost:8012/api/v1/
-   API Docs:     http://localhost:8012/api/docs/
-   Admin Panel:  http://localhost:8012/admin/
+   Frontend:     http://lims.alshifalab.pk:8012/
+   API:          http://lims.alshifalab.pk:8012/api/v1/
+   API Docs:     http://lims.alshifalab.pk:8012/api/docs/
+   Admin Panel:  http://lims.alshifalab.pk:8012/admin/
 
 Test Credentials (auto-created/reset):
    Username: admin

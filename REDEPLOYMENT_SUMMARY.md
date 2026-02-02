@@ -159,10 +159,10 @@ Fixed critical TypeScript errors that were preventing frontend build:
 ## Access Information
 
 ### Production URLs
-- **Main Portal:** https://portal.alshifalab.pk
-- **API Endpoint:** https://portal.alshifalab.pk/api/v1/
-- **Admin Panel:** https://portal.alshifalab.pk/admin/
-- **Health Check:** https://portal.alshifalab.pk/api/v1/health/
+- **Main Portal:** https://lims.alshifalab.pk:8012
+- **API Endpoint:** https://lims.alshifalab.pk:8012/api/v1/
+- **Admin Panel:** https://lims.alshifalab.pk:8012/admin/
+- **Health Check:** https://lims.alshifalab.pk:8012/api/v1/health/
 
 ### Local Development URLs
 - **Main Portal:** http://localhost:8012/

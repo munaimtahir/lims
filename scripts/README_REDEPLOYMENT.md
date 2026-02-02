@@ -79,10 +79,10 @@ cd /home/munaim/srv/apps/lims
 
 After running any of these scripts, the application will be available at:
 
-- **Frontend:** http://localhost:8012/
-- **Backend API:** http://localhost:8012/api/v1/
-- **API Documentation:** http://localhost:8012/api/docs/
-- **Django Admin:** http://localhost:8012/admin/
+- **Frontend:** http://lims.alshifalab.pk:8012/
+- **Backend API:** http://lims.alshifalab.pk:8012/api/v1/
+- **API Documentation:** http://lims.alshifalab.pk:8012/api/docs/
+- **Django Admin:** http://lims.alshifalab.pk:8012/admin/
 
 ### Test Credentials (Created/Reset by Scripts)
 - **Username:** `admin`

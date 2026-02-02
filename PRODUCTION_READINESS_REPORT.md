@@ -12,7 +12,7 @@ Date: 2026-01-31
   - lims_proxy (caddy:2-alpine)
   - lims_redis (redis:7-alpine)
 - Health endpoint:
-  - GET http://localhost:8013/api/v1/health/ -> 200
+  - GET http://lims.alshifalab.pk:8012/api/v1/health/ -> 200
   - Body: {"status":"healthy","service":"LIMS Backend","database":"connected"}
 - Login status:
   - API login verified via smoke_test_v2 (PASS)
@@ -41,7 +41,7 @@ Date: 2026-01-31
 
 ## How To Validate (copy/paste)
 - Health check:
-  - curl -s -o /tmp/health.json -w "%{http_code}" http://localhost:8013/api/v1/health/
+  - curl -s -o /tmp/health.json -w "%{http_code}" http://lims.alshifalab.pk:8012/api/v1/health/
 - Smoke test v2:
   - docker compose exec -T backend python manage.py smoke_test_v2
 - Catalog round-trip verification:

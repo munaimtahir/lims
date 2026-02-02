@@ -15,7 +15,7 @@ The LIMS Docker container `lims_proxy` was attempting to bind to ports 80 and 44
 ### 1. Port Assignment
 - **Assigned dedicated port**: LIMS now uses **port 8012** (localhost binding only: `127.0.0.1:8012`)
 - **Host Caddy routing**: Updated `/etc/caddy/Caddyfile` to route traffic:
-  - `portal.alshifalab.pk` → `127.0.0.1:8012`
+  - `lims.alshifalab.pk` → `127.0.0.1:8012`
 
 ### 2. Architecture Changes
 **Before:**
@@ -43,7 +43,7 @@ proxy:
 - **Removed** old LIMS domain from SIMS block (was pointing to ports 8080/8010)
 - **Added** dedicated LIMS/Portal block:
 ```caddyfile
-portal.alshifalab.pk {
+lims.alshifalab.pk {
     encode gzip zstd
     header { /* security headers */ }
     reverse_proxy 127.0.0.1:8012 { /* forwarding config */ }
@@ -180,10 +180,10 @@ Expected results:
 ## Public Access
 
 When DNS is properly configured, the application will be accessible via:
-- **Frontend**: https://portal.alshifalab.pk
-- **API**: https://portal.alshifalab.pk/api/v1/
-- **API Docs**: https://portal.alshifalab.pk/api/docs/
-- **Admin**: https://portal.alshifalab.pk/admin/
+- **Frontend**: https://lims.alshifalab.pk:8012
+- **API**: https://lims.alshifalab.pk:8012/api/v1/
+- **API Docs**: https://lims.alshifalab.pk:8012/api/docs/
+- **Admin**: https://lims.alshifalab.pk:8012/admin/
 
 Host Caddy handles:
 - HTTPS/SSL termination
