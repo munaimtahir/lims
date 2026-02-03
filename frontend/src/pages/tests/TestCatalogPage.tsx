@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { laboratoryApi } from '../../api/services';
-import api from '../../api/client';
+
 import { useBranding } from '../../contexts/BrandingContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currency';
@@ -299,10 +299,8 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
 
   const handleDownloadTemplate = async () => {
     try {
-      const response = await api.get('/laboratory/import/download_template/', {
-        responseType: 'blob',
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = await laboratoryApi.downloadImportTemplate();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', 'LIMS_Import_Template.xlsx');
@@ -327,18 +325,15 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
     formData.append('file', file);
 
     try {
-      const response = await api.post('/laboratory/import/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        params: {
-          strict,
-          allow_defaults: allowDefaults,
-          mode: 'upsert',
-          dry_run: true,
-        },
+      const data = await laboratoryApi.importCatalog(file, {
+        strict,
+        allow_defaults: allowDefaults,
+        mode: 'upsert',
+        dry_run: true,
       });
-      setValidationSummary(response.data.summary);
-      setValidationErrors(response.data.summary.errors || []);
-      setValidationWarnings(response.data.summary.warnings || []);
+      setValidationSummary(data.summary);
+      setValidationErrors(data.summary.errors || []);
+      setValidationWarnings(data.summary.warnings || []);
     } catch (err: any) {
       const errorData = err.response?.data;
       setError(errorData?.message || errorData?.error || "Failed to upload file");
@@ -361,16 +356,13 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await api.post('/laboratory/import/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        params: {
-          strict,
-          allow_defaults: allowDefaults,
-          mode: 'upsert',
-          dry_run: false,
-        },
+      await laboratoryApi.importCatalog(file, {
+        strict,
+        allow_defaults: allowDefaults,
+        mode: 'upsert',
+        dry_run: false,
       });
-      setSuccessMessage(response.data.message || 'Import applied');
+      setSuccessMessage('Import applied');
       setTimeout(() => onSuccess(), 1200);
     } catch (err: any) {
       const errorData = err.response?.data;

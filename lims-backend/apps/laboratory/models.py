@@ -551,14 +551,6 @@ class CatalogImportJob(models.Model):
 
     def __str__(self):
         return f"Catalog Import {self.id} ({'dry-run' if self.dry_run else 'apply'})"
-        ordering = ["parameter", "template_title"]
-        indexes = [
-            models.Index(fields=["parameter"]),
-        ]
-
-    def __str__(self):
-        """Return a string representation of the quick text template."""
-        return f"{self.parameter.parameter_id} - {self.template_title}"
 
 
 class TestParameterLink(models.Model):

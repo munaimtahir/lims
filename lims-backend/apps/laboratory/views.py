@@ -116,7 +116,7 @@ class BulkImportViewSet(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get"], url_path="download-template")
     def download_template(self, request):
         """
         Download the Excel template for bulk import.

@@ -60,6 +60,30 @@ def create_sample_data():
     if not pathologist.has_usable_password():
         pathologist.set_password('patho123')
         pathologist.save()
+
+    phlebotomist, _ = User.objects.get_or_create(
+        username='phlebotomist',
+        defaults={
+            'email': 'phlebotomist@lims.com',
+            'full_name': 'Sample Collector',
+            'role': 'Phlebotomist'
+        }
+    )
+    if not phlebotomist.has_usable_password():
+        phlebotomist.set_password('phleb123')
+        phlebotomist.save()
+
+    labtech, _ = User.objects.get_or_create(
+        username='labtech',
+        defaults={
+            'email': 'labtech@lims.com',
+            'full_name': 'Lab Technician',
+            'role': 'LabTech'
+        }
+    )
+    if not labtech.has_usable_password():
+        labtech.set_password('labtech123')
+        labtech.save()
     
     print(f"   Created/Updated {User.objects.count()} users")
     

@@ -41,6 +41,7 @@ class Command(BaseCommand):
         # Login
         resp = session.post(f"{api_base}/auth/login/", json={"username": username, "password": password})
         if resp.status_code != 200:
+            print(resp.text)
             fail("AUTH", f"Login failed ({resp.status_code})")
         data = resp.json()
         token = (data.get("data") or {}).get("access_token") or data.get("access") or data.get("access_token")

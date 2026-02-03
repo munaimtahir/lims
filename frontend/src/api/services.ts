@@ -140,6 +140,11 @@ export const laboratoryApi = {
     const response = await api.get<CatalogAuditSummary>('/laboratory/catalog/audit/');
     return response.data;
   },
+
+  downloadImportTemplate: async () => {
+    const response = await api.get('/laboratory/import/download-template/', { responseType: 'blob' });
+    return response.data as Blob;
+  },
 };
 
 /**
