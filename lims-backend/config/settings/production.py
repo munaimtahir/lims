@@ -75,6 +75,7 @@ logger.info(f"Production ALLOWED_HOSTS configured: {ALLOWED_HOSTS}")
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
+SECURE_REDIRECT_EXEMPT = [r'^api/v1/health/$']
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
