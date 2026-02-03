@@ -25,7 +25,7 @@ Previously, the application was configured to use multiple URLs which caused con
 
 **Change:** Updated comment to reference the correct URL
 ```diff
-- # The host Caddy (on port 80/443) proxies portal.alshifalab.pk -> 127.0.0.1:8013 -> this container
+- # The host Caddy (on port 80/443) proxies lims.alshifalab.pk -> 127.0.0.1:8013 -> this container
 + # The host Caddy (on port 80/443) proxies lims.alshifalab.pk -> 127.0.0.1:8012 -> this container
 ```
 
@@ -129,7 +129,7 @@ LIMS Docker Container (lims_proxy)
 To verify no old URL references remain:
 
 ```bash
-# Search for old portal.alshifalab.pk references (should return 0 results)
+# Search for old lims.alshifalab.pk references (should return 0 results)
 grep -r "portal\.alshifalab\.pk" . --include="*.md" --include="*.yml" --include="Caddyfile" --include="*.sh" --exclude-dir=archive
 
 # Search for old api.lims references (should return 0 results)
@@ -157,7 +157,7 @@ curl https://lims.alshifalab.pk:8012/api/v1/health/
 2. **Clearer Architecture**: All services under one domain reduces confusion
 3. **Easier SSL Management**: Single certificate for all endpoints
 4. **Better CORS Handling**: Simplified CORS configuration
-5. **Consistent Branding**: All services under portal domain
+5. **Consistent Branding**: All services under the unified lims.alshifalab.pk domain
 
 ---
 
@@ -215,8 +215,8 @@ docker compose --env-file .env.production exec backend env | grep ALLOWED_HOSTS
 
 | Item | Before | After |
 |------|--------|-------|
-| **Primary URL** | portal.alshifalab.pk | lims.alshifalab.pk |
-| **API URL** | api.portal.alshifalab.pk | lims.alshifalab.pk/api/v1/ |
+| **Primary URL** | lims.alshifalab.pk | lims.alshifalab.pk |
+| **API URL** | api.lims.alshifalab.pk | lims.alshifalab.pk/api/v1/ |
 | **URL Count** | 2-3 domains | 1 domain |
 | **Configuration Files** | Multiple references | Single consistent reference |
 | **Documentation** | Mixed references | Consistent lims.alshifalab.pk |
@@ -229,7 +229,7 @@ docker compose --env-file .env.production exec backend env | grep ALLOWED_HOSTS
 
 The LIMS application now uses a single, consistent URL: `lims.alshifalab.pk`
 
-All configuration files, documentation, and deployment scripts have been updated to reflect this change. No references to the old `portal.alshifalab.pk` domain remain in active configuration files.
+All configuration files, documentation, and deployment scripts have been updated to reflect this change. No references to the old `lims.alshifalab.pk` domain remain in active configuration files.
 
 ---
 

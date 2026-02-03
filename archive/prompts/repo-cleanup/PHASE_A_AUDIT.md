@@ -155,21 +155,21 @@ These directories and files are essential to the LIMS application:
    - Should be in docs/ or merged into deployment docs
 
 2. **`updated_config.txt`** (9.2KB, 244 lines)
-   - Deployment report for "portal.alshifalab.pk" 
+   - Deployment report for "lims.alshifalab.pk" 
    - Contains VPS IP: 34.16.82.13
    - Reports on Docker and config fixes
    - References another domain/project: "alshifalab.pk"
    - **Cross-contamination from another deployment**
 
 3. **`docs/DEPLOYMENT_RUNBOOK_PORTAL.md`**
-   - Specific to "portal.alshifalab.pk" domain
+   - Specific to "lims.alshifalab.pk" domain
    - Server IP: 34.124.150.231
    - Dated 2026-01-08
    - Contains step-by-step deployment log
    - **Cross-contamination: specific deployment instance, not generic docs**
 
 4. **`docs/NEXT_DEV_PLAN.md`**
-   - Contains 17+ references to "portal.alshifalab.pk"
+   - Contains 17+ references to "lims.alshifalab.pk"
    - Hardcoded domain configuration examples
    - Go-live checklist for specific instance
    - Should be deployment-agnostic
@@ -187,7 +187,7 @@ These directories and files are essential to the LIMS application:
    - Should be in issue tracker, not committed
 
 8. **`docs/Caddyfile.portal.updated`**
-   - Caddy config specific to portal.alshifalab.pk
+   - Caddy config specific to lims.alshifalab.pk
    - Duplicate/variant of root Caddyfile
 
 ### Category C: Utility Scripts (MEDIUM CONFIDENCE - REVIEW)
@@ -230,7 +230,7 @@ These directories and files are essential to the LIMS application:
 1. **`.env`** - Active environment file with SECRET_KEY and DB_PASSWORD
 2. **`.env.production`** - Production config with:
    - SECRET_KEY: `vYRpsRFcLALPRev4NxqOTiN8z1iXp8-1T5S41sIg7aje8fnS_VwsJ9yLfAlXdAtZfWM`
-   - Hardcoded domain: portal.alshifalab.pk
+   - Hardcoded domain: lims.alshifalab.pk
    - Server IP: 34.124.150.231
    - DB_PASSWORD: `changeme_secure_password` (weak but not committed secret)
 3. **`.env.production.backup`** - Backup copy with secrets
@@ -274,7 +274,7 @@ These directories and files are essential to the LIMS application:
 **Evidence of external project leakage:**
 
 ### Portal/AlshifaLab References:
-- **Domain:** portal.alshifalab.pk (appears 30+ times across 5 files)
+- **Domain:** lims.alshifalab.pk (appears 30+ times across 5 files)
 - **Server IPs:** 34.124.150.231, 34.16.82.13
 - **Context:** Specific deployment instance of this LIMS for "Alshifa Lab"
 
@@ -383,7 +383,7 @@ These are **CRITICAL** to the LIMS application - deletion would break functional
 
 ### Risk 3: Deployment Documentation Generic vs. Instance-Specific (HIGH RISK)
 **Unknown:** How to make deployment docs reusable?
-- Current docs have hardcoded portal.alshifalab.pk domain
+- Current docs have hardcoded lims.alshifalab.pk domain
 - docs/deployment/ may mix generic + instance-specific guidance
 - **Mitigation:** Carefully review each deployment doc
 - **Decision needed:** 

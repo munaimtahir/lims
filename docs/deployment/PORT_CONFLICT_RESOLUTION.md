@@ -8,7 +8,7 @@ The LIMS Docker container `lims_proxy` was attempting to bind to ports 80 and 44
 ## Root Cause
 - Host Caddy runs as a system service and binds to ports 80/443 to handle HTTPS/SSL termination for all applications
 - LIMS was originally configured to bind directly to ports 80/443, creating a port conflict
-- The host Caddyfile had `portal.alshifalab.pk` grouped with SIMS configuration (ports 8080/8010) but LIMS wasn't actually running on those ports
+- The host Caddyfile had `lims.alshifalab.pk` grouped with SIMS configuration (ports 8080/8010) but LIMS wasn't actually running on those ports
 
 ## Solution Implemented
 
@@ -221,7 +221,7 @@ The port conflict has been successfully resolved. LIMS now uses port 8012 exclus
 
 1. **Test full deployment**: Run `./scripts/both.sh` to verify complete rebuild cycle
 2. **Monitor logs**: Check for any issues after deployment
-3. **DNS configuration**: Ensure `portal.alshifalab.pk` points to the server IP
+3. **DNS configuration**: Ensure `lims.alshifalab.pk` points to the server IP
 4. **SSL certificates**: Host Caddy will auto-provision Let's Encrypt certificates
 
 ## Contact

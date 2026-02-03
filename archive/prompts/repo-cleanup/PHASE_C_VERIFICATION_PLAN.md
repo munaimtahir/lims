@@ -412,14 +412,14 @@ echo "Expected: No files found"
 ---
 
 ### Test 4.2: No Hardcoded Instance Data
-**Purpose:** Verify portal.alshifalab.pk and IPs removed
+**Purpose:** Verify lims.alshifalab.pk and IPs removed
 
 **Command:**
 ```bash
 cd /home/runner/work/lims/lims
 
 # Search for hardcoded domain
-grep -r "portal.alshifalab.pk" . \
+grep -r "lims.alshifalab.pk" . \
   --exclude-dir=.git \
   --exclude-dir=docs/repo-cleanup \
   || echo "✓ No hardcoded domain found"
@@ -788,7 +788,7 @@ docker-compose down
 
 ### Repository Hygiene:
 - [ ] No AI artifact reports remain (AUDIT_*, COMPLETION_*, etc.)
-- [ ] No hardcoded portal.alshifalab.pk references (except in repo-cleanup docs)
+- [ ] No hardcoded lims.alshifalab.pk references (except in repo-cleanup docs)
 - [ ] No hardcoded IP addresses (34.124.150.231, 34.16.82.13)
 - [ ] No .env.production in working directory
 - [ ] No empty artifact files (lims_db removed)

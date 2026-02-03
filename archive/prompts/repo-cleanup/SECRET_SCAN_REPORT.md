@@ -65,10 +65,10 @@
 - Email credentials: `EMAIL_HOST_USER=` (empty), `EMAIL_HOST_PASSWORD=` (empty)
 
 **Hardcoded Instance Data (SECURITY CONCERN):**
-- Domain: `portal.alshifalab.pk` (appears 4 times)
+- Domain: `lims.alshifalab.pk` (appears 4 times)
 - Server IP: `34.124.150.231`
-- CORS origins: `https://portal.alshifalab.pk`
-- CSRF trusted origins: `https://portal.alshifalab.pk`
+- CORS origins: `https://lims.alshifalab.pk`
+- CSRF trusted origins: `https://lims.alshifalab.pk`
 
 **Assessment:**
 - SECRET_KEY appears to be randomly generated (good entropy)
@@ -79,7 +79,7 @@
 
 **Recommendation for Phase B:**
 - ❌ **DELETE** from working directory
-- Reason 1: Contains hardcoded instance-specific data (portal.alshifalab.pk)
+- Reason 1: Contains hardcoded instance-specific data (lims.alshifalab.pk)
 - Reason 2: Should not exist in generic repository
 - Reason 3: Developers should use `.env.production.example` instead
 - Mitigation: Keep `.env.production.example` as template
@@ -138,10 +138,10 @@
 **Assessment:**
 - ✅ Properly designed as template
 - ✅ No real secrets
-- Contains some hardcoded examples for `portal.alshifalab.pk` domain
+- Contains some hardcoded examples for `lims.alshifalab.pk` domain
 
 **Recommendation:**
-- ⚠️ **SANITIZE** - Replace `portal.alshifalab.pk` with `yourdomain.com`
+- ⚠️ **SANITIZE** - Replace `lims.alshifalab.pk` with `yourdomain.com`
 - Otherwise KEEP as template
 
 ---
@@ -178,7 +178,7 @@
 
 ### 2.1 Domain References
 
-**Domain:** `portal.alshifalab.pk` (Customer deployment instance)
+**Domain:** `lims.alshifalab.pk` (Customer deployment instance)
 
 **Files Containing Domain (Tracked by Git):**
 1. `docs/NEXT_DEV_PLAN.md` - 17+ occurrences
@@ -193,7 +193,7 @@
 
 **Recommendation for Phase B:**
 - Replace all occurrences with generic placeholders:
-  - `portal.alshifalab.pk` → `yourdomain.com` or `${YOUR_DOMAIN}`
+  - `lims.alshifalab.pk` → `yourdomain.com` or `${YOUR_DOMAIN}`
   - Keep pattern readable but remove specifics
 
 ---
@@ -220,7 +220,7 @@
 ### 2.3 Email Addresses
 
 **Found in Documentation:**
-- `noreply@portal.alshifalab.pk` - In .env.production, docs
+- `noreply@lims.alshifalab.pk` - In .env.production, docs
 - `munaim@` (partial reference in docs)
 
 **Risk Assessment:**
@@ -380,10 +380,10 @@ git status | grep ".env.production" || echo "✓ Files properly ignored"
 
 **Sanitization Pattern:**
 ```diff
-- ALLOWED_HOSTS=portal.alshifalab.pk,34.124.150.231
+- ALLOWED_HOSTS=lims.alshifalab.pk,34.124.150.231
 + ALLOWED_HOSTS=yourdomain.com,${SERVER_IP}
 
-- CORS_ALLOWED_ORIGINS=https://portal.alshifalab.pk
+- CORS_ALLOWED_ORIGINS=https://lims.alshifalab.pk
 + CORS_ALLOWED_ORIGINS=https://yourdomain.com
 
 - Server IP: 34.124.150.231
@@ -393,7 +393,7 @@ git status | grep ".env.production" || echo "✓ Files properly ignored"
 **Validation:**
 ```bash
 # After sanitization, verify no hardcoded instances remain
-grep -ri "portal.alshifalab.pk\|34.124.150.231\|34.16.82.13" . \
+grep -ri "lims.alshifalab.pk\|34.124.150.231\|34.16.82.13" . \
   --exclude-dir=.git \
   --exclude="SECRET_SCAN_REPORT.md" \
   --exclude="CONTAMINATION_MAP.md" || echo "✓ All instances removed"

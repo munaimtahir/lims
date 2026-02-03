@@ -71,7 +71,7 @@ User.objects.create_superuser('admin', 'admin@alshifalab.pk', 'admin123')
 
 **Verified:** All scripts now align with current deployment configuration:
 - Use production environment file (`.env.production`)
-- Reference correct domain (`portal.alshifalab.pk`)
+- Reference correct domain (`lims.alshifalab.pk`)
 - Use correct port binding (`127.0.0.1:8012`)
 - Proper service dependencies
 
@@ -256,7 +256,7 @@ lims_redis      Up 8 minutes (healthy)
 *Note: Backend shows "unhealthy" due to health check configuration, but service is functional.*
 
 **Public Access:**
-- ✅ https://portal.alshifalab.pk - Working
+- ✅ https://lims.alshifalab.pk - Working
 - ✅ API endpoints - Working
 - ✅ Login functionality - Working
 - ✅ Admin panel - Working
@@ -295,7 +295,7 @@ docker compose --env-file .env.production logs -f backend
 
 ### 5. **Verify Access After Deployment**
 ```bash
-curl https://portal.alshifalab.pk/api/v1/health/
+curl https://lims.alshifalab.pk/api/v1/health/
 ```
 
 ## Troubleshooting

@@ -49,11 +49,11 @@
 | `.env.example` | CONFIG | Environment variable template | High | KEEP |
 | `.env.production.example` | CONFIG | Production environment template | High | KEEP |
 | `.env` | SECRET_RISK | Active environment file with secrets (gitignored) | High | REVIEW_MANUALLY |
-| `.env.production` | SECRET_RISK | Production config with SECRET_KEY, hardcoded domain portal.alshifalab.pk | High | DELETE |
+| `.env.production` | SECRET_RISK | Production config with SECRET_KEY, hardcoded domain lims.alshifalab.pk | High | DELETE |
 | `.env.production.backup` | SECRET_RISK | Backup of production env with secrets | High | DELETE |
 | `setup.sh` | DEVOPS | Development environment setup script (not in README) | Med | REVIEW_MANUALLY |
 | `audit_and_fix.py` | AI_ARTIFACT | One-time utility script for database seeding and testing | High | DELETE |
-| `updated_config.txt` | EXPORT_DUMP | Deployment report with hardcoded IP 34.16.82.13 and portal.alshifalab.pk | High | DELETE |
+| `updated_config.txt` | EXPORT_DUMP | Deployment report with hardcoded IP 34.16.82.13 and lims.alshifalab.pk | High | DELETE |
 | `lims_db` | UNUSED | Empty SQLite database artifact (0 bytes) | High | DELETE |
 | `AUDIT_REPORT.md` | AI_ARTIFACT | Post-fix audit report dated 2025-12-19 | High | DELETE |
 | `AUDIT_REPORT_UPDATED.md` | AI_ARTIFACT | Expanded audit report (529 lines, 19KB) | High | DELETE |
@@ -135,9 +135,9 @@
 | `docs/TODOS_CHECKLIST.md` | AI_ARTIFACT | Project management checklist (should be in issues) | Med | DELETE |
 | `docs/PROJECT_STATUS_REPORT.md` | AI_ARTIFACT | Status report for specific deployment instance | Med | DELETE |
 | `docs/GO_LIVE_VERIFICATION_REPORT.md` | AI_ARTIFACT | Go-live verification dated 2026-01-13 with server-specific results | High | DELETE |
-| `docs/DEPLOYMENT_RUNBOOK_PORTAL.md` | EXPORT_DUMP | Deployment runbook for portal.alshifalab.pk (34.124.150.231) | High | DELETE |
-| `docs/NEXT_DEV_PLAN.md` | DUPLICATE | Dev plan with 17+ hardcoded portal.alshifalab.pk references | High | REPLACE_WITH_TEMPLATE |
-| `docs/Caddyfile.portal.updated` | DUPLICATE | Caddy config specific to portal.alshifalab.pk | High | DELETE |
+| `docs/DEPLOYMENT_RUNBOOK_PORTAL.md` | EXPORT_DUMP | Deployment runbook for lims.alshifalab.pk (34.124.150.231) | High | DELETE |
+| `docs/NEXT_DEV_PLAN.md` | DUPLICATE | Dev plan with 17+ hardcoded lims.alshifalab.pk references | High | REPLACE_WITH_TEMPLATE |
+| `docs/Caddyfile.portal.updated` | DUPLICATE | Caddy config specific to lims.alshifalab.pk | High | DELETE |
 
 ### API Documentation (`docs/api/`)
 
@@ -222,7 +222,7 @@
 - **ENVIRONMENT_VARIABLES.md:** 1 file
 
 ### Files to REPLACE_WITH_TEMPLATE
-- **docs/NEXT_DEV_PLAN.md:** 1 file (remove hardcoded portal.alshifalab.pk)
+- **docs/NEXT_DEV_PLAN.md:** 1 file (remove hardcoded lims.alshifalab.pk)
 
 ### Files to REVIEW_MANUALLY
 - **.env:** 1 file (active dev environment)
@@ -233,7 +233,7 @@
 - **Total:** 9 files requiring human judgment
 
 ### Files to DELETE (Secret Risk)
-- **.env.production:** 1 file (hardcoded portal.alshifalab.pk)
+- **.env.production:** 1 file (hardcoded lims.alshifalab.pk)
 - **.env.production.backup:** 1 file
 - **Total:** 2 files (~10KB)
 
@@ -251,7 +251,7 @@ Generated during development/testing phases:
 **Why contamination:** These are development process artifacts that document work completed, not project documentation for end users.
 
 ### Instance-Specific Deployment (5 files, ~50KB)
-References to portal.alshifalab.pk deployment:
+References to lims.alshifalab.pk deployment:
 - updated_config.txt (root)
 - docs/DEPLOYMENT_RUNBOOK_PORTAL.md
 - docs/NEXT_DEV_PLAN.md
@@ -301,7 +301,7 @@ Files that need verification before action:
 
 ## Files with Hardcoded Instance Data
 
-### portal.alshifalab.pk References (30+ occurrences)
+### lims.alshifalab.pk References (30+ occurrences)
 - docs/NEXT_DEV_PLAN.md (17 occurrences)
 - docs/DEPLOYMENT_RUNBOOK_PORTAL.md (10+ occurrences)
 - .env.production (4 occurrences)

@@ -92,7 +92,7 @@ rm -f docs/Caddyfile.portal.updated
 
 **Rationale:**
 - `updated_config.txt`: Deployment report for VPS 34.16.82.13
-- `docs/DEPLOYMENT_RUNBOOK_PORTAL.md`: Runbook for portal.alshifalab.pk (34.124.150.231)
+- `docs/DEPLOYMENT_RUNBOOK_PORTAL.md`: Runbook for lims.alshifalab.pk (34.124.150.231)
 - `docs/Caddyfile.portal.updated`: Instance-specific Caddy config
 
 These belong in private deployment notes, not generic repository.
@@ -107,9 +107,9 @@ grep -r "updated_config.txt\|DEPLOYMENT_RUNBOOK_PORTAL\|Caddyfile.portal" README
 git add -A
 git commit -m "docs: remove instance-specific deployment artifacts
 
-Removed deployment files specific to portal.alshifalab.pk instance:
+Removed deployment files specific to lims.alshifalab.pk instance:
 - updated_config.txt (VPS 34.16.82.13 deployment report)
-- docs/DEPLOYMENT_RUNBOOK_PORTAL.md (portal.alshifalab.pk runbook)
+- docs/DEPLOYMENT_RUNBOOK_PORTAL.md (lims.alshifalab.pk runbook)
 - docs/Caddyfile.portal.updated (instance-specific Caddy config)
 
 These belong in private deployment documentation, not the generic codebase.
@@ -289,7 +289,7 @@ Low risk: Historical reference only, no functional dependencies."
 
 **Action:** REPLACE_WITH_TEMPLATE
 
-**Issue:** Contains 17+ hardcoded references to `portal.alshifalab.pk`
+**Issue:** Contains 17+ hardcoded references to `lims.alshifalab.pk`
 
 **Approach:**
 1. Create generic version with placeholders
@@ -298,20 +298,20 @@ Low risk: Historical reference only, no functional dependencies."
 
 **Example Transformation:**
 ```diff
-- ALLOWED_HOSTS=portal.alshifalab.pk,<SERVER_PUBLIC_IP>
+- ALLOWED_HOSTS=lims.alshifalab.pk,<SERVER_PUBLIC_IP>
 + ALLOWED_HOSTS=yourdomain.com,${SERVER_IP}
 
-- curl -k https://portal.alshifalab.pk/ -I
+- curl -k https://lims.alshifalab.pk/ -I
 + curl -k https://yourdomain.com/ -I
 
-- Domain: portal.alshifalab.pk
+- Domain: lims.alshifalab.pk
 + Domain: yourdomain.com (replace with your actual domain)
 ```
 
 **Validation After Edit:**
 ```bash
 # Ensure no hardcoded instances remain
-grep -i "portal.alshifalab.pk\|34.124.150.231" docs/NEXT_DEV_PLAN.md && echo "✗ Still has hardcoded values" || echo "✓ Sanitized"
+grep -i "lims.alshifalab.pk\|34.124.150.231" docs/NEXT_DEV_PLAN.md && echo "✗ Still has hardcoded values" || echo "✓ Sanitized"
 ```
 
 **Commit:**
@@ -319,7 +319,7 @@ grep -i "portal.alshifalab.pk\|34.124.150.231" docs/NEXT_DEV_PLAN.md && echo "�
 git add docs/NEXT_DEV_PLAN.md
 git commit -m "docs: sanitize NEXT_DEV_PLAN.md - remove hardcoded instance data
 
-Replaced 17+ hardcoded references to portal.alshifalab.pk with generic
+Replaced 17+ hardcoded references to lims.alshifalab.pk with generic
 placeholders (yourdomain.com, \${YOUR_DOMAIN}). Document is now reusable
 for any deployment instance.
 
@@ -343,7 +343,7 @@ rm -f .env.production.backup
 ```
 
 **Rationale:**
-- `.env.production` contains SECRET_KEY and hardcoded portal.alshifalab.pk
+- `.env.production` contains SECRET_KEY and hardcoded lims.alshifalab.pk
 - `.env.production.backup` is duplicate with same issues
 - Both are gitignored, so not in git history
 - Should not exist in working directory (use .env.production.example instead)
@@ -458,7 +458,7 @@ git log --oneline --all -5 -- lims-backend/verify_phase1.py
 
 **Questions:**
 1. Do they contain hardcoded IP addresses or domains?
-2. Are examples generic or specific to portal.alshifalab.pk?
+2. Are examples generic or specific to lims.alshifalab.pk?
 3. Can they be used as-is for new deployments?
 
 **If instance-specific content found:**

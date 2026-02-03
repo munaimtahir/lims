@@ -12,7 +12,7 @@ Internet (Port 443/80)
 Host Caddy (System Service)
     ├─ sims.alshifalab.pk → 127.0.0.1:8080 (FMU-PLATFORM/SIMS)
     ├─ api.sims.alshifalab.pk → 127.0.0.1:8010 (FMU-PLATFORM/SIMS Backend)
-    ├─ portal.alshifalab.pk → 127.0.0.1:8012 (LIMS/Portal)  ← THIS APPLICATION
+    ├─ lims.alshifalab.pk → 127.0.0.1:8012 (LIMS/Portal)  ← THIS APPLICATION
     ├─ pgsims.alshifalab.pk → 127.0.0.1:8082 (PGSIMS Frontend)
     ├─ rims.alshifalab.pk → 127.0.0.1:8081 (RIMS)
     ├─ consult.alshifalab.pk → 127.0.0.1:8011 (Consult)
