@@ -74,6 +74,7 @@ services:
         DB_PASSWORD: ${DB_PASSWORD}
         ALLOWED_HOSTS: ${ALLOWED_HOSTS}
         CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+        CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
       # For production, use pull policy
       # pull: always
     container_name: lims_backend
@@ -82,7 +83,7 @@ services:
       - .env.production
     volumes:
       - static_files:/app/staticfiles
-      - media_files:/app/media
+      - ./lims-backend/media:/app/media:rw
       - ./logs:/app/logs:rw
     environment:
       # Django Settings
@@ -91,7 +92,7 @@ services:
       DEBUG: "False"
 
       # Allowed Hosts (CRITICAL: Include public IP and domains)
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
 
       # Database Configuration
       DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
@@ -105,8 +106,8 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
 
       # CORS Configuration (CRITICAL: Must match frontend domain)
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
-      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?Define CORS_ALLOWED_ORIGINS in .env.production (comma-separated origins)}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:?Define CSRF_TRUSTED_ORIGINS in .env.production (comma-separated HTTPS origins)}
       CORS_ALLOW_CREDENTIALS: "True"
 
       # SSL/HTTPS Configuration
@@ -156,12 +157,14 @@ services:
         DB_PASSWORD: ${DB_PASSWORD}
         ALLOWED_HOSTS: ${ALLOWED_HOSTS}
         CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+        CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
     container_name: lims_celery
     restart: unless-stopped
     command: celery -A config worker -l ${LOG_LEVEL:-INFO} --concurrency=4
     env_file:
       - .env.production
     volumes:
+      - ./lims-backend/media:/app/media:rw
       - ./logs:/app/logs:rw
     environment:
       # Django Settings
@@ -239,7 +242,7 @@ services:
       # Static files (read-only from backend)
       - static_files:/srv/static:ro
       # Media files (read-only from backend)
-      - media_files:/srv/media:ro
+      - ./lims-backend/media:/srv/media:ro
     environment:
       # Internal proxy - host Caddy handles domain routing
       CADDY_DOMAIN: ${SERVER_NAME:-localhost}
@@ -273,8 +276,6 @@ volumes:
   redis_data:
     driver: local
   static_files:
-    driver: local
-  media_files:
     driver: local
   caddy_data:
     driver: local

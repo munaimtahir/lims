@@ -9,3 +9,7 @@ python-json-logger==2.0.7
 
 # WSGI Server
 gunicorn==21.2.0
+
+# Test tooling for on-image verification parity
+pytest==7.4.3
+pytest-django==4.7.0

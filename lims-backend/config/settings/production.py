@@ -18,6 +18,9 @@ from .base import *
 import os
 import logging
 
+SETTINGS_MODULE_NAME = os.environ.get('DJANGO_SETTINGS_MODULE', '')
+IS_VERIFICATION_CONTEXT = SETTINGS_MODULE_NAME.endswith('.ci') or SETTINGS_MODULE_NAME.endswith('.test')
+
 # ============================================
 # DEBUG SETTINGS
 # ============================================
@@ -55,12 +58,28 @@ if not DB_PASSWORD:
 #   - Public IP address of your server
 # Format: "domain.com,www.domain.com,xxx.xxx.xxx.xxx"
 
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '').split(',')]
-if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']:
+ALLOWED_HOSTS = [
+    host.strip() for host in os.environ.get('ALLOWED_HOSTS', '').split(',') if host.strip()
+]
+
+if not ALLOWED_HOSTS:
+    if IS_VERIFICATION_CONTEXT:
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+        logger.warning("VERIFICATION CONTEXT: ALLOWED_HOSTS not set, defaulting to localhost for tests/CI.")
+    else:
+        raise ValueError(
+            "CRITICAL: ALLOWED_HOSTS environment variable must be set in production. "
+            "Include your public domain(s) and IP (e.g., 'your-domain.com,www.your-domain.com,xxx.xxx.xxx.xxx')."
+        )
+
+if '*' in ALLOWED_HOSTS:
+    raise ValueError("CRITICAL: Wildcard '*' is not permitted in ALLOWED_HOSTS. Use explicit domains/IPs.")
+
+non_local_hosts = [host for host in ALLOWED_HOSTS if host not in {'localhost', '127.0.0.1'}]
+if not non_local_hosts and not IS_VERIFICATION_CONTEXT:
     raise ValueError(
-        "CRITICAL: ALLOWED_HOSTS environment variable must be set in production. "
-        "Must include your domain and public IP. "
-        "Format: 'your-domain.com,www.your-domain.com,xxx.xxx.xxx.xxx'"
+        "CRITICAL: ALLOWED_HOSTS is limited to localhost values. "
+        "Configure public-facing domains/IPs for production or switch to non-production settings explicitly."
     )
 
 # Log allowed hosts for debugging
@@ -172,17 +191,32 @@ logger.info(f"Production CORS_ALLOWED_ORIGINS configured: {CORS_ALLOWED_ORIGINS}
 # Django 4.0+ requires CSRF_TRUSTED_ORIGINS for HTTPS sites
 # Must include the protocol (https://) and domain
 
-CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')]
-if not CSRF_TRUSTED_ORIGINS or CSRF_TRUSTED_ORIGINS == ['']:
-    # Fallback to CORS_ALLOWED_ORIGINS if CSRF_TRUSTED_ORIGINS not explicitly set
-    if CORS_ALLOWED_ORIGINS and CORS_ALLOWED_ORIGINS != ['']:
-        CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
-        logger.info(f"CSRF_TRUSTED_ORIGINS not set, using CORS_ALLOWED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()
+]
+if not CSRF_TRUSTED_ORIGINS:
+    if IS_VERIFICATION_CONTEXT:
+        CSRF_TRUSTED_ORIGINS = ['http://localhost']
+        logger.warning("VERIFICATION CONTEXT: CSRF_TRUSTED_ORIGINS not set, defaulting to http://localhost for tests/CI.")
     else:
-        logger.warning(
-            "WARNING: CSRF_TRUSTED_ORIGINS not configured. "
-            "CSRF protection may fail for HTTPS requests. "
-            "Set CSRF_TRUSTED_ORIGINS to your domain (e.g., https://yourdomain.com)"
+        raise ValueError(
+            "CRITICAL: CSRF_TRUSTED_ORIGINS environment variable must be set in production. "
+            "Provide fully-qualified origins with scheme, e.g., 'https://your-domain.com,https://api.your-domain.com'."
+        )
+
+wildcard_csrf_entries = [origin for origin in CSRF_TRUSTED_ORIGINS if origin == '*' or origin.endswith('*')]
+if wildcard_csrf_entries:
+    raise ValueError(
+        f"CRITICAL: CSRF_TRUSTED_ORIGINS contains invalid entries: {wildcard_csrf_entries}. "
+        "Use explicit HTTPS origins; wildcards are not permitted."
+    )
+
+if not IS_VERIFICATION_CONTEXT:
+    non_https_csrf_entries = [origin for origin in CSRF_TRUSTED_ORIGINS if not origin.startswith('https://')]
+    if non_https_csrf_entries:
+        raise ValueError(
+            f"CRITICAL: CSRF_TRUSTED_ORIGINS contains non-HTTPS entries: {non_https_csrf_entries}. "
+            "Use explicit HTTPS origins in production."
         )
 
 logger.info(f"Production CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}")
