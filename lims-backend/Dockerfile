@@ -29,6 +29,10 @@ RUN apt-get update && apt-get install -y \
 COPY requirements/base.txt requirements/production.txt requirements/
 RUN pip install --no-cache-dir -r requirements/production.txt
 
+# Bootstrap helper
+COPY bootstrap_prod.sh /app/bootstrap_prod.sh
+RUN chmod +x /app/bootstrap_prod.sh
+
 # Copy project
 COPY . .
 
@@ -48,5 +52,5 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Run gunicorn (bind to all interfaces to be accessible from proxy container)
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "config.wsgi:application"]
+# Run bootstrap then gunicorn (command overridable for celery)
+CMD ["/app/bootstrap_prod.sh", "gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "config.wsgi:application"]
