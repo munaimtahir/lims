@@ -4,17 +4,8 @@ FROM python:3.12-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV DJANGO_SETTINGS_MODULE=config.settings.production
-ARG SECRET_KEY
-ARG DB_PASSWORD
-ARG ALLOWED_HOSTS
-ARG CORS_ALLOWED_ORIGINS
-ARG CSRF_TRUSTED_ORIGINS
-ENV SECRET_KEY=${SECRET_KEY}
-ENV DB_PASSWORD=${DB_PASSWORD}
-ENV ALLOWED_HOSTS=${ALLOWED_HOSTS}
-ENV CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
-ENV CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+ARG DJANGO_SETTINGS_MODULE=config.settings.development
+ENV DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
 
 # Set work directory
 WORKDIR /app
@@ -25,8 +16,8 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY requirements/base.txt requirements/production.txt requirements/
+# Install Python dependencies (production set includes gunicorn/logging deps)
+COPY requirements/base.txt requirements/production.txt requirements/development.txt requirements/
 RUN pip install --no-cache-dir -r requirements/production.txt
 
 # Bootstrap helper

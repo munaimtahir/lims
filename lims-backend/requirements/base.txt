@@ -33,3 +33,6 @@ requests==2.31.0
 
 # Excel Export
 openpyxl==3.1.2
+
+# Logging
+python-json-logger==3.2.1
