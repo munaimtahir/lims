@@ -308,7 +308,7 @@ def _serialize_for_json(obj: Any) -> Any:
         return str(obj)
     if isinstance(obj, dict):
         return {k: _serialize_for_json(v) for k, v in obj.items()}
-    if isinstance(obj, list):
+    if isinstance(obj, (list, tuple, set)):
         return [_serialize_for_json(v) for v in obj]
     return obj
 

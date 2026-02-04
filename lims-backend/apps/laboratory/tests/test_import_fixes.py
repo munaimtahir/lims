@@ -209,6 +209,18 @@ class TestSerializeForJson:
         assert result["price"] == "100"
         assert result["active"] is True
 
+    def test_tuple_handling(self):
+        """Verify tuples are converted to lists and recursed."""
+        result = _serialize_for_json({"point": (Decimal("1.1"), Decimal("2.2"))})
+        assert isinstance(result["point"], list)
+        assert result["point"] == ["1.1", "2.2"]
+
+    def test_set_handling(self):
+        """Verify sets are converted to lists and recursed."""
+        result = _serialize_for_json({"values": {Decimal("3.3")}})
+        assert isinstance(result["values"], list)
+        assert result["values"] == ["3.3"]
+
 
 class TestValidateSheetHeaders:
     """Tests for header validation."""
