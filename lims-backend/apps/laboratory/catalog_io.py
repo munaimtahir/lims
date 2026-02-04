@@ -23,6 +23,48 @@ from .models import (
 
 SHEET_ORDER = ["Tests", "Parameters", "Mapping", "Panels", "PanelTests", "ReferenceRanges"]
 
+# Column aliases - map common variations to expected column names
+# Format: {normalized_alias: normalized_expected_name}
+COLUMN_ALIASES = {
+    # Tests sheet aliases
+    "tat_hours": "turnaround_time",
+    "tat": "turnaround_time",
+    "turnaround_time_hours": "turnaround_time",
+    "sample_volume_ml": "sample_volume",
+    "volume_ml": "sample_volume",
+    "test_category": "category",
+    "name": "test_name",
+    # Parameters sheet aliases
+    "field_type": "data_type",
+    "type": "data_type",
+    "param_id": "parameter_id",
+    "param_name": "parameter_name",
+    "options": "allowed_values",
+    # ReferenceRanges sheet aliases
+    "age_min_years": "age_min",
+    "age_max_years": "age_max",
+    "min_age": "age_min",
+    "max_age": "age_max",
+    "ref_min": "reference_min",
+    "ref_max": "reference_max",
+    "min_value": "reference_min",
+    "max_value": "reference_max",
+    "low": "reference_min",
+    "high": "reference_max",
+    "crit_low": "critical_low",
+    "crit_high": "critical_high",
+    # Panels sheet aliases
+    "panel_id": "panel_code",
+    "name": "panel_name",
+    "panel_category": "category",
+}
+
+# Values that should be treated as None/null
+NULL_VALUES = frozenset([
+    "na", "n/a", "null", "none", "-", "--", ".", "",
+    "#n/a", "#null", "#na", "nil", "undefined",
+])
+
 CATALOG_COLUMNS = {
     "Tests": [
         "test_id",
@@ -130,28 +172,66 @@ DEFAULTS = {
 
 
 def normalize_header(value: Any) -> str:
+    """Normalize a header value to lowercase with underscores."""
     return str(value).strip().lower().replace(" ", "_").replace("(", "").replace(")", "")
 
 
-def get_headers(sheet) -> Dict[str, int]:
+def apply_column_aliases(headers: Dict[str, int]) -> Dict[str, int]:
+    """Apply column aliases to headers, allowing common variations."""
+    result = dict(headers)
+    for alias, canonical in COLUMN_ALIASES.items():
+        if alias in headers and canonical not in headers:
+            result[canonical] = headers[alias]
+    return result
+
+
+def get_headers(sheet, apply_aliases: bool = True) -> Dict[str, int]:
+    """
+    Extract headers from the first row of a sheet.
+    
+    Args:
+        sheet: The openpyxl worksheet
+        apply_aliases: If True, apply column name aliases for compatibility
+        
+    Returns:
+        Dictionary mapping normalized header names to column indices
+    """
     headers: Dict[str, int] = {}
     if sheet and sheet.max_row >= 1:
         for idx, cell in enumerate(sheet[1]):
             if cell.value is None:
                 continue
             headers[normalize_header(cell.value)] = idx
+    
+    if apply_aliases:
+        headers = apply_column_aliases(headers)
+    
     return headers
 
 
+def is_null_value(value: Any) -> bool:
+    """Check if a value should be treated as null/None."""
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return value.strip().lower() in NULL_VALUES
+    return False
+
+
 def safe_get(row: Tuple[Any, ...], headers: Dict[str, int], key: str) -> Any:
+    """Get a value from a row, returning None if not found or if it's a null-like value."""
     idx = headers.get(key)
     if idx is None or idx >= len(row):
         return None
-    return row[idx]
+    value = row[idx]
+    if is_null_value(value):
+        return None
+    return value
 
 
 def to_decimal(value: Any) -> Optional[Decimal]:
-    if value is None or str(value).strip() == "":
+    """Convert a value to Decimal, treating null-like values as None."""
+    if is_null_value(value):
         return None
     try:
         return Decimal(str(value).strip())
@@ -160,16 +240,22 @@ def to_decimal(value: Any) -> Optional[Decimal]:
 
 
 def to_int(value: Any) -> Optional[int]:
-    if value is None or str(value).strip() == "":
+    """Convert a value to int, treating null-like values as None."""
+    if is_null_value(value):
         return None
     try:
-        return int(str(value).strip())
+        # Handle floats by converting to int (e.g., 24.0 -> 24)
+        val_str = str(value).strip()
+        if '.' in val_str:
+            return int(float(val_str))
+        return int(val_str)
     except (TypeError, ValueError):
         return None
 
 
 def to_bool(value: Any, default: Optional[bool] = None) -> Optional[bool]:
-    if value is None or str(value).strip() == "":
+    """Convert a value to bool, treating null-like values as the default."""
+    if is_null_value(value):
         return default
     if isinstance(value, bool):
         return value
@@ -179,6 +265,7 @@ def to_bool(value: Any, default: Optional[bool] = None) -> Optional[bool]:
     if value_str in ["false", "0", "no", "n"]:
         return False
     return default
+
 
 
 def deep_merge(base: Dict[str, Any], override: Optional[Dict[str, Any]]) -> Dict[str, Any]:
@@ -207,12 +294,55 @@ def _record_diff(diff: List[Dict[str, Any]], sheet: str, key: str, action: str, 
 
 
 def _normalize_param_id(value: Any) -> Optional[str]:
-    if value is None or str(value).strip() == "":
+    if is_null_value(value):
         return None
     p_id_str = str(value).strip()
     if p_id_str.isdigit():
         p_id_str = f"p{p_id_str}"
     return validate_parameter_id(p_id_str)
+
+
+def _serialize_for_json(obj: Any) -> Any:
+    """Recursively convert Decimal and other non-JSON types to JSON-safe values."""
+    if isinstance(obj, Decimal):
+        return str(obj)
+    if isinstance(obj, dict):
+        return {k: _serialize_for_json(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_serialize_for_json(v) for v in obj]
+    return obj
+
+
+def _validate_sheet_headers(
+    sheet_name: str, 
+    headers: Dict[str, int], 
+    required_fields: List[str],
+    warnings: List[Dict[str, Any]],
+) -> List[str]:
+    """
+    Validate that required headers are present and return list of missing ones.
+    Also adds warnings for unrecognized headers.
+    """
+    missing = []
+    for field in required_fields:
+        if field not in headers:
+            missing.append(field)
+    
+    # Check for unknown headers (after alias application)
+    expected_columns = set(CATALOG_COLUMNS.get(sheet_name, []))
+    found_headers = set(headers.keys())
+    unknown = found_headers - expected_columns
+    
+    if unknown:
+        warnings.append({
+            "sheet": sheet_name,
+            "row": 1,
+            "field": "headers",
+            "message": f"Unrecognized columns (ignored): {', '.join(sorted(unknown))}",
+        })
+    
+    return missing
+
 
 
 def import_catalog_from_excel(
@@ -837,7 +967,8 @@ def import_catalog_from_excel(
 
     diff.sort(key=lambda d: (SHEET_ORDER.index(d["sheet"]) if d["sheet"] in SHEET_ORDER else 99, d["key"]))
 
-    return {
+    # Serialize the response to ensure JSON compatibility (convert Decimals to strings)
+    return _serialize_for_json({
         "dry_run": dry_run,
         "strict": strict,
         "allow_defaults": allow_defaults,
@@ -846,7 +977,7 @@ def import_catalog_from_excel(
         "errors": errors,
         "warnings": warnings,
         "diff": diff,
-    }
+    })
 
 
 def export_catalog_workbook():
