@@ -1,82 +1,97 @@
+/* Global Refinements */
 .container {
-  padding: 1.5rem;
-  max-width: 1200px;
+  padding: 2rem;
+  max-width: 1400px;
   margin: 0 auto;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #1f2937;
 }
 
 .header {
-  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f3f4f6;
 }
 
 .header h1 {
-  font-size: 1.8rem;
-  color: var(--color-text-primary);
+  font-size: 2rem;
+  color: #111827;
   margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
 .subtitle {
-  color: var(--color-text-secondary);
+  color: #6b7280;
   margin-top: 0.5rem;
+  font-size: 1rem;
 }
 
-.sectionsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.splitView {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  width: 100%;
-}
-
-.globalSearchSection {
-  margin-bottom: 2rem;
-  position: relative;
-  z-index: 50;
-}
-
+/* Global Patient Search (Top Right) */
 .globalSearchWrapper {
   position: relative;
-  max-width: 600px;
+  width: 400px;
 }
 
 .globalSearchInput {
   width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  font-size: 1.1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: all 0.2s;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px; /* Pill shape */
   background-color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
 }
 
 .globalSearchInput:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 4px var(--color-primary-light);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-.searchIcon {
+.searchIconWrapper {
   position: absolute;
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-text-secondary);
-  width: 1.25rem;
-  height: 1.25rem;
   pointer-events: none;
+  display: flex;
+  align-items: center;
 }
 
+.searchIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #9ca3af;
+}
+
+/* Layout */
+.splitView {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr; /* Patient form narrower than order form */
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .splitView {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cards */
 .card {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid #e5e7eb;
+  position: relative;
+  overflow: visible; /* For suggestions popping out */
 }
 
 .cardHeader {
@@ -85,44 +100,31 @@
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.cardHeader h2 {
-  font-size: 1.25rem;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.sectionStatus {
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .sectionTitle {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--color-border);
+  color: #111827;
+  display: flex;
+  align-items: center;
 }
 
-.statusSuccess {
-  background: #dcfce7;
-  color: #166534;
+.sectionStatus {
+  background: #ecfdf5;
+  color: #059669;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid #a7f3d0;
 }
 
-/* Form Grid */
+/* Form Styling */
 .formGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
@@ -132,77 +134,32 @@
   gap: 0.5rem;
 }
 
+/* Full width for some fields */
+.formGroup:has(textarea) {
+  grid-column: span 2;
+}
+
 .formGroup label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: #374151;
 }
 
-.input {
-  padding: 0.625rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: 1rem;
+.input, .select, .textarea {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
   width: 100%;
   transition: all 0.2s;
+  background-color: #f9fafb;
 }
 
-.input:focus {
+.input:focus, .select:focus, .textarea:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
-}
-
-.select {
-  composes: input;
   background-color: white;
-}
-
-/* Patient Lookup */
-.lookupWrapper {
-  position: relative;
-}
-
-.suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  margin-top: 0.25rem;
-  z-index: 50;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.suggestionItem {
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.suggestionItem:last-child {
-  border-bottom: none;
-}
-
-.suggestionItem:hover,
-.suggestionActive {
-  background-color: var(--color-bg-secondary);
-}
-
-.suggestionMain {
-  font-weight: 500;
-}
-
-.suggestionSub {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 /* Age Inputs */
@@ -214,161 +171,291 @@
 .ageInput {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 0.25rem;
 }
 
 .ageInput input {
   width: 100%;
-  padding: 0.625rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  text-align: center;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
 }
 
 .ageInput span {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
-/* Test Search */
-.searchContainer {
-  margin-bottom: 1.5rem;
+/* Suggestions Dropdown */
+.lookupWrapper, .autocompleteWrapper {
   position: relative;
 }
 
-.searchInput {
-  composes: input;
-  padding-left: 2.5rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: 0.75rem center;
-  background-size: 1.25rem;
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  margin-top: 0.25rem;
+  z-index: 50;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
-/* Test List */
+.suggestionItem {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.1s;
+}
+
+.suggestionItem:hover, .suggestionActive {
+  background-color: #f3f4f6;
+}
+
+.suggestionName {
+  font-weight: 600;
+  color: #111827;
+}
+
+.suggestionMeta {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.125rem;
+}
+
+/* Order Section Specifics */
+.orderContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.searchSection {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px dashed #cbd5e1;
+}
+
+.largeSearchInput {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.largeSearchInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Added Tests Table */
+.addedTestsSection {
+  min-height: 150px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: white;
+  overflow: hidden;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.testsTableContainer {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
 }
 
 .table th {
+  background: #f8fafc;
   text-align: left;
   padding: 0.75rem 1rem;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #64748b;
+  position: sticky;
+  top: 0;
 }
 
 .table td {
   padding: 0.75rem 1rem;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.95rem;
 }
 
 .removeButton {
-  color: #ef4444;
-  background: none;
   border: none;
+  background: #fee2e2;
+  color: #ef4444;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 0.25rem;
-  border-radius: var(--radius-sm);
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .removeButton:hover {
-  background: #fee2e2;
+  background: #fecaca;
 }
 
-/* Payment Section */
+/* Payment Section Grid */
 .paymentSection {
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-md);
+  background: #f8fafc;
+  border-top: 2px solid #e2e8f0;
   padding: 1.5rem;
-  margin-top: 2rem;
+  border-radius: 0.5rem;
 }
 
 .paymentGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  align-items: end;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
 }
 
-.paymentLabel {
-  display: block;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  margin-bottom: 0.5rem;
+@media (max-width: 768px) {
+  .paymentGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.paymentValue {
-  font-size: 1.5rem;
+.paymentColRight {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.amountLarge {
   font-weight: 600;
-  color: var(--color-text-primary);
+  font-size: 1rem;
+}
+
+.amountHighlight {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.textRed { color: #dc2626; }
+.textGreen { color: #059669; }
+
+/* Discount Controls */
+.discountRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.discountInputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.discountInputGroup label {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.compactInput {
+  width: 100%;
+  padding: 0.4rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  text-align: right;
 }
 
 .paymentInput {
   composes: input;
-  font-family: inherit;
-  font-weight: 500;
   text-align: right;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  width: 120px;
 }
 
-/* Actions */
-.actions {
+/* Buttons */
+.formActions {
+  grid-column: span 2;
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.button {
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-md);
-  font-weight: 500;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.secondaryButton {
-  composes: button;
-  background: white;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-primary);
-}
-
-.secondaryButton:hover {
-  background: var(--color-bg-secondary);
+  margin-top: 1rem;
 }
 
 .primaryButton {
-  composes: button;
-  background: var(--color-primary);
+  background: #2563eb;
   color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .primaryButton:hover {
-  background: var(--color-primary-dark);
+  background: #1d4ed8;
 }
 
 .primaryButton:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.helperText {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  margin-top: 0.25rem;
+.primaryButtonLarge {
+  composes: primaryButton;
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+  background: #0f172a; /* Darker background for call to action */
 }
 
-.errorText {
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
+.primaryButtonLarge:hover {
+  background: #1e293b;
+}
+
+/* Animations/Helpers */
+.loading {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: #6b7280;
 }
