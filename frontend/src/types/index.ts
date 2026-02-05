@@ -208,7 +208,7 @@ export interface OrderCreateResponse extends Order {
 /**
  * Sample collection types
  */
-export type SampleStatus = 'pending' | 'collected' | 'received' | 'rejected';
+export type SampleStatus = 'pending' | 'collected' | 'received' | 'rejected' | 'postponed';
 
 export interface SampleCollection {
   id: number;
@@ -223,6 +223,7 @@ export interface SampleCollection {
   collected_by?: number;
   collected_by_name?: string;
   notes: string;
+  postponement_reason?: string;
 }
 
 /**

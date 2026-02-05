@@ -14,6 +14,7 @@ export default function TestCatalogPage() {
   const { user } = useAuth();
   const currency = branding?.currency || 'PKR';
   const isAdmin = user?.role === 'Admin';
+  const isManager = user?.role === 'Manager';
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'tests' | 'panels'>('tests');
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,14 +82,18 @@ export default function TestCatalogPage() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1>Test Catalog</h1>
-        {isAdmin && (
+        {(isAdmin || isManager) && (
           <div className={styles.actions}>
-            <button onClick={handleExport} className={styles.secondaryButton}>
-              Export Catalog
-            </button>
-            <button onClick={() => setIsImportModalOpen(true)} className={styles.actionButton}>
-              Import Catalog
-            </button>
+            {isAdmin && (
+              <>
+                <button onClick={handleExport} className={styles.secondaryButton}>
+                  Export Catalog
+                </button>
+                <button onClick={() => setIsImportModalOpen(true)} className={styles.actionButton}>
+                  Import Catalog
+                </button>
+              </>
+            )}
             <button onClick={handleAudit} className={styles.secondaryButton}>
               Audit Catalog
             </button>

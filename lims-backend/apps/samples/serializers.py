@@ -38,6 +38,7 @@ class SampleSerializer(serializers.ModelSerializer):
             "received_by",
             "received_by_name",
             "rejection_reason",
+            "postponement_reason",
             "notes",
             "created_at",
             "updated_at",

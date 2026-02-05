@@ -12,6 +12,7 @@ class SampleStatus(models.TextChoices):
     COLLECTED = "COLLECTED", "Collected"
     RECEIVED = "RECEIVED", "Received in Lab"
     REJECTED = "REJECTED", "Rejected"
+    POSTPONED = "POSTPONED", "Postponed"
 
 
 class Sample(models.Model):
@@ -30,6 +31,7 @@ class Sample(models.Model):
         received_by (User): The user who received the sample.
         status (str): The current status of the sample in the workflow.
         rejection_reason (str): The reason for sample rejection, if applicable.
+        postponement_reason (str): The reason for sample postponement, if applicable.
         notes (str): Any notes or comments related to the sample.
     """
 
@@ -56,6 +58,7 @@ class Sample(models.Model):
         max_length=20, choices=SampleStatus.choices, default=SampleStatus.PENDING
     )
     rejection_reason = models.TextField(blank=True)
+    postponement_reason = models.TextField(blank=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

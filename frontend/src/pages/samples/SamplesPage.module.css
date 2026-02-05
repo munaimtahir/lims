@@ -125,6 +125,11 @@
   color: #991b1b;
 }
 
+.statusPostponed {
+  background: #f1f5f9;
+  color: #475569;
+}
+
 .actions {
   display: flex;
   gap: 8px;

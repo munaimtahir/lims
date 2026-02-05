@@ -47,11 +47,16 @@ This document tracks the progress of the major UI updates requested for the Regi
   - Provides a prominent **Print Receipt** button used to open the print view.
   - Backed by a beautiful modal overlay (Glassmorphism).
 
-## 5. Verification & Next Steps
+## 5. Printing
+**Goal:** Professional receipt printing with dual A4 support.
+
+- [x] **Print Receipt Page** (`/print/receipt/:id`)
+  - [x] **A4 Dual Mode**: Prints two copies (Patient/Office) on one A4 sheet with a cut line, roughly 48% height each.
+  - [x] **Thermal Mode**: Supports 80mm width printing.
+  - [x] **Data Integration**: Fetches full patient and order details along with lab settings (Layout, Logo) dynamically.
+  - [x] **Financials**: Clearly lists Total, Discount, Net, Paid, and Due balance.
+
+## 6. Verification & Next Steps
 - [x] **Backend Compatibility Check**
-  - Verified that `Patient` model and serializers support granular age fields (`age_years`, `age_months`, `age_days`).
-- [ ] **Print Receipt Page**
-  - Create a dedicated route `/print/receipt/:id` to handle receipt rendering/printing for the browser.
-  - Ensure it fetches the correct receipt (PDF or HTML) from the backend.
 - [ ] **User Verification**
   - Run the application (`npm run dev`) and test the flow end-to-end.

@@ -17,8 +17,17 @@ export default function SamplesPage() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status, barcode }: { id: number; status: string; barcode?: string }) =>
-      sampleApi.updateStatus(id, status, barcode),
+    mutationFn: ({
+      id,
+      status,
+      barcode,
+      postponement_reason,
+    }: {
+      id: number;
+      status: string;
+      barcode?: string;
+      postponement_reason?: string;
+    }) => sampleApi.updateStatus(id, status, barcode, postponement_reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['samples'] });
     },
@@ -26,11 +35,19 @@ export default function SamplesPage() {
 
   const samples = samplesData?.results || [];
 
-  const handleStatusUpdate = (sampleId: number, newStatus: string, barcode?: string) => {
-    if (newStatus === 'collected' && !barcode) {
+  const handleStatusUpdate = (sampleId: number, newStatus: string) => {
+    if (newStatus === 'collected') {
       const barcodeInput = prompt('Enter barcode for this sample:');
       if (!barcodeInput) return;
       updateStatusMutation.mutate({ id: sampleId, status: newStatus, barcode: barcodeInput });
+    } else if (newStatus === 'postponed') {
+      const reason = prompt('Enter reason for postponement:');
+      if (!reason) return;
+      updateStatusMutation.mutate({
+        id: sampleId,
+        status: newStatus,
+        postponement_reason: reason,
+      });
     } else {
       updateStatusMutation.mutate({ id: sampleId, status: newStatus });
     }
@@ -46,6 +63,8 @@ export default function SamplesPage() {
         return styles.statusReceived;
       case 'rejected':
         return styles.statusRejected;
+      case 'postponed':
+        return styles.statusPostponed;
       default:
         return styles.statusPending;
     }
@@ -69,6 +88,7 @@ export default function SamplesPage() {
             <option value="pending">Pending</option>
             <option value="collected">Collected</option>
             <option value="received">Received</option>
+            <option value="postponed">Postponed</option>
             <option value="rejected">Rejected</option>
           </select>
         </div>
@@ -118,14 +138,26 @@ export default function SamplesPage() {
                 <td>{sample.collected_by_name || '-'}</td>
                 <td>
                   <div className={styles.actions}>
-                    {sample.status === 'pending' && (
-                      <button
-                        onClick={() => handleStatusUpdate(sample.id, 'collected')}
-                        className={styles.actionButton}
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        Mark Collected
-                      </button>
+                    {(sample.status === 'pending' || sample.status === 'postponed') && (
+                      <>
+                        <button
+                          onClick={() => handleStatusUpdate(sample.id, 'collected')}
+                          className={styles.actionButton}
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          Mark Collected
+                        </button>
+                        {sample.status !== 'postponed' && (
+                          <button
+                            onClick={() => handleStatusUpdate(sample.id, 'postponed')}
+                            className={styles.rejectButton}
+                            style={{ backgroundColor: '#64748b' }} // Grey for postpone
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            Postpone
+                          </button>
+                        )}
+                      </>
                     )}
                     {sample.status === 'collected' && (
                       <button
@@ -136,7 +168,7 @@ export default function SamplesPage() {
                         Mark Received
                       </button>
                     )}
-                    {sample.status !== 'rejected' && (
+                    {sample.status !== 'rejected' && sample.status !== 'received' && (
                       <button
                         onClick={() => handleStatusUpdate(sample.id, 'rejected')}
                         className={styles.rejectButton}

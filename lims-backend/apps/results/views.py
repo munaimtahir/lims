@@ -15,6 +15,10 @@ from .services.expected_results import (
     ensure_test_results,
     get_orderitem_expected_parameters,
 )
+from django.core.files.base import ContentFile
+from apps.reports.models import Report, ReportStatus
+from apps.reports.utils import generate_pdf_report
+from apps.orders.models import Order
 
 
 class TestResultViewSet(viewsets.ModelViewSet):
@@ -104,9 +108,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
             .distinct()
         )
 
-        # Also include order items with pending results (ENTERED status means pending verification)
+        # Also include order items with pending results (DRAFT, ENTERED, or REJECTED)
         pending_results = (
-            self.queryset.filter(status="ENTERED")
+            self.queryset.filter(status__in=["DRAFT", "ENTERED", "REJECTED"])
             .values_list("order_item_id", flat=True)
             .distinct()
         )
@@ -322,6 +326,66 @@ class TestResultViewSet(viewsets.ModelViewSet):
             else status.HTTP_400_BAD_REQUEST,
         )
 
+    def _check_and_update_status(self, order_item):
+        """
+        Check if all results for an order item are verified, and if so, update status.
+        Then check if all items for the order are verified, and if so, publish report.
+        """
+        # 1. Check OrderItem status
+        # Get all expected parameters count
+        # This is expensive if calculated every time. Better to rely on ensure_test_results having run.
+        # We assume ensure_test_results ran.
+        
+        all_results = order_item.results.all()
+        if not all_results.exists():
+            return
+
+        # Check if all existing results are VERIFIED
+        # We allow ignoring some optional parameters if business logic allows, but for now strict:
+        if all_results.filter(status="VERIFIED").count() == all_results.count():
+            # All results for this item are verified.
+            if order_item.status != "VERIFIED":
+                order_item.status = "VERIFIED"
+                order_item.save(update_fields=["status"])
+        
+        # 2. Check Order status
+        order = order_item.order
+        all_items = order.items.all()
+        
+        if all_items.filter(status="VERIFIED").count() == all_items.count():
+            # All items are verified. Ready to publish.
+            
+            # Transition Order to VERIFIED if not already (or skipping from IN_PROCESS)
+            if order.status != "VERIFIED":
+                if order.can_transition_to("VERIFIED"):
+                    order.transition_to("VERIFIED")
+            
+            # Generate Report
+            try:
+                # Check if report already exists
+                existing_report = Report.objects.filter(
+                    order=order, status=ReportStatus.FINAL
+                ).first()
+                
+                if not existing_report:
+                    pdf_content = generate_pdf_report(order.id)
+                    
+                    report = Report(order=order)
+                    report.generated_by = self.request.user if self.request else None
+                    
+                    filename = f"Report_{order.order_id}_{order.id}.pdf"
+                    report.report_file.save(filename, ContentFile(pdf_content))
+                    report.status = ReportStatus.FINAL
+                    report.is_final = True
+                    report.save()
+                    
+                    # Transition Order to PUBLISHED
+                    if order.can_transition_to("PUBLISHED"):
+                        order.transition_to("PUBLISHED")
+            except Exception as e:
+                # Log error but don't fail the verification request
+                print(f"Failed to auto-publish report for order {order.id}: {e}")
+
     @action(detail=True, methods=["post"])
     def verify(self, request, pk=None):
         """
@@ -356,6 +420,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
         result.verified_at = timezone.now()
         result.status = "VERIFIED"
         result.save()
+        
+        # Trigger cascade update
+        self._check_and_update_status(result.order_item)
 
         return Response({"status": "result verified"})
 

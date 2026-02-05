@@ -5,6 +5,7 @@ import { BrandingProvider } from './contexts/BrandingContext';
 import { ProtectedRoute } from './components/auth';
 import { DashboardLayout } from './components/dashboard';
 import { LoginPage } from './pages/auth';
+import { PrintReceiptPage } from './pages/print';
 import { DashboardHome } from './pages/dashboard';
 import { PatientsPage } from './pages/patients';
 import { PatientsWorklistPage } from './pages/patient-worklist';
@@ -41,44 +42,53 @@ function App() {
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
-            
-            {/* Protected routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<DashboardHome />} />
-              
-              {/* Implemented pages */}
-              <Route path="registration" element={<RegistrationPage />} />
-              <Route path="patients" element={<PatientsPage />} />
-              <Route path="patients-worklist" element={<PatientsWorklistPage />} />
-              <Route path="orders" element={<Navigate to="/dashboard/patients" replace />} />
-              <Route path="tests" element={<TestCatalogPage />} />
-              <Route path="samples" element={<SamplesPage />} />
-              <Route path="collection" element={<CollectionWorklistPage />} />
-              <Route path="results" element={<ResultsPage />} />
-              <Route path="worklist" element={<ResultEntryWorklistPage />} />
-              <Route path="review" element={<VerificationQueuePage />} />
-              <Route path="reports" element={<ReportsPage />} />
-              <Route path="payments" element={<PaymentsPage />} />
-              <Route path="audit" element={<AuditLogsPage />} />
-              
-              {/* Settings pages */}
-              <Route path="reference-ranges" element={<ReferenceRangesPage />} />
-              <Route path="settings" element={<SystemSettingsPage />} />
-            </Route>
-            
-            {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+              {/* Print Routes */}
+              <Route
+                path="/print/receipt/:orderId"
+                element={
+                  <ProtectedRoute>
+                    <PrintReceiptPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Protected routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<DashboardHome />} />
+
+                {/* Implemented pages */}
+                <Route path="registration" element={<RegistrationPage />} />
+                <Route path="patients" element={<PatientsPage />} />
+                <Route path="patients-worklist" element={<PatientsWorklistPage />} />
+                <Route path="orders" element={<Navigate to="/dashboard/patients" replace />} />
+                <Route path="tests" element={<TestCatalogPage />} />
+                <Route path="samples" element={<SamplesPage />} />
+                <Route path="collection" element={<CollectionWorklistPage />} />
+                <Route path="results" element={<ResultsPage />} />
+                <Route path="worklist" element={<ResultEntryWorklistPage />} />
+                <Route path="review" element={<VerificationQueuePage />} />
+                <Route path="reports" element={<ReportsPage />} />
+                <Route path="payments" element={<PaymentsPage />} />
+                <Route path="audit" element={<AuditLogsPage />} />
+
+                {/* Settings pages */}
+                <Route path="reference-ranges" element={<ReferenceRangesPage />} />
+                <Route path="settings" element={<SystemSettingsPage />} />
+              </Route>
+
+              {/* Default redirect */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
       </BrandingProvider>
     </QueryClientProvider>
   );

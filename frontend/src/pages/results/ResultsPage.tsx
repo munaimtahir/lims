@@ -9,7 +9,7 @@ export default function ResultsPage() {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const orderItemId = searchParams.get('orderItem') || searchParams.get('orderItemId');
-  
+
   const [selectedOrderItem] = useState<number | null>(
     orderItemId ? Number(orderItemId) : null
   );
@@ -56,21 +56,21 @@ export default function ResultsPage() {
 
   useEffect(() => {
     if (existingResultsData?.results) {
-        const initialResults: Record<number, string> = {};
-        const initialRemarks: Record<number, string> = {};
-        existingResultsData.results.forEach((r: TestResult) => {
-            initialResults[r.test_parameter] = r.result_value;
-            initialRemarks[r.test_parameter] = r.remarks || '';
-        });
-        setResults(initialResults);
-        setRemarks(initialRemarks);
+      const initialResults: Record<number, string> = {};
+      const initialRemarks: Record<number, string> = {};
+      existingResultsData.results.forEach((r: TestResult) => {
+        initialResults[r.test_parameter] = r.result_value;
+        initialRemarks[r.test_parameter] = r.remarks || '';
+      });
+      setResults(initialResults);
+      setRemarks(initialRemarks);
     }
   }, [existingResultsData]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!selectedOrderItem) return;
-      
+
       const resultsArray = Object.entries(results).map(([paramId, value]) => ({
         order_item: selectedOrderItem,
         test_parameter: Number(paramId),
@@ -104,12 +104,12 @@ export default function ResultsPage() {
   // Given previous code, let's assume `orderItemData` is the Order and we need to find items.
   // BUT `resultApi.getByOrderItem` takes an ID.
   // Let's try to infer parameters from `existingResultsData` if available, OR if `orderItemData` has structure.
-  
+
   // To make this robust without seeing the exact API response for `orderApi.get`,
   // I will assume for now we can get parameters from a separate call or they are embedded.
   // Ideally we should have `laboratoryApi.getTestParameters(testId)`.
   // For now, I'll keep the previous logic but safe guard it.
-  
+
   // Test parameters are loaded from the order item's test/panel definition
   // If existingResultsData is empty, parameters are determined from the test/panel associated with the order item
   // I will leave the UI shell and assume the data binding will be fixed when testing with real backend data.
@@ -133,33 +133,39 @@ export default function ResultsPage() {
         className={styles.form}
       >
         <div className={styles.resultsGrid}>
-            {/*
+          {/*
                 If we have existing results, we can render inputs for them.
                 If not, we might fail to render empty inputs without Test Definition.
                 In a real app, we fetch the Test Definition here.
             */}
-            {existingResultsData?.results.map((result: TestResult) => (
-                 <div key={result.test_parameter} className={styles.resultField}>
-                 <label className={styles.label}>
-                   {result.parameter_name}
-                   <span className={styles.unit}>({result.unit})</span>
-                 </label>
-                 <input
-                   type="text"
-                   value={results[result.test_parameter] || ''}
-                   onChange={(e) => handleResultChange(result.test_parameter, e.target.value)}
-                   className={styles.input}
-                   placeholder="Enter result value"
-                 />
-               </div>
-            ))}
-
-            {(!existingResultsData?.results || existingResultsData.results.length === 0) && (
-                <div className={styles.message}>
-                    No parameters found or results not initialized.
-                    (In a real scenario, this would fetch Test Parameters to display empty fields).
+          {existingResultsData?.results.map((result: TestResult) => (
+            <div key={result.test_parameter} className={styles.resultField}>
+              <label className={styles.label}>
+                {result.parameter_name}
+                <span className={styles.unit}>({result.unit})</span>
+              </label>
+              {result.status === 'verified' || result.status === 'VERIFIED' ? (
+                <div className={styles.verifiedValue}>
+                  {result.result_value} <span className={styles.verifiedBadge}>Verified</span>
                 </div>
-            )}
+              ) : (
+                <input
+                  type="text"
+                  value={results[result.test_parameter] || ''}
+                  onChange={(e) => handleResultChange(result.test_parameter, e.target.value)}
+                  className={styles.input}
+                  placeholder="Enter result value"
+                />
+              )}
+            </div>
+          ))}
+
+          {(!existingResultsData?.results || existingResultsData.results.length === 0) && (
+            <div className={styles.message}>
+              No parameters found or results not initialized.
+              (In a real scenario, this would fetch Test Parameters to display empty fields).
+            </div>
+          )}
         </div>
 
         <div className={styles.actions}>

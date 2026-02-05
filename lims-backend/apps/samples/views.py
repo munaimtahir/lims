@@ -31,7 +31,7 @@ class SampleViewSet(viewsets.ModelViewSet):
             Response: A paginated list of pending samples.
         """
         pending_samples = (
-            self.queryset.filter(status=SampleStatus.PENDING)
+            self.queryset.filter(status__in=[SampleStatus.PENDING, SampleStatus.POSTPONED])
             .select_related("order_item", "order_item__order", "order_item__order__patient", "collected_by")
         )
 
@@ -42,3 +42,13 @@ class SampleViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(pending_samples, many=True)
         return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        """
+        Perform the update and trigger side effects like creating test results.
+        """
+        instance = serializer.save()
+        if instance.status == SampleStatus.COLLECTED:
+            from apps.results.services.expected_results import ensure_test_results
+            ensure_test_results(instance.order_item)
+

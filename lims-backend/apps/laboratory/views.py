@@ -13,7 +13,7 @@ from .serializers import (
     CatalogImportJobSerializer,
 )
 from .catalog_io import import_catalog_from_excel, export_catalog_workbook
-from apps.accounts.permissions import IsAdmin
+from apps.accounts.permissions import IsAdmin, IsManager
 from django.http import HttpResponse
 
 
@@ -345,7 +345,7 @@ class CatalogExportView(viewsets.ViewSet):
 
 
 class CatalogAuditView(viewsets.ViewSet):
-    permission_classes = [IsAdmin]
+    permission_classes = [IsManager]
 
     def list(self, request):
         duplicate_test_codes = (
