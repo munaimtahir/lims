@@ -1,2 +1,0 @@
-time="2026-01-29T02:38:23+05:00" level=warning msg="/home/munaim/srv/apps/lims/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
-/usr/local/bin/python: No module named pytest

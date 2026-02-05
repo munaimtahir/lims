@@ -36,8 +36,8 @@ Date: 2026-01-31
 - Frontend catalog alignment to test_id and SystemSettings currency
 
 ## How To Run (copy/paste)
-- Local dev: see RUNBOOK_DEV.md
-- Production (docker): see RUNBOOK_PROD.md
+- Local dev: see docs/ops/RUNBOOK_DEV.md
+- Production (docker): see docs/ops/RUNBOOK_PROD.md
 
 ## How To Validate (copy/paste)
 - Health check:
@@ -72,7 +72,7 @@ Date: 2026-01-31
 - [PASS] Report PDF generates and downloads
 - [PASS] Receipt PDF generates and downloads
 - [PASS] Smoke test v2 passes end-to-end
-- [PASS] RUNBOOK_PROD.md + RUNBOOK_DEV.md + CATALOG_CONTRACT.md + PRINT_TEMPLATES_GUIDE.md + SMOKE_TEST_V2.md written
+- [PASS] docs/ops/RUNBOOK_PROD.md + docs/ops/RUNBOOK_DEV.md + docs/catalog/PRINT_TEMPLATES_GUIDE.md + docs/reports/SMOKE_TEST_REPORT.md written
 - [FAIL] Full backend unit tests pass (pytest failures)
 
 ## Production Verification Command

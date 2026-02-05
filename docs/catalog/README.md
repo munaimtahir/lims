@@ -339,17 +339,9 @@ GET /api/laboratory/reference-ranges/
 | 2.0 | 2026-01-22 | Added parameter_id validation, dry-run mode, comprehensive error messages |
 | 1.0 | 2025-12-31 | Initial catalog system with Excel import |
 
-## 🗃️ Archived Documentation
+## 🗃️ Historical Notes
 
-Outdated documentation has been moved to `docs/archive/test-catalog/`:
-
-- `TEST_CATALOG_EXPANDED.md` - Old comprehensive test list (outdated structure)
-- `TEST_CATALOG_GAPS.md` - Phase 0 diagnosis (issues now fixed)
-
-**Why archived?**
-- Used old parameter structure (before parameter_id)
-- Didn't follow current Excel import format
-- Kept for historical reference only
+Historical phase catalog reports were removed during repository cleanup to avoid stale guidance. Use the documents in this folder as the current source of truth.
 
 ## 🔗 Related Documentation
 

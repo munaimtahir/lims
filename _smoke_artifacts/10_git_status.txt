@@ -1,5 +1,0 @@
- M README.md
- M docker-compose.yml
- M frontend/src/pages/registration/RegistrationPage.tsx
-?? SMOKE_TEST_REPORT_CURRENT.md
-?? _smoke_artifacts/
