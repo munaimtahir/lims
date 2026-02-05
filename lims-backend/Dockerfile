@@ -30,8 +30,8 @@ COPY . .
 # Create static files directory
 RUN mkdir -p staticfiles media
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Static files are collected at runtime in bootstrap_prod.sh to ensure sync with volumes
+# (Avoiding build-time collection which can be shadowed by mounted volumes)
 
 # Create non-root user
 ARG UID=1000
