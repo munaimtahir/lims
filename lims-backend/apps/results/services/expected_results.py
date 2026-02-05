@@ -26,7 +26,7 @@ def get_orderitem_expected_parameters(order_item, patient) -> list[dict[str, Any
             range_info = pick_reference_range(parameter, patient)
             expected.append(
                 {
-                    "test_id": test.id,
+                    "test_id": test.test_id,
                     "test_name": test.test_name,
                     "parameter_id": parameter.id,
                     "parameter_name": parameter.effective_parameter_name,
