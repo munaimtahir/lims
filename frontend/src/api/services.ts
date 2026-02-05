@@ -10,6 +10,7 @@ import type {
   Order,
   OrderCreateRequest,
   SampleCollection,
+  OrderItem,
   TestResult,
   Payment,
   Report,
@@ -175,6 +176,11 @@ export const orderApi = {
     const response = await api.get<PaginatedResponse<Order>>('/orders/orders/', {
       params: { status },
     });
+    return response.data;
+  },
+
+  getOrderItem: async (id: number) => {
+    const response = await api.get<OrderItem>(`/orders/order-items/${id}/`);
     return response.data;
   },
 };

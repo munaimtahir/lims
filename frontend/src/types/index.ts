@@ -245,7 +245,7 @@ export type ResultStatus = 'pending' | 'verified' | 'rejected';
 
 export interface TestResult {
   id: number;
-  order_item: number;
+  order_item: any; // Changed from number to any to support nested object/ID
   test_parameter: number;
   parameter_name: string;
   unit: string;

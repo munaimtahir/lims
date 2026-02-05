@@ -122,21 +122,27 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderItemId]);
 
-  // Fetch results and order item details
-  const { data: existingResultsData, isLoading } = useQuery({
+  // Fetch results
+  const { data: existingResultsData, isLoading: isLoadingResults } = useQuery({
     queryKey: ['results', orderItemId],
     queryFn: () => resultApi.getByOrderItem(orderItemId),
     enabled: !!orderItemId,
   });
 
-  // We need Order Info (Patient Name, etc). 
-  // Ideally getByOrderItem should return Order details or we fetch Order Item separately.
-  // resultApi.getByOrderItem returns list of TestResult. 
-  // Each TestResult has `order_item` -> `order`.
-  const sampleResult = existingResultsData?.results?.[0];
-  const orderInfo = sampleResult?.order_item?.order;
+  // Fetch order item details to get patient and test info
+  const { data: orderItemDetails, isLoading: isLoadingDetails } = useQuery({
+    queryKey: ['order-item-details', orderItemId],
+    queryFn: () => orderApi.getOrderItem(orderItemId),
+    enabled: !!orderItemId,
+  });
+
+  // If orderItemDetails doesn't have nested order, we might need another fetch, 
+  // but let's see if we can get it from the worklist data or if it's returning it.
+  // Given WorklistOrderItem local interface, we expect it there.
+  const orderItem = orderItemDetails as unknown as WorklistOrderItem;
+  const orderInfo = orderItem?.order;
   const patientInfo = orderInfo?.patient;
-  const testInfo = sampleResult?.order_item?.test || sampleResult?.order_item?.panel;
+  const testInfo = orderItem?.test || orderItem?.panel;
 
   // Initialize form state when data loads
   useEffect(() => {
@@ -165,7 +171,6 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
       queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
-      // Don't alert on auto-save or intermediate save unless user clicked
     },
   });
 
@@ -175,7 +180,6 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
-      // Check if all verified? The backend handles status updates.
     },
     onError: (error: any) => {
       alert(`Verification failed: ${error?.response?.data?.error || 'Unknown error'}`);
@@ -188,16 +192,7 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
   };
 
   const handleVerify = async (result: TestResult) => {
-    // Save first to ensure latest value is used
     await handleSave(true);
-    // Then verify
-    // We need the result ID. If it was just created/updated, refetch might be needed?
-    // The ensure mutation or previous fetch should have IDs if they existed.
-    // If it's a new result via bulkEntry, the previous existingResultsData might be stale 
-    // BUT we invalidated queries in saveMutation.mutateAsync await should handle it?
-    // Actually invalidate is async/background.
-    // Ideally we rely on the ID present in current `result` object. 
-    // If it was just created, we might need to rely on reload.
     if (result.id) {
       if (confirm('Are you sure you want to verify this result? It will be locked.')) {
         verifyMutation.mutate(result.id);
@@ -206,6 +201,8 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
       alert('Please save the result first.');
     }
   };
+
+  const isLoading = isLoadingResults || isLoadingDetails;
 
   if (isLoading) return <div className={styles.loading}>Loading results...</div>;
 
@@ -218,7 +215,7 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <h1>Result Entry</h1>
-          <span className={styles.orderId}>#{orderInfo?.order_id || orderItemId}</span>
+          <span className={styles.orderId}>#{orderInfo?.order_id || 'ID Loading...'}</span>
         </div>
         {patientInfo && (
           <div className={styles.patientBanner}>
@@ -234,7 +231,11 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
           </div>
         )}
         <p className={styles.subtitle}>
-          Test: {testInfo?.test_name || testInfo?.panel_name || 'Loading Test Info...'}
+          Test: {
+            (testInfo && 'test_name' in testInfo ? testInfo.test_name :
+              testInfo && 'panel_name' in testInfo ? testInfo.panel_name :
+                'Loading Test Info...')
+          }
         </p>
       </div>
 
@@ -244,15 +245,15 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
         <div className={styles.form}>
           <div className={styles.resultsGrid}>
             {existingResultsData.results.map((result: TestResult) => {
-              const isVerified = result.status === 'VERIFIED' || result.status === 'PUBLISHED';
+              const isVerified = result.status === 'verified';
               return (
                 <div key={result.test_parameter} className={styles.resultField}>
                   <div className={styles.fieldLabelRow}>
                     <label className={styles.label}>
-                      {result.test_parameter_details?.parameter_name || result.parameter_name || `Param ${result.test_parameter}`}
+                      {result.parameter_name || `Param ${result.test_parameter}`}
                     </label>
                     <span className={styles.unit}>
-                      {result.test_parameter_details?.unit || result.unit}
+                      {result.unit}
                     </span>
                   </div>
 
@@ -281,7 +282,6 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
                       </>
                     )}
                   </div>
-                  {/* Show reference range if available (mocked or from details) */}
                   <div className={styles.referenceRange}>
                     Status: <span style={{ fontWeight: 600 }}>{result.status}</span>
                     {result.flag && <span className={styles.flag}> [{result.flag}]</span>}
@@ -331,4 +331,5 @@ export default function ResultsPage() {
     </div>
   );
 }
+
 
