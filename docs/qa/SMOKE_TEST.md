@@ -10,7 +10,7 @@
 
 This document describes the smoke testing procedure for Core LIMS v1.0. Smoke testing validates that all critical workflows function correctly after deployment.
 
-**Latest Test Results:** See [FINAL_SMOKE_TEST_REPORT.md](../../FINAL_SMOKE_TEST_REPORT.md) for complete validation results (92.3% pass rate, 24/26 tests).
+**Latest Test Results:** See [docs/reports/SMOKE_TEST_REPORT.md](../reports/SMOKE_TEST_REPORT.md) for complete validation results (92.3% pass rate, 24/26 tests).
 
 ---
 
@@ -330,7 +330,7 @@ curl http://localhost:8012/api/v1/health/
 
 **Validation:** Tested in Phase 2 of smoke test
 
-**Evidence:** See FINAL_SMOKE_TEST_REPORT.md lines 88-99
+**Evidence:** See docs/reports/SMOKE_TEST_REPORT.md (Verification Table)
 
 ---
 
@@ -342,7 +342,7 @@ curl http://localhost:8012/api/v1/health/
 
 **Validation:** Tested in Phase 4 and Phase 5 of smoke test
 
-**Evidence:** See FINAL_SMOKE_TEST_REPORT.md lines 114-139
+**Evidence:** See docs/reports/SMOKE_TEST_REPORT.md (Verification Table)
 
 ---
 
@@ -356,7 +356,7 @@ curl http://localhost:8012/api/v1/health/
 - **Passed:** 24 ✅
 - **Failed:** 2 ❌ (non-critical PDF downloads)
 - **Duration:** ~30 seconds
-- **Report:** [FINAL_SMOKE_TEST_REPORT.md](../../FINAL_SMOKE_TEST_REPORT.md)
+- **Report:** [docs/reports/SMOKE_TEST_REPORT.md](../reports/SMOKE_TEST_REPORT.md)
 
 **Verdict:** ✅ **PRODUCTION READY**
 
@@ -457,10 +457,10 @@ A deployment PASSES smoke testing if:
 
 ## See Also
 
-- [FINAL_SMOKE_TEST_REPORT.md](../../FINAL_SMOKE_TEST_REPORT.md) - Complete validation results
+- [docs/reports/SMOKE_TEST_REPORT.md](../reports/SMOKE_TEST_REPORT.md) - Complete validation results
 - [SECURITY_VERIFICATION_REPORT.md](./SECURITY_VERIFICATION_REPORT.md) - Security validation
 - [../ops/DEPLOYMENT.md](../ops/DEPLOYMENT.md) - Deployment procedures
-- [../../PRODUCTION_READINESS_CHECKLIST.md](../../PRODUCTION_READINESS_CHECKLIST.md) - Production readiness
+- [docs/ops/PRODUCTION_READINESS_CHECKLIST.md](../ops/PRODUCTION_READINESS_CHECKLIST.md) - Production readiness
 
 ---
 

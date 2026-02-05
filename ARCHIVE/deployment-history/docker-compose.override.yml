@@ -1,7 +1,0 @@
-services:
-  backend:
-    volumes:
-      - ./lims-backend:/app
-      - ./logs:/app/logs:rw
-    environment:
-      - DEBUG=True

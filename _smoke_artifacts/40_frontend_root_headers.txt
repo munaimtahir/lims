@@ -1,18 +1,0 @@
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0   455    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-HTTP/1.1 200 OK
-Accept-Ranges: bytes
-Content-Length: 455
-Content-Type: text/html
-Date: Wed, 28 Jan 2026 21:37:18 GMT
-Etag: "697a80f6-1c7"
-Last-Modified: Wed, 28 Jan 2026 21:34:46 GMT
-Referrer-Policy: strict-origin-when-cross-origin
-Server: nginx/1.29.4
-Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-Via: 1.1 Caddy
-X-Content-Type-Options: nosniff
-X-Frame-Options: DENY
-X-Xss-Protection: 1; mode=block
-

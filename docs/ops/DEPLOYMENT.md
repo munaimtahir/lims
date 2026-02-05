@@ -601,7 +601,7 @@ Use this checklist before going live:
 - [DEPLOYMENT_SUCCESS.md](./DEPLOYMENT_SUCCESS.md) - Production deployment validation report
 - [../qa/SMOKE_TEST.md](../qa/SMOKE_TEST.md) - Smoke testing procedures
 - [../qa/SECURITY_VERIFICATION_REPORT.md](../qa/SECURITY_VERIFICATION_REPORT.md) - Security validation
-- [../../FINAL_SMOKE_TEST_REPORT.md](../../FINAL_SMOKE_TEST_REPORT.md) - Complete test results
+- [../reports/SMOKE_TEST_REPORT.md](../reports/SMOKE_TEST_REPORT.md) - Complete test results
 
 ---
 

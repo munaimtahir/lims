@@ -34,7 +34,7 @@ Core LIMS v1.0 is a production-grade software solution designed to manage core l
 - Not a full-featured enterprise LIMS (notifications, integrations, and kiosk modules removed)
 - Not a framework for customization (focused on core laboratory needs)
 
-For complete scope details, see [docs/releases/V1.md](./docs/releases/V1.md) and [FINAL_SMOKE_TEST_REPORT.md](./FINAL_SMOKE_TEST_REPORT.md).
+For complete scope details, see [docs/releases/V1.md](./docs/releases/V1.md) and [docs/reports/SMOKE_TEST_REPORT.md](./docs/reports/SMOKE_TEST_REPORT.md).
 
 ### Target Users
 
@@ -76,7 +76,7 @@ The system comes pre-configured with a comprehensive test catalog including:
 - **Microbiology** - Culture and sensitivity tests
 - **Tumor Markers** - Various cancer markers
 
-See [docs/TEST_CATALOG_EXPANDED.md](./docs/TEST_CATALOG_EXPANDED.md) for complete test details.
+See [docs/catalog/README.md](./docs/catalog/README.md) for complete test catalog details.
 
 ## 🛠 Technology Stack
 
@@ -350,7 +350,7 @@ The system supports the following end-to-end workflow (validated via comprehensi
 7. **Admin/Manager**: View audit logs for all actions
    - ✅ Comprehensive audit trail validated
 
-**Test Results:** 24/26 tests passing (92.3%) - See [FINAL_SMOKE_TEST_REPORT.md](./FINAL_SMOKE_TEST_REPORT.md) for details.
+**Test Results:** 24/26 tests passing (92.3%) - See [docs/reports/SMOKE_TEST_REPORT.md](./docs/reports/SMOKE_TEST_REPORT.md) for details.
 
 > **Known Limitations:** For complete details on known issues and functional limitations, see [docs/releases/V1.md](./docs/releases/V1.md). Key points: PDF download endpoints return 404 (non-blocking); reports and receipts are generated in database correctly.
 
@@ -436,25 +436,27 @@ lims/
 │   ├── ops/                   # Operations & deployment
 │   │   ├── DEPLOYMENT.md
 │   │   ├── ENVIRONMENT_VARIABLES.md
-│   │   └── DEPLOYMENT_SUCCESS.md
+│   │   ├── WORKFLOWS.md
+│   │   ├── RUNBOOK_DEV.md
+│   │   ├── RUNBOOK_PROD.md
+│   │   └── PRODUCTION_READINESS_CHECKLIST.md
 │   ├── qa/                    # Quality assurance
 │   │   ├── SMOKE_TEST.md
 │   │   └── SECURITY_VERIFICATION_REPORT.md
+│   ├── reports/               # Current reports & audits
+│   │   ├── SMOKE_TEST_REPORT.md
+│   │   ├── PRODUCTION_READINESS_REPORT.md
+│   │   └── REPOSITORY_AUDIT.md
 │   ├── releases/              # Release documentation
 │   │   └── V1.md
+│   ├── catalog/               # Test catalog documentation
+│   │   ├── README.md
+│   │   └── PRINT_TEMPLATES_GUIDE.md
 │   ├── DATA_MODEL.md          # Database schema
 │   ├── WORKFLOW.md            # Laboratory workflows
 │   ├── VISION.md              # Project vision & goals
-│   ├── TEST_CATALOG_EXPANDED.md # Complete test catalog
 │   ├── CORE_SCOPE.md          # Core LIMS scope
 │   └── LEGACY_LAB.md          # Legacy code reference guide
-│
-├── archive/                   # Archived artifacts
-│   ├── reports/               # Historical reports
-│   │   ├── phases/            # Phase completion reports
-│   │   └── smoke-tests/       # Previous smoke test reports
-│   ├── prompts/               # Historical prompts & plans
-│   └── legacy_lab/            # Legacy code (reference only)
 │
 ├── scripts/                   # Utility scripts
 │   ├── deploy.sh              # Deployment script
@@ -465,9 +467,6 @@ lims/
 ├── Caddyfile                  # Reverse proxy configuration
 ├── smoke_test.py              # Comprehensive smoke test script
 ├── CHANGELOG.md               # Version history
-├── RELEASE_NOTES_v1.md        # v1.0 release notes
-├── FINAL_SMOKE_TEST_REPORT.md # Final validation report
-├── PRODUCTION_READINESS_CHECKLIST.md # Production readiness validation
 ├── LICENSE                    # MIT License
 └── README.md                  # This file
 ```
@@ -516,7 +515,7 @@ The project includes GitHub Actions workflows for:
 - Frontend linting and build
 - Docker image building
 
-See `.github/workflows/ci.yml` for details.
+See `.github/workflows/backend-ci.yml`, `frontend-ci.yml`, and `docker-ci.yml` for details (manual `workflow_dispatch` triggers).
 
 ## 📚 Documentation
 
@@ -527,14 +526,15 @@ For critical topics, always refer to these canonical documents:
 - **Deployment:** [docs/ops/DEPLOYMENT.md](./docs/ops/DEPLOYMENT.md) - Production deployment guide
 - **Smoke Test:** [docs/qa/SMOKE_TEST.md](./docs/qa/SMOKE_TEST.md) - Testing procedures
 - **Release Scope:** [docs/releases/V1.md](./docs/releases/V1.md) - v1.0 features, scope, and known limitations
-- **Validation Evidence:** [FINAL_SMOKE_TEST_REPORT.md](./FINAL_SMOKE_TEST_REPORT.md) - Complete test results
-- **Production Checks:** [PRODUCTION_READINESS_CHECKLIST.md](./PRODUCTION_READINESS_CHECKLIST.md) - Production readiness validation
+- **Validation Evidence:** [docs/reports/SMOKE_TEST_REPORT.md](./docs/reports/SMOKE_TEST_REPORT.md) - Complete test results
+- **Production Checks:** [docs/ops/PRODUCTION_READINESS_CHECKLIST.md](./docs/ops/PRODUCTION_READINESS_CHECKLIST.md) - Production readiness validation
+- **Repository Audit:** [docs/reports/REPOSITORY_AUDIT.md](./docs/reports/REPOSITORY_AUDIT.md) - Current repository audit
 
 ### Core Documents (Start Here)
 
-- [FINAL_SMOKE_TEST_REPORT.md](./FINAL_SMOKE_TEST_REPORT.md) - Complete validation results
-- [PRODUCTION_READINESS_CHECKLIST.md](./PRODUCTION_READINESS_CHECKLIST.md) - Production readiness validation
-- [RELEASE_NOTES_v1.md](./RELEASE_NOTES_v1.md) - v1.0 release notes and scope
+- [docs/reports/SMOKE_TEST_REPORT.md](./docs/reports/SMOKE_TEST_REPORT.md) - Complete validation results
+- [docs/ops/PRODUCTION_READINESS_CHECKLIST.md](./docs/ops/PRODUCTION_READINESS_CHECKLIST.md) - Production readiness validation
+- [docs/releases/V1.md](./docs/releases/V1.md) - v1.0 release notes and scope
 
 ### Design & Architecture
 
@@ -549,6 +549,9 @@ For critical topics, always refer to these canonical documents:
 - [docs/ops/DEPLOYMENT.md](./docs/ops/DEPLOYMENT.md) - Complete deployment guide
 - [docs/ops/ENVIRONMENT_VARIABLES.md](./docs/ops/ENVIRONMENT_VARIABLES.md) - Environment configuration
 - [docs/ops/DEPLOYMENT_SUCCESS.md](./docs/ops/DEPLOYMENT_SUCCESS.md) - Production deployment validation
+- [docs/ops/WORKFLOWS.md](./docs/ops/WORKFLOWS.md) - CI/CD workflow overview
+- [docs/ops/RUNBOOK_DEV.md](./docs/ops/RUNBOOK_DEV.md) - Development runbook
+- [docs/ops/RUNBOOK_PROD.md](./docs/ops/RUNBOOK_PROD.md) - Production runbook
 
 ### Quality Assurance
 
@@ -558,13 +561,10 @@ For critical topics, always refer to these canonical documents:
 ### Reference
 
 - [docs/CORE_SCOPE.md](./docs/CORE_SCOPE.md) - Core LIMS scope and module documentation
-- [docs/TEST_CATALOG_EXPANDED.md](./docs/TEST_CATALOG_EXPANDED.md) - Complete test catalog
+- [docs/catalog/README.md](./docs/catalog/README.md) - Complete test catalog
+- [docs/catalog/PRINT_TEMPLATES_GUIDE.md](./docs/catalog/PRINT_TEMPLATES_GUIDE.md) - Print template setup
 - [docs/LEGACY_LAB.md](./docs/LEGACY_LAB.md) - Legacy code reference guide
 - [CHANGELOG.md](./CHANGELOG.md) - Version history
-
-### Archived Documentation
-
-Historical documentation and phase reports are archived in [archive/](./archive/).
 
 ### API Documentation
 

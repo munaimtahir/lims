@@ -201,12 +201,12 @@
 ### ✅ E20) Release Notes
 - **Status:** PASS
 - **Details:**
-  - Created `RELEASE_NOTES_v1.md`
+  - Updated `docs/releases/V1.md`
   - Includes scope summary
   - Documents known non-blocking limitations
   - Lists deployment assumptions
   - Includes upgrade path information
-- **Files:** `RELEASE_NOTES_v1.md`
+- **Files:** `docs/releases/V1.md`
 
 ### ⏳ E21) Git Tag
 - **Status:** PENDING (Manual Action Required)
@@ -243,7 +243,7 @@
 
 **Documentation:**
 8. `README.md` - Updated with production steps, role list, workflow
-9. `RELEASE_NOTES_v1.md` - Created comprehensive release notes
+9. `docs/releases/V1.md` - Release notes and scope
 10. `PRODUCTION_READINESS_CHECKLIST.md` - This file
 
 ### Production Risks
