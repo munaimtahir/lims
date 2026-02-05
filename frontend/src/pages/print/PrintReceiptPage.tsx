@@ -158,7 +158,18 @@ export default function PrintReceiptPage() {
     // Fetch Order
     const { data: order, isLoading: loadingOrder, error: orderError } = useQuery({
         queryKey: ['order', orderId],
-        queryFn: () => orderApi.get(Number(orderId)),
+        queryFn: async () => {
+            const numericId = Number(orderId);
+            if (!isNaN(numericId)) {
+                return orderApi.get(numericId);
+            }
+            // If ID is not numeric (e.g., ORD-2026...), search for it
+            const response = await orderApi.list({ search: orderId });
+            // Find exact match or use the first result
+            const match = response.results.find(o => o.order_id === orderId) || response.results[0];
+            if (!match) throw new Error("Order not found");
+            return match;
+        },
         enabled: !!orderId,
     });
 

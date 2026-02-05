@@ -36,11 +36,11 @@ export default function SamplesPage() {
   const samples = samplesData?.results || [];
 
   const handleStatusUpdate = (sampleId: number, newStatus: string) => {
-    if (newStatus === 'collected') {
+    if (newStatus === 'COLLECTED') {
       const barcodeInput = prompt('Enter barcode for this sample:');
       if (!barcodeInput) return;
       updateStatusMutation.mutate({ id: sampleId, status: newStatus, barcode: barcodeInput });
-    } else if (newStatus === 'postponed') {
+    } else if (newStatus === 'POSTPONED') {
       const reason = prompt('Enter reason for postponement:');
       if (!reason) return;
       updateStatusMutation.mutate({
@@ -55,19 +55,24 @@ export default function SamplesPage() {
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'pending':
+      case 'PENDING':
         return styles.statusPending;
-      case 'collected':
+      case 'COLLECTED':
         return styles.statusCollected;
-      case 'received':
+      case 'RECEIVED':
         return styles.statusReceived;
-      case 'rejected':
+      case 'REJECTED':
         return styles.statusRejected;
-      case 'postponed':
+      case 'POSTPONED':
         return styles.statusPostponed;
       default:
         return styles.statusPending;
     }
+  };
+
+  const formatStatus = (status: string) => {
+    if (!status) return '';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase().replace('_', ' ');
   };
 
   return (
@@ -85,11 +90,11 @@ export default function SamplesPage() {
             className={styles.select}
           >
             <option value="">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="collected">Collected</option>
-            <option value="received">Received</option>
-            <option value="postponed">Postponed</option>
-            <option value="rejected">Rejected</option>
+            <option value="PENDING">Pending</option>
+            <option value="COLLECTED">Collected</option>
+            <option value="RECEIVED">Received</option>
+            <option value="POSTPONED">Postponed</option>
+            <option value="REJECTED">Rejected</option>
           </select>
         </div>
 
@@ -131,25 +136,25 @@ export default function SamplesPage() {
                 <td>{sample.barcode || '-'}</td>
                 <td>
                   <span className={`${styles.statusBadge} ${getStatusBadgeClass(sample.status)}`}>
-                    {sample.status}
+                    {formatStatus(sample.status)}
                   </span>
                 </td>
                 <td>{sample.collected_at ? new Date(sample.collected_at).toLocaleString() : '-'}</td>
                 <td>{sample.collected_by_name || '-'}</td>
                 <td>
                   <div className={styles.actions}>
-                    {(sample.status === 'pending' || sample.status === 'postponed') && (
+                    {(sample.status === 'PENDING' || sample.status === 'POSTPONED') && (
                       <>
                         <button
-                          onClick={() => handleStatusUpdate(sample.id, 'collected')}
+                          onClick={() => handleStatusUpdate(sample.id, 'COLLECTED')}
                           className={styles.actionButton}
                           disabled={updateStatusMutation.isPending}
                         >
                           Mark Collected
                         </button>
-                        {sample.status !== 'postponed' && (
+                        {sample.status !== 'POSTPONED' && (
                           <button
-                            onClick={() => handleStatusUpdate(sample.id, 'postponed')}
+                            onClick={() => handleStatusUpdate(sample.id, 'POSTPONED')}
                             className={styles.rejectButton}
                             style={{ backgroundColor: '#64748b' }} // Grey for postpone
                             disabled={updateStatusMutation.isPending}
@@ -159,18 +164,18 @@ export default function SamplesPage() {
                         )}
                       </>
                     )}
-                    {sample.status === 'collected' && (
+                    {sample.status === 'COLLECTED' && (
                       <button
-                        onClick={() => handleStatusUpdate(sample.id, 'received')}
+                        onClick={() => handleStatusUpdate(sample.id, 'RECEIVED')}
                         className={styles.actionButton}
                         disabled={updateStatusMutation.isPending}
                       >
                         Mark Received
                       </button>
                     )}
-                    {sample.status !== 'rejected' && sample.status !== 'received' && (
+                    {sample.status !== 'REJECTED' && sample.status !== 'RECEIVED' && (
                       <button
-                        onClick={() => handleStatusUpdate(sample.id, 'rejected')}
+                        onClick={() => handleStatusUpdate(sample.id, 'REJECTED')}
                         className={styles.rejectButton}
                         disabled={updateStatusMutation.isPending}
                       >
