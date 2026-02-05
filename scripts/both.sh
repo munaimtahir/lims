@@ -182,7 +182,7 @@ rebuild_all_images() {
     
     # Build celery (uses same image as backend)
     log_info "Building celery image..."
-    docker compose --env-file "$ENV_FILE" build --no-cache celery 2>&1 | tee -a "$DEPLOY_LOG"
+    docker compose --env-file "$ENV_FILE" build celery 2>&1 | tee -a "$DEPLOY_LOG"
     
     # Build frontend
     log_info "Building frontend image..."

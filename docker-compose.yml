@@ -21,7 +21,7 @@ services:
     container_name: lims_db
     restart: unless-stopped
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - lims_pgdata:/var/lib/postgresql/data
       - ./backups:/var/lib/postgresql/backups:rw
     environment:
       POSTGRES_DB: ${DB_NAME:-lims_db}
@@ -259,7 +259,8 @@ networks:
 
 # Docker Volumes
 volumes:
-  postgres_data:
+  lims_pgdata:
+    name: lims_pgdata
     driver: local
   redis_data:
     driver: local
