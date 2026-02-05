@@ -98,7 +98,7 @@ export default function RegistrationPage() {
   const [patientSuggestions, setPatientSuggestions] = useState<PatientLookupResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  const [loadingPatients, setLoadingPatients] = useState(false);
+  const [, setLoadingPatients] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   // Expanded Patient Data
@@ -128,14 +128,14 @@ export default function RegistrationPage() {
   const [discountPercent, setDiscountPercent] = useState('0');
   const [discountAmount, setDiscountAmount] = useState('0');
   const [paidAmount, setPaidAmount] = useState('0');
-  const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
+  const [, setIsPaidManuallyEdited] = useState(false);
   const [referredBy, setReferredBy] = useState('');
 
   // Global Search State
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [globalSuggestions, setGlobalSuggestions] = useState<PatientLookupResult[]>([]);
   const [showGlobalSuggestions, setShowGlobalSuggestions] = useState(false);
-  const [loadingGlobalSearch, setLoadingGlobalSearch] = useState(false);
+  const [, setLoadingGlobalSearch] = useState(false);
 
   // Receipt Modal State
   const [showReceipt, setShowReceipt] = useState(false);
@@ -389,7 +389,7 @@ export default function RegistrationPage() {
   const createOrderMutation = useMutation({
     mutationFn: (data: any) => orderApi.create(data),
     onSuccess: (response) => {
-      setLastOrderId(response.order_id || response.data?.order_id || 'Unknown');
+      setLastOrderId(response.order_id || 'Unknown');
       setShowReceipt(true);
 
       // Reset form handled after receipt close or separately?
@@ -503,58 +503,58 @@ export default function RegistrationPage() {
 
   const handlePrintReceipt = () => {
     // Open print URL
-    const printUrl = \`/print/receipt/\${lastOrderId}\`; // Assuming this route exists or backend provides it
+    const printUrl = `/print/receipt/${lastOrderId}`; // Assuming this route exists or backend provides it
     window.open(printUrl, '_blank');
   };
 
   return (
     <div className={styles.container}>
       {showReceipt && (
-        <ReceiptModal 
-          orderId={lastOrderId} 
-          onClose={() => setShowReceipt(false)} 
-          onPrint={handlePrintReceipt} 
+        <ReceiptModal
+          orderId={lastOrderId}
+          onClose={() => setShowReceipt(false)}
+          onPrint={handlePrintReceipt}
         />
       )}
 
       {/* Modern Header */}
       <div className={styles.header}>
         <div>
-           <h1 className="text-3xl font-bold text-gray-900">New Registration</h1>
-           <p className={styles.subtitle}>Enter patient details and select tests</p>
+          <h1 className="text-3xl font-bold text-gray-900">New Registration</h1>
+          <p className={styles.subtitle}>Enter patient details and select tests</p>
         </div>
-        
+
         {/* Global Patient Search - Top Right */}
         <div className={styles.globalSearchWrapper}>
-           <div className={styles.searchIconWrapper}>
+          <div className={styles.searchIconWrapper}>
             <svg className={styles.searchIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-           </div>
-           <input
-             ref={globalSearchRef}
-             type="text"
-             value={globalSearchQuery}
-             onChange={(e) => setGlobalSearchQuery(e.target.value)}
-             className={styles.globalSearchInput}
-             placeholder="Looking for existing patient? Search here..." 
-           />
-           {showGlobalSuggestions && globalSuggestions.length > 0 && (
-             <div className={styles.suggestions}>
-               {globalSuggestions.map((patient) => (
-                 <div
-                   key={patient.id}
-                   className={styles.suggestionItem}
-                   onClick={() => loadPatient(patient.id)}
-                 >
-                   <div className={styles.suggestionMain}>{patient.full_name}</div>
-                   <div className={styles.suggestionMeta}>
-                     {patient.phone} • {patient.gender} • MRN: {patient.patient_id}
-                   </div>
-                 </div>
-               ))}
-             </div>
-           )}
+          </div>
+          <input
+            ref={globalSearchRef}
+            type="text"
+            value={globalSearchQuery}
+            onChange={(e) => setGlobalSearchQuery(e.target.value)}
+            className={styles.globalSearchInput}
+            placeholder="Looking for existing patient? Search here..."
+          />
+          {showGlobalSuggestions && globalSuggestions.length > 0 && (
+            <div className={styles.suggestions}>
+              {globalSuggestions.map((patient) => (
+                <div
+                  key={patient.id}
+                  className={styles.suggestionItem}
+                  onClick={() => loadPatient(patient.id)}
+                >
+                  <div className={styles.suggestionMain}>{patient.full_name}</div>
+                  <div className={styles.suggestionMeta}>
+                    {patient.phone} • {patient.gender} • MRN: {patient.patient_id}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -562,19 +562,19 @@ export default function RegistrationPage() {
         {/* PATIENT REGISTRATION FORM */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-             <h2 className={styles.sectionTitle}>
-               <span style={{ marginRight: '10px' }}>👤</span>
-               {selectedPatient ? 'Edit Patient Details' : 'Patient Information'}
-             </h2>
-             {selectedPatient && (
-               <span className={styles.sectionStatus}>
-                 MRN: {selectedPatient.patient_id}
-               </span>
-             )}
+            <h2 className={styles.sectionTitle}>
+              <span style={{ marginRight: '10px' }}>👤</span>
+              {selectedPatient ? 'Edit Patient Details' : 'Patient Information'}
+            </h2>
+            {selectedPatient && (
+              <span className={styles.sectionStatus}>
+                MRN: {selectedPatient.patient_id}
+              </span>
+            )}
           </div>
 
           <form onSubmit={handlePatientSubmit} className={styles.formGrid}>
-            
+
             {/* Row 1: Mobile & Name */}
             <div className={styles.formGroup}>
               <label>Mobile Number <span className="text-red-500">*</span></label>
@@ -598,7 +598,7 @@ export default function RegistrationPage() {
                     {patientSuggestions.map((patient, index) => (
                       <div
                         key={patient.id}
-                        className={`${ styles.suggestionItem } ${ index === selectedSuggestionIndex ? styles.suggestionActive : '' } `}
+                        className={`${styles.suggestionItem} ${index === selectedSuggestionIndex ? styles.suggestionActive : ''} `}
                         onClick={() => loadPatient(patient.id)}
                       >
                         <div className={styles.suggestionName}>{patient.full_name}</div>
@@ -621,107 +621,107 @@ export default function RegistrationPage() {
               />
             </div>
 
-             {/* Row 2: Age & DOB (Synced) */}
-             <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-                    <div className={styles.formGroup}>
-                        <label>Date of Birth</label>
-                        <input
-                            type="date"
-                            value={dob}
-                            onChange={(e) => handleDobChange(e.target.value)}
-                            className={styles.input}
-                        />
-                    </div>
-                    <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
-                        <label>Age (Y / M / D)</label>
-                        <div className={styles.ageGroup}>
-                            <div className={styles.ageInput}>
-                                <input 
-                                    type="number" 
-                                    placeholder="Y" 
-                                    value={ageYears} 
-                                    onChange={e => handleAgeChange(parseInt(e.target.value) || '', ageMonths, ageDays)}
-                                />
-                                <span>Yrs</span>
-                            </div>
-                            <div className={styles.ageInput}>
-                                <input 
-                                    type="number" 
-                                    placeholder="M" 
-                                    value={ageMonths}
-                                    onChange={e => handleAgeChange(ageYears, parseInt(e.target.value) || '', ageDays)} 
-                                />
-                                <span>Mth</span>
-                            </div>
-                            <div className={styles.ageInput}>
-                                <input 
-                                    type="number" 
-                                    placeholder="D" 
-                                    value={ageDays} 
-                                    onChange={e => handleAgeChange(ageYears, ageMonths, parseInt(e.target.value) || '')}
-                                />
-                                <span>Day</span>
-                            </div>
-                        </div>
-                    </div>
+            {/* Row 2: Age & DOB (Synced) */}
+            <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                <div className={styles.formGroup}>
+                  <label>Date of Birth</label>
+                  <input
+                    type="date"
+                    value={dob}
+                    onChange={(e) => handleDobChange(e.target.value)}
+                    className={styles.input}
+                  />
                 </div>
+                <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+                  <label>Age (Y / M / D)</label>
+                  <div className={styles.ageGroup}>
+                    <div className={styles.ageInput}>
+                      <input
+                        type="number"
+                        placeholder="Y"
+                        value={ageYears}
+                        onChange={e => handleAgeChange(parseInt(e.target.value) || '', ageMonths, ageDays)}
+                      />
+                      <span>Yrs</span>
+                    </div>
+                    <div className={styles.ageInput}>
+                      <input
+                        type="number"
+                        placeholder="M"
+                        value={ageMonths}
+                        onChange={e => handleAgeChange(ageYears, parseInt(e.target.value) || '', ageDays)}
+                      />
+                      <span>Mth</span>
+                    </div>
+                    <div className={styles.ageInput}>
+                      <input
+                        type="number"
+                        placeholder="D"
+                        value={ageDays}
+                        onChange={e => handleAgeChange(ageYears, ageMonths, parseInt(e.target.value) || '')}
+                      />
+                      <span>Day</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Row 3: Gender & Father Name */}
             <div className={styles.formGroup}>
-               <label>Gender <span className="text-red-500">*</span></label>
-               <select
-                 value={patientFormData.gender}
-                 onChange={(e) => setPatientFormData({ ...patientFormData, gender: e.target.value as any })}
-                 className={styles.select}
-                 required
-               >
-                 <option value="Male">Male</option>
-                 <option value="Female">Female</option>
-                 <option value="Other">Other</option>
-               </select>
+              <label>Gender <span className="text-red-500">*</span></label>
+              <select
+                value={patientFormData.gender}
+                onChange={(e) => setPatientFormData({ ...patientFormData, gender: e.target.value as any })}
+                className={styles.select}
+                required
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
 
             <div className={styles.formGroup}>
-                <label>Father / Husband Name</label>
-                <input
-                  type="text"
-                  value={patientFormData.father_husband_name || ''}
-                  onChange={(e) => setPatientFormData({ ...patientFormData, father_husband_name: e.target.value })}
-                  className={styles.input}
-                />
+              <label>Father / Husband Name</label>
+              <input
+                type="text"
+                value={patientFormData.father_husband_name || ''}
+                onChange={(e) => setPatientFormData({ ...patientFormData, father_husband_name: e.target.value })}
+                className={styles.input}
+              />
             </div>
 
             {/* Optional Fields Toggle or Just visible */}
             <div className={styles.formGroup}>
-                <label>CNIC / National ID</label>
-                <input
-                  type="text"
-                  value={patientFormData.cnic || patientFormData.national_id || ''}
-                  onChange={(e) => setPatientFormData({ ...patientFormData, cnic: e.target.value })}
-                  className={styles.input}
-                />
+              <label>CNIC / National ID</label>
+              <input
+                type="text"
+                value={patientFormData.cnic || patientFormData.national_id || ''}
+                onChange={(e) => setPatientFormData({ ...patientFormData, cnic: e.target.value })}
+                className={styles.input}
+              />
             </div>
 
             <div className={styles.formGroup}>
-                <label>Email (Optional)</label>
-                <input
-                  type="email"
-                  value={patientFormData.email || ''}
-                  onChange={(e) => setPatientFormData({ ...patientFormData, email: e.target.value })}
-                  className={styles.input}
-                />
+              <label>Email (Optional)</label>
+              <input
+                type="email"
+                value={patientFormData.email || ''}
+                onChange={(e) => setPatientFormData({ ...patientFormData, email: e.target.value })}
+                className={styles.input}
+              />
             </div>
-            
+
             <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
-                <label>Address</label>
-                <textarea
-                  value={patientFormData.address || ''}
-                  onChange={(e) => setPatientFormData({ ...patientFormData, address: e.target.value })}
-                  className={styles.input}
-                  style={{ minHeight: '60px', resize: 'vertical' }}
-                />
+              <label>Address</label>
+              <textarea
+                value={patientFormData.address || ''}
+                onChange={(e) => setPatientFormData({ ...patientFormData, address: e.target.value })}
+                className={styles.input}
+                style={{ minHeight: '60px', resize: 'vertical' }}
+              />
             </div>
 
             <div className={styles.formActions}>
@@ -737,171 +737,171 @@ export default function RegistrationPage() {
         </div>
 
         {/* ORDER / TEST BOOKING FORM */}
-        <div 
-          className={styles.card} 
-          style={{ 
-            opacity: selectedPatient ? 1 : 0.5, 
+        <div
+          className={styles.card}
+          style={{
+            opacity: selectedPatient ? 1 : 0.5,
             pointerEvents: selectedPatient ? 'auto' : 'none',
             transition: 'opacity 0.3s ease'
           }}
         >
           <div className={styles.cardHeader}>
-             <h2 className={styles.sectionTitle}>
-               <span style={{ marginRight: '10px' }}>🧪</span>
-               Order Tests & Billing
-             </h2>
+            <h2 className={styles.sectionTitle}>
+              <span style={{ marginRight: '10px' }}>🧪</span>
+              Order Tests & Billing
+            </h2>
           </div>
-          
+
           <div className={styles.orderContainer}>
-             {/* 1. Search Bar */}
-             <div className={styles.searchSection}>
-                <div className={styles.autocompleteWrapper}>
-                    <input
-                        ref={testSearchRef}
-                        type="text"
-                        value={testQuery}
-                        onChange={(e) => setTestQuery(e.target.value)}
-                        onKeyDown={handleTestKeyDown}
-                        className={styles.largeSearchInput}
-                        placeholder="🔍 Search tests by name or code... (Press Enter to select)"
-                    />
-                    {showTestSuggestions && testSuggestions.length > 0 && (
-                        <div className={styles.suggestions}>
-                        {testSuggestions.map((test, index) => (
-                            <div
-                            key={test.test_id ?? test.id}
-                            className={`${ styles.suggestionItem } ${ index === selectedTestIndex ? styles.suggestionActive : '' } `}
-                            onClick={() => addTest(test)}
-                            >
-                            <div className={styles.suggestionName}>
-                                <span style={{ fontWeight: 'bold', color: 'var(--color-primary)' }}>{test.test_code}</span> - {test.test_name}
-                            </div>
-                            <div className={styles.suggestionMeta}>
-                                {test.category_name} • {formatCurrency(test.price, currency)}
-                            </div>
-                            </div>
-                        ))}
+            {/* 1. Search Bar */}
+            <div className={styles.searchSection}>
+              <div className={styles.autocompleteWrapper}>
+                <input
+                  ref={testSearchRef}
+                  type="text"
+                  value={testQuery}
+                  onChange={(e) => setTestQuery(e.target.value)}
+                  onKeyDown={handleTestKeyDown}
+                  className={styles.largeSearchInput}
+                  placeholder="🔍 Search tests by name or code... (Press Enter to select)"
+                />
+                {showTestSuggestions && testSuggestions.length > 0 && (
+                  <div className={styles.suggestions}>
+                    {testSuggestions.map((test, index) => (
+                      <div
+                        key={test.test_id ?? test.id}
+                        className={`${styles.suggestionItem} ${index === selectedTestIndex ? styles.suggestionActive : ''} `}
+                        onClick={() => addTest(test)}
+                      >
+                        <div className={styles.suggestionName}>
+                          <span style={{ fontWeight: 'bold', color: 'var(--color-primary)' }}>{test.test_code}</span> - {test.test_name}
                         </div>
-                    )}
-                </div>
-             </div>
-
-             {/* 2. Added Tests List (Shopping Cart Style) */}
-             <div className={styles.addedTestsSection}>
-                {addedTests.length === 0 ? (
-                    <div className={styles.emptyState}>
-                        <p>No tests selected. Search above to add tests.</p>
-                    </div>
-                ) : (
-                    <div className={styles.testsTableContainer}>
-                        <table className={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Test Name</th>
-                                    <th style={{ textAlign: 'right' }}>Price</th>
-                                    <th style={{ width: '50px' }}></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {addedTests.map(test => (
-                                    <tr key={test.test_id ?? test.id}>
-                                        <td><strong>{test.test_code}</strong></td>
-                                        <td>{test.test_name}</td>
-                                        <td style={{ textAlign: 'right' }}>{formatCurrency(test.price, currency)}</td>
-                                        <td>
-                                            <button onClick={() => removeTest(test.test_id ?? test.id)} className={styles.removeButton}>
-                                                &times;
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                        <div className={styles.suggestionMeta}>
+                          {test.category_name} • {formatCurrency(test.price, currency)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
-             </div>
+              </div>
+            </div>
 
-             {/* 3. Payment Section */}
-             <div className={styles.paymentSection}>
-                <div className={styles.paymentGrid}>
-                    <div className={styles.paymentCol}>
-                        <div className={styles.formGroup}>
-                            <label>Referred By</label>
-                            <input
-                                type="text"
-                                value={referredBy}
-                                onChange={(e) => setReferredBy(e.target.value)}
-                                className={styles.input}
-                                placeholder="Consultant Name"
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className={styles.paymentColRight}>
-                        <div className={styles.summaryRow}>
-                            <span>Total Amount</span>
-                            <span className={styles.amountLarge}>{formatCurrency(totalAmount.toFixed(2), currency)}</span>
-                        </div>
-                        
-                        <div className={styles.discountRow}>
-                            <div className={styles.discountInputGroup}>
-                                <label>Disc %</label>
-                                <input 
-                                    type="number" 
-                                    value={discountPercent} 
-                                    onChange={e => handleDiscountPercentChange(e.target.value)}
-                                    className={styles.compactInput}
-                                />
-                            </div>
-                            <div className={styles.discountInputGroup}>
-                                <label>Disc Amt</label>
-                                <input 
-                                    type="number" 
-                                    value={discountAmount} 
-                                    onChange={e => handleDiscountAmountChange(e.target.value)} 
-                                    className={styles.compactInput}
-                                />
-                            </div>
-                        </div>
+            {/* 2. Added Tests List (Shopping Cart Style) */}
+            <div className={styles.addedTestsSection}>
+              {addedTests.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <p>No tests selected. Search above to add tests.</p>
+                </div>
+              ) : (
+                <div className={styles.testsTableContainer}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Code</th>
+                        <th>Test Name</th>
+                        <th style={{ textAlign: 'right' }}>Price</th>
+                        <th style={{ width: '50px' }}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {addedTests.map(test => (
+                        <tr key={test.test_id ?? test.id}>
+                          <td><strong>{test.test_code}</strong></td>
+                          <td>{test.test_name}</td>
+                          <td style={{ textAlign: 'right' }}>{formatCurrency(test.price, currency)}</td>
+                          <td>
+                            <button onClick={() => removeTest(test.test_id ?? test.id)} className={styles.removeButton}>
+                              &times;
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
 
-                        <div className={styles.summaryRow}>
-                            <span>Net Payable</span>
-                            <span className={styles.amountHighlight}>{formatCurrency(netAmount.toFixed(2), currency)}</span>
-                        </div>
-
-                        <div className={styles.summaryRow}>
-                            <span>Paid Amount</span>
-                            <input 
-                                type="number" 
-                                value={paidAmount} 
-                                onChange={e => {
-                                    setPaidAmount(e.target.value);
-                                    setIsPaidManuallyEdited(true);
-                                }}
-                                className={styles.paymentInput} 
-                            />
-                        </div>
-
-                        <div className={styles.summaryRow}>
-                            <span>Due Balance</span>
-                            <span className={`${ styles.amountHighlight } ${ dueAmount > 0 ? styles.textRed : styles.textGreen } `}>
-                                {formatCurrency(dueAmount.toFixed(2), currency)}
-                            </span>
-                        </div>
-                    </div>
+            {/* 3. Payment Section */}
+            <div className={styles.paymentSection}>
+              <div className={styles.paymentGrid}>
+                <div className={styles.paymentCol}>
+                  <div className={styles.formGroup}>
+                    <label>Referred By</label>
+                    <input
+                      type="text"
+                      value={referredBy}
+                      onChange={(e) => setReferredBy(e.target.value)}
+                      className={styles.input}
+                      placeholder="Consultant Name"
+                    />
+                  </div>
                 </div>
 
-                <div className={styles.formActions}>
-                    <button 
-                        onClick={handleCreateOrder} 
-                        className={styles.primaryButtonLarge}
-                        disabled={createOrderMutation.isPending || addedTests.length === 0}
-                    >
-                        {createOrderMutation.isPending ? 'Processing...' : 'CONFIRM & PRINT RECEIPT'}
-                    </button>
+                <div className={styles.paymentColRight}>
+                  <div className={styles.summaryRow}>
+                    <span>Total Amount</span>
+                    <span className={styles.amountLarge}>{formatCurrency(totalAmount.toFixed(2), currency)}</span>
+                  </div>
+
+                  <div className={styles.discountRow}>
+                    <div className={styles.discountInputGroup}>
+                      <label>Disc %</label>
+                      <input
+                        type="number"
+                        value={discountPercent}
+                        onChange={e => handleDiscountPercentChange(e.target.value)}
+                        className={styles.compactInput}
+                      />
+                    </div>
+                    <div className={styles.discountInputGroup}>
+                      <label>Disc Amt</label>
+                      <input
+                        type="number"
+                        value={discountAmount}
+                        onChange={e => handleDiscountAmountChange(e.target.value)}
+                        className={styles.compactInput}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.summaryRow}>
+                    <span>Net Payable</span>
+                    <span className={styles.amountHighlight}>{formatCurrency(netAmount.toFixed(2), currency)}</span>
+                  </div>
+
+                  <div className={styles.summaryRow}>
+                    <span>Paid Amount</span>
+                    <input
+                      type="number"
+                      value={paidAmount}
+                      onChange={e => {
+                        setPaidAmount(e.target.value);
+                        setIsPaidManuallyEdited(true);
+                      }}
+                      className={styles.paymentInput}
+                    />
+                  </div>
+
+                  <div className={styles.summaryRow}>
+                    <span>Due Balance</span>
+                    <span className={`${styles.amountHighlight} ${dueAmount > 0 ? styles.textRed : styles.textGreen} `}>
+                      {formatCurrency(dueAmount.toFixed(2), currency)}
+                    </span>
+                  </div>
                 </div>
-             </div>
+              </div>
+
+              <div className={styles.formActions}>
+                <button
+                  onClick={handleCreateOrder}
+                  className={styles.primaryButtonLarge}
+                  disabled={createOrderMutation.isPending || addedTests.length === 0}
+                >
+                  {createOrderMutation.isPending ? 'Processing...' : 'CONFIRM & PRINT RECEIPT'}
+                </button>
+              </div>
+            </div>
 
           </div>
         </div>

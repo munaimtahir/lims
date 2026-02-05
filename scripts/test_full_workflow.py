@@ -21,7 +21,7 @@ def check(response, expected_status=200, context=""):
 def main():
     # 1. Login
     log("Logging in...")
-    resp = requests.post(f"{BASE_URL}/auth/token/", data={"username": USERNAME, "password": PASSWORD})
+    resp = requests.post(f"{BASE_URL}/auth/login/", data={"username": USERNAME, "password": PASSWORD})
     check(resp, 200, "Login")
     data = resp.json()
     access_token = data.get("access") or data.get("data", {}).get("access_token")
@@ -42,15 +42,60 @@ def main():
     patient_id = patient.get("id") or patient.get("data", {}).get("id")
     log(f"Patient created: ID {patient_id}")
 
-    # 3. Get a Test to order
-    log("Fetching a test...")
-    resp = requests.get(f"{BASE_URL}/laboratory/tests/", headers=headers, params={"limit": 1})
-    tests = check(resp, 200, "Get Tests").get("results", [])
-    if not tests:
-        log("No tests found. Cannot proceed.")
-        return
-    test_id = tests[0]["id"]
-    log(f"Using test ID {test_id}: {tests[0]['test_name']}")
+    # 3. Seed Catalog (Category, Test, Parameter)
+    log("Seeding catalog...")
+    
+    # Create Category
+    resp = requests.post(f"{BASE_URL}/laboratory/categories/", json={"name": "Chemistry"}, headers=headers)
+    if resp.status_code == 201:
+        cat_id = resp.json()["id"]
+    elif resp.status_code == 400 and "already exists" in resp.text:
+         # Try to find it
+         resp = requests.get(f"{BASE_URL}/laboratory/categories/", params={"name": "Chemistry"}, headers=headers)
+         cat_id = resp.json()["results"][0]["id"]
+    else:
+         cat_id = check(resp, 201, "Create Category")["id"]
+
+    # Create Parameter (Analyte)
+    param_data = {"parameter_id": "p1", "parameter_name": "Hemoglobin", "unit": "g/dL", "data_type": "Numeric"}
+    resp = requests.post(f"{BASE_URL}/laboratory/analytes/", json=param_data, headers=headers)
+    if resp.status_code == 201:
+        param_id = resp.json().get("parameter_id") or "p1"
+    elif resp.status_code == 400: # Exists
+        param_id = "p1"
+    else:
+        check(resp, 201, "Create Parameter")
+        param_id = "p1"
+        
+    # Create Test
+    test_data = {
+        "test_code": "CBC",
+        "test_name": "Complete Blood Count",
+        "category": cat_id,
+        "price": "500.00",
+        "turnaround_time": 24,
+        "sample_type": "Blood"
+    }
+    resp = requests.post(f"{BASE_URL}/laboratory/tests/", json=test_data, headers=headers)
+    if resp.status_code == 201:
+        test_id = resp.json()["test_id"]
+    elif resp.status_code == 400 and "already exists" in resp.text:
+        resp = requests.get(f"{BASE_URL}/laboratory/tests/", params={"test_code": "CBC"}, headers=headers)
+        test_id = resp.json()["results"][0]["test_id"]
+    else:
+        test_id = check(resp, 201, "Create Test")["test_id"]
+
+    # Link Parameter to Test
+    link_data = {"test": test_id, "parameter": param_id, "display_order": 1}
+    
+    # Check if link exists via /parameters/ (TestParameterViewSet)
+    resp = requests.get(f"{BASE_URL}/laboratory/parameters/", params={"test": test_id}, headers=headers)
+    existing = resp.json().get("results", [])
+    if not existing:
+        resp = requests.post(f"{BASE_URL}/laboratory/parameters/", json=link_data, headers=headers)
+        check(resp, 201, "Link Parameter to Test")
+    
+    log(f"Using test ID {test_id}: CBC")
 
     # 4. Create Order
     log("Creating order...")

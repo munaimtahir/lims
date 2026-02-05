@@ -11,6 +11,7 @@ from .serializers import (
     TestParameterSerializer,
     ReferenceRangeSerializer,
     CatalogImportJobSerializer,
+    ParameterSerializer,
 )
 from .catalog_io import import_catalog_from_excel, export_catalog_workbook
 from apps.accounts.permissions import IsAdmin, IsManager
@@ -247,6 +248,21 @@ class TestParameterViewSet(viewsets.ModelViewSet):
     filterset_fields = ["test", "test__category"]
     search_fields = ["parameter__parameter_id", "parameter__parameter_name", "parameter_name"]
     ordering_fields = ["parameter__parameter_id", "display_order"]
+
+
+class ParameterViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for handling CRUD operations for Global Parameters (Analytes).
+    """
+
+    queryset = Parameter.objects.all()
+    serializer_class = ParameterSerializer # Needs to be imported or available
+    filter_backends = [
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    search_fields = ["parameter_id", "parameter_name"]
+    ordering_fields = ["parameter_id", "parameter_name"]
 
 
 class ReferenceRangeViewSet(viewsets.ModelViewSet):

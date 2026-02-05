@@ -144,7 +144,7 @@ export default function ResultsPage() {
                 {result.parameter_name}
                 <span className={styles.unit}>({result.unit})</span>
               </label>
-              {result.status === 'verified' || result.status === 'VERIFIED' ? (
+              {result.status === 'verified' || (result.status as string) === 'VERIFIED' ? (
                 <div className={styles.verifiedValue}>
                   {result.result_value} <span className={styles.verifiedBadge}>Verified</span>
                 </div>

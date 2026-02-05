@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { orderApi, patientApi, systemSettingsApi } from '../../api/services';
@@ -222,7 +222,7 @@ export default function PrintReceiptPage() {
                         <div className={styles.a4Top}>
                             <ReceiptContent
                                 order={order}
-                                patient={patient}
+                                patient={patient.data}
                                 settings={settingsData}
                                 copyLabel="Patient Copy"
                             />
@@ -236,7 +236,7 @@ export default function PrintReceiptPage() {
                         <div className={styles.a4Bottom}>
                             <ReceiptContent
                                 order={order}
-                                patient={patient}
+                                patient={patient.data}
                                 settings={settingsData}
                                 copyLabel="Lab/Office Copy"
                             />
@@ -246,7 +246,7 @@ export default function PrintReceiptPage() {
                     <div className={styles.thermalContainer}>
                         <ReceiptContent
                             order={order}
-                            patient={patient}
+                            patient={patient.data}
                             settings={settingsData}
                             isThermal={true}
                         />

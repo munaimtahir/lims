@@ -5,6 +5,7 @@ from .views import (
     TestViewSet,
     TestPanelViewSet,
     TestParameterViewSet,
+    ParameterViewSet,
     ReferenceRangeViewSet,
     BulkImportViewSet,
     CatalogImportJobViewSet,
@@ -19,6 +20,7 @@ router.register(r"categories", TestCategoryViewSet)
 router.register(r"tests", TestViewSet)
 router.register(r"panels", TestPanelViewSet)
 router.register(r"parameters", TestParameterViewSet)
+router.register(r"analytes", ParameterViewSet)
 router.register(r"reference-ranges", ReferenceRangeViewSet)
 
 urlpatterns = [

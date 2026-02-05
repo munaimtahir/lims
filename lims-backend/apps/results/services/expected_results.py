@@ -21,7 +21,7 @@ def get_orderitem_expected_parameters(order_item, patient) -> list[dict[str, Any
         tests = _get_panel_tests(order_item.panel)
 
     for test in tests:
-        parameters = test.parameters.all().order_by("display_order", "id")
+        parameters = test.test_parameters.all().order_by("display_order", "id")
         for parameter in parameters:
             range_info = pick_reference_range(parameter, patient)
             expected.append(
@@ -29,7 +29,7 @@ def get_orderitem_expected_parameters(order_item, patient) -> list[dict[str, Any
                     "test_id": test.id,
                     "test_name": test.test_name,
                     "parameter_id": parameter.id,
-                    "parameter_name": parameter.parameter_name,
+                    "parameter_name": parameter.effective_parameter_name,
                     "unit": parameter.unit,
                     "display_order": parameter.display_order,
                     "reference_display": range_info["display"],
