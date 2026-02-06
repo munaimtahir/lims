@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { laboratoryApi, orderApi, patientApi } from '../../api/services';
 import type { Order, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
 import { calculateAgeFromDob, calculateDobFromAge } from '../../utils/ageDob';
+import { formatDateDDMMYY, normalizeDateInputToISO } from '../../utils/dateFormat';
 import { useBranding } from '../../contexts/BrandingContext';
 import { formatCurrency } from '../../utils/currency';
 import styles from './PatientsPage.module.css';
@@ -143,7 +144,7 @@ export default function PatientsPage() {
                 </div>
                 <div>
                   <span className={styles.detailLabel}>DOB</span>
-                  <span className={styles.detailValue}>{selectedPatient.date_of_birth || 'N/A'}</span>
+                  <span className={styles.detailValue}>{formatDateDDMMYY(selectedPatient.date_of_birth) || 'N/A'}</span>
                 </div>
                 <div>
                   <span className={styles.detailLabel}>Age</span>
@@ -267,28 +268,29 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
 
   const handleDobChange = (value: string) => {
     setFormData((prev) => {
-      if (!value) {
+      const normalizedValue = normalizeDateInputToISO(value);
+      if (!normalizedValue) {
         return {
           ...prev,
-          date_of_birth: value,
+          date_of_birth: '',
           age_years: '',
           age_months: '',
           age_days: '',
         };
       }
 
-      const age = calculateAgeFromDob(value);
+      const age = calculateAgeFromDob(normalizedValue);
       if (age) {
         return {
           ...prev,
-          date_of_birth: value,
+          date_of_birth: normalizedValue,
           age_years: age.years.toString(),
           age_months: age.months.toString(),
           age_days: age.days.toString(),
         };
       }
 
-      return { ...prev, date_of_birth: value };
+      return { ...prev, date_of_birth: normalizedValue };
     });
   };
 
@@ -399,8 +401,9 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
             <div className={styles.formGroup}>
               <label>Date of Birth</label>
               <input
-                type="date"
-                value={formData.date_of_birth}
+                type="text"
+                placeholder="DD/MM/YY"
+                value={formatDateDDMMYY(formData.date_of_birth)}
                 onChange={(e) => handleDobChange(e.target.value)}
               />
             </div>

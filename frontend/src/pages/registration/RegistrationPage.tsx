@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { patientApi, laboratoryApi, orderApi } from '../../api/services';
 import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest } from '../../types';
 import { useBranding } from '../../contexts/BrandingContext';
+import { formatDateDDMMYY, normalizeDateInputToISO } from '../../utils/dateFormat';
 import { formatCurrency } from '../../utils/currency';
 import styles from './RegistrationPage.module.css';
 
@@ -154,11 +155,12 @@ export default function RegistrationPage() {
 
   // Update Age when DOB changes
   const handleDobChange = (value: string) => {
-    setDob(value);
-    setPatientFormData(prev => ({ ...prev, date_of_birth: value }));
+    const normalizedDob = normalizeDateInputToISO(value);
+    setDob(normalizedDob);
+    setPatientFormData(prev => ({ ...prev, date_of_birth: normalizedDob }));
 
-    if (value) {
-      const birthDate = new Date(value);
+    if (normalizedDob) {
+      const birthDate = new Date(normalizedDob);
       const today = new Date();
 
       let years = today.getFullYear() - birthDate.getFullYear();
@@ -504,7 +506,10 @@ export default function RegistrationPage() {
   const handlePrintReceipt = () => {
     // Open print URL
     const printUrl = `/print/receipt/${lastOrderId}`; // Assuming this route exists or backend provides it
-    window.open(printUrl, '_blank');
+    const printWindow = window.open(printUrl, '_blank');
+    if (printWindow) {
+      setShowReceipt(false);
+    }
   };
 
   return (
@@ -627,8 +632,9 @@ export default function RegistrationPage() {
                 <div className={styles.formGroup}>
                   <label>Date of Birth</label>
                   <input
-                    type="date"
-                    value={dob}
+                    type="text"
+                    placeholder="DD/MM/YY"
+                    value={formatDateDDMMYY(dob)}
                     onChange={(e) => handleDobChange(e.target.value)}
                     className={styles.input}
                   />

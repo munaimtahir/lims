@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from django.utils import timezone
 from .models import Sample, SampleStatus
 
@@ -47,6 +48,14 @@ class SampleSerializer(serializers.ModelSerializer):
             "collected_at", "collected_by", "received_at",
             "received_by", "created_at", "updated_at"
         ]
+
+
+
+    def validate_status(self, value):
+        allowed_statuses = {SampleStatus.COLLECTED, SampleStatus.RECEIVED, SampleStatus.POSTPONED}
+        if value not in allowed_statuses:
+            raise ValidationError('Status must be one of: COLLECTED, RECEIVED, POSTPONED.')
+        return value
 
     def update(self, instance, validated_data):
         """

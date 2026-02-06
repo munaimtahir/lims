@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { worklistApi } from '../../api/services';
 import type { WorklistPatient } from '../../types';
 import styles from './PatientsWorklistPage.module.css';
+import { formatDateDDMMYY } from '../../utils/dateFormat';
 
 export default function PatientsWorklistPage() {
   const [search, setSearch] = useState('');
@@ -32,7 +33,12 @@ export default function PatientsWorklistPage() {
     setDateTo(today.toISOString().slice(0, 10));
   };
 
-  const handlePrint = (url?: string) => {
+  const handlePrintReceipt = (orderId?: number) => {
+    if (!orderId) return;
+    window.open(`/print/receipt/${orderId}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handlePrintReport = (url?: string) => {
     if (!url) return;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -110,14 +116,14 @@ export default function PatientsWorklistPage() {
                 <td>
                   <span className={styles.statusBadge}>{item.current_status}</span>
                 </td>
-                <td>{new Date(item.latest_order_created_at).toLocaleDateString()}</td>
+                <td>{formatDateDDMMYY(item.latest_order_created_at)}</td>
                 <td>
                   <div className={styles.actionButtons}>
                     <button
                       type="button"
                       className={styles.actionButton}
                       disabled={!item.can_reprint_receipt}
-                      onClick={() => handlePrint(item.receipt_pdf_url)}
+                      onClick={() => handlePrintReceipt(item.latest_order_id)}
                     >
                       Print Receipt
                     </button>
@@ -125,7 +131,7 @@ export default function PatientsWorklistPage() {
                       type="button"
                       className={styles.actionButton}
                       disabled={!item.can_reprint_report}
-                      onClick={() => handlePrint(item.report_pdf_url)}
+                      onClick={() => handlePrintReport(item.report_pdf_url)}
                     >
                       Print Report
                     </button>
