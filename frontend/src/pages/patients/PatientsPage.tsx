@@ -186,7 +186,7 @@ export default function PatientsPage() {
                         <td>{order.order_id}</td>
                         <td>{order.status.replace('_', ' ')}</td>
                         <td>{formatCurrency(order.net_amount, currency)}</td>
-                        <td>{new Date(order.created_at).toLocaleDateString()}</td>
+                        <td>{formatDateDDMMYY(order.created_at)}</td>
                         <td>
                           <button
                             onClick={() => setSelectedOrder(order)}
