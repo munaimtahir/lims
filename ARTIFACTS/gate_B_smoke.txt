@@ -1,0 +1,66 @@
+== base ==
+HTTP/1.1 404 Not Found
+Server: gunicorn
+Date: Fri, 06 Feb 2026 00:07:38 GMT
+Connection: close
+Content-Type: text/html; charset=utf-8
+X-Frame-Options: DENY
+Content-Length: 179
+Vary: origin, Cookie
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+
+<!doctype html>
+<html lang="en">
+
+== health ==
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Fri, 06 Feb 2026 00:07:38 GMT
+Connection: close
+Content-Type: application/json
+Allow: GET, HEAD, OPTIONS
+X-Frame-Options: DENY
+Content-Length: 68
+Vary: origin, Cookie
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+{"status":"healthy","service":"LIMS Backend","database":"connected"}
+== admin ==
+HTTP/1.1 302 Found
+Server: gunicorn
+Date: Fri, 06 Feb 2026 00:07:38 GMT
+Connection: close
+Content-Type: text/html; charset=utf-8
+Location: /admin/login/?next=/admin/
+Expires: Fri, 06 Feb 2026 00:07:38 GMT
+Cache-Control: max-age=0, no-cache, no-store, must-revalidate, private
+X-Frame-Options: DENY
+Content-Length: 0
+Vary: origin, Cookie
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+
+== login ==
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Fri, 06 Feb 2026 00:07:38 GMT
+Connection: close
+Content-Type: application/json
+Allow: POST, OPTIONS
+X-Frame-Options: DENY
+Content-Length: 767
+Vary: origin, Cookie
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+{"success":true,"data":{"user":{"id":1,"username":"admin","email":"admin@example.com","full_name":"System Admin","role":"Admin","is_active":true,"date_joined":"2026-02-06T01:10:58.896005+05:00","last_login":"2026-02-06T03:46:56.817738+05:00"},"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMzQwMDU4LCJpYXQiOjE3NzAzMzY0NTgsImp0aSI6ImE2NzQyM2Q2MWYzZjQ5ZTQ4OTUwNGE5YWY4MGE5OGQwIiwidXNlcl9pZCI6MX0.gU3Qt7KYzt5sk5zRLFhegCnN0NV3rV6yr9GgeZk3F3A","refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3MDk0MTI1OCwiaWF0IjoxNzcwMzM2NDU4LCJqdGkiOiJlYjY2MjgwMmFiNDY0MTllYjExZmQ0ODdiY2RmYmE1NyIsInVzZXJfaWQiOjF9.F8q1rCPYAcwLBl6UQoMvIMFAxdnX3M3aJuV88XT-F1s"},"message":"Login successful"}
+== db connectivity ==
+/var/run/postgresql:5432 - accepting connections

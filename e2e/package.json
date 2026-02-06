@@ -1,0 +1,17 @@
+{
+  "name": "lims-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "show-report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "typescript": "~5.9.3",
+    "ts-node": "^10.9.2",
+    "dotenv": "^16.4.5"
+  }
+}

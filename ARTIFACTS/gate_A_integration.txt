@@ -1,0 +1,33 @@
+== health ==
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Fri, 06 Feb 2026 00:07:27 GMT
+Connection: close
+Content-Type: application/json
+Allow: GET, HEAD, OPTIONS
+X-Frame-Options: DENY
+Content-Length: 68
+Vary: origin, Cookie
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+{"status":"healthy","service":"LIMS Backend","database":"connected"}
+== login ==
+token=eyJhbGciOiJIUzI1...
+
+== patients list ==
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Fri, 06 Feb 2026 00:07:28 GMT
+Connection: close
+Content-Type: application/json
+Allow: GET, POST, HEAD, OPTIONS
+X-Frame-Options: DENY
+Content-Length: 2046
+Vary: origin, Cookie
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+{"count":7,"next":null,"previous":null,"results":[{"id":7,"patient_id":"PAT-20260205-0007","first_name":"Munaim","last_name":"","full_name":"Munaim","date_of_birth":"1991-09-04","age":34,"gender":"Male","phone":"03338375050","default_referred_by":null,"last_order_referred_by":"","created_at":"2026-02-06T03:07:07.203265+05:00"},{"id":6,"patient_id":"PAT-20260205-0006","first_name":"Test","last_name":"Workflow","full_name":"Test Workflow","date_of_birth":null,"age":30,"gender":"Male","phone":"03001234567","default_referred_by":null,"last_order_referred_by":null,"created_at":"2026-02-06T01:21:12.036144+05:00"},{"id":5,"patient_id":"PAT-20260205-0005","first_name":"Test","last_name":"Workflow","full_name":"Test Workflow","date_of_birth":null,"age":30,"gender":"Male","phone":"03001234567","default_referred_by":null,"last_order_referred_by":null,"created_at":"2026-02-06T01:19:38.459973+05:00"},{"id":4,"patient_id":"PAT-20260205-0004","first_name":"Test","last_name":"Workflow","full_name":"Test Workflow","date_of_birth":null,"age":30,"gender":"Male","phone":"03001234567","default_referred_by":null,"last_order_referred_by":null,"created_at":"2026-02-06T01:17:54.094791+05:00"},{"id":3,"patient_id":"PAT-20260205-0003","first_name":"Test","last_name":"Workflow","full_name":"Test Workflow","date_of_birth":null,"age":30,"gender":"Male","phone":"03001234567","default_referred_by":null,"last_order_referred_by":null,"created_at":"2026-02-06T01:16:11.147143+05:00"},{"id":2,"patient_id":"PAT-20260205-0002","first_name":"Test","last_name":"Workflow","full_name":"Test Workflow","date_of_birth":null,"age":30,"gender":"Male","phone":"03001234567","default_referred_by":null,"last_order_referred_by":null,"created_at":"2026-02-06T01:15:07.528377+05:00"},{"id":1,"patient_id":"PAT-20260205-0001","first_name":"Test","last_name":"Workflow","full_name":"Test Workflow","date_of_birth":null,"age":30,"gender":"Male","phone":"03001234567","default_referred_by":null,"last_order_referred_by":null,"created_at":"2026-02-06T01:11:49.039796+05:00"}]}
