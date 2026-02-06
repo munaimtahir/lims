@@ -11,7 +11,7 @@
 - **Backend Base URL**: `/api/v1` (Port 8000)
 - **Environment**: `.env.production`, `docker-compose.yml`
 
-## Gate Results (Updated: 2026-02-06 15:07 PKT)
+## Gate Results (Updated: 2026-02-07 02:16 PKT)
 | Gate | Description | Status | Output File |
 | :--- | :--- | :--- | :--- |
 | S1 | TypeScript Typecheck | ✅ PASS | `ARTIFACTS/typecheck_stabilized.txt` |
@@ -22,7 +22,7 @@
 | S6 | E2E Smoke (Playwright) | ✅ PASS | `ARTIFACTS/e2e_stabilized.txt` |
 
 
-## Resolution Summary (2026-02-06)
+## Resolution Summary (2026-02-07)
 
 ### Phase F1 — TypeScript & Build Determinism ✅
 - **Status**: COMPLETE
@@ -54,13 +54,11 @@
 - **Result**: No runtime crashes, all component tests passing
 
 ### Phase F5 — Playwright E2E Smoke Gate ✅
-- **Status**: COMPLETE
+- **Status**: COMPLETE (2026-02-07)
 - **Actions**: 
-  - Finalized Playwright config (dotenv, retries, artifacts, storageState)
-  - Implemented smoke flows (dashboard shell, auth via storageState, results worklist, result detail)
-  - Seeded smoke users via `manage.py seed_smoke_users`
-  - Captured artifacts under `e2e/artifacts/` and `ARTIFACTS/e2e_stabilized.txt`
-- **Result**: Smoke suite passes against http://localhost:8012
+  - Verified single @playwright/test install and runner health via new `tests/_sanity.spec.ts`
+  - Re-ran smoke suite against http://localhost:8012 with storageState auth; all 4 smoke specs passed (5/5 including sanity)
+- **Result**: Smoke suite stable; S6 remains closed
 
 ## Master Issue Map
 
@@ -89,8 +87,15 @@
 - [x] CI commands documented ✅
 - [x] Ready to resume feature work
 
-## E2E Evidence (S6)
+## E2E Evidence
 - Base URL: http://localhost:8012
-- Command: `cd e2e && npx playwright test tests/smoke --reporter=list`
-- Result: PASS (4/4)
-- Artifacts: `ARTIFACTS/e2e_stabilized.txt`, `e2e/artifacts/test-results`, `e2e/artifacts/playwright-report`
+- Commands:
+  - cd e2e && npx playwright test tests/_sanity.spec.ts --reporter=list
+  - cd e2e && npx playwright test tests/smoke --reporter=list
+- Result: PASS (5/5)
+- Evidence:
+  - ARTIFACTS/e2e_discovery_diagnosis.txt
+  - ARTIFACTS/e2e_stabilized.txt
+  - e2e/artifacts/test-results/
+  - e2e/artifacts/playwright-report/
+  - REPORTS/e2e_smoke_run.md

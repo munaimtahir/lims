@@ -3,7 +3,39 @@ Serializers for core models.
 """
 
 from rest_framework import serializers
-from .models import SystemSettings, PrintTemplate
+from .models import SystemSettings, PrintTemplate, CollectionCenter, RegistrationCounter, LabDailyCounter
+
+
+class CollectionCenterSerializer(serializers.ModelSerializer):
+    """Serializer for Collection Centers."""
+    
+    class Meta:
+        model = CollectionCenter
+        fields = ['id', 'code', 'name', 'address', 'is_active', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class RegistrationCounterSerializer(serializers.ModelSerializer):
+    """Serializer for Registration Counters (read-only)."""
+    center_name = serializers.CharField(source='center.name', read_only=True)
+    center_code = serializers.CharField(source='center.code', read_only=True)
+    
+    class Meta:
+        model = RegistrationCounter
+        fields = ['id', 'yymm', 'center', 'center_name', 'center_code', 'last_value', 'updated_at']
+        read_only_fields = ['yymm', 'center', 'last_value', 'updated_at']
+
+
+class LabDailyCounterSerializer(serializers.ModelSerializer):
+    """Serializer for Lab Daily Counters (read-only)."""
+    center_name = serializers.CharField(source='center.name', read_only=True)
+    center_code = serializers.CharField(source='center.code', read_only=True)
+    
+    class Meta:
+        model = LabDailyCounter
+        fields = ['id', 'date', 'center', 'center_name', 'center_code', 'last_value', 'updated_at']
+        read_only_fields = ['date', 'center', 'last_value', 'updated_at']
+
 
 class SystemSettingsSerializer(serializers.ModelSerializer):
     """

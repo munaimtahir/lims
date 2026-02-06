@@ -145,12 +145,15 @@ class PatientSerializer(PatientValidationMixin, serializers.ModelSerializer):
             "cnic",
             "father_husband_name",
             "default_referred_by",
+            "registration_number",
+            "registration_center",
+            "registration_datetime",
             "created_at",
             "updated_at",
             "total_orders",
             "last_visit",
         ]
-        read_only_fields = ["id", "patient_id", "created_at", "updated_at"]
+        read_only_fields = ["id", "patient_id", "registration_number", "registration_datetime", "created_at", "updated_at"]
 
     def get_full_name(self, obj):
         """
@@ -234,6 +237,7 @@ class PatientCreateSerializer(PatientValidationMixin, serializers.ModelSerialize
             "father_husband_name",
             "default_referred_by",
             "address",
+            "registration_center",
         ]
 
     def validate_phone(self, value):
@@ -307,6 +311,7 @@ class PatientListSerializer(serializers.ModelSerializer):
             "phone",
             "default_referred_by",
             "last_order_referred_by",
+            "registration_number",
             "created_at",
         ]
 

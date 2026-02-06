@@ -10,6 +10,7 @@ from django.utils import timezone
 from datetime import date
 from apps.core.models import CollectionCenter
 from apps.core.numbering import generate_registration_number
+from apps.core.validators import validate_registration_number
 
 
 class Patient(models.Model):
@@ -77,6 +78,7 @@ class Patient(models.Model):
         null=True,
         blank=True,
         db_index=True,
+        validators=[validate_registration_number],
         help_text="Official Registration Number (YYMM-CC-SSSS)"
     )
     registration_center = models.ForeignKey(

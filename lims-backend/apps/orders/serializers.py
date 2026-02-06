@@ -83,6 +83,8 @@ class OrderListSerializer(serializers.ModelSerializer):
             "is_paid",
             "referred_by",
             "item_count",
+            "lab_number",
+            "collection_center",
         ]
         read_only_fields = fields
 
@@ -136,9 +138,16 @@ class OrderSerializer(serializers.ModelSerializer):
             "items",
             "test_ids",
             "panel_ids",
+            "lab_number",
+            "lab_date",
+            "daily_serial",
+            "collection_center",
         ]
         read_only_fields = [
             "order_id",
+            "lab_number",
+            "lab_date",
+            "daily_serial",
             "created_at",
             "updated_at",
             "total_amount",

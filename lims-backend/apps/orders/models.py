@@ -8,6 +8,7 @@ from apps.patients.models import Patient
 from apps.laboratory.models import Test, TestPanel
 from apps.core.models import CollectionCenter
 from apps.core.numbering import generate_lab_number
+from apps.core.validators import validate_lab_number
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,7 @@ class Order(models.Model):
         blank=True,
         null=True,
         db_index=True,
+        validators=[validate_lab_number],
         help_text="Tube Label (MDD-XXX)"
     )
     lab_date = models.DateField(blank=True, null=True, db_index=True)

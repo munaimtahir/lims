@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-02-07
+
+### BREAKING CHANGES - V2 Numbering System (LOCKED)
+
+**⚠️ CRITICAL: Production numbering system is now locked and deterministic.**
+
+#### Added
+- **V2 Patient Registration Number (MRN)**: Format `YYMM-CC-SSSS`
+  - Monthly reset per collection center
+  - Example: `2602-00-0001` (Feb 2026, Center 00, #1)
+- **V2 Lab Number (Tube Label)**: Format `MDD-XXX`
+  - Daily reset per collection center
+  - Example: `B07-001` (Feb 7th, #1)
+  - Month codes: A=Jan, B=Feb, ..., L=Dec
+- **Collection Centers**: New model for managing registration/collection locations
+  - Code `00` = Head Office (default)
+  - Codes `01-99` for franchise/satellite centers
+- **Atomic Counters**: Concurrency-safe number generation
+  - `RegistrationCounter`: Monthly scope per center
+  - `LabDailyCounter`: Daily scope per center
+  - Row-level locking with `SELECT ... FOR UPDATE`
+- **Database Constraints**: Unique constraints on all numbering fields
+- **Management Command**: `bootstrap_centers` to initialize collection centers
+- **Comprehensive Tests**: Format, reset, concurrency, and validation tests
+- **Documentation**: `DOCS/NUMBERING_SYSTEM.md` with complete specification
+
+#### Technical Details
+- Numbers are **immutable** after creation (no edits allowed)
+- **Concurrency-safe**: No race conditions during simultaneous registrations
+- **No legacy "max+1" logic**: Uses dedicated counter tables
+- Version constant: `NUMBERING_SYSTEM = "V2_LOCKED_2026_02"`
+- Legacy `mrn` and `patient_id` fields maintained for backward compatibility
+
+#### Migration Notes
+- New fields added to `Patient`: `registration_number`, `registration_center`, `registration_datetime`
+- New fields added to `Order`: `lab_number`, `lab_date`, `daily_serial`, `collection_center`
+- Existing records: Legacy fields remain unchanged; new fields nullable for compatibility
+- Run `python manage.py bootstrap_centers` after migration
+
 ## [1.0.0] - 2024-12-05
 
 ### Added

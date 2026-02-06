@@ -1,9 +1,9 @@
 
 Running 4 tests using 2 workers
 
-  ✓  1 [chromium] › tests/smoke/smoke.auth.spec.ts:7:1 › authenticated session shows dashboard shell @smoke (749ms)
+  ✓  1 [chromium] › tests/smoke/smoke.auth.spec.ts:7:1 › authenticated session shows dashboard shell @smoke (708ms)
   ✓  2 [chromium] › tests/smoke/smoke.navigation.spec.ts:6:1 › dashboard shell renders with user info @smoke (1.3s)
   ✓  3 [chromium] › tests/smoke/smoke.results.spec.ts:11:3 › results module @smoke › results worklist renders @smoke (1.4s)
-  ✓  4 [chromium] › tests/smoke/smoke.results.spec.ts:29:3 › results module @smoke › open first result detail if present @smoke (2.7s)
+  ✓  4 [chromium] › tests/smoke/smoke.results.spec.ts:29:3 › results module @smoke › open first result detail if present @smoke (2.8s)
 
-  4 passed (6.9s)
+  4 passed (6.8s)
