@@ -166,6 +166,37 @@ class TestParameter(models.Model):
         """Returns unit from linked Parameter."""
         return self.parameter.unit if self.parameter else ""
 
+    @unit.setter
+    def unit(self, value):
+        # Allow tests/fixtures to set unit directly on the mapping; store on parameter.
+        if self.parameter:
+            self.parameter.unit = value
+            # Avoid hitting DB if parameter not yet saved
+            if self.parameter.pk:
+                self.parameter.save(update_fields=["unit"])
+        else:
+            self.parameter_name = self.parameter_name or ""
+
+    def __init__(self, *args, **kwargs):
+        # Accept legacy 'unit' kwarg and apply to parameter if provided
+        unit_value = kwargs.pop("unit", None)
+        super().__init__(*args, **kwargs)
+        if unit_value is not None:
+            # Will be applied after parameter is set/saved
+            self._pending_unit = unit_value
+        else:
+            self._pending_unit = None
+
+    def save(self, *args, **kwargs):
+        result = super().save(*args, **kwargs)
+        if getattr(self, "_pending_unit", None) is not None:
+            if self.parameter:
+                self.parameter.unit = self._pending_unit
+                if self.parameter.pk:
+                    self.parameter.save(update_fields=["unit"])
+            self._pending_unit = None
+        return result
+
 
 class ReferenceRange(models.Model):
     """
@@ -239,6 +270,56 @@ class ReferenceRange(models.Model):
         blank=True,
         related_name="reference_ranges_created",
     )
+
+    def __init__(self, *args, **kwargs):
+        """
+        Accept legacy aliases used in fixtures/tests:
+        min_value/max_value -> reference_min/reference_max
+        min_critical/max_critical -> critical_low/critical_high
+        """
+        alias_map = {
+            "min_value": "reference_min",
+            "max_value": "reference_max",
+            "min_critical": "critical_low",
+            "max_critical": "critical_high",
+        }
+        for legacy, target in list(alias_map.items()):
+            if legacy in kwargs:
+                kwargs[target] = kwargs.pop(legacy)
+        super().__init__(*args, **kwargs)
+
+    # Backward-compatible aliases
+    @property
+    def min_value(self):
+        return self.reference_min
+
+    @min_value.setter
+    def min_value(self, val):
+        self.reference_min = val
+
+    @property
+    def max_value(self):
+        return self.reference_max
+
+    @max_value.setter
+    def max_value(self, val):
+        self.reference_max = val
+
+    @property
+    def min_critical(self):
+        return self.critical_low
+
+    @min_critical.setter
+    def min_critical(self, val):
+        self.critical_low = val
+
+    @property
+    def max_critical(self):
+        return self.critical_high
+
+    @max_critical.setter
+    def max_critical(self, val):
+        self.critical_high = val
     
     class Meta:
         db_table = "reference_ranges"

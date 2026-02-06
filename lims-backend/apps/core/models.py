@@ -1,5 +1,6 @@
 """Core models for configuration and infrastructure."""
 
+import os
 from django.db import models
 from django.conf import settings
 
@@ -213,8 +214,10 @@ class SystemSettings(models.Model):
         Returns:
             SystemSettings: The settings instance, creating one if it doesn't exist.
         """
-        settings, created = cls.objects.get_or_create(pk=1)
-        return settings
+        settings = cls.objects.first()
+        if settings:
+            return settings
+        return cls.objects.create(lab_name=os.environ.get("LAB_NAME", "Laboratory"))
 
 
 class PrintTemplate(models.Model):
