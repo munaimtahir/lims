@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { orderApi, patientApi, systemSettingsApi } from '../../api/services';
@@ -193,14 +193,32 @@ export default function PrintReceiptPage() {
         queryFn: () => systemSettingsApi.get(),
     });
 
-    // Auto-print effect (optional - can be debated, usually distinct print button is better)
-    // We'll leave it to manual button to avoid blocking the UI immediately
+    // Apply body class for print mode targeting
+    useEffect(() => {
+        const className = printMode === 'A4' ? 'a4-print' : 'thermal-print';
+        document.body.classList.add(className);
+        return () => {
+            document.body.classList.remove(className);
+        };
+    }, [printMode]);
 
     const handlePrint = () => {
-        window.print();
+        // Ensure body class is set before printing
+        const className = printMode === 'A4' ? 'a4-print' : 'thermal-print';
+        document.body.classList.add(className);
+
+        // Small delay to ensure styles are applied
+        setTimeout(() => {
+            window.print();
+        }, 100);
     };
 
     const changePrintMode = (mode: 'A4' | 'Thermal') => {
+        // Remove old class, add new class
+        document.body.classList.remove('a4-print', 'thermal-print');
+        const className = mode === 'A4' ? 'a4-print' : 'thermal-print';
+        document.body.classList.add(className);
+
         setPrintMode(mode);
         saveLastReceiptFormat(mode);
         if (mode === 'Thermal' && (!thermalCopies || thermalCopies < 1)) {
@@ -244,16 +262,19 @@ export default function PrintReceiptPage() {
                 </button>
 
                 {printMode === 'Thermal' && (
-                  <div className={styles.copiesInput}>
-                    <label>Copies</label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={thermalCopies}
-                      onChange={(e) => handleThermalCopiesChange(e.target.value)}
-                    />
-                    <span className={styles.copiesHint}>(default 2)</span>
-                  </div>
+                    <div className={styles.copiesInput}>
+                        <label htmlFor="thermal-copies">Copies:</label>
+                        <input
+                            id="thermal-copies"
+                            type="number"
+                            min={1}
+                            max={10}
+                            value={thermalCopies}
+                            onChange={(e) => handleThermalCopiesChange(e.target.value)}
+                            aria-label="Number of thermal receipt copies"
+                        />
+                        <span className={styles.copiesHint}>(default 2)</span>
+                    </div>
                 )}
 
                 <button className={styles.printButton} onClick={handlePrint}>
@@ -291,16 +312,16 @@ export default function PrintReceiptPage() {
                 ) : (
                     <div className={styles.thermalContainer}>
                         {Array.from({ length: thermalCopies || 1 }).map((_, idx) => (
-                          <div key={idx} className={styles.thermalCopy}>
-                            <ReceiptContent
-                                order={order}
-                                patient={patient.data}
-                                settings={settingsData}
-                                isThermal={true}
-                                copyLabel={thermalCopies > 1 ? `Copy ${idx + 1}` : undefined}
-                            />
-                            {idx < (thermalCopies || 1) - 1 && <div className={styles.thermalDivider} />}
-                          </div>
+                            <div key={idx} className={styles.thermalCopy}>
+                                <ReceiptContent
+                                    order={order}
+                                    patient={patient.data}
+                                    settings={settingsData}
+                                    isThermal={true}
+                                    copyLabel={thermalCopies > 1 ? `Copy ${idx + 1}` : undefined}
+                                />
+                                {idx < (thermalCopies || 1) - 1 && <div className={styles.thermalDivider} />}
+                            </div>
                         ))}
                     </div>
                 )}

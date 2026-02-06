@@ -1,0 +1,98 @@
+┌─────────────────────────────────────────────────────────────────────┐
+│                    RECEIPT PRINT QUICK REFERENCE                    │
+└─────────────────────────────────────────────────────────────────────┘
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                     BROWSER PRINT SETTINGS                        ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  Setting              │  Required Value                           ║
+║───────────────────────┼───────────────────────────────────────────║
+║  Scale                │  100% (NOT "Fit to page")                 ║
+║  Margins              │  None                                     ║
+║  Background graphics  │  Enabled                                  ║
+║  Headers/footers      │  Disabled (recommended)                   ║
+║  Layout               │  Portrait                                 ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                      SUPPORTED FORMATS                            ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  Format    │  Size          │  Layout        │  Copies          ║
+║────────────┼────────────────┼────────────────┼──────────────────║
+║  Thermal   │  80mm × auto   │  Single column │  1-10 (default 2)║
+║  A4        │  210mm × 297mm │  Dual copy     │  1 page          ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                      TROUBLESHOOTING                              ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  Problem                  │  Solution                             ║
+║───────────────────────────┼───────────────────────────────────────║
+║  Content clipped/cut off  │  Set scale to 100%                    ║
+║  Receipt too wide         │  Set scale to 72% (for 58mm)          ║
+║  Missing borders/lines    │  Enable background graphics           ║
+║  Extra headers/footers    │  Disable browser headers/footers      ║
+║  Blank page               │  Check data loaded, enable bg graphics║
+╚═══════════════════════════════════════════════════════════════════╝
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                    THERMAL RECEIPT (80mm)                         ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  ✓ Single-column layout for narrow width                          ║
+║  ✓ Compact typography (7-12pt)                                    ║
+║  ✓ Essential fields only (code column hidden)                     ║
+║  ✓ Multi-copy support with cut lines                              ║
+║  ✓ Auto-expanding height for long content                         ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                      A4 RECEIPT (210mm)                           ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  ✓ Dual-copy layout (Patient + Lab/Office)                        ║
+║  ✓ Two-column patient info grid                                   ║
+║  ✓ Full field display including test codes                        ║
+║  ✓ Professional spacing and hierarchy                             ║
+║  ✓ Cut line separator between copies                              ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                    58mm THERMAL PRINTERS                          ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  Option 1: Set browser scale to 72% (58/80 = 0.725)               ║
+║  Option 2: Edit CSS - change 80mm to 58mm in:                     ║
+║            - .thermalContainer { width: 58mm; }                    ║
+║            - @media print .thermalContainer { width: 58mm !important; } ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                      TESTED BROWSERS                              ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  ✅ Chrome/Chromium  - Recommended (best results)                 ║
+║  ⚠️  Firefox         - May need manual margin adjustment          ║
+║  ⚠️  Safari          - May need manual margin adjustment          ║
+║  ⚠️  Edge            - Should work like Chrome                    ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                      PRINT WORKFLOW                               ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  1. Select format (A4 or Thermal)                                 ║
+║  2. Set number of copies (thermal only)                           ║
+║  3. Click "🖨 Print Receipt" button                               ║
+║  4. Verify settings in print dialog                               ║
+║  5. Click "Print"                                                 ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                    LAYOUT GUARANTEES                              ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  ✓ No overlapping text                                            ║
+║  ✓ No clipped lines                                               ║
+║  ✓ No content outside paper bounds                                ║
+║  ✓ Long names wrap gracefully                                     ║
+║  ✓ All fields visible and readable                                ║
+║  ✓ Consistent spacing and alignment                               ║
+║  ✓ Professional appearance                                        ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+For detailed documentation, see: DOCS/RECEIPT_PRINT_GUIDE.md
