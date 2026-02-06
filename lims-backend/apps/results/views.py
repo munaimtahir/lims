@@ -391,22 +391,23 @@ class TestResultViewSet(viewsets.ModelViewSet):
         """
         Verify a test result.
 
-        This action can only be performed by pathologists and admins.
-
-        Args:
-            request (Request): The request object.
-            pk (int, optional): The primary key of the test result. Defaults to None.
-
-        Returns:
-            Response: A response object with a status message.
+        This action can only be performed by authorized users.
+        It prevents re-verification of an already verified result.
         """
         result = self.get_object()
 
-        # Check permission (should be Pathologist)
-        if not request.user.is_pathologist and not request.user.is_admin:
-            return Response(
-                {"error": "Only pathologists can verify results"},
+        # 1. Permission Check
+        if not (request.user.is_staff or request.user.is_superuser):
+             return Response(
+                {"error": "You do not have permission to verify results."},
                 status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # 2. State Machine Enforcement
+        if result.status == "VERIFIED":
+            return Response(
+                {"error": "This result has already been verified."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Handle digital signature if provided
@@ -424,7 +425,67 @@ class TestResultViewSet(viewsets.ModelViewSet):
         # Trigger cascade update
         self._check_and_update_status(result.order_item)
 
-        return Response({"status": "result verified"})
+        serializer = self.get_serializer(result)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path="bulk-verify")
+    def bulk_verify(self, request):
+        """
+        Verify a list of test results in a single atomic transaction.
+        Expects a list of result IDs in the request data.
+        """
+        result_ids = request.data.get("result_ids", [])
+        if not result_ids:
+            return Response(
+                {"error": "result_ids list is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not (request.user.is_staff or request.user.is_superuser):
+            return Response(
+                {"error": "You do not have permission to verify results."},
+                status=status.HTTP_4_FORBIDDEN,
+            )
+
+        errors = []
+        results_to_verify = TestResult.objects.select_related("test_parameter").filter(id__in=result_ids)
+
+        if results_to_verify.count() != len(result_ids):
+            return Response(
+                {"error": "One or more result IDs were not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        for r in results_to_verify:
+            if r.status == "VERIFIED":
+                errors.append(f"Result for '{r.test_parameter.effective_parameter_name}' is already verified.")
+            if not r.result_value or not r.result_value.strip():
+                errors.append(f"Result for '{r.test_parameter.effective_parameter_name}' is missing a value.")
+        
+        if errors:
+            return Response(
+                {"error": "Verification failed for some results.", "details": errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            updated_count = results_to_verify.update(
+                status="VERIFIED",
+                verified_by=request.user,
+                verified_at=timezone.now(),
+            )
+            
+            order_items = OrderItem.objects.filter(results__id__in=result_ids).distinct()
+            for item in order_items:
+                self._check_and_update_status(item)
+
+        return Response(
+            {
+                "status": f"{updated_count} results verified successfully.",
+                "verified_ids": result_ids,
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=["post"])
     def reject(self, request, pk=None):

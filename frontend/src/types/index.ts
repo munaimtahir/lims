@@ -251,6 +251,8 @@ export interface TestResult {
   unit: string;
   result_value: string;
   flag: ResultFlag;
+  is_abnormal?: boolean;
+  is_critical?: boolean;
   remarks: string;
   entered_by?: number;
   entered_by_name?: string;

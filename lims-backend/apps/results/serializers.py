@@ -20,6 +20,16 @@ class TestResultSerializer(serializers.ModelSerializer):
         source="verified_by.full_name", read_only=True
     )
     reference_range = serializers.SerializerMethodField()
+    is_abnormal = serializers.SerializerMethodField()
+    is_critical = serializers.SerializerMethodField()
+
+    def get_is_abnormal(self, obj):
+        """Return true if the result flag indicates abnormality."""
+        return obj.flag in ["L", "H", "C", "A"]
+
+    def get_is_critical(self, obj):
+        """Return true if the result flag is critical."""
+        return obj.flag == "C"
 
     def get_reference_range(self, obj):
         """Get the reference range display string for this result."""
@@ -57,6 +67,8 @@ class TestResultSerializer(serializers.ModelSerializer):
             "unit",
             "result_value",
             "flag",
+            "is_abnormal",
+            "is_critical",
             "status",
             "remarks",
             "entered_by",
@@ -96,3 +108,13 @@ class TestResultSerializer(serializers.ModelSerializer):
         if "status" not in validated_data:
             validated_data["status"] = "ENTERED"
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        """
+        Update a test result, but prevent editing of verified results.
+        """
+        if instance.status in ["VERIFIED", "PUBLISHED"]:
+            raise serializers.ValidationError(
+                "Cannot edit a result that has been verified or published."
+            )
+        return super().update(instance, validated_data)
