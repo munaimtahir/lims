@@ -19,7 +19,7 @@
 | S3 | Unit/Component Tests | ✅ PASS (7/7) | `ARTIFACTS/unit_tests_stabilized.txt` |
 | S4 | API Contract Drift | ✅ PASS (Tests) | `ARTIFACTS/contract.txt` |
 | S5 | Integration Tests (Mocked) | ✅ PASS | `ARTIFACTS/integration.txt` |
-| S6 | E2E Smoke (Playwright) | ⏳ PENDING | `ARTIFACTS/e2e_stabilized.txt` |
+| S6 | E2E Smoke (Playwright) | ✅ PASS | `ARTIFACTS/e2e_stabilized.txt` |
 
 
 ## Resolution Summary (2026-02-06)
@@ -53,14 +53,14 @@
   - All unit tests now pass (7/7)
 - **Result**: No runtime crashes, all component tests passing
 
-### Phase F5 — Playwright E2E Smoke Gate ⏳
-- **Status**: READY FOR TESTING
+### Phase F5 — Playwright E2E Smoke Gate ✅
+- **Status**: COMPLETE
 - **Actions**: 
-  - Added `data-testid="topbar-username"` to DashboardLayout
-  - Updated user info display to show email (required by E2E test)
-  - Created `.env` file for E2E configuration with BASE_URL
-  - Verified all required test IDs are in place
-- **Next Step**: Run E2E smoke tests against live application
+  - Finalized Playwright config (dotenv, retries, artifacts, storageState)
+  - Implemented smoke flows (dashboard shell, auth via storageState, results worklist, result detail)
+  - Seeded smoke users via `manage.py seed_smoke_users`
+  - Captured artifacts under `e2e/artifacts/` and `ARTIFACTS/e2e_stabilized.txt`
+- **Result**: Smoke suite passes against http://localhost:8012
 
 ## Master Issue Map
 
@@ -85,7 +85,12 @@
 - [x] S3 Unit/Component tests pass ✅ (7/7)
 - [x] S4 Contract checks in place ✅
 - [x] S5 Mocked integration tests pass ✅
-- [ ] S6 Playwright smoke passes (ready for testing, requires live app)
+- [x] S6 Playwright smoke passes (live app)
 - [x] CI commands documented ✅
-- [ ] Ready to resume feature work (pending E2E verification)
+- [x] Ready to resume feature work
 
+## E2E Evidence (S6)
+- Base URL: http://localhost:8012
+- Command: `cd e2e && npx playwright test tests/smoke --reporter=list`
+- Result: PASS (4/4)
+- Artifacts: `ARTIFACTS/e2e_stabilized.txt`, `e2e/artifacts/test-results`, `e2e/artifacts/playwright-report`

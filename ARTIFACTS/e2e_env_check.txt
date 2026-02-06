@@ -1,0 +1,27 @@
+== docker compose ps ==
+NAME            IMAGE                COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+lims_backend    lims-backend         "/app/bootstrap_prod…"   backend    24 seconds ago   Up 16 seconds (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+lims_celery     lims-celery          "celery -A config wo…"   celery     24 seconds ago   Up 16 seconds             8000/tcp
+lims_db         postgres:16-alpine   "docker-entrypoint.s…"   db         24 seconds ago   Up 21 seconds (healthy)   5432/tcp
+lims_frontend   lims-frontend        "/docker-entrypoint.…"   frontend   3 minutes ago    Up 3 minutes              80/tcp
+lims_proxy      caddy:2-alpine       "caddy run --config …"   proxy      2 minutes ago    Up 2 minutes (healthy)    443/tcp, 2019/tcp, 443/udp, 127.0.0.1:8012->80/tcp
+lims_redis      redis:7-alpine       "docker-entrypoint.s…"   redis      13 minutes ago   Up 13 minutes (healthy)   6379/tcp
+\n== curl -I http://localhost:8012 ==
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Content-Length: 455
+Content-Type: text/html
+Date: Fri, 06 Feb 2026 11:51:01 GMT
+Etag: "6985d4bd-1c7"
+Last-Modified: Fri, 06 Feb 2026 11:47:09 GMT
+Referrer-Policy: strict-origin-when-cross-origin
+Server: nginx/1.29.4
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Via: 1.1 Caddy
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+
+\n== curl backend health ==
+{"status":"healthy","service":"LIMS Backend","database":"connected"}
+200

@@ -1,0 +1,1 @@
+Artifacts live under ../ARTIFACTS and ./artifacts per requirements.

@@ -6,7 +6,9 @@
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
-    "show-report": "playwright show-report"
+    "test:smoke": "playwright test tests/smoke --grep @smoke",
+    "test:regression": "playwright test tests/regression --grep @regression",
+    "show-report": "playwright show-report artifacts/playwright-report"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.2",

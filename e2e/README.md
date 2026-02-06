@@ -1,33 +1,44 @@
-# E2E Playwright Suite
+# E2E Playwright Suite (Gate S6)
 
 ## Quickstart (local)
 1) `cd e2e`
-2) `npm install` (or `npm ci`)
-3) `cp config/env.example .env` and set `BASE_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD`
-4) `npx playwright install --with-deps chromium`
-5) `npx playwright test tests/smoke.spec.ts`
+2) `npm ci`
+3) `cp .env.example .env` and set `BASE_URL`, `E2E_USER_EMAIL`, `E2E_USER_PASSWORD`
+4) Seed test users (one-time, dev only): `docker compose exec backend python manage.py seed_smoke_users`
+5) `npx playwright install --with-deps chromium`
+6) Smoke: `npm run test:smoke`
+7) Regression (optional): `npm run test:regression`
 
-## Conventions (AI + human friendly)
-- One test = one intent; keep specs short.
-- Use Page Objects (extend `BasePage`); no inline selectors in specs.
-- Selectors live in `utils/selectors.ts` (use data-testid/stable hooks).
-- No `waitForTimeout`; all waits go through `utils/waiters.ts`.
-- One assertion per logical step with clear message.
-- Env-driven base URL via `BASE_URL`; secrets stay in `.env`.
-- Artifacts on failure: screenshots, videos, traces, HTML report under `artifacts/`.
+## Auth strategy (storageState)
+- Global setup logs in once with creds from `.env` and writes `.auth/storageState.json`.
+- All tests reuse that authenticated state; no creds are hard-coded in specs.
+- To refresh state: delete `e2e/.auth` and re-run tests (global setup recreates it).
+
+## Selector & POM policy
+- No inline selectors in specs; use `utils/selectors.ts`.
+- Prefer `data-testid`; fallback to role/text only if no stable hook exists.
+- Page Objects live in `pages/`; waits go through `utils/waiters.ts` (no sleeps).
 
 ## Structure
-- `config/` Playwright config and env template
-- `tests/` Spec files
-- `pages/` Page Objects (`BasePage`, feature pages)
-- `fixtures/` Reusable fixtures (e.g., `authenticatedPage`)
-- `data/` Static test data (non-secret)
-- `utils/` Selectors, waiters, assertions helpers
-- `artifacts/` Test outputs (screens, videos, traces, html report)
+- `playwright.config.ts` Root config (dotenv, retries, artifacts)
+- `tests/smoke` Smoke suite (3 flows + detail open)
+- `tests/regression` Light regression tags
+- `pages/` POMs (`BasePage`, `LoginPage`, `DashboardPage`, `ResultsPage`)
+- `fixtures/auth.setup.ts` storageState generation
+- `utils/` selectors, waiters, asserts, testdata
+- `artifacts/` test-results, traces, screenshots, videos, html report
+
+## Env & test data
+- `.env.example` documents required vars:
+  - `BASE_URL` (default http://localhost:8012)
+  - `E2E_USER_EMAIL`, `E2E_USER_PASSWORD`
+  - `E2E_ALLOW_WRITES` (default false; gate risky writes)
+- Test user provisioning: run `docker compose exec backend python manage.py seed_smoke_users`
 
 ## CI notes
-- Install deps: `npm ci`
-- Install browsers: `npx playwright install --with-deps chromium`
-- Run headless: `npx playwright test`
-- Export env: `BASE_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD`
-- Upload `artifacts/` as workflow artifact
+- Headless chromium only; retries=2 on CI, 0 locally.
+- Artifacts: `e2e/artifacts/test-results`, `e2e/artifacts/playwright-report`.
+- Commands:
+  - `npm run test:smoke`
+  - `npm run test:regression`
+  - `npx playwright show-report e2e/artifacts/playwright-report`
