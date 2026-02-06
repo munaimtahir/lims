@@ -1,0 +1,16 @@
+
+> frontend@0.0.0 test
+> vitest --run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90m/home/munaim/srv/apps/lims/frontend[39m
+
+ [32m✓[39m src/utils/ageDob.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/api/contracts/contracts.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/tests/integration.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 15:06:28
+[2m   Duration [22m 1.55s[2m (transform 154ms, setup 583ms, import 467ms, tests 44ms, environment 2.36s)[22m
+

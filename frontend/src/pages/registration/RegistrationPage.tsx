@@ -5,6 +5,7 @@ import { patientApi, laboratoryApi, orderApi } from '../../api/services';
 import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
 import { useBranding } from '../../contexts/BrandingContext';
 import { formatCurrency } from '../../utils/currency';
+import { formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
 import styles from './RegistrationPage.module.css';
 
 // Simple Receipt Modal Component
@@ -112,7 +113,7 @@ export default function RegistrationPage() {
   });
 
   // Age & Date Logic
-  const [dob, setDob] = useState('');
+  const [dobInput, setDobInput] = useState('');
   const [ageYears, setAgeYears] = useState<number | ''>('');
   const [ageMonths, setAgeMonths] = useState<number | ''>('');
   const [ageDays, setAgeDays] = useState<number | ''>('');
@@ -154,11 +155,12 @@ export default function RegistrationPage() {
 
   // Update Age when DOB changes
   const handleDobChange = (value: string) => {
-    setDob(value);
-    setPatientFormData(prev => ({ ...prev, date_of_birth: value }));
+    const { iso, display, date } = normalizeDobInput(value);
+    setDobInput(display || value);
+    setPatientFormData(prev => ({ ...prev, date_of_birth: iso || undefined }));
 
-    if (value) {
-      const birthDate = new Date(value);
+    if (date) {
+      const birthDate = date;
       const today = new Date();
 
       let years = today.getFullYear() - birthDate.getFullYear();
@@ -186,11 +188,12 @@ export default function RegistrationPage() {
         age_months: Math.max(0, months),
         age_days: Math.max(0, days)
       }));
-    } else {
-      setAgeYears('');
-      setAgeMonths('');
-      setAgeDays('');
+      return;
     }
+
+    setAgeYears('');
+    setAgeMonths('');
+    setAgeDays('');
   };
 
   // Update DOB when Age changes (Years/Months/Days)
@@ -211,7 +214,7 @@ export default function RegistrationPage() {
     const dd = String(date.getDate()).padStart(2, '0');
     const formattedDate = `${yyyy}-${mm}-${dd}`;
 
-    setDob(formattedDate);
+    setDobInput(formatDobDisplay(formattedDate));
     setPatientFormData(prev => ({
       ...prev,
       date_of_birth: formattedDate,
@@ -407,7 +410,7 @@ export default function RegistrationPage() {
     setSelectedPatient(null);
     setPatientFormData({ phone: '', gender: 'Male', email: '', address: '', father_husband_name: '', cnic: '' });
     setMobileNumber('');
-    setDob('');
+    setDobInput('');
     setAgeYears('');
     setAgeMonths('');
     setAgeDays('');

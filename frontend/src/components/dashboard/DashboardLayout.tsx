@@ -145,7 +145,7 @@ export default function DashboardLayout() {
 
         <div className={styles.userInfo}>
           <div className={styles.userName}>{user?.full_name}</div>
-          <div className={styles.userRole}>{user?.role}</div>
+          <div className={styles.userRole} data-testid="topbar-username">{user?.email}</div>
           <button onClick={handleLogout} className={styles.logoutButton}>
             Sign Out
           </button>
