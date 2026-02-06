@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.utils import timezone
+from django.db import transaction
 from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.core.export_utils import export_to_csv, export_to_excel
@@ -207,7 +208,28 @@ class TestResultViewSet(viewsets.ModelViewSet):
         order_item = self._get_order_item_from_request(request)
         
         results = ensure_test_results(order_item)
-        serializer = self.get_serializer(results, many=True)
+        
+        # Reload results with all related data for serialization
+        result_ids = [r.id for r in results]
+        results_with_relations = (
+            TestResult.objects.filter(id__in=result_ids)
+            .select_related(
+                "test_parameter",
+                "test_parameter__parameter",
+                "test_parameter__test",
+                "order_item",
+                "order_item__order",
+                "order_item__order__patient",
+                "entered_by",
+                "verified_by",
+            )
+            .prefetch_related(
+                "test_parameter__reference_ranges",
+            )
+            .order_by("test_parameter__display_order")
+        )
+        
+        serializer = self.get_serializer(results_with_relations, many=True)
         return Response({"results": serializer.data})
 
     @action(detail=False, methods=["get"])

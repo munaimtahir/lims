@@ -253,24 +253,106 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
     handleKeyDown,
   } = useResultEntry(orderItemId);
 
-  const { data: orderItemDetails, isLoading: isLoadingDetails } = useQuery({
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const { data: orderItemDetails, isLoading: isLoadingDetails, isError: isDetailsError, error: detailsError, refetch: refetchDetails } = useQuery({
     queryKey: ['order-item-details', orderItemId],
     queryFn: () => orderApi.getOrderItem(orderItemId),
     enabled: !!orderItemId,
+    retry: 2,
+    retryDelay: 1000,
   });
 
+  // Timeout detection for stuck loading
+  useEffect(() => {
+    if (isLoadingResults || isLoadingDetails) {
+      const timer = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 15000); // 15 second timeout
+      return () => clearTimeout(timer);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [isLoadingResults, isLoadingDetails]);
+
+  const handleRetry = () => {
+    setLoadingTimeout(false);
+    setRetryCount(prev => prev + 1);
+    refetchDetails();
+  };
+
   const handleSaveAndVerify = async () => {
-    await saveMutation.mutateAsync(existingResultsData?.data.results || []);
-    if (confirm('This will lock all results and prevent edits. Continue?')) {
-      const resultIds = existingResultsData?.data.results.map((r: TestResult) => r.id) || [];
-      await verifyMutation.mutateAsync(resultIds);
+    try {
+      await saveMutation.mutateAsync(existingResultsData?.data.results || []);
+      if (confirm('This will lock all results and prevent edits. Continue?')) {
+        const resultIds = existingResultsData?.data.results.map((r: TestResult) => r.id) || [];
+        await verifyMutation.mutateAsync(resultIds);
+      }
+    } catch (err) {
+      console.error('Save and verify failed:', err);
+      alert('Failed to save and verify results. Please try again.');
     }
   };
 
   const isLoading = isLoadingResults || isLoadingDetails;
 
-  if (isLoading) return <div className={styles.message}>Loading results...</div>;
-  if (isError) return <div className={styles.message} style={{ color: '#ef4444' }}>Error: {(error as Error).message}</div>;
+  // Loading timeout state
+  if (loadingTimeout && isLoading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <div className={styles.errorIcon}>⚠️</div>
+          <h2>Loading Timeout</h2>
+          <p>The request is taking longer than expected. This might be due to network issues or server load.</p>
+          <div className={styles.errorActions}>
+            <button className={styles.retryButton} onClick={handleRetry}>
+              Retry Loading
+            </button>
+            <button className={styles.backButton} onClick={onBack}>
+              Back to Worklist
+            </button>
+          </div>
+          {retryCount > 0 && <p className={styles.retryInfo}>Retry attempt: {retryCount}</p>}
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner}></div>
+          <p>Loading results data...</p>
+          <p className={styles.loadingHint}>This should only take a few seconds</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error states with retry
+  if (isError || isDetailsError) {
+    const errorMessage = (error as Error)?.message || (detailsError as Error)?.message || 'Unknown error occurred';
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <div className={styles.errorIcon}>❌</div>
+          <h2>Failed to Load Results</h2>
+          <p className={styles.errorMessage}>{errorMessage}</p>
+          <div className={styles.errorActions}>
+            <button className={styles.retryButton} onClick={handleRetry}>
+              Retry
+            </button>
+            <button className={styles.backButton} onClick={onBack}>
+              Back to Worklist
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const resultItems = existingResultsData?.data.results || [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -319,6 +401,33 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
         <div className={styles.message}>Initializing result form...</div>
       ) : (
         <div className={styles.form}>
+          {/* Sticky Action Bar at Top */}
+          <div className={styles.stickyActionBar}>
+            {!allVerified && (
+              <>
+                <button
+                  className={styles.saveButton}
+                  onClick={() => saveMutation.mutate(resultItems)}
+                  disabled={saveMutation.isPending || verifyMutation.isPending}
+                >
+                  {saveMutation.isPending ? 'Saving...' : '💾 Save Draft'}
+                </button>
+                <button
+                  className={`${styles.verifyMainButton} ${styles.saveButton}`}
+                  onClick={handleSaveAndVerify}
+                  disabled={saveMutation.isPending || verifyMutation.isPending}
+                >
+                  {verifyMutation.isPending ? 'Verifying...' : '✓ Save & Verify All'}
+                </button>
+              </>
+            )}
+            {allVerified && (
+              <div className={styles.allVerifiedMessage}>
+                ✓ All results have been verified.
+              </div>
+            )}
+          </div>
+
           <div className={styles.tableContainer}>
             <table className={styles.resultTable}>
               <thead>
@@ -385,6 +494,7 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
             </table>
           </div>
 
+          {/* Footer buttons for convenience */}
           <div className={styles.footer}>
             {!allVerified && (
               <>

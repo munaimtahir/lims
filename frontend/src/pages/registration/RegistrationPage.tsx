@@ -476,7 +476,16 @@ export default function RegistrationPage() {
 
   const addTest = (test: TestSearchResult) => {
     const testId = test.test_id ?? test.id;
-    if (!addedTests.find((t) => (t.test_id ?? t.id) === testId)) {
+    // Check if already added (check both test_id and panel_id depending on type)
+    const isDuplicate = addedTests.find((t) => {
+      if (test.type === 'panel') {
+        return t.type === 'panel' && (t.id === testId);
+      } else {
+        return t.type === 'test' && ((t.test_id ?? t.id) === testId);
+      }
+    });
+
+    if (!isDuplicate) {
       setAddedTests([...addedTests, { ...test, id: testId }]);
     }
     setTestQuery('');
@@ -507,9 +516,14 @@ export default function RegistrationPage() {
     if (!selectedPatient) return alert('Please save patient first');
     if (addedTests.length === 0) return alert('Please add at least one test');
 
+    // Separate tests and panels
+    const tests = addedTests.filter(t => t.type === 'test');
+    const panels = addedTests.filter(t => t.type === 'panel');
+
     const orderData = {
       patient: selectedPatient.id,
-      test_ids: addedTests.map((t) => t.test_id ?? t.id),
+      test_ids: tests.map((t) => t.test_id ?? t.id),
+      panel_ids: panels.map((p) => p.id),
       discount: discountAmount,
       discount_percent: discountPercent,
       paid_amount: paidAmount,

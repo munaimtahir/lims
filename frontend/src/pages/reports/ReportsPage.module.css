@@ -1,171 +1,257 @@
 .container {
-  padding: 24px;
+  padding: 32px;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 16px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 24px;
 }
 
+.header h1 {
+  margin: 0 0 8px 0;
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 700;
+}
 
 .subtitle {
-  margin: 4px 0 0 0;
+  margin: 0;
   color: #64748b;
-  font-size: 14px;
-}
-
-.filters {
-  margin-bottom: 24px;
-}
-
-.searchInput {
-  width: 100%;
-  max-width: 400px;
-  padding: 10px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.searchInput:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.loading,
-.emptyState {
-  text-align: center;
-  padding: 48px;
-  color: #64748b;
-}
-
-/* Accordion Styles */
-.accordionList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.accordionItem {
-  background: white;
-  border: 1px invisible #e2e8f0;
-  border-bottom: 1px solid #f1f5f9;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: all 0.2s;
-}
-
-.accordionItem.active {
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.accordionHeader {
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  background: #fff;
-  transition: background 0.2s;
-}
-
-.accordionHeader:hover {
-  background: #f8fafc;
-}
-
-.patientInfo {
-  display: flex;
-  flex-direction: column;
-}
-
-.patientName {
-  font-weight: 600;
-  color: #1e293b;
   font-size: 16px;
 }
 
-.reportCount {
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 2px;
+/* Loading Container */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
 }
 
-.chevron {
-  color: #94a3b8;
-  font-size: 12px;
-  transition: transform 0.2s;
+.loadingContainer p {
+  margin: 16px 0 0 0;
+  color: #475569;
+  font-size: 16px;
+  font-weight: 500;
 }
 
-.accordionContent {
-  padding: 0 20px 20px 20px;
-  background: #fff;
-  animation: slideDown 0.3s ease-out;
+.loadingHint {
+  color: #94a3b8 !important;
+  font-size: 14px !important;
+  margin-top: 8px !important;
 }
 
-.reportsTable {
-  width: 100%;
-  border-collapse: collapse;
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error Container */
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+}
+
+.errorIcon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.errorContainer h2 {
+  margin: 0 0 12px 0;
+  color: #991b1b;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.errorContainer p {
+  margin: 0 0 24px 0;
+  color: #dc2626;
+  font-size: 16px;
+}
+
+.errorMessage {
+  font-family: 'JetBrains Mono', monospace;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid #fca5a5;
+  font-size: 14px !important;
+}
+
+.errorActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.retryButton {
+  padding: 12px 24px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
   font-size: 14px;
-  margin-top: 10px;
-}
-
-.reportsTable th {
-  text-align: left;
-  padding: 10px;
-  border-bottom: 2px solid #f1f5f9;
-  color: #64748b;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.reportsTable td {
-  padding: 12px 10px;
+.retryButton:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+}
+
+.retryInfo {
+  margin-top: 16px !important;
+  color: #64748b !important;
+  font-size: 14px !important;
+  font-style: italic;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 80px 40px;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+/* Reports List */
+.reportsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reportCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s;
+  background: white;
+}
+
+.reportCard:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
+}
+
+.reportHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
   border-bottom: 1px solid #f1f5f9;
 }
 
-.verifiedBadge {
-  background: #dcfce7;
-  color: #166534;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
+.reportInfo h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.orderId {
+  font-size: 13px;
+  color: #64748b;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.statusBadge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
 }
 
-.printBtn {
+.final {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.reportDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.detailRow {
+  display: flex;
+  gap: 12px;
+}
+
+.label {
+  font-weight: 500;
+  color: #64748b;
+  min-width: 120px;
+}
+
+.value {
+  color: #1e293b;
+}
+
+.reportActions {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.downloadButton {
+  padding: 10px 20px;
   background: #3b82f6;
   color: white;
   border: none;
-  padding: 6px 14px;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 13px;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.printBtn:hover {
+.downloadButton:hover {
   background: #2563eb;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
 }

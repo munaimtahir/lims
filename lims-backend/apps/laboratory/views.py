@@ -166,14 +166,14 @@ class TestViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def search(self, request):
         """
-        Fast search for tests by name or code for order entry.
+        Fast search for tests AND panels by name or code for order entry.
         
         Query params:
-            - q: Search query (searches test_name and test_code)
+            - q: Search query (searches test_name, test_code, panel_name, panel_code)
             - limit: Maximum results to return (default: 20)
         
         Returns:
-            Response: List of matching tests with essential info.
+            Response: List of matching tests and panels with essential info.
         """
         query = request.query_params.get("q", "").strip()
         limit = int(request.query_params.get("limit", 20))
@@ -194,7 +194,15 @@ class TestViewSet(viewsets.ModelViewSet):
             is_active=True
         ).select_related("category").order_by("test_code")[:limit]
         
+        # Search for panels by name or code (case-insensitive)
+        panels = TestPanel.objects.filter(
+            models.Q(panel_name__icontains=query) | models.Q(panel_code__icontains=query),
+            is_active=True
+        ).select_related("category").prefetch_related("tests")[:limit]
+        
         results = []
+        
+        # Add tests to results
         for test in tests:
             results.append({
                 "id": test.test_id,
@@ -204,8 +212,30 @@ class TestViewSet(viewsets.ModelViewSet):
                 "category_name": test.category.name if test.category else "",
                 "sample_type": test.sample_type,
                 "price": str(test.price),
-                "type": "test",  # To distinguish from panels
+                "type": "test",
             })
+        
+        # Add panels to results
+        for panel in panels:
+            results.append({
+                "id": panel.id,
+                "panel_id": panel.id,
+                "test_code": panel.panel_code,  # For compatibility with frontend
+                "test_name": panel.panel_name,  # For compatibility with frontend
+                "panel_code": panel.panel_code,
+                "panel_name": panel.panel_name,
+                "category_name": panel.category.name if panel.category else "",
+                "sample_type": panel.sample_type,
+                "price": str(panel.price),
+                "type": "panel",
+                "test_count": panel.tests.count(),
+            })
+        
+        # Sort results: panels first, then tests, both alphabetically
+        results.sort(key=lambda x: (x["type"] != "panel", x["test_name"]))
+        
+        # Limit total results
+        results = results[:limit]
         
         return Response(
             {
