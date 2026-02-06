@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { worklistApi } from '../../api/services';
 import type { WorklistPatient } from '../../types';
 import styles from './PatientsWorklistPage.module.css';
+import { formatDateDDMMYY } from '../../utils/dateFormat';
 
 export default function PatientsWorklistPage() {
   const [search, setSearch] = useState('');
@@ -120,7 +121,7 @@ export default function PatientsWorklistPage() {
                 <td>
                   <span className={styles.statusBadge}>{item.current_status}</span>
                 </td>
-                <td>{new Date(item.latest_order_created_at).toLocaleDateString()}</td>
+                <td>{formatDateDDMMYY(item.latest_order_created_at)}</td>
                 <td>
                   <div className={styles.actionButtons}>
                     <button

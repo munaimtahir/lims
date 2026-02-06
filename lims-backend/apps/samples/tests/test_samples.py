@@ -169,6 +169,15 @@ class TestSampleViewSet:
         assert sample.collected_by == phlebotomist_user
         assert sample.collected_at is not None
 
+
+
+    def test_reject_status_is_not_allowed(self, authenticated_client, sample):
+        response = authenticated_client.patch(
+            f"/api/v1/samples/{sample.id}/",
+            {"status": SampleStatus.REJECTED},
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
     def test_filter_samples_by_status(self, authenticated_client, sample):
         """Test filtering samples by status."""
         response = authenticated_client.get("/api/v1/samples/", {"status": SampleStatus.PENDING})

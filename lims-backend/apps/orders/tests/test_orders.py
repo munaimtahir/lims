@@ -264,6 +264,28 @@ def test_worklist_can_reprint_flags(authenticated_client, order, admin_user):
         order.refresh_from_db()
         assert order.status == "CANCELLED"
 
+
+
+    def test_worklist_reprint_eligibility(self, authenticated_client, order, admin_user):
+        Payment.objects.create(order=order, amount=Decimal('100.00'), payment_method='cash', recorded_by=admin_user)
+        order.status = 'PUBLISHED'
+        order.save(update_fields=['status'])
+        report_file = SimpleUploadedFile('report.pdf', b'%PDF-1.4 test', content_type='application/pdf')
+        Report.objects.create(
+            order=order,
+            report_file=report_file,
+            status=ReportStatus.FINAL,
+            generated_by=admin_user,
+        )
+
+        response = authenticated_client.get('/api/v1/worklist/patients/')
+        assert response.status_code == status.HTTP_200_OK
+        row = response.data['results'][0]
+        assert row['can_reprint_receipt'] is True
+        assert row['can_reprint_report'] is True
+        assert row['receipt_pdf_url']
+        assert row['report_pdf_url']
+
     def test_cancel_completed_order_fails(self, authenticated_client, order):
         """Test that canceling a completed order fails."""
         # Use PUBLISHED status as 'completed' equivalent

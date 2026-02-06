@@ -6,6 +6,7 @@ import { normalizeObjectResponse } from '../../utils/apiHelpers';
 import { isSampleBarcodeEnabled, setSampleBarcodeEnabled } from '../../utils/featureFlags';
 import type { SystemSettings, PrintTemplate, PrintSignatory, PrintTemplateConfig } from '../../types';
 import styles from './SystemSettingsPage.module.css';
+import { isSampleBarcodeCollectionEnabled, setSampleBarcodeCollectionEnabled } from '../../utils/featureFlags';
 
 export default function SystemSettingsPage() {
   const queryClient = useQueryClient();
@@ -24,6 +25,7 @@ export default function SystemSettingsPage() {
   const [barcodeToggle, setBarcodeToggle] = useState<boolean>(() => isSampleBarcodeEnabled());
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateForm, setTemplateForm] = useState<PrintTemplate | null>(null);
+  const [sampleBarcodeEnabled, setSampleBarcodeEnabled] = useState<boolean>(() => isSampleBarcodeCollectionEnabled());
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ['system-settings'],
@@ -385,6 +387,27 @@ export default function SystemSettingsPage() {
               </div>
               <small className={styles.hint}>
                 Accepted formats: PNG, JPG, JPEG, WEBP (max 5MB). Logo will appear in header and login page.
+              </small>
+            </div>
+
+
+
+            <div className={styles.formGroup}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={sampleBarcodeEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setSampleBarcodeEnabled(checked);
+                    setSampleBarcodeCollectionEnabled(checked);
+                  }}
+                  className={styles.checkbox}
+                />
+                Enable sample barcode collection
+              </label>
+              <small className={styles.hint}>
+                Default is off. When disabled, collect samples flow will hide barcode entry prompts.
               </small>
             </div>
 

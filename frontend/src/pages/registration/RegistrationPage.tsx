@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { patientApi, laboratoryApi, orderApi } from '../../api/services';
 import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
 import { useBranding } from '../../contexts/BrandingContext';
+import { formatDateDDMMYY, normalizeDateInputToISO } from '../../utils/dateFormat';
 import { formatCurrency } from '../../utils/currency';
 import { formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
 import styles from './RegistrationPage.module.css';

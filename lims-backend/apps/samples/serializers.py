@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from django.utils import timezone
 from .models import Sample, SampleStatus
 

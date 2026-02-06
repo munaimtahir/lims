@@ -4,11 +4,18 @@ import { useQuery } from '@tanstack/react-query';
 import { orderApi, patientApi, systemSettingsApi } from '../../api/services';
 import type { Order, Patient, SystemSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
+import { formatDateDDMMYY } from '../../utils/dateFormat';
+import {
+  getStoredReceiptFormat,
+  getStoredThermalCopies,
+  setStoredReceiptFormat,
+  setStoredThermalCopies,
+  type ReceiptPrintFormat,
+} from '../../utils/printPreferences';
 import styles from './PrintReceiptPage.module.css';
 import { formatDobDisplay } from '../../utils/dateFormat';
 import { loadLastReceiptFormat, saveLastReceiptFormat, loadThermalCopies, saveThermalCopies } from '../../utils/printPreferences';
 
-// Receipt Content Component
 const ReceiptContent = ({
     order,
     patient,
@@ -16,11 +23,11 @@ const ReceiptContent = ({
     isThermal = false,
     copyLabel,
 }: {
-    order: Order;
-    patient: Patient;
-    settings?: SystemSettings;
-    isThermal?: boolean;
-    copyLabel?: string;
+  order: Order;
+  patient: Patient;
+  settings?: SystemSettings;
+  isThermal?: boolean;
+  copyLabel?: string;
 }) => {
     const currency = settings?.currency || 'PKR';
 
@@ -154,7 +161,13 @@ const ReceiptContent = ({
                 </div>
             </div>
         </div>
-    );
+      </div>
+
+      <div className={styles.footer}>
+        {settings?.report_footer_image ? <img src={settings.report_footer_image} alt="Footer Info" /> : <div>{settings?.report_footer || 'Thank you for choosing us.'}</div>}
+      </div>
+    </div>
+  );
 };
 
 export default function PrintReceiptPage() {

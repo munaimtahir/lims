@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sampleApi } from '../../api/services';
 import type { SampleCollection } from '../../types';
+import { isSampleBarcodeCollectionEnabled } from '../../utils/featureFlags';
 import styles from './CollectionWorklistPage.module.css';
 import { isSampleBarcodeEnabled } from '../../utils/featureFlags';
 
@@ -9,7 +10,7 @@ export default function CollectionWorklistPage() {
   const queryClient = useQueryClient();
   const [selectedSample, setSelectedSample] = useState<SampleCollection | null>(null);
   const [isCollectModalOpen, setIsCollectModalOpen] = useState(false);
-  const barcodeEnabled = isSampleBarcodeEnabled();
+  const barcodeEnabled = isSampleBarcodeCollectionEnabled();
 
   const { data: worklistData, isLoading, error } = useQuery({
     queryKey: ['collection-worklist'],
@@ -17,11 +18,7 @@ export default function CollectionWorklistPage() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status, barcode, reason }: { id: number; status: string; barcode?: string; reason?: string }) => {
-      // Rejection logic might use reason, just keeping it consistent with signature
-      console.log('Reason:', reason);
-      return sampleApi.updateStatus(id, status, barcode);
-    },
+    mutationFn: ({ id, status, barcode }: { id: number; status: string; barcode?: string }) => sampleApi.updateStatus(id, status, barcode),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collection-worklist'] });
       queryClient.invalidateQueries({ queryKey: ['samples'] });
@@ -53,33 +50,16 @@ export default function CollectionWorklistPage() {
           </div>
 
           {samples.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p>No pending collections. Great job!</p>
-            </div>
+            <div className={styles.emptyState}><p>No pending collections. Great job!</p></div>
           ) : (
             <div className={styles.grid}>
               {samples.map((sample: SampleCollection) => (
                 <div key={sample.id} className={styles.card}>
-                  <div className={styles.cardHeader}>
-                    <h3>{sample.order_id}</h3>
-                    <span className={styles.priority}>Routine</span>
-                  </div>
-                  
+                  <div className={styles.cardHeader}><h3>{sample.order_id}</h3><span className={styles.priority}>Routine</span></div>
                   <div className={styles.cardBody}>
-                    <div className={styles.detailRow}>
-                        <span className={styles.label}>Patient:</span>
-                        <span className={styles.value}>{sample.patient_name}</span>
-                    </div>
-                    <div className={styles.detailRow}>
-                        <span className={styles.label}>Sample:</span>
-                        <span className={styles.value}>{sample.sample_type}</span>
-                    </div>
-                    {sample.notes && (
-                      <div className={styles.detailRow}>
-                        <span className={styles.label}>Notes:</span>
-                        <span className={styles.value}>{sample.notes}</span>
-                      </div>
-                    )}
+                    <div className={styles.detailRow}><span className={styles.label}>Patient:</span><span className={styles.value}>{sample.patient_name}</span></div>
+                    <div className={styles.detailRow}><span className={styles.label}>Sample:</span><span className={styles.value}>{sample.sample_type}</span></div>
+                    {sample.notes && <div className={styles.detailRow}><span className={styles.label}>Notes:</span><span className={styles.value}>{sample.notes}</span></div>}
                   </div>
 
                   <div className={styles.cardActions}>
@@ -128,21 +108,10 @@ interface CollectSampleModalProps {
 function CollectSampleModal({ sample, onClose, onConfirm, isSubmitting, barcodeEnabled }: CollectSampleModalProps) {
     const [barcode, setBarcode] = useState('');
 
-    // Auto-generate a dummy barcode if empty (or user scans one)
-    const handleAutoGenerate = () => {
-        const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
-        setBarcode(`SAM-${today}-${Math.floor(Math.random() * 10000)}`);
-    };
-
-    return (
-        <div className={styles.modalOverlay}>
-            <div className={styles.modal}>
-                <div className={styles.modalHeader}>
-                    <h2>Collect Sample</h2>
-                    <button onClick={onClose} className={styles.closeButton}>×</button>
-                </div>
-                <div className={styles.modalBody}>
-                    <p>Collecting <strong>{sample.sample_type}</strong> for <strong>{sample.patient_name}</strong></p>
+  const handleAutoGenerate = () => {
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    setBarcode(`SAM-${today}-${Math.floor(Math.random() * 10000)}`);
+  };
 
                     {barcodeEnabled && (
                       <div className={styles.formGroup}>

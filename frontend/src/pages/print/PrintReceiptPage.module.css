@@ -204,6 +204,9 @@
 }
 
 .a4Top {
+    /* 48% height = 142.5mm */
+    height: 142mm;
+    padding: 7mm;
     border-bottom: 1px dashed #ccc;
 }
 
@@ -228,8 +231,14 @@
     padding: 0 12px;
     color: #6b7280;
     z-index: 10;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 14px;
+}
+
+.a4Bottom {
+    /* 48% height = 142.5mm */
+    height: 142mm;
+    padding: 7mm;
+    overflow: hidden;
 }
 
 /* ============================================================================
@@ -341,11 +350,11 @@
 .patientInfoGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2mm 3mm;
-    margin-bottom: 3mm;
-    font-size: 10pt;
-    border-bottom: 1px solid #d1d5db;
-    padding-bottom: 3mm;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 1rem;
 }
 
 .infoRow {
@@ -377,10 +386,8 @@
 .testsTable {
     width: 100%;
     border-collapse: collapse;
-    font-size: 10pt;
-    margin-bottom: 3mm;
-    table-layout: fixed;
-    /* Prevent column width surprises */
+    font-size: 0.78rem;
+    margin-bottom: 0.5rem;
 }
 
 .testsTable th {
@@ -392,7 +399,7 @@
 }
 
 .testsTable td {
-    padding: 1.5mm 1mm;
+    padding: 0.3rem;
     border-bottom: 1px solid #e5e7eb;
     word-break: break-word;
     overflow-wrap: anywhere;
@@ -516,47 +523,27 @@
 
 .thermalContainer .financialGrid {
     width: 100%;
-    font-size: 9pt;
 }
 
-.thermalContainer .footer {
-    font-size: 7pt;
+.printArea {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8mm;
+    align-items: center;
 }
 
-/* ============================================================================
-   A4-SPECIFIC OPTIMIZATIONS
-   ============================================================================ */
-.a4Container .financialGrid {
-    width: 70mm;
+.receiptContent {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-.a4Container .testsTable th:nth-child(2),
-.a4Container .testsTable td:nth-child(2) {
-    width: 25mm;
-    /* Code column */
+.wrap {
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
-/* ============================================================================
-   RESPONSIVE ADJUSTMENTS FOR SCREEN PREVIEW
-   ============================================================================ */
-@media screen and (max-width: 900px) {
-    .pageContainer {
-        padding: 1rem;
-    }
-
-    .a4Container {
-        transform: scale(0.8);
-        transform-origin: top center;
-    }
-}
-
-@media screen and (max-width: 600px) {
-    .a4Container {
-        transform: scale(0.6);
-    }
-
-    .thermalContainer {
-        transform: scale(0.9);
-        transform-origin: top center;
-    }
+.thermalInfoGrid {
+    grid-template-columns: 1fr;
 }
