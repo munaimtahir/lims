@@ -2,15 +2,14 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sampleApi } from '../../api/services';
 import type { SampleCollection } from '../../types';
-import { isSampleBarcodeCollectionEnabled } from '../../utils/featureFlags';
-import styles from './CollectionWorklistPage.module.css';
 import { isSampleBarcodeEnabled } from '../../utils/featureFlags';
+import styles from './CollectionWorklistPage.module.css';
 
 export default function CollectionWorklistPage() {
   const queryClient = useQueryClient();
   const [selectedSample, setSelectedSample] = useState<SampleCollection | null>(null);
   const [isCollectModalOpen, setIsCollectModalOpen] = useState(false);
-  const barcodeEnabled = isSampleBarcodeCollectionEnabled();
+  const barcodeEnabled = isSampleBarcodeEnabled();
 
   const { data: worklistData, isLoading, error } = useQuery({
     queryKey: ['collection-worklist'],
@@ -65,8 +64,8 @@ export default function CollectionWorklistPage() {
                   <div className={styles.cardActions}>
                     <button
                       onClick={() => {
-                          setSelectedSample(sample);
-                          setIsCollectModalOpen(true);
+                        setSelectedSample(sample);
+                        setIsCollectModalOpen(true);
                       }}
                       className={styles.collectButton}
                     >
@@ -81,68 +80,79 @@ export default function CollectionWorklistPage() {
       )}
 
       {isCollectModalOpen && selectedSample && (
-          <CollectSampleModal
-            sample={selectedSample}
-            onClose={() => setIsCollectModalOpen(false)}
-            onConfirm={(barcode) => updateStatusMutation.mutate({
-                id: selectedSample.id,
-                status: 'COLLECTED',
-                ...(barcodeEnabled && barcode ? { barcode } : {}),
-            })}
-            isSubmitting={updateStatusMutation.isPending}
-            barcodeEnabled={barcodeEnabled}
-          />
+        <CollectSampleModal
+          sample={selectedSample}
+          onClose={() => setIsCollectModalOpen(false)}
+          onConfirm={(barcode) => updateStatusMutation.mutate({
+            id: selectedSample.id,
+            status: 'COLLECTED',
+            ...(barcodeEnabled && barcode ? { barcode } : {}),
+          })}
+          isSubmitting={updateStatusMutation.isPending}
+          barcodeEnabled={barcodeEnabled}
+        />
       )}
     </div>
   );
 }
 
 interface CollectSampleModalProps {
-    sample: SampleCollection;
-    onClose: () => void;
-    onConfirm: (barcode: string) => void;
-    isSubmitting: boolean;
-    barcodeEnabled: boolean;
+  sample: SampleCollection;
+  onClose: () => void;
+  onConfirm: (barcode: string) => void;
+  isSubmitting: boolean;
+  barcodeEnabled: boolean;
 }
 
 function CollectSampleModal({ sample, onClose, onConfirm, isSubmitting, barcodeEnabled }: CollectSampleModalProps) {
-    const [barcode, setBarcode] = useState('');
+  const [barcode, setBarcode] = useState('');
 
   const handleAutoGenerate = () => {
     const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     setBarcode(`SAM-${today}-${Math.floor(Math.random() * 10000)}`);
   };
 
-                    {barcodeEnabled && (
-                      <div className={styles.formGroup}>
-                          <label>Barcode / Label ID</label>
-                          <div className={styles.inputGroup}>
-                              <input
-                                  type="text"
-                                  value={barcode}
-                                  onChange={(e) => setBarcode(e.target.value)}
-                                  placeholder="Scan or enter barcode"
-                                  autoFocus
-                              />
-                              <button type="button" onClick={handleAutoGenerate} className={styles.secondaryButton}>
-                                  Generate
-                              </button>
-                          </div>
-                      </div>
-                    )}
-
-                    <div className={styles.modalActions}>
-                        <button onClick={onClose} className={styles.cancelButton}>Cancel</button>
-                        <button
-                            onClick={() => onConfirm(barcode)}
-                            disabled={(barcodeEnabled && !barcode) || isSubmitting}
-                            className={styles.submitButton}
-                        >
-                            {isSubmitting ? 'Confirming...' : 'Confirm Collection'}
-                        </button>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className={styles.modalOverlay}>
+      <div className={styles.modal}>
+        <div className={styles.modalHeader}>
+          <h3>Collect Sample</h3>
+          <button onClick={onClose} className={styles.closeButton}>×</button>
         </div>
-    );
+        <div className={styles.modalBody}>
+          <p>Confirm collection for <strong>{sample.sample_type}</strong>?</p>
+          <p style={{ marginBottom: '1rem', color: '#666' }}>{sample.patient_name}</p>
+
+          {barcodeEnabled && (
+            <div className={styles.formGroup}>
+              <label>Barcode / Label ID</label>
+              <div className={styles.inputGroup}>
+                <input
+                  type="text"
+                  value={barcode}
+                  onChange={(e) => setBarcode(e.target.value)}
+                  placeholder="Scan or enter barcode"
+                  autoFocus
+                />
+                <button type="button" onClick={handleAutoGenerate} className={styles.secondaryButton}>
+                  Generate
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className={styles.modalActions}>
+            <button onClick={onClose} className={styles.cancelButton}>Cancel</button>
+            <button
+              onClick={() => onConfirm(barcode)}
+              disabled={(barcodeEnabled && !barcode) || isSubmitting}
+              className={styles.submitButton}
+            >
+              {isSubmitting ? 'Confirming...' : 'Confirm Collection'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

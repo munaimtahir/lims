@@ -3,13 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sampleApi } from '../../api/services';
 import { isSampleBarcodeEnabled } from '../../utils/featureFlags';
 import styles from './SamplesPage.module.css';
-import { isSampleBarcodeCollectionEnabled } from '../../utils/featureFlags';
 
 export default function SamplesPage() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
-  const barcodeCollectionEnabled = useMemo(() => isSampleBarcodeCollectionEnabled(), []);
 
   const { data: samplesData, isLoading, error } = useQuery({
     queryKey: ['samples', statusFilter, searchQuery],
