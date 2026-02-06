@@ -41,7 +41,8 @@
   padding: 0.75rem 1rem 0.75rem 2.75rem;
   font-size: 0.95rem;
   border: 1px solid #e5e7eb;
-  border-radius: 9999px; /* Pill shape */
+  border-radius: 9999px;
+  /* Pill shape */
   background-color: white;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.2s;
@@ -72,7 +73,8 @@
 /* Layout */
 .splitView {
   display: grid;
-  grid-template-columns: 1fr 1.2fr; /* Patient form narrower than order form */
+  grid-template-columns: 1fr 1.2fr;
+  /* Patient form narrower than order form */
   gap: 2rem;
   align-items: start;
 }
@@ -91,7 +93,8 @@
   padding: 1.5rem;
   border: 1px solid #e5e7eb;
   position: relative;
-  overflow: visible; /* For suggestions popping out */
+  overflow: visible;
+  /* For suggestions popping out */
 }
 
 .cardHeader {
@@ -145,7 +148,9 @@
   color: #374151;
 }
 
-.input, .select, .textarea {
+.input,
+.select,
+.textarea {
   padding: 0.625rem 0.875rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
@@ -155,7 +160,9 @@
   background-color: #f9fafb;
 }
 
-.input:focus, .select:focus, .textarea:focus {
+.input:focus,
+.select:focus,
+.textarea:focus {
   outline: none;
   background-color: white;
   border-color: #3b82f6;
@@ -192,7 +199,8 @@
 }
 
 /* Suggestions Dropdown */
-.lookupWrapper, .autocompleteWrapper {
+.lookupWrapper,
+.autocompleteWrapper {
   position: relative;
 }
 
@@ -207,8 +215,19 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   margin-top: 0.25rem;
   z-index: 50;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
+}
+
+.suggestionHeader {
+  padding: 0.5rem 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .suggestionItem {
@@ -218,19 +237,55 @@
   transition: background-color 0.1s;
 }
 
-.suggestionItem:hover, .suggestionActive {
+.suggestionItem:hover,
+.suggestionActive {
   background-color: #f3f4f6;
 }
 
 .suggestionName {
   font-weight: 600;
   color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.registrationBadge {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1e40af;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #93c5fd;
+  font-family: 'Courier New', monospace;
 }
 
 .suggestionMeta {
   font-size: 0.8rem;
   color: #6b7280;
   margin-top: 0.125rem;
+}
+
+.createNewOption {
+  background: #fef3c7;
+  border-bottom: none;
+  font-weight: 600;
+}
+
+.createNewOption:hover,
+.createNewOption.suggestionActive {
+  background: #fde68a;
+}
+
+.createNewOption .suggestionName {
+  color: #92400e;
+}
+
+.createNewOption .suggestionMeta {
+  color: #78350f;
 }
 
 /* Order Section Specifics */
@@ -369,8 +424,13 @@
   font-size: 1.25rem;
 }
 
-.textRed { color: #dc2626; }
-.textGreen { color: #059669; }
+.textRed {
+  color: #dc2626;
+}
+
+.textGreen {
+  color: #059669;
+}
 
 /* Discount Controls */
 .discountRow {
@@ -443,7 +503,8 @@
   padding: 1rem;
   font-size: 1.1rem;
   margin-top: 1rem;
-  background: #0f172a; /* Darker background for call to action */
+  background: #0f172a;
+  /* Darker background for call to action */
 }
 
 .primaryButtonLarge:hover {

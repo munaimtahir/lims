@@ -313,10 +313,13 @@ export default function RegistrationPage() {
 
   const handleMobileKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!showSuggestions || patientSuggestions.length === 0) return;
+    // Total items = patient suggestions + 1 "Create New" option
+    const totalItems = patientSuggestions.length + 1;
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedSuggestionIndex(prev => prev < patientSuggestions.length - 1 ? prev + 1 : prev);
+        setSelectedSuggestionIndex(prev => prev < totalItems - 1 ? prev + 1 : prev);
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -325,10 +328,19 @@ export default function RegistrationPage() {
       case 'Enter':
         e.preventDefault();
         if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < patientSuggestions.length) {
+          // Load existing patient
           loadPatient(patientSuggestions[selectedSuggestionIndex].id);
+        } else if (selectedSuggestionIndex === patientSuggestions.length) {
+          // Create new patient - just close suggestions and let user continue
+          setShowSuggestions(false);
+          setSelectedSuggestionIndex(-1);
         }
         break;
       case 'Escape':
+        setShowSuggestions(false);
+        break;
+      case 'Tab':
+        // Tab should also close suggestions and move to next field
         setShowSuggestions(false);
         break;
     }
@@ -582,7 +594,12 @@ export default function RegistrationPage() {
 
             {/* Row 1: Mobile & Name */}
             <div className={styles.formGroup}>
-              <label>Mobile Number <span className="text-red-500">*</span></label>
+              <label>
+                Mobile Number <span className="text-red-500">*</span>
+                <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'normal', marginLeft: '0.5rem' }}>
+                  (Multiple patients can share the same number)
+                </span>
+              </label>
               <div className={styles.lookupWrapper}>
                 <input
                   ref={mobileInputRef}
@@ -600,16 +617,39 @@ export default function RegistrationPage() {
                 />
                 {showSuggestions && patientSuggestions.length > 0 && (
                   <div className={styles.suggestions}>
+                    <div className={styles.suggestionHeader}>
+                      Found {patientSuggestions.length} existing patient{patientSuggestions.length > 1 ? 's' : ''} with this number
+                    </div>
                     {patientSuggestions.map((patient, index) => (
                       <div
                         key={patient.id}
                         className={`${styles.suggestionItem} ${index === selectedSuggestionIndex ? styles.suggestionActive : ''} `}
                         onClick={() => loadPatient(patient.id)}
                       >
-                        <div className={styles.suggestionName}>{patient.full_name}</div>
-                        <div className={styles.suggestionMeta}>{patient.phone} • {patient.gender}</div>
+                        <div className={styles.suggestionName}>
+                          <strong>{patient.full_name}</strong>
+                          <span className={styles.registrationBadge}>MRN: {patient.patient_id}</span>
+                        </div>
+                        <div className={styles.suggestionMeta}>
+                          {patient.gender} • {patient.age ? `${patient.age} years` : 'Age unknown'}
+                          {patient.last_visit && ` • Last visit: ${new Date(patient.last_visit).toLocaleDateString()}`}
+                        </div>
                       </div>
                     ))}
+                    <div
+                      className={`${styles.suggestionItem} ${styles.createNewOption} ${selectedSuggestionIndex === patientSuggestions.length ? styles.suggestionActive : ''}`}
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        setSelectedSuggestionIndex(-1);
+                      }}
+                    >
+                      <div className={styles.suggestionName}>
+                        <strong>➕ Create New Patient</strong>
+                      </div>
+                      <div className={styles.suggestionMeta}>
+                        Register a new patient with this mobile number
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
