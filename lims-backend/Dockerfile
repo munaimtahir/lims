@@ -18,7 +18,9 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies (production set includes gunicorn/logging deps)
 COPY requirements/base.txt requirements/production.txt requirements/development.txt requirements/
-RUN pip install --no-cache-dir -r requirements/production.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements/base.txt && \
+    pip install --no-cache-dir -r requirements/production.txt
 
 # Bootstrap helper
 COPY bootstrap_prod.sh /app/bootstrap_prod.sh
