@@ -176,7 +176,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
     patient_data = [
         ['Patient Name:', order.patient.get_full_name()],
         ['Patient ID:', order.patient.patient_id],
-        ['Date of Birth:', order.patient.date_of_birth.strftime('%Y-%m-%d') if order.patient.date_of_birth else 'N/A'],
+        ['Date of Birth:', order.patient.date_of_birth.strftime('%d/%m/%y') if order.patient.date_of_birth else 'N/A'],
         ['Gender:', order.patient.gender],
         ['Order ID:', order.order_id],
         ['Order Date:', order.created_at.strftime('%Y-%m-%d %H:%M')],

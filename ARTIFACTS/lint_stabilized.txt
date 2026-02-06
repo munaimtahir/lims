@@ -1,3 +1,4 @@
+✅ ESLint check - 0 errors, 2 warnings (acceptable)
 
 > frontend@0.0.0 lint
 > eslint .

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { laboratoryApi, orderApi, patientApi } from '../../api/services';
 import type { Order, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
 import { calculateAgeFromDob, calculateDobFromAge } from '../../utils/ageDob';
+import { formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
 import { useBranding } from '../../contexts/BrandingContext';
 import { formatCurrency } from '../../utils/currency';
 import styles from './PatientsPage.module.css';
@@ -143,7 +144,7 @@ export default function PatientsPage() {
                 </div>
                 <div>
                   <span className={styles.detailLabel}>DOB</span>
-                  <span className={styles.detailValue}>{selectedPatient.date_of_birth || 'N/A'}</span>
+                  <span className={styles.detailValue}>{formatDobDisplay(selectedPatient.date_of_birth) || 'N/A'}</span>
                 </div>
                 <div>
                   <span className={styles.detailLabel}>Age</span>
@@ -252,12 +253,12 @@ interface PatientFormModalProps {
 
 function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFormModalProps) {
   const [formError, setFormError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    full_name: '',
-    phone: '',
-    gender: 'Male' as 'Male' | 'Female' | 'Other',
-    date_of_birth: '',
-    age_years: '',
+    const [formData, setFormData] = useState({
+      full_name: '',
+      phone: '',
+      gender: 'Male' as 'Male' | 'Female' | 'Other',
+      date_of_birth: '',
+      age_years: '',
     age_months: '',
     age_days: '',
     father_husband_name: '',
@@ -266,8 +267,9 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
   });
 
   const handleDobChange = (value: string) => {
+    const { iso, date, display } = normalizeDobInput(value);
     setFormData((prev) => {
-      if (!value) {
+      if (!iso) {
         return {
           ...prev,
           date_of_birth: value,
@@ -277,18 +279,20 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
         };
       }
 
-      const age = calculateAgeFromDob(value);
-      if (age) {
-        return {
-          ...prev,
-          date_of_birth: value,
-          age_years: age.years.toString(),
-          age_months: age.months.toString(),
-          age_days: age.days.toString(),
-        };
+      if (date) {
+        const age = calculateAgeFromDob(iso);
+        if (age) {
+          return {
+            ...prev,
+            date_of_birth: iso,
+            age_years: age.years.toString(),
+            age_months: age.months.toString(),
+            age_days: age.days.toString(),
+          };
+        }
       }
 
-      return { ...prev, date_of_birth: value };
+      return { ...prev, date_of_birth: iso, date_of_birth_display: display };
     });
   };
 
@@ -399,7 +403,9 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
             <div className={styles.formGroup}>
               <label>Date of Birth</label>
               <input
-                type="date"
+                type="text"
+                inputMode="numeric"
+                placeholder="DD/MM/YY"
                 value={formData.date_of_birth}
                 onChange={(e) => handleDobChange(e.target.value)}
               />

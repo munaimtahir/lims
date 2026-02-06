@@ -507,8 +507,8 @@ export default function RegistrationPage() {
   };
 
   const handlePrintReceipt = () => {
-    // Open print URL
     const printUrl = `/print/receipt/${lastOrderId}`; // Assuming this route exists or backend provides it
+    setShowReceipt(false);
     window.open(printUrl, '_blank');
   };
 
@@ -632,8 +632,10 @@ export default function RegistrationPage() {
                 <div className={styles.formGroup}>
                   <label>Date of Birth</label>
                   <input
-                    type="date"
-                    value={dob}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="DD/MM/YY"
+                    value={dobInput}
                     onChange={(e) => handleDobChange(e.target.value)}
                     className={styles.input}
                   />

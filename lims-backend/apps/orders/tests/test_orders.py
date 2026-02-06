@@ -10,6 +10,8 @@ from apps.accounts.models import User
 from apps.patients.models import Patient
 from apps.laboratory.models import TestCategory, Test, TestPanel
 from apps.orders.models import Order, OrderItem
+from apps.reports.models import Report, ReportStatus
+from apps.billing.models import Payment
 
 
 @pytest.fixture
@@ -197,6 +199,29 @@ class TestOrderViewSet:
             {"patient": patient.id, "panel_ids": [test_panel.id]},
         )
         assert response.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.django_db
+def test_worklist_can_reprint_flags(authenticated_client, order, admin_user):
+    """Worklist should enable receipt when payment exists and report when published."""
+    # Add payment -> receipt available
+    Payment.objects.create(order=order, amount=order.net_amount, payment_method="cash", recorded_by=admin_user)
+
+    # Add published report
+    Report.objects.create(
+        order=order,
+        report_file="reports/test.pdf",
+        report_number="RPT-TEST",
+        status=ReportStatus.FINAL,
+        generated_by=admin_user,
+    )
+
+    response = authenticated_client.get("/api/v1/worklist/patients/")
+    assert response.status_code == status.HTTP_200_OK
+    result = response.data["results"][0]
+
+    assert result["can_reprint_receipt"] is True
+    assert result["can_reprint_report"] is True
 
     def test_create_order_with_referred_by(self, authenticated_client, patient, test_instance):
         """Test creating an order with referred_by."""

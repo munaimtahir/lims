@@ -48,6 +48,18 @@ class SampleSerializer(serializers.ModelSerializer):
             "received_by", "created_at", "updated_at"
         ]
 
+    def validate_status(self, value):
+        """Restrict status transitions to Collected/Received/Postponed for now."""
+        allowed = {
+            SampleStatus.PENDING,
+            SampleStatus.COLLECTED,
+            SampleStatus.RECEIVED,
+            SampleStatus.POSTPONED,
+        }
+        if value not in allowed:
+            raise serializers.ValidationError("Status not allowed.")
+        return value
+
     def update(self, instance, validated_data):
         """
         Override the update method to auto-set collected_at and collected_by

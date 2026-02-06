@@ -32,7 +32,17 @@ export default function PatientsWorklistPage() {
     setDateTo(today.toISOString().slice(0, 10));
   };
 
-  const handlePrint = (url?: string) => {
+  const handlePrintReceipt = (orderNumber?: string, fallbackUrl?: string) => {
+    if (orderNumber) {
+      window.open(`/print/receipt/${orderNumber}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (fallbackUrl) {
+      window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handlePrintReport = (url?: string) => {
     if (!url) return;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -117,7 +127,7 @@ export default function PatientsWorklistPage() {
                       type="button"
                       className={styles.actionButton}
                       disabled={!item.can_reprint_receipt}
-                      onClick={() => handlePrint(item.receipt_pdf_url)}
+                      onClick={() => handlePrintReceipt(item.latest_order_number || String(item.latest_order_id), item.receipt_pdf_url)}
                     >
                       Print Receipt
                     </button>
@@ -125,7 +135,7 @@ export default function PatientsWorklistPage() {
                       type="button"
                       className={styles.actionButton}
                       disabled={!item.can_reprint_report}
-                      onClick={() => handlePrint(item.report_pdf_url)}
+                      onClick={() => handlePrintReport(item.report_pdf_url)}
                     >
                       Print Report
                     </button>

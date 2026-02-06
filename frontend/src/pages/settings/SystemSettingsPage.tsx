@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { systemSettingsApi, printTemplateApi } from '../../api/services';
 import { normalizeObjectResponse } from '../../utils/apiHelpers';
+import { isSampleBarcodeEnabled, setSampleBarcodeEnabled } from '../../utils/featureFlags';
 import type { SystemSettings, PrintTemplate, PrintSignatory, PrintTemplateConfig } from '../../types';
 import styles from './SystemSettingsPage.module.css';
 
@@ -20,6 +21,7 @@ export default function SystemSettingsPage() {
   const [headerFile, setHeaderFile] = useState<File | null>(null);
   const [footerFile, setFooterFile] = useState<File | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [barcodeToggle, setBarcodeToggle] = useState<boolean>(() => isSampleBarcodeEnabled());
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateForm, setTemplateForm] = useState<PrintTemplate | null>(null);
 
@@ -227,6 +229,11 @@ export default function SystemSettingsPage() {
     setTemplateForm({ ...templateForm, [field]: value });
   };
 
+  const handleBarcodeToggle = (value: boolean) => {
+    setBarcodeToggle(value);
+    setSampleBarcodeEnabled(value);
+  };
+
   const updateTemplateConfig = (field: keyof PrintTemplateConfig, value: string | number | boolean) => {
     if (!templateForm) return;
     const config = { ...templateForm.config, [field]: value };
@@ -394,6 +401,21 @@ export default function SystemSettingsPage() {
                 </div>
               </div>
             )}
+
+            <div className={styles.formGroup}>
+              <label>Enable sample barcode collection</label>
+              <div className={styles.toggleRow}>
+                <input
+                  type="checkbox"
+                  checked={barcodeToggle}
+                  onChange={(e) => handleBarcodeToggle(e.target.checked)}
+                  style={{ width: '18px', height: '18px' }}
+                />
+                <span className={styles.hint}>
+                  When off, barcode entry prompts are hidden in Collection/Samples. Default: OFF.
+                </span>
+              </div>
+            </div>
           </div>
         )}
 

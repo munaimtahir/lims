@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sampleApi } from '../../api/services';
+import { isSampleBarcodeEnabled } from '../../utils/featureFlags';
 import styles from './SamplesPage.module.css';
 
 export default function SamplesPage() {
@@ -34,12 +35,17 @@ export default function SamplesPage() {
   });
 
   const samples = samplesData?.results || [];
+  const barcodeEnabled = isSampleBarcodeEnabled();
 
   const handleStatusUpdate = (sampleId: number, newStatus: string) => {
     if (newStatus === 'COLLECTED') {
-      const barcodeInput = prompt('Enter barcode for this sample:');
-      if (!barcodeInput) return;
-      updateStatusMutation.mutate({ id: sampleId, status: newStatus, barcode: barcodeInput });
+      if (barcodeEnabled) {
+        const barcodeInput = prompt('Enter barcode for this sample:');
+        if (!barcodeInput) return;
+        updateStatusMutation.mutate({ id: sampleId, status: newStatus, barcode: barcodeInput });
+      } else {
+        updateStatusMutation.mutate({ id: sampleId, status: newStatus });
+      }
     } else if (newStatus === 'POSTPONED') {
       const reason = prompt('Enter reason for postponement:');
       if (!reason) return;
@@ -94,7 +100,7 @@ export default function SamplesPage() {
             <option value="COLLECTED">Collected</option>
             <option value="RECEIVED">Received</option>
             <option value="POSTPONED">Postponed</option>
-            <option value="REJECTED">Rejected</option>
+            {/* Rejected hidden per current scope */}
           </select>
         </div>
 
@@ -171,15 +177,6 @@ export default function SamplesPage() {
                         disabled={updateStatusMutation.isPending}
                       >
                         Mark Received
-                      </button>
-                    )}
-                    {sample.status !== 'REJECTED' && sample.status !== 'RECEIVED' && (
-                      <button
-                        onClick={() => handleStatusUpdate(sample.id, 'REJECTED')}
-                        className={styles.rejectButton}
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        Reject
                       </button>
                     )}
                   </div>

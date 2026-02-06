@@ -5,6 +5,8 @@ import { orderApi, patientApi, systemSettingsApi } from '../../api/services';
 import type { Order, Patient, SystemSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import styles from './PrintReceiptPage.module.css';
+import { formatDobDisplay } from '../../utils/dateFormat';
+import { loadLastReceiptFormat, saveLastReceiptFormat, loadThermalCopies, saveThermalCopies } from '../../utils/printPreferences';
 
 // Receipt Content Component
 const ReceiptContent = ({
@@ -12,7 +14,7 @@ const ReceiptContent = ({
     patient,
     settings,
     isThermal = false,
-    copyLabel = ""
+    copyLabel,
 }: {
     order: Order;
     patient: Patient;
@@ -69,6 +71,10 @@ const ReceiptContent = ({
                         {patient.age_years ? `${patient.age_years}Y ` : ''}
                         {patient.gender}
                     </span>
+                </div>
+                <div className={styles.infoRow}>
+                    <span className={styles.label}>DOB:</span>
+                    <span className={styles.value}>{formatDobDisplay(patient.date_of_birth) || 'N/A'}</span>
                 </div>
                 <div className={styles.infoRow}>
                     <span className={styles.label}>Contact:</span>
@@ -153,7 +159,8 @@ const ReceiptContent = ({
 
 export default function PrintReceiptPage() {
     const { orderId } = useParams<{ orderId: string }>();
-    const [printMode, setPrintMode] = useState<'A4' | 'Thermal'>('A4');
+    const [printMode, setPrintMode] = useState<'A4' | 'Thermal'>(() => loadLastReceiptFormat());
+    const [thermalCopies, setThermalCopies] = useState<number>(() => loadThermalCopies());
 
     // Fetch Order
     const { data: order, isLoading: loadingOrder, error: orderError } = useQuery({
@@ -193,6 +200,21 @@ export default function PrintReceiptPage() {
         window.print();
     };
 
+    const changePrintMode = (mode: 'A4' | 'Thermal') => {
+        setPrintMode(mode);
+        saveLastReceiptFormat(mode);
+        if (mode === 'Thermal' && (!thermalCopies || thermalCopies < 1)) {
+            setThermalCopies(2);
+            saveThermalCopies(2);
+        }
+    };
+
+    const handleThermalCopiesChange = (value: string) => {
+        const num = Math.max(1, parseInt(value, 10) || 1);
+        setThermalCopies(num);
+        saveThermalCopies(num);
+    };
+
     if (loadingOrder || loadingPatient || loadingSettings) {
         return <div className="p-8 text-center">Loading receipt data...</div>;
     }
@@ -210,16 +232,29 @@ export default function PrintReceiptPage() {
                 <div style={{ fontWeight: '600', marginRight: '1rem' }}>Print Format:</div>
                 <button
                     className={`${styles.controlButton} ${printMode === 'A4' ? styles.activeButton : ''}`}
-                    onClick={() => setPrintMode('A4')}
+                    onClick={() => changePrintMode('A4')}
                 >
                     A4 (Dual Copy)
                 </button>
                 <button
                     className={`${styles.controlButton} ${printMode === 'Thermal' ? styles.activeButton : ''}`}
-                    onClick={() => setPrintMode('Thermal')}
+                    onClick={() => changePrintMode('Thermal')}
                 >
                     Thermal (80mm)
                 </button>
+
+                {printMode === 'Thermal' && (
+                  <div className={styles.copiesInput}>
+                    <label>Copies</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={thermalCopies}
+                      onChange={(e) => handleThermalCopiesChange(e.target.value)}
+                    />
+                    <span className={styles.copiesHint}>(default 2)</span>
+                  </div>
+                )}
 
                 <button className={styles.printButton} onClick={handlePrint}>
                     🖨 Print Receipt
@@ -255,12 +290,18 @@ export default function PrintReceiptPage() {
                     </div>
                 ) : (
                     <div className={styles.thermalContainer}>
-                        <ReceiptContent
-                            order={order}
-                            patient={patient.data}
-                            settings={settingsData}
-                            isThermal={true}
-                        />
+                        {Array.from({ length: thermalCopies || 1 }).map((_, idx) => (
+                          <div key={idx} className={styles.thermalCopy}>
+                            <ReceiptContent
+                                order={order}
+                                patient={patient.data}
+                                settings={settingsData}
+                                isThermal={true}
+                                copyLabel={thermalCopies > 1 ? `Copy ${idx + 1}` : undefined}
+                            />
+                            {idx < (thermalCopies || 1) - 1 && <div className={styles.thermalDivider} />}
+                          </div>
+                        ))}
                     </div>
                 )}
             </div>

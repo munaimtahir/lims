@@ -3,12 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sampleApi } from '../../api/services';
 import type { SampleCollection } from '../../types';
 import styles from './CollectionWorklistPage.module.css';
+import { isSampleBarcodeEnabled } from '../../utils/featureFlags';
 
 export default function CollectionWorklistPage() {
   const queryClient = useQueryClient();
   const [selectedSample, setSelectedSample] = useState<SampleCollection | null>(null);
   const [isCollectModalOpen, setIsCollectModalOpen] = useState(false);
-  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const barcodeEnabled = isSampleBarcodeEnabled();
 
   const { data: worklistData, isLoading, error } = useQuery({
     queryKey: ['collection-worklist'],
@@ -25,7 +26,6 @@ export default function CollectionWorklistPage() {
       queryClient.invalidateQueries({ queryKey: ['collection-worklist'] });
       queryClient.invalidateQueries({ queryKey: ['samples'] });
       setIsCollectModalOpen(false);
-      setIsRejectModalOpen(false);
       setSelectedSample(null);
     },
   });
@@ -86,15 +86,6 @@ export default function CollectionWorklistPage() {
                     <button
                       onClick={() => {
                           setSelectedSample(sample);
-                          setIsRejectModalOpen(true);
-                      }}
-                      className={styles.rejectButton}
-                    >
-                      Reject
-                    </button>
-                    <button
-                      onClick={() => {
-                          setSelectedSample(sample);
                           setIsCollectModalOpen(true);
                       }}
                       className={styles.collectButton}
@@ -116,22 +107,10 @@ export default function CollectionWorklistPage() {
             onConfirm={(barcode) => updateStatusMutation.mutate({
                 id: selectedSample.id,
                 status: 'COLLECTED',
-                barcode
+                ...(barcodeEnabled && barcode ? { barcode } : {}),
             })}
             isSubmitting={updateStatusMutation.isPending}
-          />
-      )}
-
-      {isRejectModalOpen && selectedSample && (
-          <RejectSampleModal
-            sample={selectedSample}
-            onClose={() => setIsRejectModalOpen(false)}
-            onConfirm={(reason) => updateStatusMutation.mutate({
-                id: selectedSample.id,
-                status: 'REJECTED',
-                reason // Rejection reason is stored in sample notes
-            })}
-            isSubmitting={updateStatusMutation.isPending}
+            barcodeEnabled={barcodeEnabled}
           />
       )}
     </div>
@@ -143,9 +122,10 @@ interface CollectSampleModalProps {
     onClose: () => void;
     onConfirm: (barcode: string) => void;
     isSubmitting: boolean;
+    barcodeEnabled: boolean;
 }
 
-function CollectSampleModal({ sample, onClose, onConfirm, isSubmitting }: CollectSampleModalProps) {
+function CollectSampleModal({ sample, onClose, onConfirm, isSubmitting, barcodeEnabled }: CollectSampleModalProps) {
     const [barcode, setBarcode] = useState('');
 
     // Auto-generate a dummy barcode if empty (or user scans one)
@@ -164,79 +144,32 @@ function CollectSampleModal({ sample, onClose, onConfirm, isSubmitting }: Collec
                 <div className={styles.modalBody}>
                     <p>Collecting <strong>{sample.sample_type}</strong> for <strong>{sample.patient_name}</strong></p>
 
-                    <div className={styles.formGroup}>
-                        <label>Barcode / Label ID</label>
-                        <div className={styles.inputGroup}>
-                            <input
-                                type="text"
-                                value={barcode}
-                                onChange={(e) => setBarcode(e.target.value)}
-                                placeholder="Scan or enter barcode"
-                                autoFocus
-                            />
-                            <button type="button" onClick={handleAutoGenerate} className={styles.secondaryButton}>
-                                Generate
-                            </button>
-                        </div>
-                    </div>
+                    {barcodeEnabled && (
+                      <div className={styles.formGroup}>
+                          <label>Barcode / Label ID</label>
+                          <div className={styles.inputGroup}>
+                              <input
+                                  type="text"
+                                  value={barcode}
+                                  onChange={(e) => setBarcode(e.target.value)}
+                                  placeholder="Scan or enter barcode"
+                                  autoFocus
+                              />
+                              <button type="button" onClick={handleAutoGenerate} className={styles.secondaryButton}>
+                                  Generate
+                              </button>
+                          </div>
+                      </div>
+                    )}
 
                     <div className={styles.modalActions}>
                         <button onClick={onClose} className={styles.cancelButton}>Cancel</button>
                         <button
                             onClick={() => onConfirm(barcode)}
-                            disabled={!barcode || isSubmitting}
+                            disabled={(barcodeEnabled && !barcode) || isSubmitting}
                             className={styles.submitButton}
                         >
                             {isSubmitting ? 'Confirming...' : 'Confirm Collection'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-interface RejectSampleModalProps {
-    sample: SampleCollection;
-    onClose: () => void;
-    onConfirm: (reason: string) => void;
-    isSubmitting: boolean;
-}
-
-function RejectSampleModal({ sample, onClose, onConfirm, isSubmitting }: RejectSampleModalProps) {
-    const [reason, setReason] = useState('');
-
-    return (
-        <div className={styles.modalOverlay}>
-            <div className={styles.modal}>
-                <div className={styles.modalHeader}>
-                    <h2>Reject Sample</h2>
-                    <button onClick={onClose} className={styles.closeButton}>×</button>
-                </div>
-                <div className={styles.modalBody}>
-                    <p className={styles.warningText}>
-                        Are you sure you want to reject this sample? This will notify the requester.
-                    </p>
-                    <p>Sample: <strong>{sample.sample_type}</strong> for <strong>{sample.patient_name}</strong></p>
-
-                    <div className={styles.formGroup}>
-                        <label>Rejection Reason *</label>
-                        <textarea
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            placeholder="e.g., Hemolyzed, Insufficient quantity..."
-                            rows={3}
-                        />
-                    </div>
-
-                    <div className={styles.modalActions}>
-                        <button onClick={onClose} className={styles.cancelButton}>Cancel</button>
-                        <button
-                            onClick={() => onConfirm(reason)}
-                            disabled={!reason || isSubmitting}
-                            className={styles.rejectConfirmButton}
-                        >
-                            {isSubmitting ? 'Rejecting...' : 'Reject Sample'}
                         </button>
                     </div>
                 </div>

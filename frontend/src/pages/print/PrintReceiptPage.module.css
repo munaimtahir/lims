@@ -73,6 +73,23 @@
     background: #1d4ed8;
 }
 
+.copiesInput {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.copiesInput input {
+    width: 70px;
+    padding: 0.25rem 0.5rem;
+}
+
+.copiesHint {
+    color: #6b7280;
+    font-size: 0.8rem;
+}
+
 /* A4 Container */
 .a4Container {
     /* 210mm x 297mm standard A4 */
@@ -147,6 +164,15 @@
     box-sizing: border-box;
 }
 
+.thermalCopy + .thermalCopy {
+    margin-top: 6mm;
+}
+
+.thermalDivider {
+    border-top: 1px dashed #9ca3af;
+    margin: 5mm 0;
+}
+
 /* Common Receipt Styling */
 .header {
     text-align: center;
@@ -196,6 +222,7 @@
 .infoRow {
     display: flex;
     gap: 0.5rem;
+    line-height: 1.2;
 }
 
 .label {
@@ -207,6 +234,8 @@
 .value {
     color: #111827;
     font-weight: 500;
+    word-break: break-word;
+    flex: 1;
 }
 
 /* Test Table */
@@ -220,13 +249,14 @@
 .testsTable th {
     text-align: left;
     border-bottom: 2px solid #000;
-    padding: 0.5rem;
+    padding: 0.4rem;
     font-weight: 700;
 }
 
 .testsTable td {
-    padding: 0.5rem;
+    padding: 0.35rem;
     border-bottom: 1px solid #e5e7eb;
+    word-break: break-word;
 }
 
 .money {
@@ -245,7 +275,7 @@
 }
 
 .financialGrid {
-    width: 250px;
+    width: 230px;
     /* Or 100% for thermal */
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -297,8 +327,19 @@
 
 .thermalContainer .patientInfoGrid {
     grid-template-columns: 1fr;
+    font-size: 0.85rem;
 }
 
 .thermalContainer .financialGrid {
     width: 100%;
+    font-size: 0.85rem;
+}
+
+.thermalContainer .receiptTitle {
+    font-size: 1rem;
+}
+
+.thermalContainer .testsTable th,
+.thermalContainer .testsTable td {
+    padding: 0.25rem 0;
 }
