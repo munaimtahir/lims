@@ -3,7 +3,7 @@
 import os
 from django.db import models
 from django.conf import settings
-
+from django.core.validators import RegexValidator
 def default_print_template_config():
     return {
         "paper_size": "A4",
@@ -262,3 +262,70 @@ class PrintTemplate(models.Model):
 
     def __str__(self):
         return f"{self.type} - {self.name}"
+
+
+class CollectionCenter(models.Model):
+    """
+    Represents a collection/reception center for the lab.
+    Used for scoping numbering sequences (Registration and Lab numbers).
+    """
+    code = models.CharField(
+        max_length=2, 
+        unique=True, 
+        validators=[RegexValidator(r"^\d{2}$", "Code must be 2 digits (00-99)")],
+        help_text="2-digit unique code (e.g., '00' for Head Office)"
+    )
+    name = models.CharField(max_length=255)
+    address = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "core_collection_centers"
+        verbose_name = "Collection Center"
+        verbose_name_plural = "Collection Centers"
+        ordering = ["code"]
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
+class RegistrationCounter(models.Model):
+    """
+    Atomic counter for Patient Registration Numbers (MRN).
+    Scope: (YYMM, Center)
+    Format: YYMM-CC-SSSS
+    Resets monthly per center.
+    """
+    yymm = models.CharField(max_length=4, help_text="Year-Month string (e.g., '2602')")
+    center = models.ForeignKey(CollectionCenter, on_delete=models.PROTECT)
+    last_value = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "core_registration_counters"
+        unique_together = ["yymm", "center"]
+        indexes = [
+            models.Index(fields=["yymm", "center"]),
+        ]
+
+
+class LabDailyCounter(models.Model):
+    """
+    Atomic counter for Lab/Visit Numbers (Tube Label).
+    Scope: (Date, Center)
+    Format: MDD-XXX
+    Resets daily per center.
+    """
+    date = models.DateField(help_text="Date of processing")
+    center = models.ForeignKey(CollectionCenter, on_delete=models.PROTECT)
+    last_value = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "core_lab_daily_counters"
+        unique_together = ["date", "center"]
+        indexes = [
+            models.Index(fields=["date", "center"]),
+        ]

@@ -8,6 +8,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 from datetime import date
+from apps.core.models import CollectionCenter
+from apps.core.numbering import generate_registration_number
 
 
 class Patient(models.Model):
@@ -67,6 +69,24 @@ class Patient(models.Model):
         db_index=True,
         help_text="Medical Record Number (auto-generated)",
     )
+
+    # New Numbering System Fields (V2)
+    registration_number = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Official Registration Number (YYMM-CC-SSSS)"
+    )
+    registration_center = models.ForeignKey(
+        CollectionCenter,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="patients"
+    )
+    registration_datetime = models.DateTimeField(null=True, blank=True)
 
     # Demographics - support both first_name/last_name and full_name
     first_name = models.CharField(max_length=100, blank=True)
@@ -148,6 +168,7 @@ class Patient(models.Model):
         indexes = [
             models.Index(fields=["mrn"]),
             models.Index(fields=["patient_id"]),
+            models.Index(fields=["registration_number"]),
             models.Index(fields=["phone"]),
             models.Index(fields=["cnic"]),
             models.Index(fields=["national_id"]),
@@ -171,13 +192,27 @@ class Patient(models.Model):
             *args: Variable length argument list.
             **kwargs: Arbitrary keyword arguments.
         """
-        # Generate MRN if not provided (legacy format: PAT-YYYYMMDD-NNNN)
+        # V2 Numbering System
+        if not self.registration_number:
+            # Ensure center exists - fallback to Head Office (00)
+            if not self.registration_center:
+                # Try to get 00, if not exist, we have a problem in bootstrapping but we'll try to create it or fail
+                # But for safety, we should assume it exists or create it here to avoid error
+                center_00, _ = CollectionCenter.objects.get_or_create(code="00", defaults={"name": "Head Office", "is_active": True})
+                self.registration_center = center_00
+            
+            if not self.registration_datetime:
+                self.registration_datetime = timezone.now()
+            
+            # Generate the new number
+            self.registration_number = generate_registration_number(self.registration_center, self.registration_datetime)
+
+        # Legacy Compatibility: Set MRN and Patient ID to the same new number if they are empty
         if not self.mrn:
-            self.mrn = self.generate_mrn()
+            self.mrn = self.registration_number
         
-        # Generate patient_id for backward compatibility if not set
         if not self.patient_id:
-            self.patient_id = self.mrn  # Use MRN as patient_id for compatibility
+            self.patient_id = self.mrn
         
         # Set full_name from first_name/last_name if not provided
         if not self.full_name and (self.first_name or self.last_name):

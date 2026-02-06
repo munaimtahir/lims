@@ -6,6 +6,8 @@ from decimal import Decimal
 import logging
 from apps.patients.models import Patient
 from apps.laboratory.models import Test, TestPanel
+from apps.core.models import CollectionCenter
+from apps.core.numbering import generate_lab_number
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +71,24 @@ class Order(models.Model):
     )
     notes = models.TextField(blank=True)
     referred_by = models.CharField(max_length=255, blank=True, null=True)
+    
+    # Lab Numbering (V2)
+    lab_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        db_index=True,
+        help_text="Tube Label (MDD-XXX)"
+    )
+    lab_date = models.DateField(blank=True, null=True, db_index=True)
+    daily_serial = models.IntegerField(blank=True, null=True)
+    collection_center = models.ForeignKey(
+        CollectionCenter,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="orders"
+    )
 
     # Financials
     total_amount = models.DecimalField(
@@ -97,6 +117,8 @@ class Order(models.Model):
             models.Index(fields=["order_id"]),
             models.Index(fields=["status"]),
             models.Index(fields=["created_at"]),
+            models.Index(fields=["lab_number"]),
+            models.Index(fields=["lab_date", "collection_center", "daily_serial"]),
         ]
 
     def __str__(self):
@@ -119,6 +141,20 @@ class Order(models.Model):
         """
         if not self.order_id:
             self.order_id = self.generate_order_id()
+        
+        # V2 Lab Numbering
+        if not self.lab_number:
+            if not self.collection_center:
+                # Fallback to Head Office (00) if not set
+                center_00, _ = CollectionCenter.objects.get_or_create(code="00", defaults={"name": "Head Office", "is_active": True})
+                self.collection_center = center_00
+            
+            # Use created_at if available, else now
+            generation_dt = self.created_at or timezone.now()
+            self.lab_date = generation_dt.date()
+            
+            # Generate number
+            self.lab_number, self.daily_serial = generate_lab_number(self.collection_center, generation_dt)
 
         # Calculate net amount
         self.net_amount = max(self.total_amount - self.discount, Decimal("0.00"))
