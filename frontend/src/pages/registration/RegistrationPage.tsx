@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { patientApi, laboratoryApi, orderApi } from '../../api/services';
-import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest } from '../../types';
+import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
 import { useBranding } from '../../contexts/BrandingContext';
 import { formatDateDDMMYY, normalizeDateInputToISO } from '../../utils/dateFormat';
 import { formatCurrency } from '../../utils/currency';
+import { formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
 import styles from './RegistrationPage.module.css';
 
 // Simple Receipt Modal Component
@@ -113,7 +114,7 @@ export default function RegistrationPage() {
   });
 
   // Age & Date Logic
-  const [dob, setDob] = useState('');
+  const [dobInput, setDobInput] = useState('');
   const [ageYears, setAgeYears] = useState<number | ''>('');
   const [ageMonths, setAgeMonths] = useState<number | ''>('');
   const [ageDays, setAgeDays] = useState<number | ''>('');
@@ -155,12 +156,12 @@ export default function RegistrationPage() {
 
   // Update Age when DOB changes
   const handleDobChange = (value: string) => {
-    const normalizedDob = normalizeDateInputToISO(value);
-    setDob(normalizedDob);
-    setPatientFormData(prev => ({ ...prev, date_of_birth: normalizedDob }));
+    const { iso, display, date } = normalizeDobInput(value);
+    setDobInput(display || value);
+    setPatientFormData(prev => ({ ...prev, date_of_birth: iso || undefined }));
 
-    if (normalizedDob) {
-      const birthDate = new Date(normalizedDob);
+    if (date) {
+      const birthDate = date;
       const today = new Date();
 
       let years = today.getFullYear() - birthDate.getFullYear();
@@ -188,11 +189,12 @@ export default function RegistrationPage() {
         age_months: Math.max(0, months),
         age_days: Math.max(0, days)
       }));
-    } else {
-      setAgeYears('');
-      setAgeMonths('');
-      setAgeDays('');
+      return;
     }
+
+    setAgeYears('');
+    setAgeMonths('');
+    setAgeDays('');
   };
 
   // Update DOB when Age changes (Years/Months/Days)
@@ -213,7 +215,7 @@ export default function RegistrationPage() {
     const dd = String(date.getDate()).padStart(2, '0');
     const formattedDate = `${yyyy}-${mm}-${dd}`;
 
-    setDob(formattedDate);
+    setDobInput(formatDobDisplay(formattedDate));
     setPatientFormData(prev => ({
       ...prev,
       date_of_birth: formattedDate,
@@ -253,10 +255,10 @@ export default function RegistrationPage() {
       const timer = setTimeout(async () => {
         try {
           const response = await patientApi.search(globalSearchQuery);
-          // @ts-ignore
-          setGlobalSuggestions(response.results || response.data || []);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setGlobalSuggestions((response.results || (response as any).data || []) as PatientLookupResult[]);
           setShowGlobalSuggestions(true);
-        } catch (error) {
+        } catch {
           setGlobalSuggestions([]);
         } finally {
           setLoadingGlobalSearch(false);
@@ -278,7 +280,7 @@ export default function RegistrationPage() {
           setTestSuggestions(response.data);
           setShowTestSuggestions(response.data.length > 0);
           setSelectedTestIndex(0); // Select first by default for easier Enter key usage
-        } catch (error) {
+        } catch {
           setTestSuggestions([]);
         }
       }, 200);
@@ -312,10 +314,13 @@ export default function RegistrationPage() {
 
   const handleMobileKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!showSuggestions || patientSuggestions.length === 0) return;
+    // Total items = patient suggestions + 1 "Create New" option
+    const totalItems = patientSuggestions.length + 1;
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedSuggestionIndex(prev => prev < patientSuggestions.length - 1 ? prev + 1 : prev);
+        setSelectedSuggestionIndex(prev => prev < totalItems - 1 ? prev + 1 : prev);
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -324,10 +329,19 @@ export default function RegistrationPage() {
       case 'Enter':
         e.preventDefault();
         if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < patientSuggestions.length) {
+          // Load existing patient
           loadPatient(patientSuggestions[selectedSuggestionIndex].id);
+        } else if (selectedSuggestionIndex === patientSuggestions.length) {
+          // Create new patient - just close suggestions and let user continue
+          setShowSuggestions(false);
+          setSelectedSuggestionIndex(-1);
         }
         break;
       case 'Escape':
+        setShowSuggestions(false);
+        break;
+      case 'Tab':
+        // Tab should also close suggestions and move to next field
         setShowSuggestions(false);
         break;
     }
@@ -383,13 +397,14 @@ export default function RegistrationPage() {
       // Focus test search
       setTimeout(() => testSearchRef.current?.focus(), 100);
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
       alert(`Error saving patient: ${error?.response?.data?.message || 'Unknown error'}`);
     },
   });
 
   const createOrderMutation = useMutation({
-    mutationFn: (data: any) => orderApi.create(data),
+    mutationFn: (data: OrderCreateRequest) => orderApi.create(data),
     onSuccess: (response) => {
       setLastOrderId(response.order_id || 'Unknown');
       setShowReceipt(true);
@@ -398,7 +413,8 @@ export default function RegistrationPage() {
       // Usually we reset after successful order.
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
       alert(`Error creating order: ${error?.response?.data?.message || 'Unknown error'}`);
     },
   });
@@ -407,7 +423,7 @@ export default function RegistrationPage() {
     setSelectedPatient(null);
     setPatientFormData({ phone: '', gender: 'Male', email: '', address: '', father_husband_name: '', cnic: '' });
     setMobileNumber('');
-    setDob('');
+    setDobInput('');
     setAgeYears('');
     setAgeMonths('');
     setAgeDays('');
@@ -504,12 +520,9 @@ export default function RegistrationPage() {
   };
 
   const handlePrintReceipt = () => {
-    // Open print URL
     const printUrl = `/print/receipt/${lastOrderId}`; // Assuming this route exists or backend provides it
-    const printWindow = window.open(printUrl, '_blank');
-    if (printWindow) {
-      setShowReceipt(false);
-    }
+    setShowReceipt(false);
+    window.open(printUrl, '_blank');
   };
 
   return (
@@ -582,7 +595,12 @@ export default function RegistrationPage() {
 
             {/* Row 1: Mobile & Name */}
             <div className={styles.formGroup}>
-              <label>Mobile Number <span className="text-red-500">*</span></label>
+              <label>
+                Mobile Number <span className="text-red-500">*</span>
+                <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'normal', marginLeft: '0.5rem' }}>
+                  (Multiple patients can share the same number)
+                </span>
+              </label>
               <div className={styles.lookupWrapper}>
                 <input
                   ref={mobileInputRef}
@@ -600,16 +618,39 @@ export default function RegistrationPage() {
                 />
                 {showSuggestions && patientSuggestions.length > 0 && (
                   <div className={styles.suggestions}>
+                    <div className={styles.suggestionHeader}>
+                      Found {patientSuggestions.length} existing patient{patientSuggestions.length > 1 ? 's' : ''} with this number
+                    </div>
                     {patientSuggestions.map((patient, index) => (
                       <div
                         key={patient.id}
                         className={`${styles.suggestionItem} ${index === selectedSuggestionIndex ? styles.suggestionActive : ''} `}
                         onClick={() => loadPatient(patient.id)}
                       >
-                        <div className={styles.suggestionName}>{patient.full_name}</div>
-                        <div className={styles.suggestionMeta}>{patient.phone} • {patient.gender}</div>
+                        <div className={styles.suggestionName}>
+                          <strong>{patient.full_name}</strong>
+                          <span className={styles.registrationBadge}>MRN: {patient.patient_id}</span>
+                        </div>
+                        <div className={styles.suggestionMeta}>
+                          {patient.gender} • {patient.age ? `${patient.age} years` : 'Age unknown'}
+                          {patient.last_visit && ` • Last visit: ${new Date(patient.last_visit).toLocaleDateString()}`}
+                        </div>
                       </div>
                     ))}
+                    <div
+                      className={`${styles.suggestionItem} ${styles.createNewOption} ${selectedSuggestionIndex === patientSuggestions.length ? styles.suggestionActive : ''}`}
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        setSelectedSuggestionIndex(-1);
+                      }}
+                    >
+                      <div className={styles.suggestionName}>
+                        <strong>➕ Create New Patient</strong>
+                      </div>
+                      <div className={styles.suggestionMeta}>
+                        Register a new patient with this mobile number
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -633,8 +674,9 @@ export default function RegistrationPage() {
                   <label>Date of Birth</label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     placeholder="DD/MM/YY"
-                    value={formatDateDDMMYY(dob)}
+                    value={dobInput}
                     onChange={(e) => handleDobChange(e.target.value)}
                     className={styles.input}
                   />
@@ -679,7 +721,7 @@ export default function RegistrationPage() {
               <label>Gender <span className="text-red-500">*</span></label>
               <select
                 value={patientFormData.gender}
-                onChange={(e) => setPatientFormData({ ...patientFormData, gender: e.target.value as any })}
+                onChange={(e) => setPatientFormData({ ...patientFormData, gender: e.target.value as 'Male' | 'Female' | 'Other' })}
                 className={styles.select}
                 required
               >

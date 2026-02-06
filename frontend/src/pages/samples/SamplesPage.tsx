@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sampleApi } from '../../api/services';
+import { isSampleBarcodeEnabled } from '../../utils/featureFlags';
 import styles from './SamplesPage.module.css';
 import { isSampleBarcodeCollectionEnabled } from '../../utils/featureFlags';
 
@@ -36,16 +37,17 @@ export default function SamplesPage() {
   });
 
   const samples = samplesData?.results || [];
+  const barcodeEnabled = isSampleBarcodeEnabled();
 
   const handleStatusUpdate = (sampleId: number, newStatus: string) => {
     if (newStatus === 'COLLECTED') {
-      if (barcodeCollectionEnabled) {
+      if (barcodeEnabled) {
         const barcodeInput = prompt('Enter barcode for this sample:');
         if (!barcodeInput) return;
         updateStatusMutation.mutate({ id: sampleId, status: newStatus, barcode: barcodeInput });
-        return;
+      } else {
+        updateStatusMutation.mutate({ id: sampleId, status: newStatus });
       }
-      updateStatusMutation.mutate({ id: sampleId, status: newStatus });
     } else if (newStatus === 'POSTPONED') {
       const reason = prompt('Enter reason for postponement:');
       if (!reason) return;
@@ -98,6 +100,7 @@ export default function SamplesPage() {
             <option value="COLLECTED">Collected</option>
             <option value="RECEIVED">Received</option>
             <option value="POSTPONED">Postponed</option>
+            {/* Rejected hidden per current scope */}
           </select>
         </div>
 

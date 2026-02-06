@@ -1,9 +1,14 @@
-const SAMPLE_BARCODE_COLLECTION_KEY = 'lims.samples.enable_barcode_collection';
+const STORAGE_PREFIX = 'lims:feature:';
+const SAMPLE_BARCODE_KEY = `${STORAGE_PREFIX}sampleBarcode`;
 
-export function isSampleBarcodeCollectionEnabled(): boolean {
-  return localStorage.getItem(SAMPLE_BARCODE_COLLECTION_KEY) === 'true';
+export function isSampleBarcodeEnabled(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(SAMPLE_BARCODE_KEY) === 'true';
 }
 
-export function setSampleBarcodeCollectionEnabled(enabled: boolean): void {
-  localStorage.setItem(SAMPLE_BARCODE_COLLECTION_KEY, String(enabled));
+export function setSampleBarcodeEnabled(enabled: boolean) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(SAMPLE_BARCODE_KEY, enabled ? 'true' : 'false');
 }
+
+export { SAMPLE_BARCODE_KEY };

@@ -245,7 +245,7 @@ export type ResultStatus = 'pending' | 'verified' | 'rejected';
 
 export interface TestResult {
   id: number;
-  order_item: any; // Changed from number to any to support nested object/ID
+  order_item: number | Record<string, unknown>; // Supports both ID and nested object
   test_parameter: number;
   parameter_name: string;
   unit: string;
@@ -466,19 +466,19 @@ export interface CatalogImportSummary {
   counts: Record<string, { created: number; updated: number; unchanged: number }>;
   errors: Array<{ sheet: string; row: number; field: string; message: string }>;
   warnings: Array<{ sheet: string; row: number; field: string; message: string }>;
-  diff: Array<{ sheet: string; key: string; action: string; changes: Record<string, any> }>;
+  diff: Array<{ sheet: string; key: string; action: string; changes: Record<string, unknown> }>;
 }
 
 export interface CatalogAuditSummary {
-  duplicates: Record<string, { count: number; samples: any[] }>;
-  orphans: Record<string, { count: number; samples: any[] }>;
-  tests_without_parameters: { count: number; samples: any[] };
+  duplicates: Record<string, { count: number; samples: unknown[] }>;
+  orphans: Record<string, { count: number; samples: unknown[] }>;
+  tests_without_parameters: { count: number; samples: unknown[] };
   reference_ranges: {
-    missing: { count: number; samples: any[] };
-    invalid: { count: number; samples: any[] };
+    missing: { count: number; samples: unknown[] };
+    invalid: { count: number; samples: unknown[] };
   };
-  suspicious_defaults: Record<string, { count: number; samples: any[] }>;
-  panels_without_tests: { count: number; samples: any[] };
+  suspicious_defaults: Record<string, { count: number; samples: unknown[] }>;
+  panels_without_tests: { count: number; samples: unknown[] };
 }
 
 export interface WorklistPatient {
@@ -498,4 +498,24 @@ export interface WorklistPatient {
   can_reprint_report: boolean;
   receipt_pdf_url?: string;
   report_pdf_url?: string;
+}
+export interface WorklistOrderItem {
+  id: number;
+  order: {
+    id: number;
+    order_id: string;
+    patient: {
+      id: number;
+      full_name: string;
+      age: number;
+      gender: string;
+      mrn: string;
+    };
+    priority: string;
+  };
+  test_name?: string;
+  panel_name?: string;
+  test_code?: string;
+  panel_code?: string;
+  status: string;
 }

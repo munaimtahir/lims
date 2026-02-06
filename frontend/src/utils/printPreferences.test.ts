@@ -1,22 +1,28 @@
-import { describe, expect, it } from 'vitest';
-import {
-  getStoredReceiptFormat,
-  getStoredThermalCopies,
-  setStoredReceiptFormat,
-  setStoredThermalCopies,
-} from './printPreferences';
+import { describe, expect, it, beforeEach } from 'vitest';
+import { loadLastReceiptFormat, saveLastReceiptFormat, loadThermalCopies, saveThermalCopies } from './printPreferences';
 
 describe('printPreferences', () => {
-  it('remembers receipt print format', () => {
+  beforeEach(() => {
     localStorage.clear();
-    setStoredReceiptFormat('Thermal');
-    expect(getStoredReceiptFormat()).toBe('Thermal');
+  });
+
+  it('defaults to A4 when nothing stored', () => {
+    expect(loadLastReceiptFormat()).toBe('A4');
+  });
+
+  it('persists last receipt format', () => {
+    saveLastReceiptFormat('Thermal');
+    expect(loadLastReceiptFormat()).toBe('Thermal');
   });
 
   it('defaults thermal copies to 2', () => {
-    localStorage.clear();
-    expect(getStoredThermalCopies()).toBe(2);
-    setStoredThermalCopies(3);
-    expect(getStoredThermalCopies()).toBe(3);
+    expect(loadThermalCopies()).toBe(2);
+  });
+
+  it('persists thermal copies with min 1', () => {
+    saveThermalCopies(3);
+    expect(loadThermalCopies()).toBe(3);
+    saveThermalCopies(0);
+    expect(loadThermalCopies()).toBe(1);
   });
 });

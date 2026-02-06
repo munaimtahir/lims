@@ -1,54 +1,137 @@
-# Handover Summary: Results Entry Fixes
+# Results Form Fix - Technical Handover
 
-**Date:** 2026-02-06
-**Status:** Resolved
-**Feature:** Results Entry & Verification
+## Issue Summary
+**Problem**: Result form not loading - showing "Initializing form..." indefinitely
+**Error**: HTTP 405 Method Not Allowed on `/api/v1/results/ensure/` endpoint
 
-## 1. Executive Summary
-The critical blocking issue preventing access to the "Result Entry" page has been resolved. Users can now successfully navigate from the Worklist to the Result Entry page, view test parameters, and enter/verify results without encountering 500 Internal Server Errors or frontend crashes.
+## Root Cause
+The frontend was making a **GET** request to `/api/v1/results/ensure/?order_item_id=1`, but the backend endpoint only accepts **POST** requests (as indicated by the server response: `allow: POST, OPTIONS`).
 
-## 2. Issue Diagnosis & Resolution
+## Technical Details
 
-### A. Backend: Invalid Prefetch & Serializer Circular Dependency
-*   **Issue:** The `TestResultViewSet.ensure` endpoint was failing with `AttributeError: Cannot find 'parameters' on Test object`. This was due to an incorrect `prefetch_related` lookup (`test__parameters` instead of the correct reverse relationship).
-*   **Fix:** Updated `lims-backend/apps/results/views.py` to use `test__test_parameters` matching the `TestParameter` model definition.
-*   **Issue:** The frontend was missing critical patient/order data because the `OrderItemSerializer` did not include nested order details to avoid circular imports.
-*   **Fix:** Created `MinimalOrderSerializer` and `MinimalPatientSerializer` in `lims-backend/apps/orders/serializers.py` and integrated them into `OrderItemSerializer`. This ensures the frontend receives `item.order.patient` details deeply nested as required.
+### Backend Configuration (Correct)
+File: `/lims-backend/apps/results/views.py`
+```python
+@action(detail=False, methods=["post"])  # ✓ POST only
+def ensure(self, request):
+    """Ensure result rows exist for an order item."""
+    order_item = self._get_order_item_from_request(request)
+    results = ensure_test_results(order_item)
+    serializer = self.get_serializer(results, many=True)
+    return Response({"results": serializer.data})
+```
 
-### B. Frontend: Null Reference & Type Mismatches
-*   **Issue:** The `ResultsPage.tsx` was crashing when attempting to access properties like `test_name` on null objects or iterating over undefined lists.
-*   **Fix:**
-    *   Updated `WorklistOrderItem` interface to match the flattened structure if necessary, though the primary fix was in handling the serialized data.
-    *   Added safe optional chaining (`?.`) and fallback logic for Test/Panel name rendering.
-    *   Ensured the "in" operator check `('test_name' in testInfo)` is guarded by `typeof testInfo === 'object'` to prevent crashes on null/undefined.
+The `_get_order_item_from_request` method already handles both query params and request body:
+```python
+order_item_id = request.query_params.get("order_item_id") or request.data.get("order_item_id")
+```
 
-### C. Database Migrations
-*   **Issue:** A valid migration for `parameters_active_idx` renaming was missing or skipped, causing `ProgrammingError` during some operations.
-*   **Action:** Ran `makemigrations` inside the container to resolve the state.
-*   **Note:** The migration file `0007_rename_parameters_active_idx_parameters_active_6dece1_idx.py` was generated inside the container. **Action Required:** Ensure this file is present in the local source control. If not found on the host, run `python manage.py makemigrations laboratory` locally to generate it and commit it.
+### Frontend Fix Applied
+File: `/frontend/src/api/services/resultApi.ts`
 
-## 3. UI/UX Improvements (Result Entry)
-*   **Table Layout**: Replaced the list-based view with a clean, structured table layout (`ResultsPage.module.css`).
-*   **Keyboard Navigation**: Added specific support for `Enter` key navigation. Pressing Enter executes a "Focus Next" action, allowing rapid data entry without using the mouse.
-*   **Visual Status**: Added clear badges for result status (Pending, Entered, Verified).
+**Before (Incorrect)**:
+```typescript
+getByOrderItem: (orderItemId: number) => 
+  apiClient.get<{ results: TestResult[] }>(`/results/ensure?order_item_id=${orderItemId}`),
+```
 
-*   **Patient Context**: Improved the patient banner to clearly display MRN, Name, and Age/Gender in a grid format.
+**After (Fixed)**:
+```typescript
+getByOrderItem: (orderItemId: number) => 
+  apiClient.post<{ results: TestResult[] }>('/results/ensure/', { order_item_id: orderItemId }),
+```
 
-### D. Worklist UI Improvements
-*   **Search Functionality**: A search bar was added to filtering orders by ID, Patient Name/MRN, or Test Name.
-*   **Styling**: Applied the same clean table layout to the Worklist, with improved headers and "Enter Results" call-to-action buttons.
-*   **Lint Fixes**: Removed unused variables (`refRangeText`) to keep the codebase clean.
+### Additional Improvements
+File: `/frontend/src/pages/results/ResultsPage.tsx`
 
-## 4. Verification
-A browser automation session was performed successfully:
-1.  Logged in as Admin.
-2.  Loaded Worklist.
-3.  Verified Result Entry Page loaded successfully.
-4.  Submitted Sample Results.
-*Note: A final automated verification of the Worklist search was attempted but halted due to resource limits. Manual verification is recommended.*
+Added error handling to display API errors to users:
+```typescript
+const { data, isLoading, isError, error } = useQuery({
+  queryKey: ['results', orderItemId],
+  queryFn: () => resultApi.getByOrderItem(orderItemId),
+  enabled: !!orderItemId,
+});
 
-## 5. Pending / Next Steps
-*   **Resource Limit Reached**: The current agent session hit a resource limit during final verification.
-*   **Migration Sync**: Check `lims-backend/apps/laboratory/migrations/` on the local machine. If `0007_...py` is missing, generate it.
-*   **User Acceptance Testing**: Manually verify the full lifecycle: `Enter Result` -> `Verify` -> `approve/publish`.
-*   **Bulk Verification**: The "Save & Verify All" button currently prompts for confirmation but needs backend endpoint integration for true bulk verification.
+// Display error message if API call fails
+if (isError) return <div className={styles.message} style={{ color: '#ef4444' }}>
+  Error: {(error as Error).message}
+</div>;
+```
+
+## Changes Made
+
+### 1. Frontend API Service
+- **File**: `/frontend/src/api/services/resultApi.ts`
+- **Change**: Changed `getByOrderItem` from GET to POST method
+- **Impact**: Now correctly calls the backend endpoint
+
+### 2. Frontend Results Page
+- **File**: `/frontend/src/pages/results/ResultsPage.tsx`
+- **Change**: Added error state handling and display
+- **Impact**: Users now see meaningful error messages instead of infinite loading
+
+### 3. Docker Rebuild
+- **Action**: Rebuilt frontend Docker image with `--no-cache` flag
+- **Command**: `docker compose --env-file .env.production build --no-cache frontend`
+- **Action**: Recreated frontend container
+- **Command**: `docker compose --env-file .env.production up -d frontend`
+
+## Verification Steps
+
+1. **Navigate to Results Page**: Go to the results worklist
+2. **Click "Enter Results"**: Select any order item
+3. **Expected Behavior**: 
+   - Form should load with all test parameters
+   - No longer shows "Initializing form..." indefinitely
+   - If there's an error, it displays a clear error message
+
+## API Contract
+
+### Endpoint: `/api/v1/results/ensure/`
+- **Method**: POST (only)
+- **Request Body**: 
+  ```json
+  {
+    "order_item_id": 1
+  }
+  ```
+- **Response**: 
+  ```json
+  {
+    "results": [
+      {
+        "id": 1,
+        "test_parameter": 1,
+        "parameter_name": "Hemoglobin",
+        "result_value": "",
+        "unit": "g/dL",
+        "status": "DRAFT",
+        ...
+      }
+    ]
+  }
+  ```
+
+## Deployment Status
+- ✅ Code changes committed
+- ✅ Frontend Docker image rebuilt
+- ✅ Frontend container recreated and running
+- ✅ Changes are live on production
+
+## Testing Recommendations
+
+1. **Happy Path**: Enter results for a normal order item
+2. **Error Handling**: Try with invalid order_item_id to verify error display
+3. **Network Issues**: Test with slow network to ensure loading states work
+4. **Multiple Parameters**: Test with panels that have many parameters
+
+## Related Files
+- `/frontend/src/api/services/resultApi.ts` - API service definitions
+- `/frontend/src/pages/results/ResultsPage.tsx` - Results page component
+- `/lims-backend/apps/results/views.py` - Backend endpoint implementation
+- `/lims-backend/apps/results/services/expected_results.py` - Result creation logic
+
+## Notes
+- The backend was already correctly configured to accept POST requests
+- The issue was purely a frontend API client misconfiguration
+- Error handling improvements will help diagnose future API issues faster

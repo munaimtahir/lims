@@ -37,11 +37,15 @@ export function calculateDobFromAge(
     year -= 1;
   }
 
-  const day = Math.min(today.getDate(), new Date(year, month, 0).getDate());
+  // Calculate the target day, accounting for the days parameter
+  const targetDay = today.getDate() - days;
+  const maxDayInMonth = new Date(year, month, 0).getDate();
+  const day = Math.min(Math.max(1, targetDay), maxDayInMonth);
   const dob = new Date(year, month - 1, day);
-  if (days) {
-    dob.setDate(dob.getDate() - days);
-  }
 
-  return dob.toISOString().slice(0, 10);
+  // Return local date string YYYY-MM-DD
+  const y = dob.getFullYear();
+  const m = String(dob.getMonth() + 1).padStart(2, '0');
+  const d = String(dob.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }

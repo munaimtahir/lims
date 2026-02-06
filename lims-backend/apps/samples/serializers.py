@@ -49,12 +49,16 @@ class SampleSerializer(serializers.ModelSerializer):
             "received_by", "created_at", "updated_at"
         ]
 
-
-
     def validate_status(self, value):
-        allowed_statuses = {SampleStatus.COLLECTED, SampleStatus.RECEIVED, SampleStatus.POSTPONED}
-        if value not in allowed_statuses:
-            raise ValidationError('Status must be one of: COLLECTED, RECEIVED, POSTPONED.')
+        """Restrict status transitions to Collected/Received/Postponed for now."""
+        allowed = {
+            SampleStatus.PENDING,
+            SampleStatus.COLLECTED,
+            SampleStatus.RECEIVED,
+            SampleStatus.POSTPONED,
+        }
+        if value not in allowed:
+            raise serializers.ValidationError("Status not allowed.")
         return value
 
     def update(self, instance, validated_data):

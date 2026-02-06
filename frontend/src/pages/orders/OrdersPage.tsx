@@ -40,11 +40,11 @@ export default function OrdersPage() {
   };
 
   const handleCancelOrder = (orderId: number) => {
-      if (confirm('Are you sure you want to cancel this order?')) {
-          orderApi.cancel(orderId).then(() => {
-              queryClient.invalidateQueries({ queryKey: ['orders'] });
-          });
-      }
+    if (confirm('Are you sure you want to cancel this order?')) {
+      orderApi.cancel(orderId).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['orders'] });
+      });
+    }
   };
 
   return (
@@ -111,7 +111,7 @@ export default function OrdersPage() {
                     <button onClick={() => setSelectedOrder(order)} className={styles.viewButton}>
                       View
                     </button>
-                    {!order.is_paid && order.status !== 'CANCELLED' as any && (
+                    {!order.is_paid && order.status !== 'CANCELLED' && (
                       <button
                         onClick={() => {
                           setSelectedOrder(order);
@@ -122,10 +122,10 @@ export default function OrdersPage() {
                         Pay
                       </button>
                     )}
-                    {order.status !== 'CANCELLED' as any && order.status !== 'PUBLISHED' as any && (
-                        <button onClick={() => handleCancelOrder(order.id)} className={styles.cancelButton}>
-                            Cancel
-                        </button>
+                    {order.status !== 'CANCELLED' && order.status !== 'PUBLISHED' && (
+                      <button onClick={() => handleCancelOrder(order.id)} className={styles.cancelButton}>
+                        Cancel
+                      </button>
                     )}
                   </div>
                 </td>
@@ -227,7 +227,7 @@ function CreateOrderModal({ onClose, onSuccess }: { onClose: () => void; onSucce
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPatient) return;
-    
+
     createMutation.mutate({
       patient: selectedPatient.id,
       test_ids: selectedTests,

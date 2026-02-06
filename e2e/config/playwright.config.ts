@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: process.env.ENV_PATH || '.env' });
 
 const isCI = !!process.env.CI;
-const baseURL = process.env.BASE_URL || 'http://localhost:3000';
+const baseURL = process.env.BASE_URL || 'http://localhost:8012';
 
 export default defineConfig({
   testDir: '../tests',

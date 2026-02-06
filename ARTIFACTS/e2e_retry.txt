@@ -1,0 +1,28 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 tests/smoke.spec.ts:11:3 › Smoke: Login › logs in and sees dashboard shell (86ms)
+
+
+  1) tests/smoke.spec.ts:11:3 › Smoke: Login › logs in and sees dashboard shell ────────────────────
+
+    Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+    Call log:
+    [2m  - navigating to "/login", waiting until "load"[22m
+
+
+       at pages/BasePage.ts:27
+
+      25 |
+      26 |   async goto(path = '/') {
+    > 27 |     await this.page.goto(path);
+         |                     ^
+      28 |   }
+      29 | }
+      30 |
+        at LoginPage.goto (/home/munaim/srv/apps/lims/e2e/pages/BasePage.ts:27:21)
+        at LoginPage.goto (/home/munaim/srv/apps/lims/e2e/pages/LoginPage.ts:6:17)
+        at /home/munaim/srv/apps/lims/e2e/tests/smoke.spec.ts:14:17
+
+  1 failed
+    tests/smoke.spec.ts:11:3 › Smoke: Login › logs in and sees dashboard shell ─────────────────────

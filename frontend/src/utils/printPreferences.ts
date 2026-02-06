@@ -1,25 +1,28 @@
-export type ReceiptPrintFormat = 'A4' | 'Thermal';
+const PRINT_FORMAT_KEY = 'lims:receipt:format';
+const THERMAL_COPIES_KEY = 'lims:receipt:thermalCopies';
 
-const RECEIPT_FORMAT_KEY = 'lims.receipt.print_format';
-const THERMAL_COPIES_KEY = 'lims.receipt.thermal_copies';
+export type ReceiptFormat = 'A4' | 'Thermal';
 
-export function getStoredReceiptFormat(): ReceiptPrintFormat {
-  const stored = localStorage.getItem(RECEIPT_FORMAT_KEY);
+export function loadLastReceiptFormat(): ReceiptFormat {
+  if (typeof window === 'undefined') return 'A4';
+  const stored = localStorage.getItem(PRINT_FORMAT_KEY);
   return stored === 'Thermal' ? 'Thermal' : 'A4';
 }
 
-export function setStoredReceiptFormat(format: ReceiptPrintFormat): void {
-  localStorage.setItem(RECEIPT_FORMAT_KEY, format);
+export function saveLastReceiptFormat(format: ReceiptFormat) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(PRINT_FORMAT_KEY, format);
 }
 
-export function getStoredThermalCopies(): number {
+export function loadThermalCopies(): number {
+  if (typeof window === 'undefined') return 2;
   const stored = Number(localStorage.getItem(THERMAL_COPIES_KEY));
-  if (Number.isNaN(stored) || stored < 1) {
-    return 2;
-  }
-  return stored;
+  return Number.isFinite(stored) && stored > 0 ? stored : 2;
 }
 
-export function setStoredThermalCopies(copies: number): void {
-  localStorage.setItem(THERMAL_COPIES_KEY, String(Math.max(1, copies)));
+export function saveThermalCopies(copies: number) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(THERMAL_COPIES_KEY, String(Math.max(1, Math.floor(copies))));
 }
+
+export { PRINT_FORMAT_KEY, THERMAL_COPIES_KEY };

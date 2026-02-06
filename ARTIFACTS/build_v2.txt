@@ -1,0 +1,15 @@
+
+> frontend@0.0.0 build
+> tsc -b && vite build
+
+src/pages/review/VerificationQueuePage.tsx(45,19): error TS2538: Type 'unknown' cannot be used as an index type.
+src/pages/review/VerificationQueuePage.tsx(46,16): error TS2538: Type 'unknown' cannot be used as an index type.
+src/pages/review/VerificationQueuePage.tsx(48,38): error TS2339: Property 'order' does not exist on type 'number | Record<string, unknown>'.
+  Property 'order' does not exist on type 'number'.
+src/pages/review/VerificationQueuePage.tsx(49,34): error TS2339: Property 'order' does not exist on type 'number | Record<string, unknown>'.
+  Property 'order' does not exist on type 'number'.
+src/pages/review/VerificationQueuePage.tsx(50,35): error TS2339: Property 'test_name' does not exist on type 'number | Record<string, unknown>'.
+  Property 'test_name' does not exist on type 'number'.
+src/pages/review/VerificationQueuePage.tsx(50,61): error TS2339: Property 'panel_name' does not exist on type 'number | Record<string, unknown>'.
+  Property 'panel_name' does not exist on type 'number'.
+src/pages/review/VerificationQueuePage.tsx(54,14): error TS2538: Type 'unknown' cannot be used as an index type.

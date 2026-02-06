@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { systemSettingsApi, printTemplateApi } from '../../api/services';
 import { normalizeObjectResponse } from '../../utils/apiHelpers';
+import { isSampleBarcodeEnabled, setSampleBarcodeEnabled } from '../../utils/featureFlags';
 import type { SystemSettings, PrintTemplate, PrintSignatory, PrintTemplateConfig } from '../../types';
 import styles from './SystemSettingsPage.module.css';
 import { isSampleBarcodeCollectionEnabled, setSampleBarcodeCollectionEnabled } from '../../utils/featureFlags';
@@ -10,10 +11,18 @@ import { isSampleBarcodeCollectionEnabled, setSampleBarcodeCollectionEnabled } f
 export default function SystemSettingsPage() {
   const queryClient = useQueryClient();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'ui' | 'lab' | 'reports' | 'email' | 'backup' | 'print'>('lab');
+  const [activeTab, setActiveTab] = useState<'ui' | 'lab' | 'reports' | 'email' | 'backup' | 'print'>(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print') {
+      return tab;
+    }
+    return 'lab';
+  });
   const [headerFile, setHeaderFile] = useState<File | null>(null);
   const [footerFile, setFooterFile] = useState<File | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [barcodeToggle, setBarcodeToggle] = useState<boolean>(() => isSampleBarcodeEnabled());
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateForm, setTemplateForm] = useState<PrintTemplate | null>(null);
   const [sampleBarcodeEnabled, setSampleBarcodeEnabled] = useState<boolean>(() => isSampleBarcodeCollectionEnabled());
@@ -45,7 +54,8 @@ export default function SystemSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
       setHeaderFile(null);
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
       const message =
         error?.response?.data?.error ??
         error?.message ??
@@ -60,7 +70,8 @@ export default function SystemSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
       setFooterFile(null);
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
       const message =
         error?.response?.data?.error ??
         error?.message ??
@@ -74,7 +85,8 @@ export default function SystemSettingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
       const message =
         error?.response?.data?.error ??
         error?.message ??
@@ -88,7 +100,8 @@ export default function SystemSettingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
       const message =
         error?.response?.data?.error ??
         error?.message ??
@@ -105,7 +118,8 @@ export default function SystemSettingsPage() {
       setLogoFile(null);
       alert('Logo updated successfully');
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
       const message =
         error?.response?.data?.error ??
         error?.message ??
@@ -121,7 +135,8 @@ export default function SystemSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['branding'] });
       alert('Logo removed successfully');
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
       const message =
         error?.response?.data?.error ??
         error?.message ??
@@ -132,22 +147,37 @@ export default function SystemSettingsPage() {
 
   // Use normalizer to handle both wrapped {data: {...}} and plain object responses
   const settings = normalizeObjectResponse<SystemSettings>(settingsData);
-  const templates = templatesData || [];
+  const templates = useMemo(() => (templatesData || []) as PrintTemplate[], [templatesData]);
 
   useEffect(() => {
     if (!templates.length) return;
-    const template = templates.find((t) => t.id === selectedTemplateId) || templates[0];
-    setSelectedTemplateId(template.id);
-    setTemplateForm({ ...template });
-  }, [templates, selectedTemplateId]);
+
+    // Determine the template to select (preserve current selection if valid, else default to first)
+    const targetId = selectedTemplateId && templates.find(t => t.id === selectedTemplateId)
+      ? selectedTemplateId
+      : templates[0]?.id;
+
+    if (targetId && targetId !== selectedTemplateId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedTemplateId(targetId);
+      return; // Determine form on next render to avoid race/double set
+    }
+
+    // Sync form with selected template if form is stale
+    const template = templates.find((t) => t.id === selectedTemplateId);
+    if (template && (!templateForm || templateForm.id !== template.id)) {
+      setTemplateForm({ ...template });
+    }
+  }, [templates, selectedTemplateId, templateForm]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print') {
+    if ((tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print') && activeTab !== tab) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(tab);
     }
-  }, [location.search]);
+  }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -196,12 +226,17 @@ export default function SystemSettingsPage() {
     },
   });
 
-  const updateTemplateField = (field: keyof PrintTemplate, value: any) => {
+  const updateTemplateField = (field: keyof PrintTemplate, value: string | boolean) => {
     if (!templateForm) return;
     setTemplateForm({ ...templateForm, [field]: value });
   };
 
-  const updateTemplateConfig = (field: keyof PrintTemplateConfig, value: any) => {
+  const handleBarcodeToggle = (value: boolean) => {
+    setBarcodeToggle(value);
+    setSampleBarcodeEnabled(value);
+  };
+
+  const updateTemplateConfig = (field: keyof PrintTemplateConfig, value: string | number | boolean) => {
     if (!templateForm) return;
     const config = { ...templateForm.config, [field]: value };
     setTemplateForm({ ...templateForm, config });
@@ -299,7 +334,7 @@ export default function SystemSettingsPage() {
             <p className={styles.description}>
               Customize the branding that appears in your application header and login page.
             </p>
-            
+
             <div className={styles.formGroup}>
               <label>Laboratory Display Name</label>
               <input
@@ -389,6 +424,21 @@ export default function SystemSettingsPage() {
                 </div>
               </div>
             )}
+
+            <div className={styles.formGroup}>
+              <label>Enable sample barcode collection</label>
+              <div className={styles.toggleRow}>
+                <input
+                  type="checkbox"
+                  checked={barcodeToggle}
+                  onChange={(e) => handleBarcodeToggle(e.target.checked)}
+                  style={{ width: '18px', height: '18px' }}
+                />
+                <span className={styles.hint}>
+                  When off, barcode entry prompts are hidden in Collection/Samples. Default: OFF.
+                </span>
+              </div>
+            </div>
           </div>
         )}
 

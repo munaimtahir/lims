@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { laboratoryApi, orderApi, patientApi } from '../../api/services';
 import type { Order, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
 import { calculateAgeFromDob, calculateDobFromAge } from '../../utils/ageDob';
-import { formatDateDDMMYY, normalizeDateInputToISO } from '../../utils/dateFormat';
+import { formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
 import { useBranding } from '../../contexts/BrandingContext';
 import { formatCurrency } from '../../utils/currency';
 import styles from './PatientsPage.module.css';
@@ -144,7 +144,7 @@ export default function PatientsPage() {
                 </div>
                 <div>
                   <span className={styles.detailLabel}>DOB</span>
-                  <span className={styles.detailValue}>{formatDateDDMMYY(selectedPatient.date_of_birth) || 'N/A'}</span>
+                  <span className={styles.detailValue}>{formatDobDisplay(selectedPatient.date_of_birth) || 'N/A'}</span>
                 </div>
                 <div>
                   <span className={styles.detailLabel}>Age</span>
@@ -253,12 +253,12 @@ interface PatientFormModalProps {
 
 function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFormModalProps) {
   const [formError, setFormError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    full_name: '',
-    phone: '',
-    gender: 'Male' as 'Male' | 'Female' | 'Other',
-    date_of_birth: '',
-    age_years: '',
+    const [formData, setFormData] = useState({
+      full_name: '',
+      phone: '',
+      gender: 'Male' as 'Male' | 'Female' | 'Other',
+      date_of_birth: '',
+      age_years: '',
     age_months: '',
     age_days: '',
     father_husband_name: '',
@@ -267,9 +267,9 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
   });
 
   const handleDobChange = (value: string) => {
+    const { iso, date, display } = normalizeDobInput(value);
     setFormData((prev) => {
-      const normalizedValue = normalizeDateInputToISO(value);
-      if (!normalizedValue) {
+      if (!iso) {
         return {
           ...prev,
           date_of_birth: '',
@@ -279,18 +279,20 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
         };
       }
 
-      const age = calculateAgeFromDob(normalizedValue);
-      if (age) {
-        return {
-          ...prev,
-          date_of_birth: normalizedValue,
-          age_years: age.years.toString(),
-          age_months: age.months.toString(),
-          age_days: age.days.toString(),
-        };
+      if (date) {
+        const age = calculateAgeFromDob(iso);
+        if (age) {
+          return {
+            ...prev,
+            date_of_birth: iso,
+            age_years: age.years.toString(),
+            age_months: age.months.toString(),
+            age_days: age.days.toString(),
+          };
+        }
       }
 
-      return { ...prev, date_of_birth: normalizedValue };
+      return { ...prev, date_of_birth: iso, date_of_birth_display: display };
     });
   };
 
@@ -402,8 +404,9 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
               <label>Date of Birth</label>
               <input
                 type="text"
+                inputMode="numeric"
                 placeholder="DD/MM/YY"
-                value={formatDateDDMMYY(formData.date_of_birth)}
+                value={formData.date_of_birth}
                 onChange={(e) => handleDobChange(e.target.value)}
               />
             </div>
@@ -466,11 +469,7 @@ function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; o
   const [selectedTests, setSelectedTests] = useState<number[]>([]);
   const [selectedPanels, setSelectedPanels] = useState<number[]>([]);
   const [discount, setDiscount] = useState('0');
-  const [referredBy, setReferredBy] = useState('');
-
-  useEffect(() => {
-    setReferredBy(patient.last_order_referred_by || patient.default_referred_by || '');
-  }, [patient]);
+  const [referredBy, setReferredBy] = useState(() => patient.last_order_referred_by || patient.default_referred_by || '');
 
   const { data: testsData } = useQuery({
     queryKey: ['tests'],
@@ -485,7 +484,8 @@ function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; o
   const createMutation = useMutation({
     mutationFn: (data: OrderCreateRequest) => orderApi.create(data),
     onSuccess,
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { detail?: string } }; message?: string };
       const message =
         error?.response?.data?.detail ??
         error?.message ??
@@ -494,8 +494,8 @@ function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; o
     },
   });
 
-  const tests = testsData?.results || [];
-  const panels = panelsData?.results || [];
+  const tests = useMemo(() => testsData?.results || [], [testsData]);
+  const panels = useMemo(() => panelsData?.results || [], [panelsData]);
 
   // Memoize the Maps to avoid recreating them on every render
   const testsById = useMemo(() => new Map(tests.map((t) => [t.test_id, t])), [tests]);
