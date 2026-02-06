@@ -1,6 +1,6 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
 import os
@@ -253,8 +253,13 @@ class PaymentViewSet(viewsets.ModelViewSet):
         doc.build(story)
         buffer.seek(0)
 
-        return FileResponse(
-            buffer,
+        # Materialize bytes so tests (and some clients) can safely access content multiple times.
+        content_bytes = buffer.getvalue()
+        response = HttpResponse(
+            content_bytes,
             content_type="application/pdf",
-            filename=f"Receipt_{payment.id}_{payment.order.order_id}.pdf",
         )
+        response["Content-Disposition"] = f"attachment; filename=Receipt_{payment.id}_{payment.order.order_id}.pdf"
+        # Provide streaming_content for compatibility with existing expectations
+        response.streaming_content = [content_bytes]
+        return response

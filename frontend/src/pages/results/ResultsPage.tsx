@@ -20,14 +20,10 @@ interface WorklistOrderItem {
     };
     priority: string;
   };
-  test?: {
-    test_name: string;
-    test_code: string;
-  };
-  panel?: {
-    panel_name: string;
-    panel_code: string;
-  };
+  test_name?: string;
+  panel_name?: string;
+  test_code?: string;
+  panel_code?: string;
   status: string;
 }
 
@@ -78,7 +74,7 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
                     </div>
                   </td>
                   <td>
-                    {item.test?.test_name || item.panel?.panel_name || 'Unknown Test'}
+                    {item.test_name || item.panel_name || 'Unknown Test'}
                   </td>
                   <td>
                     <span className={`${styles.badge} ${styles[item.status?.toLowerCase()]}`}>
@@ -142,7 +138,7 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
   const orderItem = orderItemDetails as unknown as WorklistOrderItem;
   const orderInfo = orderItem?.order;
   const patientInfo = orderInfo?.patient;
-  const testInfo = orderItem?.test || orderItem?.panel;
+  const testInfo = orderItem?.test_name || orderItem?.panel_name;
 
   // Initialize form state when data loads
   useEffect(() => {
@@ -174,32 +170,9 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
     },
   });
 
-  const verifyMutation = useMutation({
-    mutationFn: async (resultId: number) => {
-      return resultApi.verify(resultId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
-    },
-    onError: (error: any) => {
-      alert(`Verification failed: ${error?.response?.data?.error || 'Unknown error'}`);
-    }
-  });
-
   const handleSave = async (silent = false) => {
     await saveMutation.mutateAsync();
     if (!silent) alert('Results saved successfully!');
-  };
-
-  const handleVerify = async (result: TestResult) => {
-    await handleSave(true);
-    if (result.id) {
-      if (confirm('Are you sure you want to verify this result? It will be locked.')) {
-        verifyMutation.mutate(result.id);
-      }
-    } else {
-      alert('Please save the result first.');
-    }
   };
 
   const isLoading = isLoadingResults || isLoadingDetails;
@@ -231,11 +204,7 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
           </div>
         )}
         <p className={styles.subtitle}>
-          Test: {
-            (testInfo && 'test_name' in testInfo ? testInfo.test_name :
-              testInfo && 'panel_name' in testInfo ? testInfo.panel_name :
-                'Loading Test Info...')
-          }
+          Test: {testInfo || 'Loading Test Info...'}
         </p>
       </div>
 
@@ -243,53 +212,60 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
         <div className={styles.message}>Initializing result form...</div>
       ) : (
         <div className={styles.form}>
-          <div className={styles.resultsGrid}>
-            {existingResultsData.results.map((result: TestResult) => {
-              const isVerified = result.status === 'verified';
-              return (
-                <div key={result.test_parameter} className={styles.resultField}>
-                  <div className={styles.fieldLabelRow}>
-                    <label className={styles.label}>
-                      {result.parameter_name || `Param ${result.test_parameter}`}
-                    </label>
-                    <span className={styles.unit}>
-                      {result.unit}
-                    </span>
-                  </div>
-
-                  <div className={styles.inputGroup}>
-                    {isVerified ? (
-                      <div className={styles.verifiedValue}>
-                        {result.result_value}
-                        <span className={styles.verifiedBadge}>Verified</span>
+          <table className={styles.resultTable}>
+            <thead>
+              <tr>
+                <th>Test / Parameter Name</th>
+                <th>Result Entry</th>
+              </tr>
+            </thead>
+            <tbody>
+              {existingResultsData.results.map((result: TestResult, index: number) => {
+                const isVerified = result.status === 'verified';
+                return (
+                  <tr key={result.test_parameter} className={styles.resultRow}>
+                    <td className={styles.paramNameCell}>
+                      <div className={styles.label}>
+                        {result.parameter_name || `Param ${result.test_parameter}`}
                       </div>
-                    ) : (
-                      <>
+                      <div className={styles.paramMeta}>
+                        {result.unit && <span className={styles.unit}>{result.unit}</span>}
+                        {result.reference_range && (
+                          <span className={styles.refRange}>({result.reference_range})</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className={styles.inputCell}>
+                      {isVerified ? (
+                        <div className={styles.verifiedValue}>
+                          {result.result_value}
+                          <span className={styles.verifiedBadge}>Verified</span>
+                        </div>
+                      ) : (
                         <input
                           type="text"
                           value={results[result.test_parameter] || ''}
                           onChange={(e) => setResults(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
-                          className={styles.input}
-                          placeholder="Value"
+                          className={styles.resultInput}
+                          placeholder="Enter result..."
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Tab') {
+                              if (e.key === 'Enter') e.preventDefault();
+                              const inputs = document.querySelectorAll(`.${styles.resultInput}`);
+                              const nextInput = inputs[index + 1] as HTMLInputElement;
+                              if (nextInput) {
+                                nextInput.focus();
+                              }
+                            }
+                          }}
                         />
-                        <button
-                          className={styles.verifyButton}
-                          onClick={() => handleVerify(result)}
-                          title="Save & Verify"
-                        >
-                          Verify
-                        </button>
-                      </>
-                    )}
-                  </div>
-                  <div className={styles.referenceRange}>
-                    Status: <span style={{ fontWeight: 600 }}>{result.status}</span>
-                    {result.flag && <span className={styles.flag}> [{result.flag}]</span>}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
 
           <div className={styles.actions}>
             <button
@@ -297,7 +273,7 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
               onClick={() => handleSave(false)}
               disabled={saveMutation.isPending}
             >
-              {saveMutation.isPending ? 'Saving...' : 'Save All Changes'}
+              {saveMutation.isPending ? 'Saving...' : 'Save All Results'}
             </button>
           </div>
         </div>

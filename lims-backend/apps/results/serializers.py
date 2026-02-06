@@ -19,6 +19,18 @@ class TestResultSerializer(serializers.ModelSerializer):
     verified_by_name = serializers.CharField(
         source="verified_by.full_name", read_only=True
     )
+    reference_range = serializers.SerializerMethodField()
+
+    def get_reference_range(self, obj):
+        """Get the reference range display string for this result."""
+        from apps.laboratory.ranges import pick_reference_range
+        patient = None
+        try:
+            patient = obj.order_item.order.patient
+        except AttributeError:
+            pass
+        range_info = pick_reference_range(obj.test_parameter, patient)
+        return range_info.get("display", "")
 
     def to_representation(self, instance):
         """Convert status to lowercase for frontend compatibility."""
@@ -53,6 +65,7 @@ class TestResultSerializer(serializers.ModelSerializer):
             "verified_by",
             "verified_by_name",
             "verified_at",
+            "reference_range",
         ]
         read_only_fields = [
             "flag",

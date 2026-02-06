@@ -259,6 +259,7 @@ export interface TestResult {
   verified_by_name?: string;
   verified_at?: string;
   status: ResultStatus;
+  reference_range?: string;
 }
 
 /**

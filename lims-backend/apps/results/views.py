@@ -108,9 +108,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
             .distinct()
         )
 
-        # Also include order items with pending results (DRAFT, ENTERED, or REJECTED)
+        # Also include order items with pending results (DRAFT or REJECTED)
         pending_results = (
-            self.queryset.filter(status__in=["DRAFT", "ENTERED", "REJECTED"])
+            self.queryset.filter(status__in=["DRAFT", "REJECTED"])
             .values_list("order_item_id", flat=True)
             .distinct()
         )
@@ -177,8 +177,8 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 OrderItem.objects.select_related("order", "order__patient", "test", "panel")
                 .prefetch_related(
                     "panel__tests",
-                    Prefetch("test__parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
-                    Prefetch("panel__tests__parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
+                    Prefetch("test__test_parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
+                    Prefetch("panel__tests__test_parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
                 )
                 .get(id=order_item_id)
             )

@@ -2,6 +2,31 @@ from rest_framework import serializers
 from django.db import transaction
 from .models import Order, OrderItem
 from apps.laboratory.models import Test, TestPanel
+from apps.patients.models import Patient
+
+
+class MinimalPatientSerializer(serializers.ModelSerializer):
+    """
+    Minimal patient serializer for nested use.
+    """
+
+    full_name = serializers.CharField(source="get_full_name", read_only=True)
+
+    class Meta:
+        model = Patient
+        fields = ["id", "full_name", "mrn", "age", "gender"]
+
+
+class MinimalOrderSerializer(serializers.ModelSerializer):
+    """
+    Minimal order serializer for nested use in items.
+    """
+
+    patient = MinimalPatientSerializer(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ["id", "order_id", "patient", "priority"]
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -13,11 +38,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
     panel_name = serializers.CharField(source="panel.panel_name", read_only=True)
     test_code = serializers.CharField(source="test.test_code", read_only=True)
     panel_code = serializers.CharField(source="panel.panel_code", read_only=True)
+    order = MinimalOrderSerializer(read_only=True)
 
     class Meta:
         model = OrderItem
         fields = [
             "id",
+            "order",
             "test",
             "panel",
             "price",

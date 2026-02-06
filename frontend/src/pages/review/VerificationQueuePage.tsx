@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { resultApi } from '../../api/services';
 import type { TestResult } from '../../types';
@@ -6,7 +6,7 @@ import styles from './VerificationQueuePage.module.css';
 
 export default function VerificationQueuePage() {
   const queryClient = useQueryClient();
-  const [, setSelectedResult] = useState<TestResult | null>(null);
+  const [selectedOrderItemId, setSelectedOrderItemId] = useState<number | null>(null);
 
   const { data: queueData, isLoading, error } = useQuery({
     queryKey: ['verification-queue'],
@@ -17,8 +17,6 @@ export default function VerificationQueuePage() {
     mutationFn: (resultId: number) => resultApi.verify(resultId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
-      queryClient.invalidateQueries({ queryKey: ['results'] });
-      setSelectedResult(null);
     },
   });
 
@@ -27,132 +25,154 @@ export default function VerificationQueuePage() {
       resultApi.reject(resultId, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
-      queryClient.invalidateQueries({ queryKey: ['results'] });
-      setSelectedResult(null);
     },
   });
 
   const results = queueData?.results || [];
 
-  const handleVerify = (resultId: number) => {
-    if (confirm('Verify this result?')) {
-      verifyMutation.mutate(resultId);
-    }
+  // Group results by order_item
+  const groupedResults = useMemo(() => {
+    const groups: Record<number, {
+      order_item_id: number,
+      patient_name: string,
+      order_id: string,
+      test_name: string,
+      results: TestResult[]
+    }> = {};
+
+    results.forEach((r) => {
+      const orderItemId = typeof r.order_item === 'object' ? r.order_item.id : r.order_item;
+      if (!groups[orderItemId]) {
+        groups[orderItemId] = {
+          order_item_id: orderItemId,
+          patient_name: r.order_item.order?.patient?.full_name || 'Unknown',
+          order_id: r.order_item.order?.order_id || 'Unknown',
+          test_name: r.order_item.test_name || r.order_item.panel_name || 'Test',
+          results: [],
+        };
+      }
+      groups[orderItemId].results.push(r);
+    });
+
+    return Object.values(groups);
+  }, [results]);
+
+  const handleVerify = async (resultId: number) => {
+    await verifyMutation.mutateAsync(resultId);
   };
 
-  const handleReject = (resultId: number) => {
-    const reason = prompt('Enter rejection reason:');
+  const handleRepeat = async (resultId: number) => {
+    const reason = prompt('Enter reason for repeating results:');
     if (reason) {
-      rejectMutation.mutate({ resultId, reason });
+      await rejectMutation.mutateAsync({ resultId, reason });
     }
   };
 
-  const getFlagClass = (flag: string) => {
-    switch (flag) {
-      case 'C':
-      case 'critical_low':
-      case 'critical_high':
-        return styles.flagCritical;
-      case 'H':
-      case 'L':
-      case 'high':
-      case 'low':
-        return styles.flagAbnormal;
-      default:
-        return styles.flagNormal;
-    }
-  };
+  const selectedGroup = groupedResults.find(g => g.order_item_id === selectedOrderItemId);
 
-  const getFlagLabel = (flag: string) => {
-    switch (flag) {
-      case 'C':
-        return 'Critical';
-      case 'H':
-        return 'High';
-      case 'L':
-        return 'Low';
-      case 'A':
-        return 'Abnormal';
-      case '':
-        return 'Normal';
-      default:
-        return flag.replace('_', ' ');
-    }
-  };
+  if (isLoading) return <div className={styles.loading}>Loading queue...</div>;
+  if (error) return <div className={styles.error}>Failed to load verification queue</div>;
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>Verification Queue</h1>
-        <p className={styles.subtitle}>Results pending pathologist verification</p>
-      </div>
+      {selectedOrderItemId ? (
+        <div className={styles.detailView}>
+          <button className={styles.backButton} onClick={() => setSelectedOrderItemId(null)}>
+            &larr; Back to Queue
+          </button>
 
-      {isLoading ? (
-        <div className={styles.loading}>Loading queue...</div>
-      ) : error ? (
-        <div className={styles.error}>Failed to load queue</div>
-      ) : (
-        <>
-          <div className={styles.stats}>
-            <div className={styles.statCard}>
-              <div className={styles.statValue}>{results.length}</div>
-              <div className={styles.statLabel}>Pending Verification</div>
-            </div>
+          <div className={styles.detailHeader}>
+            <h2>Review Results: {selectedGroup?.patient_name}</h2>
+            <p>{selectedGroup?.test_name} (#{selectedGroup?.order_id})</p>
           </div>
 
-          {results.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p>No results pending verification</p>
-            </div>
-          ) : (
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Parameter</th>
-                  <th>Result Value</th>
-                  <th>Unit</th>
-                  <th>Flag</th>
-                  <th>Entered By</th>
-                  <th>Entered At</th>
-                  <th>Actions</th>
+          <table className={styles.verifyTable}>
+            <thead>
+              <tr>
+                <th>Parameter Name</th>
+                <th>Result</th>
+                <th>Units</th>
+                <th>Normal Range</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedGroup?.results.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.parameter_name}</td>
+                  <td className={styles.resultValueCell}>
+                    <span className={`${styles.resultValue} ${styles[r.flag?.toLowerCase()]}`}>
+                      {r.result_value}
+                      {r.flag && <span className={styles.flagSymbol}>({r.flag})</span>}
+                    </span>
+                  </td>
+                  <td>{r.unit}</td>
+                  <td className={styles.rangeCell}>{r.reference_range || '-'}</td>
+                  <td>
+                    <div className={styles.btnGroup}>
+                      <button
+                        className={styles.verifyBtn}
+                        onClick={() => handleVerify(r.id)}
+                        disabled={verifyMutation.isPending}
+                      >
+                        Verify
+                      </button>
+                      <button
+                        className={styles.repeatBtn}
+                        onClick={() => handleRepeat(r.id)}
+                        disabled={rejectMutation.isPending}
+                      >
+                        Repeat
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {results.map((result) => (
-                  <tr key={result.id}>
-                    <td>{result.parameter_name}</td>
-                    <td className={styles.resultValue}>{result.result_value}</td>
-                    <td>{result.unit}</td>
-                    <td>
-                      <span className={`${styles.flagBadge} ${getFlagClass(result.flag)}`}>
-                        {getFlagLabel(result.flag)}
-                      </span>
-                    </td>
-                    <td>{result.entered_by_name || '-'}</td>
-                    <td>{new Date(result.entered_at).toLocaleString()}</td>
-                    <td>
-                      <div className={styles.actions}>
-                        <button
-                          onClick={() => handleVerify(result.id)}
-                          className={styles.verifyButton}
-                          disabled={verifyMutation.isPending}
-                        >
-                          Verify
-                        </button>
-                        <button
-                          onClick={() => handleReject(result.id)}
-                          className={styles.rejectButton}
-                          disabled={rejectMutation.isPending}
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </td>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <>
+          <div className={styles.header}>
+            <h1>Verification Queue</h1>
+            <p className={styles.subtitle}>{groupedResults.length} orders pending verification</p>
+          </div>
+
+          <div className={styles.queueList}>
+            {groupedResults.length === 0 ? (
+              <div className={styles.emptyState}>No results pending verification.</div>
+            ) : (
+              <table className={styles.queueTable}>
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Patient</th>
+                    <th>Test / Panel</th>
+                    <th>Pending</th>
+                    <th>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody>
+                  {groupedResults.map((group) => (
+                    <tr key={group.order_item_id}>
+                      <td className={styles.bold}>{group.order_id}</td>
+                      <td>{group.patient_name}</td>
+                      <td>{group.test_name}</td>
+                      <td>{group.results.length} parameters</td>
+                      <td>
+                        <button
+                          className={styles.reviewBtn}
+                          onClick={() => setSelectedOrderItemId(group.order_item_id)}
+                        >
+                          Review Results
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </>
       )}
     </div>

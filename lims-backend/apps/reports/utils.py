@@ -1,5 +1,5 @@
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4, letter
+from reportlab.lib.pagesizes import A4, letter, A5
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, Image
@@ -85,7 +85,14 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
     template_config = _merge_template_config(template.config if template else None)
     font_scale = float(template_config.get("font_scale", 1.0) or 1.0)
     margins = template_config.get("margins", {})
-    page_size = A4 if template_config.get("paper_size") == "A4" else letter
+    
+    paper_size_str = template_config.get("paper_size", "A4").upper()
+    if paper_size_str == "A5":
+        page_size = A5
+    elif paper_size_str == "LETTER":
+        page_size = letter
+    else:
+        page_size = A4
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(
@@ -151,7 +158,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
             contact_info.append(f"Email: {lab_email}")
         header_data.append([Paragraph(" | ".join(contact_info), styles['Normal'])])
 
-    header_table = Table(header_data, colWidths=[6*inch])
+    header_table = Table(header_data, colWidths=[page_size[0] - (float(margins.get("left", 1.0)) + float(margins.get("right", 1.0))) * inch])
     header_table.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -175,7 +182,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
         ['Order Date:', order.created_at.strftime('%Y-%m-%d %H:%M')],
         ['Report Date:', timezone.now().strftime('%Y-%m-%d %H:%M')],
     ]
-    patient_table = Table(patient_data, colWidths=[2*inch, 4*inch])
+    patient_table = Table(patient_data, colWidths=[1.5*inch, 3*inch])
     patient_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
@@ -201,7 +208,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
         story.append(Spacer(1, 0.1*inch))
 
         # Results table
-        results_data = [['Parameter', 'Result', 'Unit', 'Reference Range', 'Flag']]
+        results_data = [['Parameter', 'Result', 'Unit', 'Range', 'Flag']]
         
         for result in item.results.all().order_by('test_parameter__display_order'):
             param = result.test_parameter
@@ -237,7 +244,8 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
             ])
 
         if len(results_data) > 1:  # If there are results
-            results_table = Table(results_data, colWidths=[1.5*inch, 1*inch, 0.8*inch, 1.5*inch, 1.2*inch])
+            col_widths = [1.2*inch, 0.8*inch, 0.6*inch, 1.2*inch, 0.8*inch]
+            results_table = Table(results_data, colWidths=col_widths)
             results_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4472C4')),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -280,7 +288,7 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
                 ['Authorized By:', '___________________'],
                 ['Date:', '___________________'],
             ]
-        signature_table = Table(signature_rows, colWidths=[2.0*inch, 4.0*inch])
+        signature_table = Table(signature_rows, colWidths=[1.5*inch, 3.5*inch])
         signature_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTSIZE', (0, 0), (-1, -1), 10 * font_scale),
@@ -308,4 +316,3 @@ def generate_pdf_report(order_id, lab_name=None, lab_address=None, lab_phone=Non
     pdf = buffer.getvalue()
     buffer.close()
     return pdf
-

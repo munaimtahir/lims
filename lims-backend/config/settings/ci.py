@@ -1,14 +1,34 @@
 from .production import *
 import os
 
-# Override Database for CI/Local verification using SQLite
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-        'MIGRATE': False, # Disable migrations for tests
+# Override Database for CI/Local verification.
+# Prefer a dedicated Postgres test DB when provided to stay closer to prod schema.
+# Fallback to lightweight in-memory SQLite for ad-hoc runs.
+TEST_DB_URL = os.environ.get("TEST_DB_URL")
+TEST_DB_HOST = os.environ.get("TEST_DB_HOST")
+
+if TEST_DB_URL or TEST_DB_HOST:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("TEST_DB_NAME", "lims_test_db"),
+            "USER": os.environ.get("TEST_DB_USER", "postgres"),
+            "PASSWORD": os.environ.get("TEST_DB_PASSWORD", "testpass"),
+            "HOST": TEST_DB_HOST or os.environ.get("TEST_DB_HOST", "localhost"),
+            "PORT": os.environ.get("TEST_DB_PORT", "5432"),
+            "CONN_MAX_AGE": 0,
+            "ATOMIC_REQUESTS": True,
+        }
     }
-}
+else:
+    # SQLite fallback for quick local checks (schema differences may surface FK issues)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+            'MIGRATE': True,  # allow migrations so schema matches models
+        }
+    }
 
 # Explicitly set DEBUG to True for test environment (or development)
 DEBUG = True
@@ -78,3 +98,5 @@ LOGGING = {
     },
 }
 
+# Disable HTTPS redirect in test context to avoid 301s during local/CI HTTP calls
+SECURE_SSL_REDIRECT = False
