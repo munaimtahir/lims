@@ -175,9 +175,26 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
     if (!silent) alert('Results saved successfully!');
   };
 
+  // Handle Enter key navigation
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const nextInput = document.querySelector(`input[data-index="${index + 1}"]`) as HTMLInputElement;
+      if (nextInput) {
+        nextInput.focus();
+      } else {
+        // If last field, maybe save? For now just blur or stay.
+        // (e.target as HTMLInputElement).blur();
+        handleSave(false);
+      }
+    }
+  };
+
   const isLoading = isLoadingResults || isLoadingDetails;
 
-  if (isLoading) return <div className={styles.loading}>Loading results...</div>;
+  if (isLoading) return <div className={styles.message}>Loading results...</div>;
+
+  const resultItems = existingResultsData?.results || [];
 
   return (
     <div className={styles.container}>
@@ -190,90 +207,113 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
           <h1>Result Entry</h1>
           <span className={styles.orderId}>#{orderInfo?.order_id || 'ID Loading...'}</span>
         </div>
+
+        <div className={styles.subtitle}>
+          Test: <strong>{testInfo || 'Loading...'}</strong>
+        </div>
+
         {patientInfo && (
           <div className={styles.patientBanner}>
-            <div>
-              <strong>Patient:</strong> {patientInfo.full_name}
+            <div className={styles.patientField}>
+              <span className={styles.fieldLabel}>Patient Name</span>
+              <span className={styles.fieldValue}>{patientInfo.full_name}</span>
             </div>
-            <div>
-              <strong>MRN:</strong> {patientInfo.mrn}
+            <div className={styles.patientField}>
+              <span className={styles.fieldLabel}>MRN</span>
+              <span className={styles.fieldValue}>{patientInfo.mrn}</span>
             </div>
-            <div>
-              <strong>Info:</strong> {patientInfo.age}y / {patientInfo.gender}
+            <div className={styles.patientField}>
+              <span className={styles.fieldLabel}>Age / Gender</span>
+              <span className={styles.fieldValue}>{patientInfo.age}y / {patientInfo.gender}</span>
             </div>
           </div>
         )}
-        <p className={styles.subtitle}>
-          Test: {testInfo || 'Loading Test Info...'}
-        </p>
       </div>
 
-      {(!existingResultsData?.results || existingResultsData.results.length === 0) ? (
+      {resultItems.length === 0 ? (
         <div className={styles.message}>Initializing result form...</div>
       ) : (
         <div className={styles.form}>
-          <table className={styles.resultTable}>
-            <thead>
-              <tr>
-                <th>Test / Parameter Name</th>
-                <th>Result Entry</th>
-              </tr>
-            </thead>
-            <tbody>
-              {existingResultsData.results.map((result: TestResult, index: number) => {
-                const isVerified = result.status === 'verified';
-                return (
-                  <tr key={result.test_parameter} className={styles.resultRow}>
-                    <td className={styles.paramNameCell}>
-                      <div className={styles.label}>
-                        {result.parameter_name || `Param ${result.test_parameter}`}
-                      </div>
-                      <div className={styles.paramMeta}>
-                        {result.unit && <span className={styles.unit}>{result.unit}</span>}
-                        {result.reference_range && (
-                          <span className={styles.refRange}>({result.reference_range})</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className={styles.inputCell}>
-                      {isVerified ? (
-                        <div className={styles.verifiedValue}>
-                          {result.result_value}
-                          <span className={styles.verifiedBadge}>Verified</span>
-                        </div>
-                      ) : (
-                        <input
-                          type="text"
-                          value={results[result.test_parameter] || ''}
-                          onChange={(e) => setResults(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
-                          className={styles.resultInput}
-                          placeholder="Enter result..."
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === 'Tab') {
-                              if (e.key === 'Enter') e.preventDefault();
-                              const inputs = document.querySelectorAll(`.${styles.resultInput}`);
-                              const nextInput = inputs[index + 1] as HTMLInputElement;
-                              if (nextInput) {
-                                nextInput.focus();
-                              }
-                            }
-                          }}
-                        />
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className={styles.tableContainer}>
+            <table className={styles.resultTable}>
+              <thead>
+                <tr>
+                  <th style={{ width: '35%' }}>Test Parameter</th>
+                  <th style={{ width: '25%' }}>Result Value</th>
+                  <th style={{ width: '15%' }}>Unit</th>
+                  <th style={{ width: '25%' }}>Reference / Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resultItems.map((result: TestResult, index: number) => {
+                  const isVerified = result.status?.toLowerCase() === 'verified' || result.status?.toLowerCase() === 'published';
+                  // Simple reference range display logic (if backend sends it later, we use it)
+                  const refRangeText = result.flag ? `Flag: ${result.flag}` : '-';
 
-          <div className={styles.actions}>
+                  return (
+                    <tr key={result.test_parameter} className={styles.resultRow}>
+                      <td>
+                        <span className={styles.paramName}>
+                          {result.parameter_name || `Param ${result.test_parameter}`}
+                        </span>
+                      </td>
+                      <td>
+                        {isVerified ? (
+                          <div className={styles.verifiedField}>
+                            <span className={styles.verifiedText}>{result.result_value}</span>
+                          </div>
+                        ) : (
+                          <div className={styles.inputWrapper}>
+                            <input
+                              type="text"
+                              data-index={index}
+                              value={results[result.test_parameter] || ''}
+                              onChange={(e) => setResults(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
+                              onKeyDown={(e) => handleKeyDown(e, index)}
+                              className={styles.resultInput}
+                              placeholder="Min-Max"
+                              autoFocus={index === 0}
+                            />
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <span className={styles.paramUnit}>{result.unit || '-'}</span>
+                      </td>
+                      <td>
+                        <div className={styles.refRange}>
+                          <span className={`${styles.statusBadge} ${styles['status-' + (result.status?.toLowerCase() || 'pending')]}`}>
+                            {result.status || 'Pending'}
+                          </span>
+                          {result.flag && <span style={{ marginLeft: 8, color: '#dc2626', fontWeight: 600 }}>{result.flag}</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className={styles.footer}>
             <button
               className={styles.saveButton}
               onClick={() => handleSave(false)}
               disabled={saveMutation.isPending}
             >
-              {saveMutation.isPending ? 'Saving...' : 'Save All Results'}
+              {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
+            </button>
+            <button
+              className={`${styles.verifyMainButton} ${styles.saveButton}`} /* Reusing saveButton base styles + verify override */
+              onClick={() => handleSave(false).then(() => {
+                if (confirm("Verify all entered results?")) {
+                  // Logic to verify all could go here, or just basic save and notify
+                  alert("Verification workflow to be implemented for bulk action.");
+                }
+              })}
+              style={{ background: '#2563eb', color: 'white', borderColor: '#2563eb' }}
+            >
+              Save & Verify All
             </button>
           </div>
         </div>

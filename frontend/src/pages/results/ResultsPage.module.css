@@ -1,291 +1,328 @@
-C.container {
-  padding: 24px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.container {
+  padding: 32px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* Header Section */
 .header {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 24px;
 }
 
 .headerTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;
 }
 
 .header h1 {
-  margin: 0 0 8px 0;
-  color: #1e293b;
-  font-size: 24px;
-  font-weight: 600;
+  margin: 0;
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .orderId {
   background: #f1f5f9;
-  padding: 4px 12px;
-  border-radius: 99px;
-  font-family: monospace;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
   color: #475569;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
 }
 
 .subtitle {
   margin: 0;
   color: #64748b;
-  font-size: 14px;
-}
-
-.loading,
-.emptyState {
-  padding: 40px;
-  text-align: center;
-  color: #64748b;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Patient Banner */
 .patientBanner {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin: 16px 0;
-  display: flex;
-  flex-wrap: wrap;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 24px;
-  font-size: 14px;
-  color: #334155;
 }
 
-/* Table Styles */
-.tableContainer {
-  overflow-x: auto;
+.patientField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.table th {
-  text-align: left;
-  padding: 12px 16px;
-  border-bottom: 2px solid #e2e8f0;
-  color: #64748b;
+.fieldLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
   font-weight: 600;
 }
 
-.table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f1f5f9;
+.fieldValue {
+  font-size: 16px;
   color: #334155;
-  vertical-align: middle;
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.patientInfo {
-  display: flex;
-  flex-direction: column;
-}
-
-.patientName {
   font-weight: 500;
 }
 
-.patientSub {
-  font-size: 12px;
-  color: #64748b;
-}
-
-/* Badges */
-.badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-.draft {
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.entered {
-  background: #e0f2fe;
-  color: #0284c7;
-}
-
-.verified {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.published {
-  background: #f0fdf4;
-  color: #15803d;
-}
-
-.rejected {
-  background: #fef2f2;
-  color: #dc2626;
-}
-
-/* Action Button */
-.actionButton {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.actionButton:hover {
-  background: #2563eb;
-}
-
+/* Back Button */
 .backButton {
   background: transparent;
   border: none;
   color: #64748b;
   cursor: pointer;
-  margin-bottom: 16px;
-  display: flex;
+  margin-bottom: 24px;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0;
+  gap: 8px;
+  padding: 8px 0;
   font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 .backButton:hover {
-  color: #334155;
-  text-decoration: underline;
+  color: #0f172a;
 }
 
+/* Result Entry Table */
+.tableContainer {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
 
-/* Result Entry Table Styles */
 .resultTable {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 24px;
   background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  overflow: hidden;
 }
 
 .resultTable th {
   background: #f8fafc;
-  padding: 12px 16px;
+  padding: 16px 24px;
   text-align: left;
-  border-bottom: 2px solid #e2e8f0;
-  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resultRow {
+  transition: background-color 0.15s ease;
+}
+
+.resultRow:hover {
+  background-color: #f8fafc;
 }
 
 .resultRow td {
-  padding: 12px 16px;
+  padding: 16px 24px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
+  color: #334155;
+  font-size: 15px;
 }
 
 .resultRow:last-child td {
   border-bottom: none;
 }
 
-.paramNameCell {
-  width: 40%;
+/* Parameter Cell */
+.paramName {
+  font-weight: 600;
+  color: #1e293b;
+  display: block;
 }
 
-.paramMeta {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
+.paramUnit {
   font-size: 12px;
-  color: #64748b;
-}
-
-.refRange {
   color: #94a3b8;
+  margin-top: 2px;
 }
 
-.inputCell {
-  width: 60%;
+/* Input Styles */
+.inputWrapper {
+  position: relative;
+  max-width: 200px;
 }
 
 .resultInput {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
+  font-family: 'Inter', monospace;
+  /* Monospace for numbers alignment */
   transition: all 0.2s;
+  color: #0f172a;
 }
 
 .resultInput:focus {
   outline: none;
   border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.verifiedValue {
-  padding: 10px 12px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 6px;
-  color: #166534;
-  display: flex;
-  justify-content: space-between;
+.resultInput::placeholder {
+  color: #cbd5e1;
+}
+
+/* Status Indicators */
+.statusBadge {
+  display: inline-flex;
   align-items: center;
-  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
-.verifiedBadge {
-  font-size: 10px;
-  background: #22c55e;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
+.status-pending {
+  background: #f1f5f9;
+  color: #64748b;
 }
 
-.actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
+.status-entered {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.status-verified {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-rejected {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* Reference Range */
+.refRange {
+  color: #64748b;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Actions Footer */
+.footer {
+  margin-top: 32px;
   padding-top: 24px;
   border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.saveButton,
+.verifyButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .saveButton {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  background: #3b82f6;
-  color: white;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #475569;
 }
 
 .saveButton:hover:not(:disabled) {
-  background: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
 }
 
+.verifyMainButton {
+  background: #2563eb;
+  /* Primary Blue */
+  border: none;
+  color: white;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.verifyMainButton:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+}
+
+.verifyMainButton:disabled,
 .saveButton:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+}
+
+/* Inline Verify Button (Small) */
+.inlineVerifyBtn {
+  margin-left: 8px;
+  padding: 6px 12px;
+  background: #e0f2fe;
+  color: #0284c7;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inlineVerifyBtn:hover {
+  background: #bae6fd;
+}
+
+/* Verified State */
+.verifiedText {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: #166534;
+  font-size: 16px;
+}
+
+.verifiedField {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  min-width: 120px;
+}
+
+/* Message */
+.message {
+  padding: 40px;
+  text-align: center;
+  color: #64748b;
+  font-size: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
 }

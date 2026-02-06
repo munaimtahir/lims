@@ -24,15 +24,16 @@
 
 ## Gate A1 — Backend Unit Tests
 - Status: **FAIL**
-- Command: see #5 above and latest run (output in `ARTIFACTS/gate_A_unit.txt`)
-- Fix attempts made:
+- Command: latest: `. .venv/bin/activate && TEST_DB_*=... DJANGO_SETTINGS_MODULE=config.settings.ci pytest -q --maxfail=1` (output in `ARTIFACTS/gate_A_unit.txt`)
+- Fix attempts made (infra):
   - Switched CI settings to allow Postgres test DB via `TEST_DB_*` env (fallback SQLite).
   - Disabled `SECURE_SSL_REDIRECT` in CI to avoid HTTP→HTTPS redirects.
   - Installed `whitenoise` (missing dependency) via requirements/development.txt.
-  - Ran tests against dedicated Postgres test DB (container).
+  - Added legacy field aliases for ReferenceRange and TestParameter unit to unblock older fixtures.
+  - Implemented “fresh DB per run” by recreating disposable Postgres container `lims_test_db` before pytest.
 - Current failure summary:
-  - 70 failures + 22 errors; core issue is schema mismatch between tests and models (e.g., tests expect `ReferenceRange` fields `min_value`/`max_value`/`min_critical`/`max_critical`, but model uses `reference_min`/`reference_max`/`critical_low`/`critical_high`), plus multiple downstream failures in reports/results/samples/orders tied to these fields and related fixtures.
-  - Addressing requires aligning models/fixtures/tests; out of scope for quick infra-only adjustments.
+  - Migrations now fail immediately with `psycopg2.errors.UndefinedTable: relation "parameters_active_idx" does not exist` while applying migrations on the fresh Postgres test DB. Tests abort at first error (see artifact).
+  - Resolving requires migration/schema alignment (ensure the custom index/table exists or adjust migration order); outside the scope of pure infra toggles.
 
 ## Gate A2 — Light API Integration
 - Status: **PASS**
