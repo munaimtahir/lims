@@ -16,7 +16,7 @@ export default function DashboardLayout() {
   // Get navigation items based on user role
   const getNavItems = () => {
     const items: { to: string; label: string; children?: { to: string; label: string }[] }[] = [];
-    
+
     if (!user) return items;
 
     // Common items for all roles
@@ -102,7 +102,7 @@ export default function DashboardLayout() {
   const logoUrl = branding?.lab_logo;
 
   return (
-    <div className={styles.layout}>
+    <div className={styles.layout} data-testid="dashboard-shell">
       <nav className={styles.sidebar}>
         <Link to="/dashboard" className={styles.logo}>
           {logoUrl && (
@@ -110,7 +110,7 @@ export default function DashboardLayout() {
           )}
           <h1>{displayName}</h1>
         </Link>
-        
+
         <ul className={styles.navList}>
           {getNavItems().map((item) => (
             <li key={item.to}>
@@ -142,7 +142,7 @@ export default function DashboardLayout() {
             </li>
           ))}
         </ul>
-        
+
         <div className={styles.userInfo}>
           <div className={styles.userName}>{user?.full_name}</div>
           <div className={styles.userRole}>{user?.role}</div>
@@ -151,8 +151,8 @@ export default function DashboardLayout() {
           </button>
         </div>
       </nav>
-      
-      <main className={styles.main}>
+
+      <main className={styles.main} data-testid="app-ready">
         <Outlet />
       </main>
     </div>

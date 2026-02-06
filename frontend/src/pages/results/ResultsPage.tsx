@@ -1,4 +1,4 @@
-import { useState, useEffect, type KeyboardEvent } from 'react';
+import { useState, useEffect, useRef, type KeyboardEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { resultApi, orderApi } from '../../api/services/index';
@@ -135,99 +135,110 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
 };
 
 const useResultEntry = (orderItemId: number) => {
-    const queryClient = useQueryClient();
-    const [results, setResults] = useState<Record<number, string>>({});
-    const [remarks, setRemarks] = useState<Record<number, string>>({});
-  
-    const { data: existingResultsData, isLoading: isLoadingResults } = useQuery({
-      queryKey: ['results', orderItemId],
-      queryFn: () => resultApi.getByOrderItem(orderItemId),
-      enabled: !!orderItemId,
-    });
-  
-    useEffect(() => {
-      if (existingResultsData?.data.results) {
-        const initialResults: Record<number, string> = {};
-        const initialRemarks: Record<number, string> = {};
-        existingResultsData.data.results.forEach((r: TestResult) => {
-          initialResults[r.test_parameter] = r.result_value || '';
-          initialRemarks[r.test_parameter] = r.remarks || '';
-        });
-        setResults(initialResults);
-        setRemarks(initialRemarks);
+  const queryClient = useQueryClient();
+  const [results, setResults] = useState<Record<number, string>>({});
+  const [remarks, setRemarks] = useState<Record<number, string>>({});
+
+  const { data: existingResultsData, isLoading: isLoadingResults, isError, error } = useQuery({
+    queryKey: ['results', orderItemId],
+    queryFn: () => resultApi.getByOrderItem(orderItemId),
+    enabled: !!orderItemId,
+  });
+
+  const initializedRef = useRef(false);
+  // Reset initialization if orderItemId changes (though key prop should handle this, safety first)
+  useEffect(() => {
+    initializedRef.current = false;
+  }, [orderItemId]);
+
+  useEffect(() => {
+    if (existingResultsData?.data.results && !initializedRef.current) {
+      const initialResults: Record<number, string> = {};
+      const initialRemarks: Record<number, string> = {};
+      existingResultsData.data.results.forEach((r: TestResult) => {
+        initialResults[r.test_parameter] = r.result_value || '';
+        initialRemarks[r.test_parameter] = r.remarks || '';
+      });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setResults(initialResults);
+      setRemarks(initialRemarks);
+      initializedRef.current = true;
+    }
+  }, [existingResultsData]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (resultsToSave: TestResult[]) => {
+      const payload = resultsToSave.map(r => ({
+        order_item: orderItemId,
+        test_parameter: r.test_parameter,
+        result_value: results[r.test_parameter] ?? '',
+        remarks: remarks[r.test_parameter] ?? '',
+      }));
+      return resultApi.bulkEntry(payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
+      queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
+    },
+  });
+
+  const verifyMutation = useMutation({
+    mutationFn: async (resultIds: number[]) => {
+      return resultApi.bulkVerify(resultIds);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
+      queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
+      alert('Results verified successfully!');
+    },
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { details?: string[] } } };
+      const errorData = error.response?.data;
+      if (errorData && errorData.details) {
+        alert(`Verification failed:\n- ${errorData.details.join('\n- ')}`);
+      } else {
+        alert('An unexpected error occurred during verification.');
       }
-    }, [existingResultsData]);
-  
-    const saveMutation = useMutation({
-        mutationFn: async (resultsToSave: TestResult[]) => {
-          const payload = resultsToSave.map(r => ({
-            order_item: orderItemId,
-            test_parameter: r.test_parameter,
-            result_value: results[r.test_parameter] ?? '',
-            remarks: remarks[r.test_parameter] ?? '',
-          }));
-          return resultApi.bulkEntry(payload);
-        },
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
-          queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
-        },
-      });
-  
-      const verifyMutation = useMutation({
-        mutationFn: async (resultIds: number[]) => {
-          return resultApi.bulkVerify(resultIds);
-        },
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
-          queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
-          alert('Results verified successfully!');
-        },
-        onError: (error: any) => {
-          const errorData = error.response?.data;
-          if (errorData && errorData.details) {
-            alert(`Verification failed:\n- ${errorData.details.join('\n- ')}`);
-          } else {
-            alert('An unexpected error occurred during verification.');
-          }
-        },
-      });
-  
-    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, result: TestResult, index: number, total: number) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          if (e.ctrlKey) {
-            // Save all results
-            saveMutation.mutate(existingResultsData?.data.results || []);
-            return;
-          }
-          if (e.shiftKey) {
-            // Save current row
-            saveMutation.mutate([result]);
-            return;
-          }
-  
-          const nextInput = document.querySelector(`input[data-index="${index + 1}"]`) as HTMLInputElement;
-          if (nextInput) {
-            nextInput.focus();
-          } else if (index === total - 1) {
-              (e.target as HTMLInputElement).blur();
-          }
-        }
-      };
-  
-    return {
-      results,
-      setResults,
-      remarks,
-      setRemarks,
-      existingResultsData,
-      isLoadingResults,
-      saveMutation,
-      verifyMutation,
-      handleKeyDown,
-    };
+    },
+  });
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, result: TestResult, index: number, total: number) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.ctrlKey) {
+        // Save all results
+        saveMutation.mutate(existingResultsData?.data.results || []);
+        return;
+      }
+      if (e.shiftKey) {
+        // Save current row
+        saveMutation.mutate([result]);
+        return;
+      }
+
+      const nextInput = document.querySelector(`input[data-index="${index + 1}"]`) as HTMLInputElement;
+      if (nextInput) {
+        nextInput.focus();
+      } else if (index === total - 1) {
+        (e.target as HTMLInputElement).blur();
+      }
+    }
   };
+
+  return {
+    results,
+    setResults,
+    remarks,
+    setRemarks,
+    existingResultsData,
+    isLoadingResults,
+    isError,
+    error,
+    saveMutation,
+    verifyMutation,
+    handleKeyDown,
+  };
+};
 
 const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () => void }) => {
   const {
@@ -235,6 +246,8 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
     setResults,
     existingResultsData,
     isLoadingResults,
+    isError,
+    error,
     saveMutation,
     verifyMutation,
     handleKeyDown,
@@ -253,15 +266,18 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
       await verifyMutation.mutateAsync(resultIds);
     }
   };
-  
+
   const isLoading = isLoadingResults || isLoadingDetails;
 
   if (isLoading) return <div className={styles.message}>Loading results...</div>;
+  if (isError) return <div className={styles.message} style={{ color: '#ef4444' }}>Error: {(error as Error).message}</div>;
 
   const resultItems = existingResultsData?.data.results || [];
-  const orderInfo = (orderItemDetails?.data as any)?.order;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const orderDetails = orderItemDetails?.data as any;
+  const orderInfo = orderDetails?.order;
   const patientInfo = orderInfo?.patient;
-  const testInfo = (orderItemDetails?.data as any)?.test_name || (orderItemDetails?.data as any)?.panel_name;
+  const testInfo = orderDetails?.test_name || orderDetails?.panel_name;
   const allVerified = resultItems.every((r: TestResult) => r.status === 'verified');
 
 
@@ -370,30 +386,30 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
           </div>
 
           <div className={styles.footer}>
-          {!allVerified && (
-            <>
-              <button
-                className={styles.saveButton}
-                onClick={() => saveMutation.mutate(resultItems)}
-                disabled={saveMutation.isPending || verifyMutation.isPending}
-              >
-                {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
-              </button>
-              <button
-                className={`${styles.verifyMainButton} ${styles.saveButton}`}
-                onClick={handleSaveAndVerify}
-                disabled={saveMutation.isPending || verifyMutation.isPending}
-              >
-                {verifyMutation.isPending ? 'Verifying...' : 'Save & Verify All'}
-              </button>
-            </>
-          )}
-          {allVerified && (
-            <div className={styles.allVerifiedMessage}>
-              All results have been verified.
-            </div>
-          )}
-        </div>
+            {!allVerified && (
+              <>
+                <button
+                  className={styles.saveButton}
+                  onClick={() => saveMutation.mutate(resultItems)}
+                  disabled={saveMutation.isPending || verifyMutation.isPending}
+                >
+                  {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
+                </button>
+                <button
+                  className={`${styles.verifyMainButton} ${styles.saveButton}`}
+                  onClick={handleSaveAndVerify}
+                  disabled={saveMutation.isPending || verifyMutation.isPending}
+                >
+                  {verifyMutation.isPending ? 'Verifying...' : 'Save & Verify All'}
+                </button>
+              </>
+            )}
+            {allVerified && (
+              <div className={styles.allVerifiedMessage}>
+                All results have been verified.
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -409,6 +425,7 @@ export default function ResultsPage() {
     <div>
       {orderItemId ? (
         <ResultEntry
+          key={orderItemId}
           orderItemId={orderItemId}
           onBack={() => setSearchParams((prev) => {
             const newParams = new URLSearchParams(prev);

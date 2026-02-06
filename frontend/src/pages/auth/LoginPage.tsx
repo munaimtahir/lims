@@ -8,7 +8,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading } = useAuth();
   const { branding } = useBranding();
-  
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -59,13 +59,14 @@ export default function LoginPage() {
           <h1>{displayName}</h1>
           <p>Laboratory Information Management System</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor="username">Username or Email</label>
             <input
               type="text"
               id="username"
+              data-testid="login-email"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter username or email"
@@ -80,6 +81,7 @@ export default function LoginPage() {
             <input
               type="password"
               id="password"
+              data-testid="login-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
@@ -99,6 +101,7 @@ export default function LoginPage() {
             type="submit"
             className={styles.submitButton}
             disabled={isSubmitting}
+            data-testid="login-submit"
           >
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </button>

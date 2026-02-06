@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { laboratoryApi, orderApi, patientApi } from '../../api/services';
 import type { Order, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
@@ -463,11 +463,7 @@ function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; o
   const [selectedTests, setSelectedTests] = useState<number[]>([]);
   const [selectedPanels, setSelectedPanels] = useState<number[]>([]);
   const [discount, setDiscount] = useState('0');
-  const [referredBy, setReferredBy] = useState('');
-
-  useEffect(() => {
-    setReferredBy(patient.last_order_referred_by || patient.default_referred_by || '');
-  }, [patient]);
+  const [referredBy, setReferredBy] = useState(() => patient.last_order_referred_by || patient.default_referred_by || '');
 
   const { data: testsData } = useQuery({
     queryKey: ['tests'],
@@ -482,7 +478,8 @@ function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; o
   const createMutation = useMutation({
     mutationFn: (data: OrderCreateRequest) => orderApi.create(data),
     onSuccess,
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { detail?: string } }; message?: string };
       const message =
         error?.response?.data?.detail ??
         error?.message ??
@@ -491,8 +488,8 @@ function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; o
     },
   });
 
-  const tests = testsData?.results || [];
-  const panels = panelsData?.results || [];
+  const tests = useMemo(() => testsData?.results || [], [testsData]);
+  const panels = useMemo(() => panelsData?.results || [], [panelsData]);
 
   // Memoize the Maps to avoid recreating them on every render
   const testsById = useMemo(() => new Map(tests.map((t) => [t.test_id, t])), [tests]);

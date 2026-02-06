@@ -28,7 +28,7 @@ export default function VerificationQueuePage() {
     },
   });
 
-  const results = queueData?.results || [];
+  const results = useMemo(() => queueData?.results || [], [queueData]);
 
   // Group results by order_item
   const groupedResults = useMemo(() => {
@@ -41,13 +41,28 @@ export default function VerificationQueuePage() {
     }> = {};
 
     results.forEach((r) => {
-      const orderItemId = typeof r.order_item === 'object' ? r.order_item.id : r.order_item;
+      let orderItemId: number;
+      let patientName = 'Unknown';
+      let orderCode = 'Unknown';
+      let tName = 'Test';
+
+      if (typeof r.order_item === 'object' && r.order_item !== null) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const item = r.order_item as any;
+        orderItemId = item.id;
+        patientName = item.order?.patient?.full_name || 'Unknown';
+        orderCode = item.order?.order_id || 'Unknown';
+        tName = item.test_name || item.panel_name || 'Test';
+      } else {
+        orderItemId = Number(r.order_item);
+      }
+
       if (!groups[orderItemId]) {
         groups[orderItemId] = {
           order_item_id: orderItemId,
-          patient_name: r.order_item.order?.patient?.full_name || 'Unknown',
-          order_id: r.order_item.order?.order_id || 'Unknown',
-          test_name: r.order_item.test_name || r.order_item.panel_name || 'Test',
+          patient_name: patientName,
+          order_id: orderCode,
+          test_name: tName,
           results: [],
         };
       }

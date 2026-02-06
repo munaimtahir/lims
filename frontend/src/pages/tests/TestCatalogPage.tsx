@@ -287,7 +287,9 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [validationSummary, setValidationSummary] = useState<CatalogImportSummary | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [validationErrors, setValidationErrors] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [validationWarnings, setValidationWarnings] = useState<any[]>([]);
   const [strict, setStrict] = useState(true);
   const [allowDefaults, setAllowDefaults] = useState(false);
@@ -339,14 +341,15 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
       setValidationSummary(data.summary);
       setValidationErrors(data.summary.errors || []);
       setValidationWarnings(data.summary.warnings || []);
-    } catch (err: any) {
-      const errorData = err.response?.data;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string; error?: string; summary?: { errors?: unknown[]; warnings?: unknown[] } } } };
+      const errorData = error.response?.data;
       setError(errorData?.message || errorData?.error || "Failed to upload file");
 
       if (errorData?.summary?.errors) {
         setValidationErrors(errorData.summary.errors);
         setValidationWarnings(errorData.summary.warnings || []);
-        setValidationSummary(errorData.summary);
+        setValidationSummary(errorData.summary as CatalogImportSummary);
       }
     } finally {
       setUploading(false);
@@ -369,8 +372,9 @@ function BulkImportModal({ onClose, onSuccess }: BulkImportModalProps) {
       });
       setSuccessMessage('Import applied');
       setTimeout(() => onSuccess(), 1200);
-    } catch (err: any) {
-      const errorData = err.response?.data;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string; error?: string; summary?: { errors?: unknown[] } } } };
+      const errorData = error.response?.data;
       setError(errorData?.message || errorData?.error || 'Import failed');
       if (errorData?.summary?.errors) {
         setValidationErrors(errorData.summary.errors);

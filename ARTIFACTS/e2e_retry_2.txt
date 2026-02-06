@@ -1,0 +1,57 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › tests/smoke.spec.ts:11:3 › Smoke: Login › logs in and sees dashboard shell (6.1s)
+
+
+  1) [chromium] › tests/smoke.spec.ts:11:3 › Smoke: Login › logs in and sees dashboard shell ───────
+
+    Error: Input not visible: [data-testid="login-email"]
+
+    [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="login-email"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Input not visible: [data-testid="login-email"] with timeout 5000ms[22m
+    [2m  - waiting for locator('[data-testid="login-email"]')[22m
+
+
+       at ../pages/BasePage.ts:22
+
+      20 |   async fill(selector: string, value: string) {
+      21 |     const el = this.locator(selector);
+    > 22 |     await expect(el, `Input not visible: ${selector}`).toBeVisible();
+         |                                                        ^
+      23 |     await el.fill(value);
+      24 |   }
+      25 |
+        at LoginPage.fill (/home/munaim/srv/apps/lims/e2e/pages/BasePage.ts:22:56)
+        at LoginPage.login (/home/munaim/srv/apps/lims/e2e/pages/LoginPage.ts:10:16)
+        at /home/munaim/srv/apps/lims/e2e/tests/smoke.spec.ts:15:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts/test-output/smoke-Smoke-Login-logs-in-and-sees-dashboard-shell-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    artifacts/test-output/smoke-Smoke-Login-logs-in-and-sees-dashboard-shell-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts/test-output/smoke-Smoke-Login-logs-in-and-sees-dashboard-shell-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/test-output/smoke-Smoke-Login-logs-in-and-sees-dashboard-shell-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/test-output/smoke-Smoke-Login-logs-in-and-sees-dashboard-shell-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/smoke.spec.ts:11:3 › Smoke: Login › logs in and sees dashboard shell ────────
+
+[36m  Serving HTML report at http://localhost:9323. Press Ctrl+C to quit.[39m

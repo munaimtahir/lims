@@ -1,0 +1,125 @@
+
+> frontend@0.0.0 lint
+> eslint .
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+/home/munaim/srv/apps/lims/frontend/src/api/contracts/contracts.test.ts
+  63:9  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+/home/munaim/srv/apps/lims/frontend/src/contexts/AuthContext.tsx
+  165:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/munaim/srv/apps/lims/frontend/src/contexts/BrandingContext.tsx
+  62:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/munaim/srv/apps/lims/frontend/src/pages/orders/OrdersPage.tsx
+  114:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:93  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/munaim/srv/apps/lims/frontend/src/pages/patients/PatientsPage.tsx
+  481:22  error    Unexpected any. Specify a different type                                                                                                                                                      @typescript-eslint/no-explicit-any
+  490:9   warning  The 'tests' logical expression could make the dependencies of useMemo Hook (at line 494) change on every render. To fix this, wrap the initialization of 'tests' in its own useMemo() Hook    react-hooks/exhaustive-deps
+  491:9   warning  The 'panels' logical expression could make the dependencies of useMemo Hook (at line 495) change on every render. To fix this, wrap the initialization of 'panels' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+/home/munaim/srv/apps/lims/frontend/src/pages/registration/RegistrationPage.tsx
+  254:11   error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  257:18   error  'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+  279:18   error  'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+  384:22   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  390:24   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  399:22   error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  676:101  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+/home/munaim/srv/apps/lims/frontend/src/pages/results/ResultsPage.tsx
+  158:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/munaim/srv/apps/lims/frontend/src/pages/results/ResultsPage.tsx:158:7
+  156 |         initialRemarks[r.test_parameter] = r.remarks || '';
+  157 |       });
+> 158 |       setResults(initialResults);
+      |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  159 |       setRemarks(initialRemarks);
+  160 |       initializedIdRef.current = orderItemId;
+  161 |     }  react-hooks/set-state-in-effect
+  189:22  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  265:48  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  267:47  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  267:93  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+
+/home/munaim/srv/apps/lims/frontend/src/pages/review/VerificationQueuePage.tsx
+  31:9  warning  The 'results' logical expression could make the dependencies of useMemo Hook (at line 58) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'results' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+/home/munaim/srv/apps/lims/frontend/src/pages/settings/SystemSettingsPage.tsx
+   46:22  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+   61:22  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+   75:22  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+   89:22  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  106:22  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  122:22  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  141:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/munaim/srv/apps/lims/frontend/src/pages/settings/SystemSettingsPage.tsx:141:7
+  139 |     // Only update if changed to prevent loops
+  140 |     if (selectedTemplateId !== template.id) {
+> 141 |       setSelectedTemplateId(template.id);
+      |       ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  142 |     }
+  143 |     // Deep check or just JSON check for form? 
+  144 |     // Simplified: always update form if template changes effectively  react-hooks/set-state-in-effect
+  149:6   warning  React Hook useEffect has a missing dependency: 'templateForm?.id'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  155:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/munaim/srv/apps/lims/frontend/src/pages/settings/SystemSettingsPage.tsx:155:7
+  153 |     const tab = params.get('tab');
+  154 |     if ((tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print') && activeTab !== tab) {
+> 155 |       setActiveTab(tab);
+      |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  156 |     }
+  157 |   }, [location.search, activeTab]);
+  158 |                         react-hooks/set-state-in-effect
+  206:67  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  211:74  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+
+/home/munaim/srv/apps/lims/frontend/src/pages/tests/TestCatalogPage.tsx
+  290:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  291:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  342:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  372:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/munaim/srv/apps/lims/frontend/src/types/index.ts
+  248:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  469:85  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  473:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  474:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  475:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  477:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  478:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  480:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  481:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/munaim/srv/apps/lims/frontend/src/utils/apiHelpers.ts
+   7:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 48 problems (42 errors, 6 warnings)
+

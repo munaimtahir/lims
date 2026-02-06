@@ -4,6 +4,7 @@
  * These utilities handle inconsistencies in API response shapes to prevent runtime errors.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function normalizeListResponse<T>(response: any): T[] {
   if (Array.isArray(response)) return response;
   if (response?.results) {
@@ -17,6 +18,7 @@ export function normalizeListResponse<T>(response: any): T[] {
   return [];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function normalizeObjectResponse<T>(response: any): T | null {
   if (response && typeof response === 'object' && !Array.isArray(response)) {
     if ('data' in response && typeof response.data === 'object') {

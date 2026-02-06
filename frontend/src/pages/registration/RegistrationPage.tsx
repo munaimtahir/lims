@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { patientApi, laboratoryApi, orderApi } from '../../api/services';
-import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest } from '../../types';
+import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
 import { useBranding } from '../../contexts/BrandingContext';
 import { formatCurrency } from '../../utils/currency';
 import styles from './RegistrationPage.module.css';
@@ -251,10 +251,10 @@ export default function RegistrationPage() {
       const timer = setTimeout(async () => {
         try {
           const response = await patientApi.search(globalSearchQuery);
-          // @ts-ignore
-          setGlobalSuggestions(response.results || response.data || []);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setGlobalSuggestions((response.results || (response as any).data || []) as PatientLookupResult[]);
           setShowGlobalSuggestions(true);
-        } catch (error) {
+        } catch {
           setGlobalSuggestions([]);
         } finally {
           setLoadingGlobalSearch(false);
@@ -276,7 +276,7 @@ export default function RegistrationPage() {
           setTestSuggestions(response.data);
           setShowTestSuggestions(response.data.length > 0);
           setSelectedTestIndex(0); // Select first by default for easier Enter key usage
-        } catch (error) {
+        } catch {
           setTestSuggestions([]);
         }
       }, 200);
@@ -381,13 +381,14 @@ export default function RegistrationPage() {
       // Focus test search
       setTimeout(() => testSearchRef.current?.focus(), 100);
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
       alert(`Error saving patient: ${error?.response?.data?.message || 'Unknown error'}`);
     },
   });
 
   const createOrderMutation = useMutation({
-    mutationFn: (data: any) => orderApi.create(data),
+    mutationFn: (data: OrderCreateRequest) => orderApi.create(data),
     onSuccess: (response) => {
       setLastOrderId(response.order_id || 'Unknown');
       setShowReceipt(true);
@@ -396,7 +397,8 @@ export default function RegistrationPage() {
       // Usually we reset after successful order.
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
       alert(`Error creating order: ${error?.response?.data?.message || 'Unknown error'}`);
     },
   });
@@ -673,7 +675,7 @@ export default function RegistrationPage() {
               <label>Gender <span className="text-red-500">*</span></label>
               <select
                 value={patientFormData.gender}
-                onChange={(e) => setPatientFormData({ ...patientFormData, gender: e.target.value as any })}
+                onChange={(e) => setPatientFormData({ ...patientFormData, gender: e.target.value as 'Male' | 'Female' | 'Other' })}
                 className={styles.select}
                 required
               >
