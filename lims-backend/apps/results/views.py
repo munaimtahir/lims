@@ -461,7 +461,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
         result = self.get_object()
 
         # 1. Permission Check
-        if not (request.user.is_staff or request.user.is_superuser):
+        if not (request.user.is_pathologist or request.user.is_admin):
             return Response(
                 {"error": "You do not have permission to verify results."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -505,10 +505,10 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if not (request.user.is_staff or request.user.is_superuser):
+        if not (request.user.is_pathologist or request.user.is_admin):
             return Response(
                 {"error": "You do not have permission to verify results."},
-                status=status.HTTP_4_FORBIDDEN,
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         errors = []

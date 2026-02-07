@@ -1,0 +1,68 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.3, pluggy-1.6.0
+django: version: 5.0, settings: config.settings.ci (from ini)
+rootdir: /home/munaim/srv/apps/lims/lims-backend
+configfile: pytest.ini
+plugins: cov-4.1.0, django-4.7.0
+collected 400 items
+
+apps/accounts/tests/test_auth.py ..
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+.venv/lib/python3.12/site-packages/django/conf/__init__.py:251
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/conf/__init__.py:251: RemovedInDjango51Warning: The STATICFILES_STORAGE setting is deprecated. Use STORAGES instead.
+    warnings.warn(STATICFILES_STORAGE_DEPRECATED_MSG, RemovedInDjango51Warning)
+
+.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    from pkg_resources import DistributionNotFound, get_distribution
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/dashboard/tests/test_dashboard.py)
+    class TestResult(models.Model):
+
+.venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11: DeprecationWarning: ast.NameConstant is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    haveNameConstant = hasattr(ast,'NameConstant')
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/reports/tests/test_reports.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_expected_results.py)
+    class TestResult(models.Model):
+
+apps/results/filters.py:13
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/filters.py:13: PytestCollectionWarning: cannot collect test class 'TestResultFilter' because it has a __init__ constructor (from: apps/results/tests/test_filters.py)
+    class TestResultFilter(django_filters.FilterSet):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_filters.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_result_flags.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_results.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_serializers.py)
+    class TestResult(models.Model):
+
+apps/results/serializers.py:6
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/serializers.py:6: PytestCollectionWarning: cannot collect test class 'TestResultSerializer' because it has a __init__ constructor (from: apps/results/tests/test_serializers.py)
+    class TestResultSerializer(serializers.ModelSerializer):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/utils/crypto.py:76: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+======================== 2 passed, 13 warnings in 7.61s ========================

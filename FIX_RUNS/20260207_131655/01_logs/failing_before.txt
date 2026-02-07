@@ -1,0 +1,97 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.3, pluggy-1.6.0
+django: version: 5.0, settings: config.settings.ci (from ini)
+rootdir: /home/munaim/srv/apps/lims/lims-backend
+configfile: pytest.ini
+plugins: cov-4.1.0, django-4.7.0
+collected 7 items
+
+apps/laboratory/tests/test_parameter_validation.py FFF                   [ 42%]
+apps/results/tests/test_results.py F                                     [ 57%]
+apps/samples/tests/test_samples.py F                                     [ 71%]
+apps/samples/tests/test_services.py FF                                   [100%]
+
+=================================== FAILURES ===================================
+__ TestExcelImportParameterValidation.test_import_invalid_parameter_id_format __
+apps/laboratory/tests/test_parameter_validation.py:153: in test_import_invalid_parameter_id_format
+    assert error["column"] == "parameter_id"
+E   KeyError: 'column'
+_ TestExcelImportParameterValidation.test_import_mapping_with_missing_parameter_id _
+apps/laboratory/tests/test_parameter_validation.py:211: in test_import_mapping_with_missing_parameter_id
+    assert "p999" in error["message"]
+E   AssertionError: assert 'p999' in 'Test or Parameter not found for mapping'
+_ TestExcelImportParameterValidation.test_import_mapping_with_invalid_parameter_id_format _
+apps/laboratory/tests/test_parameter_validation.py:244: in test_import_mapping_with_invalid_parameter_id_format
+    assert "format" in error["message"].lower()
+E   assert 'format' in "invalid parameter_id 'param1'"
+E    +  where "invalid parameter_id 'param1'" = <built-in method lower of str object at 0x72ce1750e010>()
+E    +    where <built-in method lower of str object at 0x72ce1750e010> = "Invalid parameter_id 'param1'".lower
+___________________ TestTestResultViewSet.test_verify_result ___________________
+apps/results/tests/test_results.py:268: in test_verify_result
+    assert response.status_code == status.HTTP_200_OK
+E   assert 403 == 200
+E    +  where 403 = <Response status_code=403, "application/json">.status_code
+E    +  and   200 = status.HTTP_200_OK
+----------------------------- Captured stderr call -----------------------------
+[WARNING] 2026-02-07 18:17:34 django.request log.log_response:241 - Forbidden: /api/v1/results/1/verify/
+_____________________ TestSampleViewSet.test_create_sample _____________________
+apps/samples/tests/test_samples.py:152: in test_create_sample
+    assert response.status_code == status.HTTP_201_CREATED
+E   assert 400 == 201
+E    +  where 400 = <Response status_code=400, "application/json">.status_code
+E    +  and   201 = status.HTTP_201_CREATED
+----------------------------- Captured stderr call -----------------------------
+[WARNING] 2026-02-07 18:17:35 django.request log.log_response:241 - Bad Request: /api/v1/samples/
+________ SampleGenerationTestCase.test_ensure_samples_wrapper_function _________
+apps/samples/tests/test_services.py:219: in test_ensure_samples_wrapper_function
+    self.assertEqual(len(samples), 2)
+E   AssertionError: 0 != 2
+________ SampleGenerationTestCase.test_idempotency_no_duplicate_samples ________
+apps/samples/tests/test_services.py:137: in test_idempotency_no_duplicate_samples
+    self.assertEqual(len(samples_1), 2)
+E   AssertionError: 0 != 2
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+.venv/lib/python3.12/site-packages/django/conf/__init__.py:251
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/conf/__init__.py:251: RemovedInDjango51Warning: The STATICFILES_STORAGE setting is deprecated. Use STORAGES instead.
+    warnings.warn(STATICFILES_STORAGE_DEPRECATED_MSG, RemovedInDjango51Warning)
+
+.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    from pkg_resources import DistributionNotFound, get_distribution
+
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_invalid_parameter_id_format
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_invalid_parameter_id_format
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_invalid_parameter_id_format
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_missing_parameter_id
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_missing_parameter_id
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_missing_parameter_id
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_invalid_parameter_id_format
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_invalid_parameter_id_format
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_invalid_parameter_id_format
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/openpyxl/packaging/core.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_invalid_parameter_id_format
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_missing_parameter_id
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_invalid_parameter_id_format
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/openpyxl/writer/excel.py:292: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    workbook.properties.modified = datetime.datetime.utcnow()
+
+apps/results/tests/test_results.py::TestTestResultViewSet::test_verify_result
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11: DeprecationWarning: ast.NameConstant is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    haveNameConstant = hasattr(ast,'NameConstant')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_invalid_parameter_id_format
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_missing_parameter_id
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_invalid_parameter_id_format
+FAILED apps/results/tests/test_results.py::TestTestResultViewSet::test_verify_result
+FAILED apps/samples/tests/test_samples.py::TestSampleViewSet::test_create_sample
+FAILED apps/samples/tests/test_services.py::SampleGenerationTestCase::test_ensure_samples_wrapper_function
+FAILED apps/samples/tests/test_services.py::SampleGenerationTestCase::test_idempotency_no_duplicate_samples
+======================== 7 failed, 16 warnings in 5.78s ========================

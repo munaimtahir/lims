@@ -1,0 +1,5 @@
+ lims-backend/apps/laboratory/tests/test_parameter_validation.py | 8 ++++----
+ lims-backend/apps/results/views.py                              | 6 +++---
+ lims-backend/apps/samples/serializers.py                        | 1 +
+ lims-backend/apps/samples/tests/test_services.py                | 8 ++++----
+ 4 files changed, 12 insertions(+), 11 deletions(-)

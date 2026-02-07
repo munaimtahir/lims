@@ -128,8 +128,8 @@ class SampleGenerationTestCase(TestCase):
 
     def test_idempotency_no_duplicate_samples(self):
         """Sample generation should be idempotent - no duplicates."""
-        # Mark order as paid and generate samples
-        self.order.is_paid = True
+        # Mark order as paid by setting paid_amount
+        self.order.paid_amount = self.order.net_amount
         self.order.save()
 
         # First generation
@@ -201,7 +201,7 @@ class SampleGenerationTestCase(TestCase):
 
     def test_sample_barcode_uniqueness(self):
         """Each generated sample should have a unique barcode."""
-        self.order.is_paid = True
+        self.order.paid_amount = self.order.net_amount
         self.order.save()
 
         samples = generate_samples_for_order(self.order, self.user)
@@ -211,7 +211,7 @@ class SampleGenerationTestCase(TestCase):
 
     def test_ensure_samples_wrapper_function(self):
         """Test the ensure_samples_for_paid_order wrapper function."""
-        self.order.is_paid = True
+        self.order.paid_amount = self.order.net_amount
         self.order.save()
 
         samples = ensure_samples_for_paid_order(self.order, self.user)

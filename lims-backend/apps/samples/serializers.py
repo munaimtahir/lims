@@ -46,6 +46,7 @@ class SampleSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = [
+            "barcode",
             "collected_at",
             "collected_by",
             "received_at",

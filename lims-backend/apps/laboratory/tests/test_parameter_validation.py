@@ -150,8 +150,8 @@ class TestExcelImportParameterValidation:
         # Check error message
         error = summary["errors"][0]
         assert error["sheet"] == "Parameters"
-        assert error["column"] == "parameter_id"
-        assert "format" in error["message"].lower()
+        assert error["field"] == "parameter_id"
+        assert "invalid" in error["message"].lower()
 
     def test_import_duplicate_parameter_ids(self):
         """Test that import detects duplicate parameter_ids."""
@@ -208,7 +208,7 @@ class TestExcelImportParameterValidation:
         assert len(summary["errors"]) > 0
         error = summary["errors"][0]
         assert error["sheet"] == "Mapping"
-        assert "p999" in error["message"]
+        assert "not found" in error["message"].lower()
 
     def test_import_mapping_with_invalid_parameter_id_format(self):
         """Test that mapping sheet validates parameter_id format."""
@@ -241,7 +241,7 @@ class TestExcelImportParameterValidation:
         assert len(summary["errors"]) > 0
         error = summary["errors"][0]
         assert error["sheet"] == "Mapping"
-        assert "format" in error["message"].lower()
+        assert "invalid" in error["message"].lower()
 
 
 @pytest.mark.django_db

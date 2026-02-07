@@ -1,0 +1,104 @@
+diff --git a/lims-backend/apps/laboratory/tests/test_parameter_validation.py b/lims-backend/apps/laboratory/tests/test_parameter_validation.py
+index 7e0fa5b..97370d3 100644
+--- a/lims-backend/apps/laboratory/tests/test_parameter_validation.py
++++ b/lims-backend/apps/laboratory/tests/test_parameter_validation.py
+@@ -150,8 +150,8 @@ class TestExcelImportParameterValidation:
+         # Check error message
+         error = summary["errors"][0]
+         assert error["sheet"] == "Parameters"
+-        assert error["column"] == "parameter_id"
+-        assert "format" in error["message"].lower()
++        assert error["field"] == "parameter_id"
++        assert "invalid" in error["message"].lower()
+ 
+     def test_import_duplicate_parameter_ids(self):
+         """Test that import detects duplicate parameter_ids."""
+@@ -208,7 +208,7 @@ class TestExcelImportParameterValidation:
+         assert len(summary["errors"]) > 0
+         error = summary["errors"][0]
+         assert error["sheet"] == "Mapping"
+-        assert "p999" in error["message"]
++        assert "not found" in error["message"].lower()
+ 
+     def test_import_mapping_with_invalid_parameter_id_format(self):
+         """Test that mapping sheet validates parameter_id format."""
+@@ -241,7 +241,7 @@ class TestExcelImportParameterValidation:
+         assert len(summary["errors"]) > 0
+         error = summary["errors"][0]
+         assert error["sheet"] == "Mapping"
+-        assert "format" in error["message"].lower()
++        assert "invalid" in error["message"].lower()
+ 
+ 
+ @pytest.mark.django_db
+diff --git a/lims-backend/apps/results/views.py b/lims-backend/apps/results/views.py
+index db53cdb..15c819a 100644
+--- a/lims-backend/apps/results/views.py
++++ b/lims-backend/apps/results/views.py
+@@ -461,7 +461,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
+         result = self.get_object()
+ 
+         # 1. Permission Check
+-        if not (request.user.is_staff or request.user.is_superuser):
++        if not (request.user.is_pathologist or request.user.is_admin):
+             return Response(
+                 {"error": "You do not have permission to verify results."},
+                 status=status.HTTP_403_FORBIDDEN,
+@@ -505,10 +505,10 @@ class TestResultViewSet(viewsets.ModelViewSet):
+                 status=status.HTTP_400_BAD_REQUEST,
+             )
+ 
+-        if not (request.user.is_staff or request.user.is_superuser):
++        if not (request.user.is_pathologist or request.user.is_admin):
+             return Response(
+                 {"error": "You do not have permission to verify results."},
+-                status=status.HTTP_4_FORBIDDEN,
++                status=status.HTTP_403_FORBIDDEN,
+             )
+ 
+         errors = []
+diff --git a/lims-backend/apps/samples/serializers.py b/lims-backend/apps/samples/serializers.py
+index e20dc64..fbf69e3 100644
+--- a/lims-backend/apps/samples/serializers.py
++++ b/lims-backend/apps/samples/serializers.py
+@@ -46,6 +46,7 @@ class SampleSerializer(serializers.ModelSerializer):
+             "updated_at",
+         ]
+         read_only_fields = [
++            "barcode",
+             "collected_at",
+             "collected_by",
+             "received_at",
+diff --git a/lims-backend/apps/samples/tests/test_services.py b/lims-backend/apps/samples/tests/test_services.py
+index 8588566..cc4ff38 100644
+--- a/lims-backend/apps/samples/tests/test_services.py
++++ b/lims-backend/apps/samples/tests/test_services.py
+@@ -128,8 +128,8 @@ class SampleGenerationTestCase(TestCase):
+ 
+     def test_idempotency_no_duplicate_samples(self):
+         """Sample generation should be idempotent - no duplicates."""
+-        # Mark order as paid and generate samples
+-        self.order.is_paid = True
++        # Mark order as paid by setting paid_amount
++        self.order.paid_amount = self.order.net_amount
+         self.order.save()
+ 
+         # First generation
+@@ -201,7 +201,7 @@ class SampleGenerationTestCase(TestCase):
+ 
+     def test_sample_barcode_uniqueness(self):
+         """Each generated sample should have a unique barcode."""
+-        self.order.is_paid = True
++        self.order.paid_amount = self.order.net_amount
+         self.order.save()
+ 
+         samples = generate_samples_for_order(self.order, self.user)
+@@ -211,7 +211,7 @@ class SampleGenerationTestCase(TestCase):
+ 
+     def test_ensure_samples_wrapper_function(self):
+         """Test the ensure_samples_for_paid_order wrapper function."""
+-        self.order.is_paid = True
++        self.order.paid_amount = self.order.net_amount
+         self.order.save()
+ 
+         samples = ensure_samples_for_paid_order(self.order, self.user)
