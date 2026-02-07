@@ -271,8 +271,6 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
         setLoadingTimeout(true);
       }, 15000); // 15 second timeout
       return () => clearTimeout(timer);
-    } else {
-      setLoadingTimeout(false);
     }
   }, [isLoadingResults, isLoadingDetails]);
 

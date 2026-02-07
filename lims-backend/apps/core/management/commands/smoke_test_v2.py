@@ -3,11 +3,11 @@ Run end-to-end API smoke test v2.
 """
 import os
 import sys
-from io import BytesIO
 from datetime import datetime
+from io import BytesIO
 
-import requests
 import openpyxl
+import requests
 from django.core.management.base import BaseCommand
 
 
@@ -15,9 +15,15 @@ class Command(BaseCommand):
     help = "Run end-to-end API smoke test v2"
 
     def add_arguments(self, parser):
-        parser.add_argument("--base-url", default=os.environ.get("BASE_URL", "http://backend:8000"))
-        parser.add_argument("--host-header", default=os.environ.get("HOST_HEADER", "localhost"))
-        parser.add_argument("--forwarded-proto", default=os.environ.get("FORWARDED_PROTO", "https"))
+        parser.add_argument(
+            "--base-url", default=os.environ.get("BASE_URL", "http://backend:8000")
+        )
+        parser.add_argument(
+            "--host-header", default=os.environ.get("HOST_HEADER", "localhost")
+        )
+        parser.add_argument(
+            "--forwarded-proto", default=os.environ.get("FORWARDED_PROTO", "https")
+        )
 
     def handle(self, *args, **options):
         base_url = options["base_url"].rstrip("/")
@@ -36,15 +42,23 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"PASS {step}: {message}"))
 
         session = requests.Session()
-        session.headers.update({"Host": host_header, "X-Forwarded-Proto": forwarded_proto})
+        session.headers.update(
+            {"Host": host_header, "X-Forwarded-Proto": forwarded_proto}
+        )
 
         # Login
-        resp = session.post(f"{api_base}/auth/login/", json={"username": username, "password": password})
+        resp = session.post(
+            f"{api_base}/auth/login/", json={"username": username, "password": password}
+        )
         if resp.status_code != 200:
             print(resp.text)
             fail("AUTH", f"Login failed ({resp.status_code})")
         data = resp.json()
-        token = (data.get("data") or {}).get("access_token") or data.get("access") or data.get("access_token")
+        token = (
+            (data.get("data") or {}).get("access_token")
+            or data.get("access")
+            or data.get("access_token")
+        )
         if not token:
             fail("AUTH", "No access token returned")
         ok("AUTH", "Logged in")
@@ -61,18 +75,104 @@ class Command(BaseCommand):
             default_sheet = wb.active
             wb.remove(default_sheet)
             tests_sheet = wb.create_sheet("Tests")
-            tests_sheet.append(["test_id", "test_code", "legacy_test_code", "test_name", "category", "sample_type", "sample_volume", "price", "turnaround_time", "loinc_code", "instructions", "is_active"])
-            tests_sheet.append([1, "CBC", "", "Complete Blood Count", "Hematology", "Blood", "", 500, 24, "", "", True])
+            tests_sheet.append(
+                [
+                    "test_id",
+                    "test_code",
+                    "legacy_test_code",
+                    "test_name",
+                    "category",
+                    "sample_type",
+                    "sample_volume",
+                    "price",
+                    "turnaround_time",
+                    "loinc_code",
+                    "instructions",
+                    "is_active",
+                ]
+            )
+            tests_sheet.append(
+                [
+                    1,
+                    "CBC",
+                    "",
+                    "Complete Blood Count",
+                    "Hematology",
+                    "Blood",
+                    "",
+                    500,
+                    24,
+                    "",
+                    "",
+                    True,
+                ]
+            )
             params_sheet = wb.create_sheet("Parameters")
-            params_sheet.append(["parameter_id", "parameter_name", "unit", "data_type", "editor_type", "decimal_places", "allowed_values", "flag_direction", "has_quick_text", "active"])
-            params_sheet.append(["p1", "Hemoglobin", "g/dL", "Numeric", "Plain", 2, "", "Both", False, True])
-            params_sheet.append(["p2", "WBC", "x10^3/uL", "Numeric", "Plain", 2, "", "Both", False, True])
+            params_sheet.append(
+                [
+                    "parameter_id",
+                    "parameter_name",
+                    "unit",
+                    "data_type",
+                    "editor_type",
+                    "decimal_places",
+                    "allowed_values",
+                    "flag_direction",
+                    "has_quick_text",
+                    "active",
+                ]
+            )
+            params_sheet.append(
+                [
+                    "p1",
+                    "Hemoglobin",
+                    "g/dL",
+                    "Numeric",
+                    "Plain",
+                    2,
+                    "",
+                    "Both",
+                    False,
+                    True,
+                ]
+            )
+            params_sheet.append(
+                [
+                    "p2",
+                    "WBC",
+                    "x10^3/uL",
+                    "Numeric",
+                    "Plain",
+                    2,
+                    "",
+                    "Both",
+                    False,
+                    True,
+                ]
+            )
             mapping_sheet = wb.create_sheet("Mapping")
-            mapping_sheet.append(["test_id", "parameter_id", "display_order", "reportable"])
+            mapping_sheet.append(
+                ["test_id", "parameter_id", "display_order", "reportable"]
+            )
             mapping_sheet.append([1, "p1", 1, True])
             mapping_sheet.append([1, "p2", 2, True])
             ranges_sheet = wb.create_sheet("ReferenceRanges")
-            ranges_sheet.append(["test_id", "parameter_id", "gender", "age_min", "age_max", "reference_min", "reference_max", "critical_low", "critical_high", "is_active", "version", "notes"])
+            ranges_sheet.append(
+                [
+                    "test_id",
+                    "parameter_id",
+                    "gender",
+                    "age_min",
+                    "age_max",
+                    "reference_min",
+                    "reference_max",
+                    "critical_low",
+                    "critical_high",
+                    "is_active",
+                    "version",
+                    "notes",
+                ]
+            )
             ranges_sheet.append([1, "p1", "Both", 18, 65, 12, 16, 7, 20, True, 1, ""])
 
             buffer = BytesIO()
@@ -104,7 +204,9 @@ class Command(BaseCommand):
             "gender": "Male",
             "phone": f"0300{datetime.now().strftime('%H%M%S%f')[:7]}",
         }
-        resp = session.post(f"{api_base}/patients/", headers=headers, json=patient_payload)
+        resp = session.post(
+            f"{api_base}/patients/", headers=headers, json=patient_payload
+        )
         if resp.status_code != 201:
             fail("PATIENT", f"Create patient failed ({resp.status_code})")
         patient_id = (resp.json().get("data") or resp.json()).get("id")
@@ -127,7 +229,9 @@ class Command(BaseCommand):
         ok("ORDER", f"Created order {order_id}")
 
         # Collect sample
-        resp = session.get(f"{api_base}/samples/?order_item__order={order_id}", headers=headers)
+        resp = session.get(
+            f"{api_base}/samples/?order_item__order={order_id}", headers=headers
+        )
         if resp.status_code != 200:
             fail("SAMPLES", f"List samples failed ({resp.status_code})")
         samples = resp.json().get("results", [])
@@ -143,7 +247,9 @@ class Command(BaseCommand):
         ok("SAMPLES", "Samples collected")
 
         # Get parameters for test
-        resp = session.get(f"{api_base}/laboratory/parameters/?test={test_id}", headers=headers)
+        resp = session.get(
+            f"{api_base}/laboratory/parameters/?test={test_id}", headers=headers
+        )
         if resp.status_code != 200:
             fail("PARAMETERS", f"List parameters failed ({resp.status_code})")
         params = resp.json().get("results", [])
@@ -152,22 +258,32 @@ class Command(BaseCommand):
 
         results_payload = {
             "results": [
-                {"order_item": order_item_id, "test_parameter": p["id"], "result_value": "1.0"}
+                {
+                    "order_item": order_item_id,
+                    "test_parameter": p["id"],
+                    "result_value": "1.0",
+                }
                 for p in params
             ]
         }
-        resp = session.post(f"{api_base}/results/bulk_entry/", headers=headers, json=results_payload)
+        resp = session.post(
+            f"{api_base}/results/bulk_entry/", headers=headers, json=results_payload
+        )
         if resp.status_code != 201:
             fail("RESULTS", f"Result entry failed ({resp.status_code})")
         ok("RESULTS", "Results entered")
 
         # Verify results
-        resp = session.get(f"{api_base}/results/?order_item={order_item_id}", headers=headers)
+        resp = session.get(
+            f"{api_base}/results/?order_item={order_item_id}", headers=headers
+        )
         if resp.status_code != 200:
             fail("VERIFY", f"List results failed ({resp.status_code})")
         result_rows = resp.json().get("results", resp.json())
         for row in result_rows:
-            verify_resp = session.post(f"{api_base}/results/{row['id']}/verify/", headers=headers)
+            verify_resp = session.post(
+                f"{api_base}/results/{row['id']}/verify/", headers=headers
+            )
             if verify_resp.status_code != 200:
                 fail("VERIFY", f"Verify failed ({verify_resp.status_code})")
         ok("VERIFY", "Results verified")
@@ -192,7 +308,9 @@ class Command(BaseCommand):
         if resp.status_code not in [200, 201]:
             fail("REPORT", f"Generate report failed ({resp.status_code})")
 
-        resp = session.get(f"{api_base}/orders/orders/{order_id}/report.pdf", headers=headers)
+        resp = session.get(
+            f"{api_base}/orders/orders/{order_id}/report.pdf", headers=headers
+        )
         if resp.status_code != 200:
             fail("REPORT-PDF", f"Download report failed ({resp.status_code})")
         if resp.content[:4] != b"%PDF":
@@ -203,7 +321,11 @@ class Command(BaseCommand):
         resp = session.post(
             f"{api_base}/payments/",
             headers=headers,
-            json={"order": order_id, "amount": order.get("net_amount", "0"), "payment_method": "cash"},
+            json={
+                "order": order_id,
+                "amount": order.get("net_amount", "0"),
+                "payment_method": "cash",
+            },
         )
         if resp.status_code != 201:
             fail("PAYMENT", f"Create payment failed ({resp.status_code})")
@@ -211,7 +333,9 @@ class Command(BaseCommand):
         ok("PAYMENT", f"Payment {payment_id}")
 
         # Receipt PDF
-        resp = session.get(f"{api_base}/payments/{payment_id}/receipt/", headers=headers)
+        resp = session.get(
+            f"{api_base}/payments/{payment_id}/receipt/", headers=headers
+        )
         if resp.status_code != 200 or resp.content[:4] != b"%PDF":
             fail("RECEIPT", f"Receipt PDF failed ({resp.status_code})")
         ok("RECEIPT", "Receipt downloaded")

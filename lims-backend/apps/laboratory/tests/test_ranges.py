@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+
 from apps.laboratory.models import (
     Parameter,
     ReferenceRange,
@@ -131,9 +132,10 @@ def test_pick_reference_range_missing_dob_fallback(test_parameter):
     assert range_info["ref_max"] is None
 
 
-
 @pytest.mark.django_db
-def test_pick_reference_range_missing_ranges_returns_empty(test_parameter, male_patient):
+def test_pick_reference_range_missing_ranges_returns_empty(
+    test_parameter, male_patient
+):
     range_info = pick_reference_range(
         test_parameter, male_patient, at_date=date(2024, 1, 1)
     )

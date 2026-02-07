@@ -1,0 +1,49 @@
+
+> frontend@0.0.0 lint
+> eslint .
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+/home/munaim/srv/apps/lims/frontend/src/contexts/AuthContext.tsx
+  165:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/munaim/srv/apps/lims/frontend/src/contexts/BrandingContext.tsx
+  62:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/munaim/srv/apps/lims/frontend/src/pages/collection/CollectionWorklistPage.tsx
+   3:21  error  'orderApi' is defined but never used    @typescript-eslint/no-unused-vars
+  30:41  error  'sampleData' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/munaim/srv/apps/lims/frontend/src/pages/print/PrintReceiptPage.tsx
+  164:6  error  Parsing error: ')' expected
+
+/home/munaim/srv/apps/lims/frontend/src/pages/registration/RegistrationPage.tsx
+  7:10  error  'formatDateDDMMYY' is defined but never used         @typescript-eslint/no-unused-vars
+  7:28  error  'normalizeDateInputToISO' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/munaim/srv/apps/lims/frontend/src/pages/results/ResultsPage.tsx
+  275:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/munaim/srv/apps/lims/frontend/src/pages/results/ResultsPage.tsx:275:7
+  273 |       return () => clearTimeout(timer);
+  274 |     } else {
+> 275 |       setLoadingTimeout(false);
+      |       ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  276 |     }
+  277 |   }, [isLoadingResults, isLoadingDetails]);
+  278 |  react-hooks/set-state-in-effect
+
+/home/munaim/srv/apps/lims/frontend/src/pages/samples/SamplesPage.tsx
+  1:10  error  'useMemo' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/munaim/srv/apps/lims/frontend/src/pages/settings/SystemSettingsPage.tsx
+  6:34  error  'setSampleBarcodeEnabled' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 10 problems (8 errors, 2 warnings)
+

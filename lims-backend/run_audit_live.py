@@ -1,18 +1,26 @@
-
-import os
-import django
 import json
+import os
+
+import django
 
 # Setup Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.production')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
 django.setup()
 
-from apps.laboratory.models import Test, Parameter, TestParameter, ReferenceRange, TestPanel
-from django.db.models import Count, Q, F
+from django.db.models import Count, F, Q
+
+from apps.laboratory.models import (
+    Parameter,
+    ReferenceRange,
+    Test,
+    TestPanel,
+    TestParameter,
+)
+
 
 def run_audit():
     print("Running Audit on EXISTING Database...")
-    
+
     duplicate_test_codes = (
         Test.objects.values("test_code")
         .annotate(count=Count("test_id"))
@@ -23,24 +31,18 @@ def run_audit():
         .annotate(count=Count("parameter_id"))
         .filter(count__gt=1)
     )
-    tests_without_parameters = (
-        Test.objects.filter(test_parameters__isnull=True)
-        .values("test_id", "test_code", "test_name")[:10]
+    tests_without_parameters = Test.objects.filter(test_parameters__isnull=True).values(
+        "test_id", "test_code", "test_name"
+    )[:10]
+    orphan_mappings = TestParameter.objects.filter(
+        Q(test__isnull=True) | Q(parameter__isnull=True)
     )
-    orphan_mappings = (
-        TestParameter.objects.filter(
-            Q(test__isnull=True) | Q(parameter__isnull=True)
-        )
-    )
-    missing_ranges = (
-        TestParameter.objects.filter(reference_ranges__isnull=True)
-        .values("test_id", "parameter_id")[:10]
-    )
-    invalid_ranges = (
-        ReferenceRange.objects.filter(
-            Q(reference_min__isnull=True, reference_max__isnull=True)
-            | Q(age_min__gte=F("age_max"))
-        )
+    missing_ranges = TestParameter.objects.filter(reference_ranges__isnull=True).values(
+        "test_id", "parameter_id"
+    )[:10]
+    invalid_ranges = ReferenceRange.objects.filter(
+        Q(reference_min__isnull=True, reference_max__isnull=True)
+        | Q(age_min__gte=F("age_max"))
     )
     serum_defaults = Test.objects.filter(sample_type__iexact="Serum")
     zero_price = Test.objects.filter(price=0)
@@ -61,7 +63,9 @@ def run_audit():
         "orphans": {
             "mappings": {
                 "count": orphan_mappings.count(),
-                "samples": list(orphan_mappings.values("id", "test_id", "parameter_id")[:10]),
+                "samples": list(
+                    orphan_mappings.values("id", "test_id", "parameter_id")[:10]
+                ),
             },
         },
         "tests_without_parameters": {
@@ -70,14 +74,18 @@ def run_audit():
         },
         "reference_ranges": {
             "missing": {
-                "count": TestParameter.objects.filter(reference_ranges__isnull=True).count(),
-                # Note: 'parameter_id' in values() refers to the ForeignKey id (string p-code), 
+                "count": TestParameter.objects.filter(
+                    reference_ranges__isnull=True
+                ).count(),
+                # Note: 'parameter_id' in values() refers to the ForeignKey id (string p-code),
                 # but depending on Django version/setup, checking simple access is safer.
                 "samples": list(missing_ranges),
             },
             "invalid": {
                 "count": invalid_ranges.count(),
-                "samples": list(invalid_ranges.values("id", "parameter_id", "gender")[:10]),
+                "samples": list(
+                    invalid_ranges.values("id", "parameter_id", "gender")[:10]
+                ),
             },
         },
         "suspicious_defaults": {
@@ -96,11 +104,14 @@ def run_audit():
         },
         "panels_without_tests": {
             "count": panels_without_tests.count(),
-            "samples": list(panels_without_tests.values("panel_code", "panel_name")[:10]),
+            "samples": list(
+                panels_without_tests.values("panel_code", "panel_name")[:10]
+            ),
         },
     }
-    
+
     print(json.dumps(results, indent=2, default=str))
+
 
 if __name__ == "__main__":
     run_audit()

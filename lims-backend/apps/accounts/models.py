@@ -5,6 +5,7 @@ Custom User model for the LIMS with role-based access control.
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
+
 from .managers import UserManager
 
 

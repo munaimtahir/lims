@@ -3,6 +3,7 @@ Utility functions for audit logging.
 """
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.fields.files import FieldFile
+
 from .models import AuditLog
 
 
@@ -62,7 +63,7 @@ def log_action(
     content_type = ContentType.objects.get_for_model(instance)
 
     # Don't log ContentType or Migration changes to avoid loops during migration
-    if content_type.model in ['contenttype', 'migration', 'logentry']:
+    if content_type.model in ["contenttype", "migration", "logentry"]:
         return None
 
     audit_log = AuditLog.objects.create(
@@ -156,8 +157,8 @@ def model_to_dict_safe(instance):
     Returns:
         dict: A dictionary representation of the instance.
     """
+    from datetime import date, datetime
     from decimal import Decimal
-    from datetime import datetime, date
 
     result = {}
     for field in instance._meta.fields:

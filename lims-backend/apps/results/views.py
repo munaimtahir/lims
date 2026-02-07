@@ -1,25 +1,26 @@
-from rest_framework import viewsets, filters, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-from django.utils import timezone
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Prefetch
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+
 from apps.core.export_utils import export_to_csv, export_to_excel
+from apps.laboratory.models import ReferenceRange, TestParameter
+from apps.orders.models import Order, OrderItem
+from apps.reports.models import Report, ReportStatus
+from apps.reports.utils import generate_pdf_report
+
+from .filters import TestResultFilter
 from .models import TestResult
 from .serializers import TestResultSerializer
-from .filters import TestResultFilter
-from apps.orders.models import OrderItem
-from apps.laboratory.models import TestParameter, ReferenceRange
 from .services.expected_results import (
     ensure_test_results,
     get_orderitem_expected_parameters,
 )
-from django.core.files.base import ContentFile
-from apps.reports.models import Report, ReportStatus
-from apps.reports.utils import generate_pdf_report
-from apps.orders.models import Order
 
 
 class TestResultViewSet(viewsets.ModelViewSet):
@@ -34,48 +35,71 @@ class TestResultViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = TestResultFilter
     ordering_fields = ["test_parameter__display_order", "entered_at"]
-    
+
     @action(detail=False, methods=["get"])
     def export(self, request):
         """
         Export result search results to CSV or Excel.
-        
+
         Query params:
             - format: 'csv' or 'excel' (default: 'csv')
             - All other result filter params are supported
-        
+
         Returns:
             Response: CSV or Excel file download
         """
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
-        
+
         format_type = request.query_params.get("format", "csv").lower()
         filename = f"results_export_{timezone.now().strftime('%Y%m%d_%H%M%S')}"
-        
+
         data = serializer.data
         headers = [
-            "Parameter", "Test", "Result Value", "Unit", "Flag",
-            "Status", "Order ID", "Entered At", "Verified At"
+            "Parameter",
+            "Test",
+            "Result Value",
+            "Unit",
+            "Flag",
+            "Status",
+            "Order ID",
+            "Entered At",
+            "Verified At",
         ]
-        
+
         export_data = []
         for item in data:
-            export_data.append([
-                (item.get("test_parameter", {}).get("parameter_name", "")
-                 if isinstance(item.get("test_parameter"), dict) else ""),
-                (item.get("test_parameter", {}).get("test", {}).get("test_name", "")
-                 if isinstance(item.get("test_parameter"), dict) else ""),
-                item.get("result_value", ""),
-                (item.get("test_parameter", {}).get("unit", "")
-                 if isinstance(item.get("test_parameter"), dict) else ""),
-                item.get("flag", ""),
-                item.get("status", ""),
-                (item.get("order_item", {}).get("order", {}).get("order_id", "")
-                 if isinstance(item.get("order_item"), dict) else ""),
-                item.get("entered_at", ""),
-                item.get("verified_at", ""),
-            ])
+            export_data.append(
+                [
+                    (
+                        item.get("test_parameter", {}).get("parameter_name", "")
+                        if isinstance(item.get("test_parameter"), dict)
+                        else ""
+                    ),
+                    (
+                        item.get("test_parameter", {})
+                        .get("test", {})
+                        .get("test_name", "")
+                        if isinstance(item.get("test_parameter"), dict)
+                        else ""
+                    ),
+                    item.get("result_value", ""),
+                    (
+                        item.get("test_parameter", {}).get("unit", "")
+                        if isinstance(item.get("test_parameter"), dict)
+                        else ""
+                    ),
+                    item.get("flag", ""),
+                    item.get("status", ""),
+                    (
+                        item.get("order_item", {}).get("order", {}).get("order_id", "")
+                        if isinstance(item.get("order_item"), dict)
+                        else ""
+                    ),
+                    item.get("entered_at", ""),
+                    item.get("verified_at", ""),
+                ]
+            )
 
         if format_type == "excel":
             return export_to_excel(export_data, f"{filename}.xlsx", headers, "Results")
@@ -115,9 +139,11 @@ class TestResultViewSet(viewsets.ModelViewSet):
             .values_list("order_item_id", flat=True)
             .distinct()
         )
-        order_items_with_pending = OrderItem.objects.filter(
-            id__in=pending_results
-        ).select_related("order", "order__patient", "test", "panel").distinct()
+        order_items_with_pending = (
+            OrderItem.objects.filter(id__in=pending_results)
+            .select_related("order", "order__patient", "test", "panel")
+            .distinct()
+        )
 
         # Combine and deduplicate
         all_items = (order_items_needing_results | order_items_with_pending).distinct()
@@ -152,51 +178,67 @@ class TestResultViewSet(viewsets.ModelViewSet):
     def _get_order_item_from_request(self, request):
         """
         Extract and validate order_item_id from request, fetch OrderItem instance.
-        
+
         Args:
             request: DRF request object
-            
+
         Returns:
             OrderItem: The fetched order item with related data
-            
+
         Raises:
             ValidationError: If order_item_id is missing or invalid, or if patient is missing
         """
-        order_item_id = request.query_params.get("order_item_id") or request.data.get("order_item_id")
+        order_item_id = request.query_params.get("order_item_id") or request.data.get(
+            "order_item_id"
+        )
         if not order_item_id:
             raise ValidationError({"order_item_id": "This field is required"})
-        
+
         try:
             # Prefetch active reference ranges for all parameters to avoid N+1 queries
             reference_ranges_prefetch = Prefetch(
-                'reference_ranges',
-                queryset=ReferenceRange.objects.filter(is_active=True).order_by('-version', '-id'),
-                to_attr='active_reference_ranges'
+                "reference_ranges",
+                queryset=ReferenceRange.objects.filter(is_active=True).order_by(
+                    "-version", "-id"
+                ),
+                to_attr="active_reference_ranges",
             )
-            
+
             order_item = (
-                OrderItem.objects.select_related("order", "order__patient", "test", "panel")
+                OrderItem.objects.select_related(
+                    "order", "order__patient", "test", "panel"
+                )
                 .prefetch_related(
                     "panel__tests",
-                    Prefetch("test__test_parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
-                    Prefetch("panel__tests__test_parameters", queryset=TestParameter.objects.prefetch_related(reference_ranges_prefetch)),
+                    Prefetch(
+                        "test__test_parameters",
+                        queryset=TestParameter.objects.prefetch_related(
+                            reference_ranges_prefetch
+                        ),
+                    ),
+                    Prefetch(
+                        "panel__tests__test_parameters",
+                        queryset=TestParameter.objects.prefetch_related(
+                            reference_ranges_prefetch
+                        ),
+                    ),
                 )
                 .get(id=order_item_id)
             )
         except (OrderItem.DoesNotExist, ValueError):
             raise ValidationError({"order_item_id": "Order item not found"})
-        
+
         # Explicitly check for missing patient (select_related ensures these are loaded)
         if not order_item.order.patient:
             raise ValidationError({"error": "Order item has no associated patient"})
-        
+
         return order_item
 
     @action(detail=False, methods=["get"])
     def expected(self, request):
         """Return expected result rows for an order item without writing."""
         order_item = self._get_order_item_from_request(request)
-        
+
         expected = get_orderitem_expected_parameters(
             order_item, order_item.order.patient
         )
@@ -206,9 +248,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
     def ensure(self, request):
         """Ensure result rows exist for an order item."""
         order_item = self._get_order_item_from_request(request)
-        
+
         results = ensure_test_results(order_item)
-        
+
         # Reload results with all related data for serialization
         result_ids = [r.id for r in results]
         results_with_relations = (
@@ -228,7 +270,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
             )
             .order_by("test_parameter__display_order")
         )
-        
+
         serializer = self.get_serializer(results_with_relations, many=True)
         return Response({"results": serializer.data})
 
@@ -357,7 +399,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
         # Get all expected parameters count
         # This is expensive if calculated every time. Better to rely on ensure_test_results having run.
         # We assume ensure_test_results ran.
-        
+
         all_results = order_item.results.all()
         if not all_results.exists():
             return
@@ -369,38 +411,38 @@ class TestResultViewSet(viewsets.ModelViewSet):
             if order_item.status != "VERIFIED":
                 order_item.status = "VERIFIED"
                 order_item.save(update_fields=["status"])
-        
+
         # 2. Check Order status
         order = order_item.order
         all_items = order.items.all()
-        
+
         if all_items.filter(status="VERIFIED").count() == all_items.count():
             # All items are verified. Ready to publish.
-            
+
             # Transition Order to VERIFIED if not already (or skipping from IN_PROCESS)
             if order.status != "VERIFIED":
                 if order.can_transition_to("VERIFIED"):
                     order.transition_to("VERIFIED")
-            
+
             # Generate Report
             try:
                 # Check if report already exists
                 existing_report = Report.objects.filter(
                     order=order, status=ReportStatus.FINAL
                 ).first()
-                
+
                 if not existing_report:
                     pdf_content = generate_pdf_report(order.id)
-                    
+
                     report = Report(order=order)
                     report.generated_by = self.request.user if self.request else None
-                    
+
                     filename = f"Report_{order.order_id}_{order.id}.pdf"
                     report.report_file.save(filename, ContentFile(pdf_content))
                     report.status = ReportStatus.FINAL
                     report.is_final = True
                     report.save()
-                    
+
                     # Transition Order to PUBLISHED
                     if order.can_transition_to("PUBLISHED"):
                         order.transition_to("PUBLISHED")
@@ -420,7 +462,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
         # 1. Permission Check
         if not (request.user.is_staff or request.user.is_superuser):
-             return Response(
+            return Response(
                 {"error": "You do not have permission to verify results."},
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -443,7 +485,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
         result.verified_at = timezone.now()
         result.status = "VERIFIED"
         result.save()
-        
+
         # Trigger cascade update
         self._check_and_update_status(result.order_item)
 
@@ -470,7 +512,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
             )
 
         errors = []
-        results_to_verify = TestResult.objects.select_related("test_parameter").filter(id__in=result_ids)
+        results_to_verify = TestResult.objects.select_related("test_parameter").filter(
+            id__in=result_ids
+        )
 
         if results_to_verify.count() != len(result_ids):
             return Response(
@@ -480,10 +524,14 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
         for r in results_to_verify:
             if r.status == "VERIFIED":
-                errors.append(f"Result for '{r.test_parameter.effective_parameter_name}' is already verified.")
+                errors.append(
+                    f"Result for '{r.test_parameter.effective_parameter_name}' is already verified."
+                )
             if not r.result_value or not r.result_value.strip():
-                errors.append(f"Result for '{r.test_parameter.effective_parameter_name}' is missing a value.")
-        
+                errors.append(
+                    f"Result for '{r.test_parameter.effective_parameter_name}' is missing a value."
+                )
+
         if errors:
             return Response(
                 {"error": "Verification failed for some results.", "details": errors},
@@ -496,8 +544,10 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 verified_by=request.user,
                 verified_at=timezone.now(),
             )
-            
-            order_items = OrderItem.objects.filter(results__id__in=result_ids).distinct()
+
+            order_items = OrderItem.objects.filter(
+                results__id__in=result_ids
+            ).distinct()
             for item in order_items:
                 self._check_and_update_status(item)
 

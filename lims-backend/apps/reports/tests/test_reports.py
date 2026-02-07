@@ -1,18 +1,20 @@
 """
 Tests for the reports app.
 """
-import pytest
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
+import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
+
 from apps.accounts.models import User
-from apps.patients.models import Patient
-from apps.laboratory.models import TestCategory, Test, TestParameter, Parameter
+from apps.laboratory.models import Parameter, Test, TestCategory, TestParameter
 from apps.orders.models import Order, OrderItem
-from apps.results.models import TestResult
+from apps.patients.models import Patient
 from apps.reports.models import Report
 from apps.reports.utils import generate_pdf_report
+from apps.results.models import TestResult
 
 
 @pytest.fixture
@@ -165,7 +167,7 @@ class TestPDFGeneration:
         """Test that generating PDF for nonexistent order raises error."""
         with pytest.raises(ValueError):
             generate_pdf_report(99999)
-    
+
     def test_generate_pdf_with_custom_lab_info(self, order_with_results):
         """Test PDF generation with custom lab information."""
         pdf_content = generate_pdf_report(
@@ -177,30 +179,30 @@ class TestPDFGeneration:
         )
         assert isinstance(pdf_content, bytes)
         assert len(pdf_content) > 0
-    
+
     def test_generate_pdf_with_system_settings_exception(self, order_with_results):
         """Test PDF generation handles SystemSettings exception."""
         from unittest.mock import patch
-        
+
         # Mock SystemSettings to raise exception
-        with patch('apps.reports.utils.SystemSettings') as mock_settings:
+        with patch("apps.reports.utils.SystemSettings") as mock_settings:
             mock_settings.get_settings.side_effect = Exception("Settings error")
-            
+
             # Should not raise exception, should use fallback values
             pdf_content = generate_pdf_report(order_with_results.id)
             assert isinstance(pdf_content, bytes)
             assert len(pdf_content) > 0
-    
+
     def test_generate_pdf_with_report_header_footer(self, order_with_results):
         """Test PDF generation with report header and footer from settings."""
         from apps.core.models import SystemSettings
-        
+
         # Create settings with header/footer
         settings = SystemSettings.get_settings()
         settings.report_header = "Custom Header"
         settings.report_footer = "Custom Footer"
         settings.save()
-        
+
         pdf_content = generate_pdf_report(order_with_results.id)
         assert isinstance(pdf_content, bytes)
         assert len(pdf_content) > 0
@@ -208,6 +210,7 @@ class TestPDFGeneration:
     def test_generate_pdf_contains_lab_name(self, order_with_results):
         """PDF should contain lab name text."""
         from apps.core.models import SystemSettings
+
         settings = SystemSettings.get_settings()
         settings.lab_name = "Acme Lab"
         settings.save()
@@ -218,18 +221,19 @@ class TestPDFGeneration:
     def test_generate_pdf_with_empty_signatories(self, order_with_results):
         """PDF generation should not fail with empty signatories."""
         from apps.core.models import PrintTemplate
+
         template = PrintTemplate.get_active(PrintTemplate.TYPE_REPORT)
         if template:
             template.signatories = []
             template.save()
         pdf_content = generate_pdf_report(order_with_results.id)
         assert pdf_content[:4] == b"%PDF"
-    
+
     def test_generate_pdf_with_panel_items(self, order_with_results, pathologist_user):
         """Test PDF generation with panel items."""
         from apps.laboratory.models import TestPanel
         from apps.orders.models import OrderItem
-        
+
         # Create panel and add to order
         category = order_with_results.items.first().test.category
         panel = TestPanel.objects.create(
@@ -245,15 +249,17 @@ class TestPDFGeneration:
             panel=panel,
             price=200.00,
         )
-        
+
         pdf_content = generate_pdf_report(order_with_results.id)
         assert isinstance(pdf_content, bytes)
         assert len(pdf_content) > 0
-    
-    def test_generate_pdf_with_partial_reference_ranges(self, order_with_results, test_parameter):
+
+    def test_generate_pdf_with_partial_reference_ranges(
+        self, order_with_results, test_parameter
+    ):
         """Test PDF generation with partial reference ranges (only min or max)."""
         from apps.laboratory.models import ReferenceRange
-        
+
         # Create a ReferenceRange for the test_parameter
         ref_range = ReferenceRange.objects.create(
             parameter=test_parameter,
@@ -261,20 +267,21 @@ class TestPDFGeneration:
             age_max=120,
             gender="Both",
             reference_min=10.0,
-            reference_max=None, # Only min set
+            reference_max=None,  # Only min set
             is_active=True,
         )
-        
+
         pdf_content = generate_pdf_report(order_with_results.id)
         assert isinstance(pdf_content, bytes)
         assert len(pdf_content) > 0
-    
+
     def test_generate_pdf_with_no_results(self, order_with_results):
         """Test PDF generation for order with no results."""
         # Remove all results
         from apps.results.models import TestResult
+
         TestResult.objects.filter(order_item__order=order_with_results).delete()
-        
+
         pdf_content = generate_pdf_report(order_with_results.id)
         assert isinstance(pdf_content, bytes)
         assert len(pdf_content) > 0
@@ -302,10 +309,11 @@ class TestReportViewSet:
         """Test generating a report without order_id."""
         response = authenticated_client.post("/api/v1/reports/generate/", {})
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-    
+
     def test_download_report(self, api_client, pathologist_user, order_with_results):
         """Test downloading a report PDF."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -313,27 +321,30 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.get(f"/api/v1/reports/{report.id}/download/")
         assert response.status_code == status.HTTP_200_OK
         assert response.get("Content-Type", "") == "application/pdf"
-    
-    def test_download_report_no_file(self, api_client, pathologist_user, order_with_results):
+
+    def test_download_report_no_file(
+        self, api_client, pathologist_user, order_with_results
+    ):
         """Test downloading a report without file."""
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
             status="final",
         )
-        
+
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.get(f"/api/v1/reports/{report.id}/download/")
         assert response.status_code == status.HTTP_404_NOT_FOUND
-    
+
     def test_mark_delivered(self, api_client, pathologist_user, order_with_results):
         """Test marking a report as delivered."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -341,7 +352,7 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.post(
             f"/api/v1/reports/{report.id}/mark_delivered/",
@@ -351,10 +362,11 @@ class TestReportViewSet:
         assert response.status_code == status.HTTP_200_OK
         report.refresh_from_db()
         assert report.delivered_at is not None
-    
+
     def test_reprint_report(self, api_client, pathologist_user, order_with_results):
         """Test reprinting a report."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -362,17 +374,18 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         initial_count = report.reprint_count
         response = api_client.post(f"/api/v1/reports/{report.id}/reprint/")
         assert response.status_code == status.HTTP_200_OK
         report.refresh_from_db()
         assert report.reprint_count == initial_count + 1
-    
+
     def test_amend_report(self, api_client, pathologist_user, order_with_results):
         """Test amending a report."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -380,7 +393,7 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.post(
             f"/api/v1/reports/{report.id}/amend/",
@@ -389,10 +402,13 @@ class TestReportViewSet:
         )
         assert response.status_code == status.HTTP_201_CREATED
         assert "amended_report" in response.data
-    
-    def test_amend_report_missing_reason(self, api_client, pathologist_user, order_with_results):
+
+    def test_amend_report_missing_reason(
+        self, api_client, pathologist_user, order_with_results
+    ):
         """Test amending a report without reason."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -400,7 +416,7 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.post(
             f"/api/v1/reports/{report.id}/amend/",
@@ -408,17 +424,20 @@ class TestReportViewSet:
             format="json",
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-    
-    def test_amend_report_non_pathologist(self, api_client, technician_user, order_with_results):
+
+    def test_amend_report_non_pathologist(
+        self, api_client, technician_user, order_with_results
+    ):
         """Test that non-pathologist cannot amend reports."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             status="final",
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=technician_user)
         response = api_client.post(
             f"/api/v1/reports/{report.id}/amend/",
@@ -426,10 +445,11 @@ class TestReportViewSet:
             format="json",
         )
         assert response.status_code == status.HTTP_403_FORBIDDEN
-    
+
     def test_patient_history(self, api_client, pathologist_user, order_with_results):
         """Test getting patient report history."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -437,7 +457,7 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         patient_id = order_with_results.patient.id
         response = api_client.get(
@@ -445,16 +465,17 @@ class TestReportViewSet:
         )
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) > 0
-    
+
     def test_patient_history_missing_patient_id(self, api_client, pathologist_user):
         """Test patient history without patient_id."""
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.get("/api/v1/reports/patient_history/")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-    
+
     def test_amendments_list(self, api_client, pathologist_user, order_with_results):
         """Test getting amendments for a report."""
         from django.core.files.base import ContentFile
+
         original_report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -462,7 +483,7 @@ class TestReportViewSet:
         )
         original_report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         original_report.save()
-        
+
         # Create amendment
         amended_report = Report.objects.create(
             order=order_with_results,
@@ -472,7 +493,7 @@ class TestReportViewSet:
         )
         amended_report.report_file.save("amended.pdf", ContentFile(b"PDF content"))
         amended_report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.get(
             f"/api/v1/reports/amendments/?report_id={original_report.id}"
@@ -480,16 +501,19 @@ class TestReportViewSet:
         assert response.status_code == status.HTTP_200_OK
         assert "amendments" in response.data
         assert len(response.data["amendments"]) == 1
-    
+
     def test_amendments_missing_report_id(self, api_client, pathologist_user):
         """Test amendments endpoint without report_id."""
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.get("/api/v1/reports/amendments/")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-    
-    def test_upload_signature_pathologist(self, api_client, pathologist_user, order_with_results):
+
+    def test_upload_signature_pathologist(
+        self, api_client, pathologist_user, order_with_results
+    ):
         """Test uploading pathologist signature."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -497,11 +521,11 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         signature_file = ContentFile(b"signature data")
         signature_file.name = "signature.png"
-        
+
         response = api_client.post(
             f"/api/v1/reports/{report.id}/upload_signature/",
             {"signature": signature_file, "signature_type": "pathologist"},
@@ -510,21 +534,24 @@ class TestReportViewSet:
         assert response.status_code == status.HTTP_200_OK
         report.refresh_from_db()
         assert report.pathologist_signature is not None
-    
-    def test_upload_signature_technician(self, api_client, technician_user, order_with_results):
+
+    def test_upload_signature_technician(
+        self, api_client, technician_user, order_with_results
+    ):
         """Test uploading technician signature."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             status="final",
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=technician_user)
         signature_file = ContentFile(b"signature data")
         signature_file.name = "signature.png"
-        
+
         response = api_client.post(
             f"/api/v1/reports/{report.id}/upload_signature/",
             {"signature": signature_file, "signature_type": "technician"},
@@ -533,10 +560,13 @@ class TestReportViewSet:
         assert response.status_code == status.HTTP_200_OK
         report.refresh_from_db()
         assert report.technician_signature is not None
-    
-    def test_upload_signature_missing_file(self, api_client, pathologist_user, order_with_results):
+
+    def test_upload_signature_missing_file(
+        self, api_client, pathologist_user, order_with_results
+    ):
         """Test uploading signature without file."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -544,7 +574,7 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.post(
             f"/api/v1/reports/{report.id}/upload_signature/",
@@ -552,8 +582,10 @@ class TestReportViewSet:
             format="multipart",
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-    
-    def test_generate_report_with_order_id_string(self, api_client, pathologist_user, order_with_results):
+
+    def test_generate_report_with_order_id_string(
+        self, api_client, pathologist_user, order_with_results
+    ):
         """Test generating report with order_id as string."""
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.post(
@@ -562,10 +594,13 @@ class TestReportViewSet:
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED
-    
-    def test_generate_report_existing_regenerate(self, api_client, pathologist_user, order_with_results):
+
+    def test_generate_report_existing_regenerate(
+        self, api_client, pathologist_user, order_with_results
+    ):
         """Test regenerating an existing report."""
         from django.core.files.base import ContentFile
+
         existing_report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -573,7 +608,7 @@ class TestReportViewSet:
         )
         existing_report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         existing_report.save()
-        
+
         api_client.force_authenticate(user=pathologist_user)
         response = api_client.post(
             "/api/v1/reports/generate/",
@@ -581,10 +616,11 @@ class TestReportViewSet:
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED
-    
+
     def test_report_generate_report_number(self, order_with_results, pathologist_user):
         """Test automatic report number generation."""
         from django.core.files.base import ContentFile
+
         report = Report(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -592,13 +628,14 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         assert report.report_number is not None
         assert report.report_number.startswith("RPT-")
-    
+
     def test_report_mark_delivered(self, order_with_results, pathologist_user):
         """Test mark_delivered method."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -606,17 +643,18 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         report.mark_delivered(pathologist_user, "email")
         report.refresh_from_db()
-        
+
         assert report.delivered_at is not None
         assert report.delivered_by == pathologist_user
         assert report.delivery_method == "email"
-    
+
     def test_report_increment_reprint(self, order_with_results, pathologist_user):
         """Test increment_reprint method."""
         from django.core.files.base import ContentFile
+
         report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -625,17 +663,18 @@ class TestReportViewSet:
         )
         report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         report.save()
-        
+
         initial_count = report.reprint_count
         report.increment_reprint()
         report.refresh_from_db()
-        
+
         assert report.reprint_count == initial_count + 1
         assert report.last_reprinted_at is not None
-    
+
     def test_report_create_amendment(self, order_with_results, pathologist_user):
         """Test create_amendment method."""
         from django.core.files.base import ContentFile
+
         original_report = Report.objects.create(
             order=order_with_results,
             generated_by=pathologist_user,
@@ -643,13 +682,15 @@ class TestReportViewSet:
         )
         original_report.report_file.save("test.pdf", ContentFile(b"PDF content"))
         original_report.save()
-        
-        amended_report = original_report.create_amendment("Correction needed", pathologist_user)
-        
+
+        amended_report = original_report.create_amendment(
+            "Correction needed", pathologist_user
+        )
+
         assert amended_report is not None
         assert amended_report.amended_from == original_report
         assert amended_report.amendment_reason == "Correction needed"
         assert amended_report.status == "FINAL"
-        
+
         original_report.refresh_from_db()
         assert original_report.status == "AMENDED"

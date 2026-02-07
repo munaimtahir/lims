@@ -1,16 +1,17 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+
 from .views import (
-    TestCategoryViewSet,
-    TestViewSet,
-    TestPanelViewSet,
-    TestParameterViewSet,
+    BulkImportViewSet,
+    CatalogAuditView,
+    CatalogExportView,
+    CatalogImportJobViewSet,
     ParameterViewSet,
     ReferenceRangeViewSet,
-    BulkImportViewSet,
-    CatalogImportJobViewSet,
-    CatalogExportView,
-    CatalogAuditView,
+    TestCategoryViewSet,
+    TestPanelViewSet,
+    TestParameterViewSet,
+    TestViewSet,
 )
 
 router = DefaultRouter()
@@ -26,5 +27,9 @@ router.register(r"reference-ranges", ReferenceRangeViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("export/", CatalogExportView.as_view({"get": "list"}), name="catalog-export"),
-    path("catalog/audit/", CatalogAuditView.as_view({"get": "list"}), name="catalog-audit"),
+    path(
+        "catalog/audit/",
+        CatalogAuditView.as_view({"get": "list"}),
+        name="catalog-audit",
+    ),
 ]

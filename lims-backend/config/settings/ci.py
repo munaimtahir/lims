@@ -1,5 +1,6 @@
-from .production import *
 import os
+
+from .production import *
 
 # Override Database for CI/Local verification.
 # Prefer a dedicated Postgres test DB when provided to stay closer to prod schema.
@@ -23,10 +24,10 @@ if TEST_DB_URL or TEST_DB_HOST:
 else:
     # SQLite fallback for quick local checks (schema differences may surface FK issues)
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',
-            'MIGRATE': True,  # allow migrations so schema matches models
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+            "MIGRATE": True,  # allow migrations so schema matches models
         }
     }
 
@@ -34,67 +35,67 @@ else:
 DEBUG = True
 
 # Disable some production checks for CI
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
-CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
 
 # Override logging for CI to avoid permission errors and simplify output
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '[{levelname}] {asctime} {name} {module}.{funcName}:{lineno} - {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {name} {module}.{funcName}:{lineno} - {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        'simple': {
-            'format': '[{levelname}] {asctime} {name} - {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO', # Use INFO level for console output in CI
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+        "simple": {
+            "format": "[{levelname}] {asctime} {name} - {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO', # Use INFO level for root in CI
+    "handlers": {
+        "console": {
+            "level": "INFO",  # Use INFO level for console output in CI
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",  # Use INFO level for root in CI
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
-        'django.security': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-            'propagate': False,
+        "django.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
         },
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
-        'rest_framework': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
+        "rest_framework": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
-        'celery': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
+        "celery": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
-        'apps': { # Add logging for custom apps
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        }
+        "apps": {  # Add logging for custom apps
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
 

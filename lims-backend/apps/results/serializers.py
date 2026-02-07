@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import TestResult
 
 
@@ -34,6 +35,7 @@ class TestResultSerializer(serializers.ModelSerializer):
     def get_reference_range(self, obj):
         """Get the reference range display string for this result."""
         from apps.laboratory.ranges import pick_reference_range
+
         patient = None
         try:
             patient = obj.order_item.order.patient
@@ -98,6 +100,7 @@ class TestResultSerializer(serializers.ModelSerializer):
             TestResult: The newly created test result instance.
         """
         from django.utils import timezone
+
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             validated_data["entered_by"] = request.user

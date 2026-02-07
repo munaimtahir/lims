@@ -1,0 +1,4 @@
+Command 'bandit' not found, but can be installed with:
+sudo snap install bandit          # version 1.9.3, or
+sudo apt  install python3-bandit  # version 1.6.2-3
+See 'snap info bandit' for additional versions.

@@ -8,17 +8,19 @@ using Django signals. Uses contextvars to store request information for signal h
 import logging
 import sys
 from contextvars import ContextVar
+
+from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
-from django.contrib.contenttypes.models import ContentType
+
 from .models import AuditLog
 from .utils import get_client_ip, get_user_agent, model_to_dict_safe
 
 logger = logging.getLogger(__name__)
 
 # Context variables for storing request and user in async/signal context
-_request_context: ContextVar = ContextVar('request', default=None)
-_user_context: ContextVar = ContextVar('user', default=None)
+_request_context: ContextVar = ContextVar("request", default=None)
+_user_context: ContextVar = ContextVar("user", default=None)
 
 # Track old values for update operations
 _old_instances = {}
@@ -34,7 +36,7 @@ def pre_save_handler(sender, instance, **kwargs):
         return
 
     # Check if we are running migrations or raw SQL that might fail
-    if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
+    if "migrate" in sys.argv or "makemigrations" in sys.argv:
         return
 
     # Only track if instance has a primary key (i.e., it's an update, not a create)
@@ -57,7 +59,7 @@ def post_save_handler(sender, instance, created, **kwargs):
         return
 
     # Check if we are running migrations
-    if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
+    if "migrate" in sys.argv or "makemigrations" in sys.argv:
         return
 
     # Skip if model is not in INSTALLED_APPS or doesn't have a pk
@@ -68,7 +70,12 @@ def post_save_handler(sender, instance, created, **kwargs):
     try:
         request = _request_context.get()
         user = _user_context.get()
-        if not user and request and hasattr(request, 'user') and request.user.is_authenticated:
+        if (
+            not user
+            and request
+            and hasattr(request, "user")
+            and request.user.is_authenticated
+        ):
             user = request.user
     except LookupError:
         request = None
@@ -88,9 +95,9 @@ def post_save_handler(sender, instance, created, **kwargs):
     # Create audit log entry
     try:
         content_type = ContentType.objects.get_for_model(instance)
-        
+
         # Don't log ContentType or Migration changes to avoid loops during migration
-        if content_type.model in ['contenttype', 'migration', 'logentry']:
+        if content_type.model in ["contenttype", "migration", "logentry"]:
             return
 
         AuditLog.objects.create(
@@ -122,7 +129,12 @@ def pre_delete_handler(sender, instance, **kwargs):
     try:
         request = _request_context.get()
         user = _user_context.get()
-        if not user and request and hasattr(request, 'user') and request.user.is_authenticated:
+        if (
+            not user
+            and request
+            and hasattr(request, "user")
+            and request.user.is_authenticated
+        ):
             user = request.user
     except LookupError:
         request = None
@@ -134,7 +146,7 @@ def pre_delete_handler(sender, instance, **kwargs):
     # Create audit log entry
     try:
         content_type = ContentType.objects.get_for_model(instance)
-        
+
         AuditLog.objects.create(
             user=user,
             action="DELETE",
@@ -154,7 +166,7 @@ def pre_delete_handler(sender, instance, **kwargs):
 class AuditLoggingMiddleware:
     """
     Middleware to store request and user in context for audit logging.
-    
+
     This middleware stores the current request and user in context variables
     so that signal handlers can access them for audit logging.
     """
@@ -168,7 +180,7 @@ class AuditLoggingMiddleware:
         """
         # Store request and user in context for signal handlers
         _request_context.set(request)
-        if hasattr(request, 'user') and request.user.is_authenticated:
+        if hasattr(request, "user") and request.user.is_authenticated:
             _user_context.set(request.user)
         else:
             _user_context.set(None)
@@ -180,4 +192,3 @@ class AuditLoggingMiddleware:
         _user_context.set(None)
 
         return response
-

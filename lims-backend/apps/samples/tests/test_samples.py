@@ -1,15 +1,17 @@
 """
 Tests for the samples app.
 """
-import pytest
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
+import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
+
 from apps.accounts.models import User
-from apps.patients.models import Patient
-from apps.laboratory.models import TestCategory, Test
+from apps.laboratory.models import Test, TestCategory
 from apps.orders.models import Order, OrderItem
+from apps.patients.models import Patient
 from apps.samples.models import Sample, SampleStatus
 
 
@@ -110,9 +112,7 @@ class TestSampleModel:
     def test_create_sample(self, order):
         """Test creating a sample."""
         order_item = order.items.first()
-        sample = Sample.objects.create(
-            order_item=order_item, sample_type="EDTA Blood"
-        )
+        sample = Sample.objects.create(order_item=order_item, sample_type="EDTA Blood")
         assert sample.status == SampleStatus.PENDING
         assert sample.order_item == order_item
         assert sample.barcode is not None
@@ -125,9 +125,7 @@ class TestSampleModel:
     def test_sample_barcode_generation(self, order):
         """Test automatic barcode generation."""
         order_item = order.items.first()
-        sample = Sample.objects.create(
-            order_item=order_item, sample_type="EDTA Blood"
-        )
+        sample = Sample.objects.create(order_item=order_item, sample_type="EDTA Blood")
         assert sample.barcode is not None
         assert sample.barcode.startswith("SAM-")
 
@@ -169,8 +167,6 @@ class TestSampleViewSet:
         assert sample.collected_by == phlebotomist_user
         assert sample.collected_at is not None
 
-
-
     def test_reject_status_is_not_allowed(self, authenticated_client, sample):
         response = authenticated_client.patch(
             f"/api/v1/samples/{sample.id}/",
@@ -180,7 +176,9 @@ class TestSampleViewSet:
 
     def test_filter_samples_by_status(self, authenticated_client, sample):
         """Test filtering samples by status."""
-        response = authenticated_client.get("/api/v1/samples/", {"status": SampleStatus.PENDING})
+        response = authenticated_client.get(
+            "/api/v1/samples/", {"status": SampleStatus.PENDING}
+        )
         assert response.status_code == status.HTTP_200_OK
 
     def test_pending_collections(self, authenticated_client, sample):

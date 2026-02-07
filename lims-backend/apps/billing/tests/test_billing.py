@@ -1,16 +1,18 @@
 """
 Tests for the billing app.
 """
-import pytest
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
+import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
+
 from apps.accounts.models import User
-from apps.patients.models import Patient
-from apps.laboratory.models import TestCategory, Test
-from apps.orders.models import Order, OrderItem
 from apps.billing.models import Payment
+from apps.laboratory.models import Test, TestCategory
+from apps.orders.models import Order, OrderItem
+from apps.patients.models import Patient
 
 
 @pytest.fixture
@@ -123,7 +125,9 @@ class TestPaymentModel:
         """Test payment string representation."""
         assert "500" in str(payment)
 
-    @pytest.mark.xfail(reason="This test is failing due to a suspected issue with the test runner's transaction handling.")
+    @pytest.mark.xfail(
+        reason="This test is failing due to a suspected issue with the test runner's transaction handling."
+    )
     def test_full_payment_marks_order_paid(self, order, cashier_user):
         """Test that full payment marks order as paid."""
         assert not order.is_paid
@@ -195,7 +199,7 @@ class TestPaymentViewSet:
             "/api/v1/payments/", {"payment_method": "cash"}
         )
         assert response.status_code == status.HTTP_200_OK
-    
+
     def test_receipt_generation(self, authenticated_client, payment):
         """Test generating payment receipt PDF."""
         response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
@@ -203,11 +207,11 @@ class TestPaymentViewSet:
         assert response["Content-Type"] == "application/pdf"
         assert "Receipt" in response["Content-Disposition"]
         # FileResponse is a streaming response, verify it's set up correctly
-        assert hasattr(response, 'streaming_content') or hasattr(response, 'file')
+        assert hasattr(response, "streaming_content") or hasattr(response, "file")
 
         content = b"".join(response.streaming_content)
         assert content[:4] == b"%PDF"
-    
+
     def test_receipt_with_lab_info(self, authenticated_client, payment):
         """Test receipt generation with lab information."""
         response = authenticated_client.get(
@@ -217,16 +221,20 @@ class TestPaymentViewSet:
                 "lab_address": "123 Test St",
                 "lab_phone": "123-456-7890",
                 "lab_email": "test@lab.com",
-            }
+            },
         )
         assert response.status_code == status.HTTP_200_OK
         assert response["Content-Type"] == "application/pdf"
         # Verify PDF content exists
         content = b"".join(response.streaming_content)
         assert b"Test Lab" in content
-        content = b''.join(response.streaming_content) if hasattr(response, 'streaming_content') else getattr(response, 'content', b'')
+        content = (
+            b"".join(response.streaming_content)
+            if hasattr(response, "streaming_content")
+            else getattr(response, "content", b"")
+        )
         assert len(content) > 0
-    
+
     def test_receipt_with_discount(self, authenticated_client, order, cashier_user):
         """Test receipt generation with discount."""
         order.discount = Decimal("100.00")
@@ -239,8 +247,10 @@ class TestPaymentViewSet:
         )
         response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
         assert response.status_code == status.HTTP_200_OK
-    
-    def test_receipt_with_transaction_id(self, authenticated_client, order, cashier_user):
+
+    def test_receipt_with_transaction_id(
+        self, authenticated_client, order, cashier_user
+    ):
         """Test receipt generation with transaction ID."""
         payment = Payment.objects.create(
             order=order,
@@ -251,7 +261,7 @@ class TestPaymentViewSet:
         )
         response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
         assert response.status_code == status.HTTP_200_OK
-    
+
     def test_receipt_with_notes(self, authenticated_client, order, cashier_user):
         """Test receipt generation with payment notes."""
         payment = Payment.objects.create(
@@ -263,7 +273,7 @@ class TestPaymentViewSet:
         )
         response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
         assert response.status_code == status.HTTP_200_OK
-    
+
     def test_receipt_partial_payment(self, authenticated_client, order, cashier_user):
         """Test receipt generation for partial payment."""
         payment = Payment.objects.create(
@@ -274,7 +284,7 @@ class TestPaymentViewSet:
         )
         response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
         assert response.status_code == status.HTTP_200_OK
-    
+
     def test_receipt_full_payment(self, authenticated_client, order, cashier_user):
         """Test receipt generation for full payment."""
         payment = Payment.objects.create(
@@ -285,7 +295,7 @@ class TestPaymentViewSet:
         )
         response = authenticated_client.get(f"/api/v1/payments/{payment.id}/receipt/")
         assert response.status_code == status.HTTP_200_OK
-    
+
     def test_receipt_multiple_payments(self, authenticated_client, order, cashier_user):
         """Test receipt generation when order has multiple payments."""
         # Create first payment

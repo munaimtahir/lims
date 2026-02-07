@@ -4,10 +4,12 @@ Patient model for LIMS.
 Supports patient registration with MRN generation.
 """
 
+from datetime import date
+
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
-from datetime import date
+
 from apps.core.models import CollectionCenter
 from apps.core.numbering import generate_registration_number
 from apps.core.validators import validate_registration_number
@@ -79,21 +81,25 @@ class Patient(models.Model):
         blank=True,
         db_index=True,
         validators=[validate_registration_number],
-        help_text="Official Registration Number (YYMM-CC-SSSS)"
+        help_text="Official Registration Number (YYMM-CC-SSSS)",
     )
     registration_center = models.ForeignKey(
         CollectionCenter,
         on_delete=models.PROTECT,
         null=True,
         blank=True,
-        related_name="patients"
+        related_name="patients",
     )
     registration_datetime = models.DateTimeField(null=True, blank=True)
 
     # Demographics - support both first_name/last_name and full_name
     first_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100, blank=True)
-    full_name = models.CharField(max_length=255, blank=True, help_text="Full name (alternative to first_name/last_name)")
+    full_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Full name (alternative to first_name/last_name)",
+    )
     father_name = models.CharField(max_length=255, blank=True, default="")
     father_husband_name = models.CharField(
         max_length=255,
@@ -102,9 +108,13 @@ class Patient(models.Model):
         help_text="Father/Husband name",
     )
     date_of_birth = models.DateField(null=True, blank=True, help_text="Date of birth")
-    dob = models.DateField(null=True, blank=True, help_text="Date of birth (legacy field)")
+    dob = models.DateField(
+        null=True, blank=True, help_text="Date of birth (legacy field)"
+    )
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
-    sex = models.CharField(max_length=1, choices=SEX_CHOICES, blank=True, help_text="Sex (M/F/O)")
+    sex = models.CharField(
+        max_length=1, choices=SEX_CHOICES, blank=True, help_text="Sex (M/F/O)"
+    )
 
     # Age fields (alternative to DOB) - for cases where exact DOB is unknown
     age_years = models.IntegerField(null=True, blank=True, help_text="Age in years")
@@ -137,7 +147,9 @@ class Patient(models.Model):
     address = models.TextField(blank=True, null=True)
 
     # Offline/sync fields
-    is_offline_entry = models.BooleanField(default=False, help_text="True if originally created while offline")
+    is_offline_entry = models.BooleanField(
+        default=False, help_text="True if originally created while offline"
+    )
     origin_terminal = models.ForeignKey(
         "core.LabTerminal",
         on_delete=models.SET_NULL,
@@ -200,46 +212,50 @@ class Patient(models.Model):
             if not self.registration_center:
                 # Try to get 00, if not exist, we have a problem in bootstrapping but we'll try to create it or fail
                 # But for safety, we should assume it exists or create it here to avoid error
-                center_00, _ = CollectionCenter.objects.get_or_create(code="00", defaults={"name": "Head Office", "is_active": True})
+                center_00, _ = CollectionCenter.objects.get_or_create(
+                    code="00", defaults={"name": "Head Office", "is_active": True}
+                )
                 self.registration_center = center_00
-            
+
             if not self.registration_datetime:
                 self.registration_datetime = timezone.now()
-            
+
             # Generate the new number
-            self.registration_number = generate_registration_number(self.registration_center, self.registration_datetime)
+            self.registration_number = generate_registration_number(
+                self.registration_center, self.registration_datetime
+            )
 
         # Legacy Compatibility: Set MRN and Patient ID to the same new number if they are empty
         if not self.mrn:
             self.mrn = self.registration_number
-        
+
         if not self.patient_id:
             self.patient_id = self.mrn
-        
+
         # Set full_name from first_name/last_name if not provided
         if not self.full_name and (self.first_name or self.last_name):
             self.full_name = f"{self.first_name} {self.last_name}".strip()
-        
+
         # Set first_name/last_name from full_name if not provided
         if not self.first_name and not self.last_name and self.full_name:
             parts = self.full_name.split(maxsplit=1)
             self.first_name = parts[0] if parts else ""
             self.last_name = parts[1] if len(parts) > 1 else ""
-        
+
         # Map gender to sex if sex not set
         if not self.sex and self.gender:
             gender_to_sex = {"Male": "M", "Female": "F", "Other": "O"}
             self.sex = gender_to_sex.get(self.gender, "O")
-        
+
         # Map sex to gender if gender not set
         if not self.gender and self.sex:
             sex_to_gender = {"M": "Male", "F": "Female", "O": "Other"}
             self.gender = sex_to_gender.get(self.sex, "Other")
-        
+
         # Use dob if date_of_birth not set
         if not self.date_of_birth and self.dob:
             self.date_of_birth = self.dob
-        
+
         # Use cnic if national_id not set
         if not self.national_id and self.cnic:
             self.national_id = self.cnic
@@ -249,7 +265,7 @@ class Patient(models.Model):
 
         if not self.father_name and self.father_husband_name:
             self.father_name = self.father_husband_name
-        
+
         super().save(*args, **kwargs)
 
     def generate_mrn(self):
@@ -264,13 +280,11 @@ class Patient(models.Model):
         # Standard MRN generation
         today = timezone.now().strftime("%Y%m%d")
         prefix = f"PAT-{today}-"
-        
+
         last_patient = (
-            Patient.objects.filter(mrn__startswith=prefix)
-            .order_by("mrn")
-            .last()
+            Patient.objects.filter(mrn__startswith=prefix).order_by("mrn").last()
         )
-        
+
         if last_patient:
             try:
                 last_num = int(last_patient.mrn.split("-")[-1])
@@ -279,7 +293,7 @@ class Patient(models.Model):
                 new_num = 1
         else:
             new_num = 1
-        
+
         return f"{prefix}{new_num:04d}"
 
     def get_full_name(self):
@@ -304,7 +318,7 @@ class Patient(models.Model):
         # If age_years is provided, use it
         if self.age_years is not None:
             return self.age_years
-        
+
         # Otherwise calculate from DOB
         dob = self.date_of_birth or self.dob
         if dob:
@@ -315,7 +329,7 @@ class Patient(models.Model):
             ):
                 age -= 1
             return age
-        
+
         return None
 
     @property

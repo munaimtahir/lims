@@ -1,11 +1,13 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 from django.utils import timezone
+
 from apps.orders.models import Order
 
 
 class ReportStatus(models.TextChoices):
     """Report status choices."""
+
     DRAFT = "DRAFT", "Draft"
     FINAL = "FINAL", "Final"
     AMENDED = "AMENDED", "Amended"
@@ -147,13 +149,13 @@ class Report(models.Model):
         """Override save to generate report number if not provided."""
         if not self.report_number:
             self.report_number = self.generate_report_number()
-        
+
         # Sync is_final with status for backward compatibility
         if self.status == ReportStatus.FINAL:
             self.is_final = True
         elif self.status == ReportStatus.AMENDED:
             self.is_final = True  # Amended reports are also final
-        
+
         super().save(*args, **kwargs)
 
     def generate_report_number(self):
@@ -194,11 +196,11 @@ class Report(models.Model):
     def create_amendment(self, reason, user):
         """
         Create an amended version of this report.
-        
+
         Args:
             reason (str): Reason for the amendment.
             user (User): User creating the amendment.
-        
+
         Returns:
             Report: The new amended report instance.
         """

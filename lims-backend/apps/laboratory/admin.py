@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import TestCategory, Test, TestParameter, TestPanel
+
+from .models import Test, TestCategory, TestPanel, TestParameter
 
 
 class TestParameterInline(admin.TabularInline):

@@ -1,18 +1,20 @@
 """
 Tests for the orders app.
 """
-import pytest
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
+import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 from rest_framework.test import APIClient
+
 from apps.accounts.models import User
-from apps.patients.models import Patient
-from apps.laboratory.models import TestCategory, Test, TestPanel
-from apps.orders.models import Order, OrderItem
-from apps.reports.models import Report, ReportStatus
 from apps.billing.models import Payment
-from django.core.files.uploadedfile import SimpleUploadedFile
+from apps.laboratory.models import Test, TestCategory, TestPanel
+from apps.orders.models import Order, OrderItem
+from apps.patients.models import Patient
+from apps.reports.models import Report, ReportStatus
 
 
 @pytest.fixture
@@ -201,8 +203,9 @@ class TestOrderViewSet:
         )
         assert response.status_code == status.HTTP_201_CREATED
 
-
-    def test_create_order_with_referred_by(self, authenticated_client, patient, test_instance):
+    def test_create_order_with_referred_by(
+        self, authenticated_client, patient, test_instance
+    ):
         """Test creating an order with referred_by."""
         response = authenticated_client.post(
             "/api/v1/orders/orders/",
@@ -243,11 +246,20 @@ class TestOrderViewSet:
         order.refresh_from_db()
         assert order.status == "CANCELLED"
 
-    def test_worklist_reprint_eligibility(self, authenticated_client, order, admin_user):
-        Payment.objects.create(order=order, amount=Decimal('100.00'), payment_method='cash', recorded_by=admin_user)
-        order.status = 'PUBLISHED'
-        order.save(update_fields=['status'])
-        report_file = SimpleUploadedFile('report.pdf', b'%PDF-1.4 test', content_type='application/pdf')
+    def test_worklist_reprint_eligibility(
+        self, authenticated_client, order, admin_user
+    ):
+        Payment.objects.create(
+            order=order,
+            amount=Decimal("100.00"),
+            payment_method="cash",
+            recorded_by=admin_user,
+        )
+        order.status = "PUBLISHED"
+        order.save(update_fields=["status"])
+        report_file = SimpleUploadedFile(
+            "report.pdf", b"%PDF-1.4 test", content_type="application/pdf"
+        )
         Report.objects.create(
             order=order,
             report_file=report_file,
@@ -255,13 +267,13 @@ class TestOrderViewSet:
             generated_by=admin_user,
         )
 
-        response = authenticated_client.get('/api/v1/worklist/patients/')
+        response = authenticated_client.get("/api/v1/worklist/patients/")
         assert response.status_code == status.HTTP_200_OK
-        row = response.data['results'][0]
-        assert row['can_reprint_receipt'] is True
-        assert row['can_reprint_report'] is True
-        assert row['receipt_pdf_url']
-        assert row['report_pdf_url']
+        row = response.data["results"][0]
+        assert row["can_reprint_receipt"] is True
+        assert row["can_reprint_report"] is True
+        assert row["receipt_pdf_url"]
+        assert row["report_pdf_url"]
 
     def test_cancel_completed_order_fails(self, authenticated_client, order):
         """Test that canceling a completed order fails."""
@@ -278,7 +290,7 @@ class TestOrderViewSet:
 @pytest.mark.django_db
 class TestOrderModelMethods:
     """Test Order model methods."""
-    
+
     def test_validate_status_transition_valid(self, patient, receptionist_user):
         """Test valid status transitions."""
         order = Order.objects.create(
@@ -286,13 +298,13 @@ class TestOrderModelMethods:
             ordered_by=receptionist_user,
             status="NEW",
         )
-        
+
         # Valid transition: NEW -> COLLECTED
         order.validate_status_transition("NEW", "COLLECTED")
         order.status = "COLLECTED"
         order.save()
         assert order.status == "COLLECTED"
-    
+
     def test_validate_status_transition_invalid(self, patient, receptionist_user):
         """Test invalid status transitions."""
         order = Order.objects.create(
@@ -300,12 +312,13 @@ class TestOrderModelMethods:
             ordered_by=receptionist_user,
             status="NEW",
         )
-        
+
         # Invalid transition: NEW -> VERIFIED (must go through COLLECTED, IN_PROCESS first)
         from django.core.exceptions import ValidationError
+
         with pytest.raises(ValidationError):
             order.validate_status_transition("NEW", "VERIFIED")
-    
+
     def test_can_transition_to_valid(self, patient, receptionist_user):
         """Test can_transition_to returns True for valid transitions."""
         order = Order.objects.create(
@@ -313,10 +326,10 @@ class TestOrderModelMethods:
             ordered_by=receptionist_user,
             status="NEW",
         )
-        
+
         assert order.can_transition_to("COLLECTED") is True
         assert order.can_transition_to("CANCELLED") is True
-    
+
     def test_can_transition_to_invalid(self, patient, receptionist_user):
         """Test can_transition_to returns False for invalid transitions."""
         order = Order.objects.create(
@@ -324,10 +337,10 @@ class TestOrderModelMethods:
             ordered_by=receptionist_user,
             status="NEW",
         )
-        
+
         assert order.can_transition_to("VERIFIED") is False
         assert order.can_transition_to("PUBLISHED") is False
-    
+
     def test_transition_to_valid(self, patient, receptionist_user):
         """Test transition_to method with valid transition."""
         order = Order.objects.create(
@@ -335,11 +348,11 @@ class TestOrderModelMethods:
             ordered_by=receptionist_user,
             status="NEW",
         )
-        
+
         order.transition_to("COLLECTED", receptionist_user)
         order.refresh_from_db()
         assert order.status == "COLLECTED"
-    
+
     def test_transition_to_invalid(self, patient, receptionist_user):
         """Test transition_to method with invalid transition."""
         order = Order.objects.create(
@@ -347,11 +360,12 @@ class TestOrderModelMethods:
             ordered_by=receptionist_user,
             status="NEW",
         )
-        
+
         from django.core.exceptions import ValidationError
+
         with pytest.raises(ValidationError):
             order.transition_to("VERIFIED", receptionist_user)
-    
+
     def test_status_final_states_no_transitions(self, patient, receptionist_user):
         """Test that PUBLISHED and CANCELLED are final states."""
         # Test PUBLISHED
@@ -361,7 +375,7 @@ class TestOrderModelMethods:
             status="PUBLISHED",
         )
         assert order1.can_transition_to("COLLECTED") is False
-        
+
         # Test CANCELLED
         order2 = Order.objects.create(
             patient=patient,

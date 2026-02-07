@@ -14,12 +14,15 @@ Critical Environment Variables:
 See .env.production.example for complete configuration template.
 """
 
-from .base import *
-import os
 import logging
+import os
 
-SETTINGS_MODULE_NAME = os.environ.get('DJANGO_SETTINGS_MODULE', '')
-IS_VERIFICATION_CONTEXT = SETTINGS_MODULE_NAME.endswith('.ci') or SETTINGS_MODULE_NAME.endswith('.test')
+from .base import *
+
+SETTINGS_MODULE_NAME = os.environ.get("DJANGO_SETTINGS_MODULE", "")
+IS_VERIFICATION_CONTEXT = SETTINGS_MODULE_NAME.endswith(
+    ".ci"
+) or SETTINGS_MODULE_NAME.endswith(".test")
 
 # ============================================
 # DEBUG SETTINGS
@@ -32,15 +35,15 @@ DEBUG = False
 # ============================================
 
 # Validate SECRET_KEY
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError(
         "CRITICAL: SECRET_KEY environment variable must be set in production. "
-        "Generate with: python3 -c \"import secrets; print(secrets.token_urlsafe(50))\""
+        'Generate with: python3 -c "import secrets; print(secrets.token_urlsafe(50))"'
     )
 
 # Validate DB_PASSWORD
-DB_PASSWORD = os.environ.get('DB_PASSWORD')
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
 if not DB_PASSWORD:
     raise ValueError(
         "CRITICAL: DB_PASSWORD environment variable must be set in production. "
@@ -59,23 +62,31 @@ if not DB_PASSWORD:
 # Format: "domain.com,www.domain.com,xxx.xxx.xxx.xxx"
 
 ALLOWED_HOSTS = [
-    host.strip() for host in os.environ.get('ALLOWED_HOSTS', '').split(',') if host.strip()
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
+    if host.strip()
 ]
 
 if not ALLOWED_HOSTS:
     if IS_VERIFICATION_CONTEXT:
-        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-        logger.warning("VERIFICATION CONTEXT: ALLOWED_HOSTS not set, defaulting to localhost for tests/CI.")
+        ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+        logger.warning(
+            "VERIFICATION CONTEXT: ALLOWED_HOSTS not set, defaulting to localhost for tests/CI."
+        )
     else:
         raise ValueError(
             "CRITICAL: ALLOWED_HOSTS environment variable must be set in production. "
             "Include your public domain(s) and IP (e.g., 'your-domain.com,www.your-domain.com,xxx.xxx.xxx.xxx')."
         )
 
-if '*' in ALLOWED_HOSTS:
-    raise ValueError("CRITICAL: Wildcard '*' is not permitted in ALLOWED_HOSTS. Use explicit domains/IPs.")
+if "*" in ALLOWED_HOSTS:
+    raise ValueError(
+        "CRITICAL: Wildcard '*' is not permitted in ALLOWED_HOSTS. Use explicit domains/IPs."
+    )
 
-non_local_hosts = [host for host in ALLOWED_HOSTS if host not in {'localhost', '127.0.0.1'}]
+non_local_hosts = [
+    host for host in ALLOWED_HOSTS if host not in {"localhost", "127.0.0.1"}
+]
 if not non_local_hosts and not IS_VERIFICATION_CONTEXT:
     raise ValueError(
         "CRITICAL: ALLOWED_HOSTS is limited to localhost values. "
@@ -92,19 +103,19 @@ logger.info(f"Production ALLOWED_HOSTS configured: {ALLOWED_HOSTS}")
 # ============================================
 # Configure for deployment behind Caddy reverse proxy with SSL termination
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
-SECURE_REDIRECT_EXEMPT = [r'^api/v1/health/$']
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "True").lower() == "true"
+SECURE_REDIRECT_EXEMPT = [r"^api/v1/health/$"]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 # Security headers
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = "DENY"
 
 # HSTS (HTTP Strict Transport Security) - tell browsers to always use HTTPS
-SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))  # 1 year
+SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "31536000"))  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
@@ -115,15 +126,15 @@ SECURE_HSTS_PRELOAD = True
 # PostgreSQL is the production database
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'lims_db'),
-        'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': DB_PASSWORD,
-        'HOST': os.environ.get('DB_HOST', 'db'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
-        'CONN_MAX_AGE': 600,  # Connection pooling
-        'ATOMIC_REQUESTS': True,  # Use transactions for views
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME", "lims_db"),
+        "USER": os.environ.get("DB_USER", "postgres"),
+        "PASSWORD": DB_PASSWORD,
+        "HOST": os.environ.get("DB_HOST", "db"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
+        "CONN_MAX_AGE": 600,  # Connection pooling
+        "ATOMIC_REQUESTS": True,  # Use transactions for views
     }
 }
 
@@ -134,15 +145,15 @@ DATABASES = {
 # Redis for caching and session storage
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/0'),
-        'KEY_PREFIX': 'lims',
-        'TIMEOUT': 300,  # Default timeout 5 minutes
-        'OPTIONS': {
-            'CONNECTION_POOL_KWARGS': {
-                'retry_on_timeout': True,
-                'max_connections': 50,
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://redis:6379/0"),
+        "KEY_PREFIX": "lims",
+        "TIMEOUT": 300,  # Default timeout 5 minutes
+        "OPTIONS": {
+            "CONNECTION_POOL_KWARGS": {
+                "retry_on_timeout": True,
+                "max_connections": 50,
             },
         },
     }
@@ -150,7 +161,7 @@ CACHES = {
 
 # Use database for sessions (more reliable than Redis for critical operations)
 # Redis cache is still used for general caching
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 
 # ============================================
@@ -160,8 +171,10 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 # Controls which origins can make cross-origin requests
 # Must match the domain where your frontend is hosted
 
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')]
-if not CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGINS == ['']:
+CORS_ALLOWED_ORIGINS = [
+    origin.strip() for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+]
+if not CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGINS == [""]:
     logger.warning(
         "WARNING: CORS_ALLOWED_ORIGINS not configured. "
         "Frontend may not be able to communicate with API. "
@@ -170,15 +183,15 @@ if not CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGINS == ['']:
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 logger.info(f"Production CORS_ALLOWED_ORIGINS configured: {CORS_ALLOWED_ORIGINS}")
@@ -192,19 +205,25 @@ logger.info(f"Production CORS_ALLOWED_ORIGINS configured: {CORS_ALLOWED_ORIGINS}
 # Must include the protocol (https://) and domain
 
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
 ]
 if not CSRF_TRUSTED_ORIGINS:
     if IS_VERIFICATION_CONTEXT:
-        CSRF_TRUSTED_ORIGINS = ['http://localhost']
-        logger.warning("VERIFICATION CONTEXT: CSRF_TRUSTED_ORIGINS not set, defaulting to http://localhost for tests/CI.")
+        CSRF_TRUSTED_ORIGINS = ["http://localhost"]
+        logger.warning(
+            "VERIFICATION CONTEXT: CSRF_TRUSTED_ORIGINS not set, defaulting to http://localhost for tests/CI."
+        )
     else:
         raise ValueError(
             "CRITICAL: CSRF_TRUSTED_ORIGINS environment variable must be set in production. "
             "Provide fully-qualified origins with scheme, e.g., 'https://your-domain.com,https://api.your-domain.com'."
         )
 
-wildcard_csrf_entries = [origin for origin in CSRF_TRUSTED_ORIGINS if origin == '*' or origin.endswith('*')]
+wildcard_csrf_entries = [
+    origin for origin in CSRF_TRUSTED_ORIGINS if origin == "*" or origin.endswith("*")
+]
 if wildcard_csrf_entries:
     raise ValueError(
         f"CRITICAL: CSRF_TRUSTED_ORIGINS contains invalid entries: {wildcard_csrf_entries}. "
@@ -212,7 +231,9 @@ if wildcard_csrf_entries:
     )
 
 if not IS_VERIFICATION_CONTEXT:
-    non_https_csrf_entries = [origin for origin in CSRF_TRUSTED_ORIGINS if not origin.startswith('https://')]
+    non_https_csrf_entries = [
+        origin for origin in CSRF_TRUSTED_ORIGINS if not origin.startswith("https://")
+    ]
     if non_https_csrf_entries:
         raise ValueError(
             f"CRITICAL: CSRF_TRUSTED_ORIGINS contains non-HTTPS entries: {non_https_csrf_entries}. "
@@ -226,12 +247,12 @@ logger.info(f"Production CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}
 # STATIC AND MEDIA FILES
 # ============================================
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Use whitenoise for efficient static file serving
-MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Enable GZIP compression for whitenoise
 WHITENOISE_AUTOREFRESH = False
@@ -242,28 +263,32 @@ WHITENOISE_USE_FINDERS = True
 # EMAIL CONFIGURATION
 # ============================================
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', f'noreply@{os.environ.get("SERVER_NAME", "lims.local")}')
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", f'noreply@{os.environ.get("SERVER_NAME", "lims.local")}'
+)
 
 # Verify email configuration in production
 if EMAIL_HOST_USER and not EMAIL_HOST_PASSWORD:
-    logger.warning("WARNING: EMAIL_HOST_USER is set but EMAIL_HOST_PASSWORD is not. Email sending may fail.")
+    logger.warning(
+        "WARNING: EMAIL_HOST_USER is set but EMAIL_HOST_PASSWORD is not. Email sending may fail."
+    )
 
 
 # ============================================
 # CELERY CONFIGURATION
 # ============================================
 
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 
@@ -273,95 +298,95 @@ CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 # ============================================
 # Comprehensive logging for production debugging
 
-LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '[{levelname}] {asctime} {name} {module}.{funcName}:{lineno} - {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {name} {module}.{funcName}:{lineno} - {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        'simple': {
-            'format': '[{levelname}] {asctime} {name} - {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "simple": {
+            "format": "[{levelname}] {asctime} {name} - {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        'json': {
-            '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
-            'format': '%(asctime)s %(name)s %(levelname)s %(message)s',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': LOG_LEVEL,
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'level': LOG_LEVEL,
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'maxBytes': 1024 * 1024 * 100,  # 100MB
-            'backupCount': 10,
-            'formatter': 'verbose',
-        },
-        'security_file': {
-            'level': 'WARNING',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'security.log',
-            'maxBytes': 1024 * 1024 * 100,  # 100MB
-            'backupCount': 10,
-            'formatter': 'verbose',
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
         },
     },
-    'root': {
-        'handlers': ['console', 'file'],
-        'level': LOG_LEVEL,
+    "handlers": {
+        "console": {
+            "level": LOG_LEVEL,
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file": {
+            "level": LOG_LEVEL,
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs" / "django.log",
+            "maxBytes": 1024 * 1024 * 100,  # 100MB
+            "backupCount": 10,
+            "formatter": "verbose",
+        },
+        "security_file": {
+            "level": "WARNING",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs" / "security.log",
+            "maxBytes": 1024 * 1024 * 100,  # 100MB
+            "backupCount": 10,
+            "formatter": "verbose",
+        },
     },
-    'loggers': {
+    "root": {
+        "handlers": ["console", "file"],
+        "level": LOG_LEVEL,
+    },
+    "loggers": {
         # Django core logging
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': LOG_LEVEL,
-            'propagate': False,
+        "django": {
+            "handlers": ["console", "file"],
+            "level": LOG_LEVEL,
+            "propagate": False,
         },
         # Security-related logging
-        'django.security': {
-            'handlers': ['console', 'security_file'],
-            'level': 'WARNING',
-            'propagate': False,
+        "django.security": {
+            "handlers": ["console", "security_file"],
+            "level": "WARNING",
+            "propagate": False,
         },
-        'django.security.DisallowedHost': {
-            'handlers': ['security_file'],
-            'level': 'WARNING',
-            'propagate': False,
+        "django.security.DisallowedHost": {
+            "handlers": ["security_file"],
+            "level": "WARNING",
+            "propagate": False,
         },
         # Database logging (verbose in production)
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'WARNING',  # Set to DEBUG for SQL query logging
-            'propagate': False,
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "WARNING",  # Set to DEBUG for SQL query logging
+            "propagate": False,
         },
         # REST Framework logging
-        'rest_framework': {
-            'handlers': ['console', 'file'],
-            'level': LOG_LEVEL,
-            'propagate': False,
+        "rest_framework": {
+            "handlers": ["console", "file"],
+            "level": LOG_LEVEL,
+            "propagate": False,
         },
         # Celery logging
-        'celery': {
-            'handlers': ['console', 'file'],
-            'level': LOG_LEVEL,
-            'propagate': False,
+        "celery": {
+            "handlers": ["console", "file"],
+            "level": LOG_LEVEL,
+            "propagate": False,
         },
     },
 }
 
 # Ensure logs directory exists
-logs_dir = BASE_DIR / 'logs'
+logs_dir = BASE_DIR / "logs"
 logs_dir.mkdir(exist_ok=True)
 
 
@@ -382,14 +407,16 @@ except Exception:
 # PRODUCTION SUMMARY
 # ============================================
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logger.info("=" * 60)
     logger.info("LIMS Production Configuration Loaded")
     logger.info("=" * 60)
     logger.info(f"Debug Mode: {DEBUG}")
     logger.info(f"Allowed Hosts: {ALLOWED_HOSTS}")
     logger.info(f"CORS Origins: {CORS_ALLOWED_ORIGINS}")
-    logger.info(f"Database: {DATABASES['default']['NAME']}@{DATABASES['default']['HOST']}")
+    logger.info(
+        f"Database: {DATABASES['default']['NAME']}@{DATABASES['default']['HOST']}"
+    )
     logger.info(f"Redis: {os.environ.get('REDIS_URL', 'redis://redis:6379/0')}")
     logger.info(f"Email Backend: {EMAIL_BACKEND}")
     logger.info("=" * 60)

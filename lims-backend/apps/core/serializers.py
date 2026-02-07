@@ -3,47 +3,82 @@ Serializers for core models.
 """
 
 from rest_framework import serializers
-from .models import SystemSettings, PrintTemplate, CollectionCenter, RegistrationCounter, LabDailyCounter
+
+from .models import (
+    CollectionCenter,
+    LabDailyCounter,
+    PrintTemplate,
+    RegistrationCounter,
+    SystemSettings,
+)
 
 
 class CollectionCenterSerializer(serializers.ModelSerializer):
     """Serializer for Collection Centers."""
-    
+
     class Meta:
         model = CollectionCenter
-        fields = ['id', 'code', 'name', 'address', 'is_active', 'created_at', 'updated_at']
-        read_only_fields = ['created_at', 'updated_at']
+        fields = [
+            "id",
+            "code",
+            "name",
+            "address",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
 
 
 class RegistrationCounterSerializer(serializers.ModelSerializer):
     """Serializer for Registration Counters (read-only)."""
-    center_name = serializers.CharField(source='center.name', read_only=True)
-    center_code = serializers.CharField(source='center.code', read_only=True)
-    
+
+    center_name = serializers.CharField(source="center.name", read_only=True)
+    center_code = serializers.CharField(source="center.code", read_only=True)
+
     class Meta:
         model = RegistrationCounter
-        fields = ['id', 'yymm', 'center', 'center_name', 'center_code', 'last_value', 'updated_at']
-        read_only_fields = ['yymm', 'center', 'last_value', 'updated_at']
+        fields = [
+            "id",
+            "yymm",
+            "center",
+            "center_name",
+            "center_code",
+            "last_value",
+            "updated_at",
+        ]
+        read_only_fields = ["yymm", "center", "last_value", "updated_at"]
 
 
 class LabDailyCounterSerializer(serializers.ModelSerializer):
     """Serializer for Lab Daily Counters (read-only)."""
-    center_name = serializers.CharField(source='center.name', read_only=True)
-    center_code = serializers.CharField(source='center.code', read_only=True)
-    
+
+    center_name = serializers.CharField(source="center.name", read_only=True)
+    center_code = serializers.CharField(source="center.code", read_only=True)
+
     class Meta:
         model = LabDailyCounter
-        fields = ['id', 'date', 'center', 'center_name', 'center_code', 'last_value', 'updated_at']
-        read_only_fields = ['date', 'center', 'last_value', 'updated_at']
+        fields = [
+            "id",
+            "date",
+            "center",
+            "center_name",
+            "center_code",
+            "last_value",
+            "updated_at",
+        ]
+        read_only_fields = ["date", "center", "last_value", "updated_at"]
 
 
 class SystemSettingsSerializer(serializers.ModelSerializer):
     """
     Serializer for the SystemSettings model.
     """
-    
-    updated_by_name = serializers.CharField(source="updated_by.full_name", read_only=True)
-    
+
+    updated_by_name = serializers.CharField(
+        source="updated_by.full_name", read_only=True
+    )
+
     class Meta:
         model = SystemSettings
         fields = [
@@ -74,7 +109,7 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
             "updated_by_name",
         ]
         read_only_fields = ["updated_at"]
-    
+
     def validate_email_port(self, value):
         """Validate email port is in valid range."""
         if value < 1 or value > 65535:
@@ -117,7 +152,9 @@ class PrintTemplateSerializer(serializers.ModelSerializer):
             try:
                 margin_val = float(margins[side])
             except (TypeError, ValueError):
-                raise serializers.ValidationError(f"config.margins.{side} must be a number")
+                raise serializers.ValidationError(
+                    f"config.margins.{side} must be a number"
+                )
             if margin_val < 0:
                 raise serializers.ValidationError(f"config.margins.{side} must be >= 0")
 
@@ -127,11 +164,15 @@ class PrintTemplateSerializer(serializers.ModelSerializer):
         except (TypeError, ValueError):
             raise serializers.ValidationError("config.font_scale must be a number")
         if font_scale < 0.5 or font_scale > 2.0:
-            raise serializers.ValidationError("config.font_scale must be between 0.5 and 2.0")
+            raise serializers.ValidationError(
+                "config.font_scale must be between 0.5 and 2.0"
+            )
 
         paper_size = value.get("paper_size", "A4")
         if paper_size not in ["A4", "Letter"]:
-            raise serializers.ValidationError("config.paper_size must be 'A4' or 'Letter'")
+            raise serializers.ValidationError(
+                "config.paper_size must be 'A4' or 'Letter'"
+            )
 
         for key in [
             "show_logo",
@@ -160,7 +201,7 @@ class PrintTemplateSerializer(serializers.ModelSerializer):
             if "title" not in entry or not entry["title"]:
                 raise serializers.ValidationError("signatories entry requires title")
         return value
-    
+
     def validate_tax_rate(self, value):
         """Validate tax rate is non-negative."""
         if value < 0:

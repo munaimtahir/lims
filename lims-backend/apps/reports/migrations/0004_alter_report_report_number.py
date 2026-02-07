@@ -4,16 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('reports', '0003_report_amended_from_report_amendment_reason_and_more'),
+        ("reports", "0003_report_amended_from_report_amendment_reason_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='report',
-            name='report_number',
-            field=models.CharField(db_index=True, default='REP-0000', help_text='Unique report number (e.g., RPT-YYYYMMDD-NNNN)', max_length=50, unique=True),
+            model_name="report",
+            name="report_number",
+            field=models.CharField(
+                db_index=True,
+                default="REP-0000",
+                help_text="Unique report number (e.g., RPT-YYYYMMDD-NNNN)",
+                max_length=50,
+                unique=True,
+            ),
             preserve_default=False,
         ),
     ]

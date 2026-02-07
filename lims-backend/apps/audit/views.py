@@ -1,13 +1,14 @@
 """
 Views for the Audit app.
 """
-from rest_framework import viewsets, filters
-from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, viewsets
+from rest_framework.permissions import IsAuthenticated
+
+from apps.accounts.permissions import IsManagerOrAdmin
 
 from .models import AuditLog
 from .serializers import AuditLogSerializer
-from apps.accounts.permissions import IsManagerOrAdmin
 
 
 class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):

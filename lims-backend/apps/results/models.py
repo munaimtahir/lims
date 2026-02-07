@@ -1,10 +1,12 @@
-from django.db import models
+import logging
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
-import logging
-from apps.orders.models import OrderItem
+from django.db import models
+
 from apps.laboratory.models import TestParameter
 from apps.laboratory.ranges import compute_flag, pick_reference_range
+from apps.orders.models import OrderItem
 
 logger = logging.getLogger(__name__)
 

@@ -7,9 +7,10 @@ advanced laboratory workflows with Excel import support.
 """
 
 import re
-from django.db import models
-from django.core.exceptions import ValidationError
+
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
 
 
 def validate_parameter_id(value):
@@ -19,18 +20,18 @@ def validate_parameter_id(value):
     """
     if not value:
         raise ValidationError("parameter_id cannot be empty")
-    
+
     normalized = value.lower().strip()
-    
+
     # Allow special system parameters
-    if normalized in ['p_result', 'p_qual']:
+    if normalized in ["p_result", "p_qual"]:
         return normalized
 
-    if not re.match(r'^p[0-9]+$', normalized):
+    if not re.match(r"^p[0-9]+$", normalized):
         raise ValidationError(
             f"parameter_id must be in format 'p<number>' (e.g., p1, p2, p53). Got: {value}"
         )
-    
+
     return normalized
 
 
@@ -83,9 +84,11 @@ class Test(models.Model):
 
     test_id = models.AutoField(primary_key=True)
     test_code = models.CharField(max_length=20, unique=True, db_index=True)
-    legacy_test_code = models.CharField(max_length=50, blank=True, null=True, db_index=True)
+    legacy_test_code = models.CharField(
+        max_length=50, blank=True, null=True, db_index=True
+    )
     test_name = models.CharField(max_length=200)
-    
+
     category = models.ForeignKey(
         TestCategory, on_delete=models.PROTECT, related_name="tests"
     )
@@ -137,8 +140,12 @@ class TestParameter(models.Model):
         reportable (bool): Whether the parameter is shown on the final report.
     """
 
-    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="test_parameters")
-    parameter = models.ForeignKey("Parameter", on_delete=models.CASCADE, related_name="test_mappings")
+    test = models.ForeignKey(
+        Test, on_delete=models.CASCADE, related_name="test_parameters"
+    )
+    parameter = models.ForeignKey(
+        "Parameter", on_delete=models.CASCADE, related_name="test_mappings"
+    )
     display_order = models.IntegerField(default=0)
     reportable = models.BooleanField(default=True)
 
@@ -201,10 +208,10 @@ class TestParameter(models.Model):
 class ReferenceRange(models.Model):
     """
     Represents a reference range for a test parameter with age and gender specificity.
-    
+
     Supports versioning and age-specific ranges. Multiple ranges can exist for the same
     parameter with different age groups.
-    
+
     Attributes:
         parameter (TestParameter): The parameter this range applies to.
         age_min (int, optional): Minimum age in years (null means no minimum).
@@ -221,24 +228,28 @@ class ReferenceRange(models.Model):
         created_at (datetime): When this range was created.
         created_by (User, optional): User who created this range.
     """
-    
+
     GENDER_CHOICES = [
         ("Male", "Male"),
         ("Female", "Female"),
         ("Both", "Both"),
     ]
-    
+
     parameter = models.ForeignKey(
         TestParameter, on_delete=models.CASCADE, related_name="reference_ranges"
     )
-    
+
     # Age range (in years)
-    age_min = models.IntegerField(null=True, blank=True, help_text="Minimum age in years (null = no minimum)")
-    age_max = models.IntegerField(null=True, blank=True, help_text="Maximum age in years (null = no maximum)")
-    
+    age_min = models.IntegerField(
+        null=True, blank=True, help_text="Minimum age in years (null = no minimum)"
+    )
+    age_max = models.IntegerField(
+        null=True, blank=True, help_text="Maximum age in years (null = no maximum)"
+    )
+
     # Gender
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="Both")
-    
+
     # Reference values
     reference_min = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
@@ -246,7 +257,7 @@ class ReferenceRange(models.Model):
     reference_max = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    
+
     # Critical values
     critical_low = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
@@ -254,17 +265,17 @@ class ReferenceRange(models.Model):
     critical_high = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    
+
     # Versioning
     version = models.IntegerField(default=1)
     is_active = models.BooleanField(default=True)
     effective_date = models.DateField(auto_now_add=True)
-    
+
     # Metadata
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
-        'accounts.User',
+        "accounts.User",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -320,7 +331,7 @@ class ReferenceRange(models.Model):
     @max_critical.setter
     def max_critical(self, val):
         self.critical_high = val
-    
+
     class Meta:
         db_table = "reference_ranges"
         verbose_name = "Reference Range"
@@ -333,7 +344,7 @@ class ReferenceRange(models.Model):
         unique_together = [
             ("parameter", "age_min", "age_max", "gender", "version"),
         ]
-    
+
     def __str__(self):
         """Return string representation."""
         age_str = ""
@@ -341,16 +352,18 @@ class ReferenceRange(models.Model):
             min_age = self.age_min if self.age_min is not None else "0"
             max_age = self.age_max if self.age_max is not None else "∞"
             age_str = f" (Age: {min_age}-{max_age})"
-        return f"{self.parameter.parameter_name} - {self.gender}{age_str} v{self.version}"
-    
+        return (
+            f"{self.parameter.parameter_name} - {self.gender}{age_str} v{self.version}"
+        )
+
     def clean(self):
         """Validate the reference range."""
         from django.core.exceptions import ValidationError
-        
+
         if self.age_min is not None and self.age_max is not None:
             if self.age_min >= self.age_max:
                 raise ValidationError("age_min must be less than age_max")
-        
+
         if self.reference_min is not None and self.reference_max is not None:
             if self.reference_min >= self.reference_max:
                 raise ValidationError("reference_min must be less than reference_max")
@@ -432,29 +445,29 @@ class Parameter(models.Model):
     """
 
     parameter_id = models.CharField(
-        max_length=100, 
+        max_length=100,
         primary_key=True,
         validators=[validate_parameter_id],
-        help_text="Parameter ID in format p<number> (e.g., p1, p2, p53)"
+        help_text="Parameter ID in format p<number> (e.g., p1, p2, p53)",
     )
     parameter_name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=100, blank=True)
     unit = models.CharField(max_length=50, blank=True, null=True)
-    
+
     data_type = models.CharField(max_length=50, default="Numeric")
     editor_type = models.CharField(max_length=50, default="Plain")
     decimal_places = models.IntegerField(default=2, null=True, blank=True)
     allowed_values = models.TextField(blank=True)
-    
+
     is_calculated = models.BooleanField(default=False)
     calculation_formula = models.TextField(blank=True)
-    
+
     flag_direction = models.CharField(max_length=20, default="Both")
     has_quick_text = models.BooleanField(default=False)
-    
+
     external_code_type = models.CharField(max_length=50, blank=True)
     external_code_value = models.CharField(max_length=100, blank=True)
-    
+
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -530,7 +543,9 @@ class ParameterReferenceRange(models.Model):
     sex = models.CharField(max_length=20, choices=SEX_CHOICES, default="All")
     age_min = models.IntegerField(default=0)
     age_max = models.IntegerField(default=999)
-    age_unit = models.CharField(max_length=20, choices=AGE_UNIT_CHOICES, default="Years")
+    age_unit = models.CharField(
+        max_length=20, choices=AGE_UNIT_CHOICES, default="Years"
+    )
     population_group = models.CharField(max_length=50, default="Adult")
     unit = models.CharField(max_length=50, blank=True)
     normal_low = models.DecimalField(

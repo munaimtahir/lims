@@ -1,0 +1,6 @@
+Migrations for 'orders':
+  apps/orders/migrations/0006_alter_order_lab_number.py
+    - Alter field lab_number on order
+Migrations for 'patients':
+  apps/patients/migrations/0005_alter_patient_registration_number.py
+    - Alter field registration_number on patient

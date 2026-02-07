@@ -1,19 +1,24 @@
 from __future__ import annotations
 
+import math
 from datetime import date
 from decimal import Decimal, InvalidOperation
-import math
 from typing import Any, Optional
 
 from django.utils import timezone
 
 from apps.laboratory.models import ReferenceRange, TestParameter
 
-
 # Common qualitative abnormal result indicators
 ABNORMAL_QUALITATIVE_INDICATORS = [
-    "POSITIVE", "REACTIVE", "DETECTED", "ABNORMAL", 
-    "PRESENT", "HIGH", "LOW", "CRITICAL"
+    "POSITIVE",
+    "REACTIVE",
+    "DETECTED",
+    "ABNORMAL",
+    "PRESENT",
+    "HIGH",
+    "LOW",
+    "CRITICAL",
 ]
 
 
@@ -29,13 +34,13 @@ def get_patient_age_years(patient, at_date: Optional[date] = None) -> Optional[f
     if dob > at_date:
         return None
     return (
-        at_date.year
-        - dob.year
-        - ((at_date.month, at_date.day) < (dob.month, dob.day))
+        at_date.year - dob.year - ((at_date.month, at_date.day) < (dob.month, dob.day))
     )
 
 
-def format_reference_display(ref_min: Optional[Decimal], ref_max: Optional[Decimal]) -> str:
+def format_reference_display(
+    ref_min: Optional[Decimal], ref_max: Optional[Decimal]
+) -> str:
     """Format the reference range for display."""
     if ref_min is not None and ref_max is not None:
         return f"{ref_min} - {ref_max}"
@@ -133,13 +138,13 @@ def compute_flag(
 ) -> str:
     """
     Compute the flag for a result value (numeric or qualitative).
-    
+
     For numeric values, checks against reference ranges.
     For non-numeric qualitative values, recognizes common abnormal indicators.
     """
     if result_value is None:
         return ""
-    
+
     # Try to parse as numeric value
     try:
         cleaned_value = str(result_value).strip().replace(",", "").replace(" ", "")
@@ -147,10 +152,12 @@ def compute_flag(
     except (InvalidOperation, ValueError, TypeError):
         # Non-numeric value - check for common qualitative abnormal results
         value_upper = str(result_value).strip().upper()
-        
-        if any(indicator in value_upper for indicator in ABNORMAL_QUALITATIVE_INDICATORS):
+
+        if any(
+            indicator in value_upper for indicator in ABNORMAL_QUALITATIVE_INDICATORS
+        ):
             return "A"
-        
+
         # Normal qualitative results or unrecognized text
         return ""
 

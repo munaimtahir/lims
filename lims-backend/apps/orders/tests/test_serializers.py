@@ -1,21 +1,23 @@
 """
 Tests for order serializers.
 """
-import pytest
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
+import pytest
 from rest_framework.test import APIRequestFactory
-from apps.orders.serializers import OrderSerializer, OrderListSerializer
+
 from apps.accounts.models import User
-from apps.patients.models import Patient
-from apps.laboratory.models import TestCategory, Test, TestPanel
+from apps.laboratory.models import Test, TestCategory, TestPanel
 from apps.orders.models import Order, OrderItem
+from apps.orders.serializers import OrderListSerializer, OrderSerializer
+from apps.patients.models import Patient
 
 
 @pytest.mark.django_db
 class TestOrderSerializer:
     """Test OrderSerializer."""
-    
+
     @pytest.fixture
     def user(self):
         """Create test user."""
@@ -26,7 +28,7 @@ class TestOrderSerializer:
             full_name="Test User",
             role="Receptionist",
         )
-    
+
     @pytest.fixture
     def patient(self, user):
         """Create test patient."""
@@ -38,12 +40,12 @@ class TestOrderSerializer:
             phone="1234567890",
             created_by=user,
         )
-    
+
     @pytest.fixture
     def category(self):
         """Create test category."""
         return TestCategory.objects.create(name="Hematology")
-    
+
     @pytest.fixture
     def test_instance(self, category):
         """Create test instance."""
@@ -55,7 +57,7 @@ class TestOrderSerializer:
             price=Decimal("50.00"),
             turnaround_time=24,
         )
-    
+
     @pytest.fixture
     def test_panel(self, category, test_instance):
         """Create test panel."""
@@ -69,16 +71,14 @@ class TestOrderSerializer:
         )
         panel.tests.add(test_instance)
         return panel
-    
+
     def test_create_order_with_tests(self, user, patient, test_instance):
         """Test creating order with test_ids."""
         factory = APIRequestFactory()
-        request = factory.post('/')
+        request = factory.post("/")
         request.user = user
-        
-        serializer = OrderSerializer(
-            context={"request": request}
-        )
+
+        serializer = OrderSerializer(context={"request": request})
         # Use validated_data format (patient object, not ID)
         validated_data = {
             "patient": patient,
@@ -86,44 +86,42 @@ class TestOrderSerializer:
             "status": "NEW",
         }
         order = serializer.create(validated_data)
-        
+
         assert order.patient == patient
         assert order.ordered_by == user
         assert order.items.count() == 1
         assert order.items.first().test == test_instance
         assert order.total_amount == test_instance.price
-    
+
     def test_create_order_with_panels(self, user, patient, test_panel):
         """Test creating order with panel_ids."""
         factory = APIRequestFactory()
-        request = factory.post('/')
+        request = factory.post("/")
         request.user = user
-        
-        serializer = OrderSerializer(
-            context={"request": request}
-        )
+
+        serializer = OrderSerializer(context={"request": request})
         validated_data = {
             "patient": patient,
             "panel_ids": [test_panel.id],
             "status": "NEW",
         }
         order = serializer.create(validated_data)
-        
+
         assert order.patient == patient
         assert order.ordered_by == user
         assert order.items.count() == 1
         assert order.items.first().panel == test_panel
         assert order.total_amount == test_panel.price
-    
-    def test_create_order_with_tests_and_panels(self, user, patient, test_instance, test_panel):
+
+    def test_create_order_with_tests_and_panels(
+        self, user, patient, test_instance, test_panel
+    ):
         """Test creating order with both test_ids and panel_ids."""
         factory = APIRequestFactory()
-        request = factory.post('/')
+        request = factory.post("/")
         request.user = user
-        
-        serializer = OrderSerializer(
-            context={"request": request}
-        )
+
+        serializer = OrderSerializer(context={"request": request})
         validated_data = {
             "patient": patient,
             "test_ids": [test_instance.id],
@@ -131,59 +129,53 @@ class TestOrderSerializer:
             "status": "NEW",
         }
         order = serializer.create(validated_data)
-        
+
         assert order.items.count() == 2
         assert order.total_amount == test_instance.price + test_panel.price
-    
+
     def test_create_order_with_invalid_test_id(self, user, patient, test_instance):
         """Test creating order with non-existent test_id."""
         factory = APIRequestFactory()
-        request = factory.post('/')
+        request = factory.post("/")
         request.user = user
-        
-        serializer = OrderSerializer(
-            context={"request": request}
-        )
+
+        serializer = OrderSerializer(context={"request": request})
         validated_data = {
             "patient": patient,
             "test_ids": [test_instance.id, 99999],  # Invalid ID
             "status": "NEW",
         }
         order = serializer.create(validated_data)
-        
+
         # Should create order with only valid test
         assert order.items.count() == 1
         assert order.items.first().test == test_instance
-    
+
     def test_create_order_with_invalid_panel_id(self, user, patient, test_panel):
         """Test creating order with non-existent panel_id."""
         factory = APIRequestFactory()
-        request = factory.post('/')
+        request = factory.post("/")
         request.user = user
-        
-        serializer = OrderSerializer(
-            context={"request": request}
-        )
+
+        serializer = OrderSerializer(context={"request": request})
         validated_data = {
             "patient": patient,
             "panel_ids": [test_panel.id, 99999],  # Invalid ID
             "status": "NEW",
         }
         order = serializer.create(validated_data)
-        
+
         # Should create order with only valid panel
         assert order.items.count() == 1
         assert order.items.first().panel == test_panel
-    
+
     def test_create_order_with_discount(self, user, patient, test_instance):
         """Test creating order with discount."""
         factory = APIRequestFactory()
-        request = factory.post('/')
+        request = factory.post("/")
         request.user = user
-        
-        serializer = OrderSerializer(
-            context={"request": request}
-        )
+
+        serializer = OrderSerializer(context={"request": request})
         validated_data = {
             "patient": patient,
             "test_ids": [test_instance.id],
@@ -191,75 +183,71 @@ class TestOrderSerializer:
             "discount": Decimal("10.00"),
         }
         order = serializer.create(validated_data)
-        
+
         assert order.discount == Decimal("10.00")
         assert order.total_amount == test_instance.price
         assert order.net_amount == test_instance.price - Decimal("10.00")
-    
+
     def test_create_order_no_user(self, patient, test_instance):
         """Test creating order without authenticated user."""
         factory = APIRequestFactory()
-        request = factory.post('/')
+        request = factory.post("/")
         # No user set
-        
-        serializer = OrderSerializer(
-            context={"request": request}
-        )
+
+        serializer = OrderSerializer(context={"request": request})
         validated_data = {
             "patient": patient,
             "test_ids": [test_instance.id],
             "status": "NEW",
         }
         order = serializer.create(validated_data)
-        
+
         assert order.patient == patient
         assert order.ordered_by is None
-    
+
     def test_samples_auto_created_on_order_creation(self, user, patient, test_instance):
         """
         REGRESSION TEST for Issue #1: Samples not auto-created on order creation.
-        
+
         This test ensures that Sample objects are automatically created when an order
         is created with tests/panels.
         """
         from apps.samples.models import Sample, SampleStatus
-        
+
         factory = APIRequestFactory()
-        request = factory.post('/')
+        request = factory.post("/")
         request.user = user
-        
-        serializer = OrderSerializer(
-            context={"request": request}
-        )
+
+        serializer = OrderSerializer(context={"request": request})
         validated_data = {
             "patient": patient,
             "test_ids": [test_instance.id],
             "status": "NEW",
         }
         order = serializer.create(validated_data)
-        
+
         # Verify samples were auto-created
         samples = Sample.objects.filter(order_item__order=order)
         assert samples.count() == 1, "Sample should be auto-created for each order item"
-        
+
         sample = samples.first()
         assert sample.status == SampleStatus.PENDING
         assert sample.sample_type == test_instance.sample_type
         assert sample.order_item.test == test_instance
-    
-    def test_samples_auto_created_for_multiple_items(self, user, patient, test_instance, test_panel):
+
+    def test_samples_auto_created_for_multiple_items(
+        self, user, patient, test_instance, test_panel
+    ):
         """
         REGRESSION TEST: Verify samples are created for orders with multiple tests/panels.
         """
         from apps.samples.models import Sample, SampleStatus
-        
+
         factory = APIRequestFactory()
-        request = factory.post('/')
+        request = factory.post("/")
         request.user = user
-        
-        serializer = OrderSerializer(
-            context={"request": request}
-        )
+
+        serializer = OrderSerializer(context={"request": request})
         validated_data = {
             "patient": patient,
             "test_ids": [test_instance.id],
@@ -267,11 +255,13 @@ class TestOrderSerializer:
             "status": "NEW",
         }
         order = serializer.create(validated_data)
-        
+
         # Verify samples were auto-created for both items
         samples = Sample.objects.filter(order_item__order=order)
-        assert samples.count() == 2, "Sample should be created for each order item (test + panel)"
-        
+        assert (
+            samples.count() == 2
+        ), "Sample should be created for each order item (test + panel)"
+
         # All samples should be PENDING
         for sample in samples:
             assert sample.status == SampleStatus.PENDING
@@ -280,7 +270,7 @@ class TestOrderSerializer:
 @pytest.mark.django_db
 class TestOrderListSerializer:
     """Test OrderListSerializer."""
-    
+
     @pytest.fixture
     def user(self):
         """Create test user."""
@@ -291,7 +281,7 @@ class TestOrderListSerializer:
             full_name="Test User",
             role="Receptionist",
         )
-    
+
     @pytest.fixture
     def patient(self, user):
         """Create test patient."""
@@ -303,12 +293,12 @@ class TestOrderListSerializer:
             phone="1234567890",
             created_by=user,
         )
-    
+
     @pytest.fixture
     def category(self):
         """Create test category."""
         return TestCategory.objects.create(name="Hematology")
-    
+
     @pytest.fixture
     def test_instance(self, category):
         """Create test instance."""
@@ -320,7 +310,7 @@ class TestOrderListSerializer:
             price=Decimal("50.00"),
             turnaround_time=24,
         )
-    
+
     @pytest.fixture
     def order(self, patient, user, test_instance):
         """Create test order."""
@@ -336,12 +326,12 @@ class TestOrderListSerializer:
         )
         order.calculate_total()
         return order
-    
+
     def test_get_item_count(self, order):
         """Test get_item_count method."""
         serializer = OrderListSerializer(order)
         assert serializer.get_item_count(order) == 1
-        
+
         # Add another item
         OrderItem.objects.create(
             order=order,

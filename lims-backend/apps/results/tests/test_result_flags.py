@@ -3,7 +3,13 @@ from decimal import Decimal
 
 import pytest
 
-from apps.laboratory.models import ReferenceRange, Test, TestCategory, TestParameter, Parameter
+from apps.laboratory.models import (
+    Parameter,
+    ReferenceRange,
+    Test,
+    TestCategory,
+    TestParameter,
+)
 from apps.orders.models import Order, OrderItem
 from apps.patients.models import Patient
 from apps.results.models import TestResult

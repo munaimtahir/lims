@@ -6,15 +6,17 @@ It is idempotent - safe to run multiple times.
 """
 
 from decimal import Decimal
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
+
 from apps.laboratory.models import (
-    TestCategory,
-    Test,
     Parameter,
-    TestParameter,
-    TestPanel,
     ReferenceRange,
+    Test,
+    TestCategory,
+    TestPanel,
+    TestParameter,
 )
 
 
@@ -31,7 +33,9 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         if options["clear"]:
-            self.stdout.write(self.style.WARNING("Clearing existing test catalog data..."))
+            self.stdout.write(
+                self.style.WARNING("Clearing existing test catalog data...")
+            )
             ReferenceRange.objects.all().delete()
             TestParameter.objects.all().delete()
             # Clear many-to-many relationships before deleting panels
@@ -69,8 +73,14 @@ class Command(BaseCommand):
     def create_categories(self):
         """Create test categories."""
         categories_data = [
-            {"name": "Hematology", "description": "Blood cell analysis and related tests"},
-            {"name": "Clinical Chemistry", "description": "Biochemistry and metabolic tests"},
+            {
+                "name": "Hematology",
+                "description": "Blood cell analysis and related tests",
+            },
+            {
+                "name": "Clinical Chemistry",
+                "description": "Biochemistry and metabolic tests",
+            },
             {"name": "Microbiology", "description": "Bacterial and viral testing"},
             {"name": "Immunology", "description": "Immune system and antibody tests"},
             {"name": "Hormones", "description": "Endocrine and hormone analysis"},
@@ -105,12 +115,12 @@ class Command(BaseCommand):
             {"id": "p10", "name": "ALP", "unit": "U/L"},
             {"id": "p11", "name": "Total Bilirubin", "unit": "mg/dL"},
         ]
-        
+
         parameters = {}
         for p_data in parameters_data:
             param, created = Parameter.objects.get_or_create(
                 parameter_id=p_data["id"],
-                defaults={"parameter_name": p_data["name"], "unit": p_data["unit"]}
+                defaults={"parameter_name": p_data["name"], "unit": p_data["unit"]},
             )
             parameters[p_data["id"]] = param
         return parameters
@@ -129,7 +139,7 @@ class Command(BaseCommand):
                     {"p_id": "p2", "order": 2},
                     {"p_id": "p3", "order": 3},
                     {"p_id": "p4", "order": 4},
-                ]
+                ],
             },
             2: {
                 "test_code": "GLUCOSE",
@@ -139,7 +149,7 @@ class Command(BaseCommand):
                 "tat": 2,
                 "mappings": [
                     {"p_id": "p5", "order": 1},
-                ]
+                ],
             },
             3: {
                 "test_code": "LFT",
@@ -152,8 +162,8 @@ class Command(BaseCommand):
                     {"p_id": "p9", "order": 2},
                     {"p_id": "p10", "order": 3},
                     {"p_id": "p11", "order": 4},
-                ]
-            }
+                ],
+            },
         }
 
         created_tests = {}
@@ -167,17 +177,17 @@ class Command(BaseCommand):
                     "price": t_data["price"],
                     "turnaround_time": t_data["tat"],
                     "sample_type": "Serum",
-                }
+                },
             )
             created_tests[t_data["test_code"]] = test
-            
+
             for m_data in t_data["mappings"]:
                 TestParameter.objects.get_or_create(
                     test=test,
                     parameter=parameters[m_data["p_id"]],
-                    defaults={"display_order": m_data["order"]}
+                    defaults={"display_order": m_data["order"]},
                 )
-        
+
         return created_tests
 
     def create_panels(self, categories, tests_data):
@@ -209,4 +219,3 @@ class Command(BaseCommand):
             for test_code in panel_data["test_codes"]:
                 if test_code in tests_data:
                     panel.tests.add(tests_data[test_code])
-

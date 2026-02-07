@@ -2,8 +2,16 @@
 Seed a minimal catalog if empty.
 """
 from decimal import Decimal
+
 from django.core.management.base import BaseCommand
-from apps.laboratory.models import TestCategory, Test, Parameter, TestParameter, ReferenceRange
+
+from apps.laboratory.models import (
+    Parameter,
+    ReferenceRange,
+    Test,
+    TestCategory,
+    TestParameter,
+)
 
 
 class Command(BaseCommand):
@@ -24,10 +32,18 @@ class Command(BaseCommand):
             price=Decimal("500.00"),
             turnaround_time=24,
         )
-        hemoglobin = Parameter.objects.create(parameter_id="p1", parameter_name="Hemoglobin", unit="g/dL")
-        wbc = Parameter.objects.create(parameter_id="p2", parameter_name="WBC", unit="x10^3/uL")
-        mapping1 = TestParameter.objects.create(test=test, parameter=hemoglobin, display_order=1, reportable=True)
-        mapping2 = TestParameter.objects.create(test=test, parameter=wbc, display_order=2, reportable=True)
+        hemoglobin = Parameter.objects.create(
+            parameter_id="p1", parameter_name="Hemoglobin", unit="g/dL"
+        )
+        wbc = Parameter.objects.create(
+            parameter_id="p2", parameter_name="WBC", unit="x10^3/uL"
+        )
+        mapping1 = TestParameter.objects.create(
+            test=test, parameter=hemoglobin, display_order=1, reportable=True
+        )
+        mapping2 = TestParameter.objects.create(
+            test=test, parameter=wbc, display_order=2, reportable=True
+        )
         ReferenceRange.objects.create(
             parameter=mapping1,
             gender="Both",

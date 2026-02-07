@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0002_systemsettings_and_more"),
         ("patients", "0001_initial"),

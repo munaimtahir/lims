@@ -1,8 +1,10 @@
-from rest_framework import serializers
 from django.db import transaction
-from .models import Order, OrderItem
+from rest_framework import serializers
+
 from apps.laboratory.models import Test, TestPanel
 from apps.patients.models import Patient
+
+from .models import Order, OrderItem
 
 
 class MinimalPatientSerializer(serializers.ModelSerializer):
@@ -206,10 +208,10 @@ class OrderSerializer(serializers.ModelSerializer):
             # We need to collect the items before the transaction is complete
             # because order.items.all() needs the transaction to be committed
             from apps.samples.models import Sample, SampleStatus
-            
+
             # Refresh from DB to get all related order items
             order_items = OrderItem.objects.filter(order=order)
-            
+
             for item in order_items:
                 # Determine sample type from test or panel
                 sample_type = "Blood"  # Default
@@ -222,12 +224,12 @@ class OrderSerializer(serializers.ModelSerializer):
                         first_test = item.panel.tests.first()
                         if first_test:
                             sample_type = first_test.sample_type or "Blood"
-                
+
                 # Create sample for this order item
                 Sample.objects.create(
                     order_item=item,
                     sample_type=sample_type,
-                    status=SampleStatus.PENDING
+                    status=SampleStatus.PENDING,
                 )
 
         return order

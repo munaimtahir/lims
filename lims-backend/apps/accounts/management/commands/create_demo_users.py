@@ -7,6 +7,7 @@ It is idempotent - safe to run multiple times.
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+
 from apps.accounts.models import User
 
 
@@ -24,10 +25,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options["clear"]:
             self.stdout.write(self.style.WARNING("Clearing existing demo users..."))
-            User.objects.filter(username__in=[
-                "admin", "receptionist", "cashier", "phlebotomist", 
-                "labtech", "pathologist", "manager"
-            ]).delete()
+            User.objects.filter(
+                username__in=[
+                    "admin",
+                    "receptionist",
+                    "cashier",
+                    "phlebotomist",
+                    "labtech",
+                    "pathologist",
+                    "manager",
+                ]
+            ).delete()
 
         self.stdout.write(self.style.SUCCESS("Creating demo users..."))
 
@@ -89,26 +97,27 @@ class Command(BaseCommand):
         for user_data in demo_users:
             password = user_data.pop("password")
             username = user_data["username"]
-            
+
             user, created = User.objects.get_or_create(
-                username=username,
-                defaults=user_data
+                username=username, defaults=user_data
             )
-            
+
             # Always update password to ensure it's set correctly
             user.set_password(password)
             user.save()
-            
+
             if created:
                 self.stdout.write(f"  Created user: {username} ({user_data['role']})")
             else:
                 self.stdout.write(f"  Updated user: {username} ({user_data['role']})")
-            
-            created_users.append({
-                "username": username,
-                "password": password,
-                "role": user_data["role"],
-            })
+
+            created_users.append(
+                {
+                    "username": username,
+                    "password": password,
+                    "role": user_data["role"],
+                }
+            )
 
         self.stdout.write(self.style.SUCCESS("\n" + "=" * 60))
         self.stdout.write(self.style.SUCCESS("DEMO USERS SUMMARY"))

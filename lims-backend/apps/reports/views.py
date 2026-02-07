@@ -1,14 +1,16 @@
-from rest_framework import viewsets, status, filters
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from django.core.files.base import ContentFile
 from django.http import FileResponse
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from apps.orders.models import Order
+
 from .models import Report, ReportStatus
 from .serializers import ReportSerializer
 from .utils import generate_pdf_report
-from apps.orders.models import Order
 
 
 class ReportViewSet(viewsets.ModelViewSet):
@@ -91,9 +93,9 @@ class ReportViewSet(viewsets.ModelViewSet):
         """
         report = self.get_object()
         delivery_method = request.data.get("method", "print")
-        
+
         report.mark_delivered(request.user, delivery_method)
-        
+
         return Response(
             {
                 "status": "Report marked as delivered",
@@ -103,7 +105,7 @@ class ReportViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-    
+
     @action(detail=True, methods=["post"])
     def reprint(self, request, pk=None):
         """
@@ -118,7 +120,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         """
         report = self.get_object()
         report.increment_reprint()
-        
+
         return Response(
             {
                 "status": "Report reprinted",
@@ -127,7 +129,7 @@ class ReportViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-    
+
     @action(detail=True, methods=["post"])
     def amend(self, request, pk=None):
         """
@@ -142,20 +144,20 @@ class ReportViewSet(viewsets.ModelViewSet):
         """
         report = self.get_object()
         reason = request.data.get("reason")
-        
+
         if not reason:
             return Response(
                 {"error": "Amendment reason is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         # Check permissions (only pathologists/admins can create amendments)
         if not (request.user.is_pathologist or request.user.is_admin):
             return Response(
                 {"error": "Only pathologists can create report amendments"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        
+
         # Generate new PDF for amended report
         try:
             pdf_content = generate_pdf_report(
@@ -165,15 +167,15 @@ class ReportViewSet(viewsets.ModelViewSet):
                 lab_phone=request.data.get("lab_phone", ""),
                 lab_email=request.data.get("lab_email", ""),
             )
-            
+
             # Create amended report
             amended_report = report.create_amendment(reason, request.user)
-            
+
             # Save PDF file
             filename = f"Report_Amended_{amended_report.report_number}.pdf"
             amended_report.report_file.save(filename, ContentFile(pdf_content))
             amended_report.save()
-            
+
             return Response(
                 {
                     "status": "Report amended successfully",
@@ -187,7 +189,7 @@ class ReportViewSet(viewsets.ModelViewSet):
                 {"error": f"Failed to create amendment: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-    
+
     @action(detail=False, methods=["get"])
     def patient_history(self, request):
         """
@@ -206,21 +208,23 @@ class ReportViewSet(viewsets.ModelViewSet):
                 {"error": "patient_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         limit = int(request.query_params.get("limit", 10))
-        
-        reports = Report.objects.filter(
-            order__patient_id=patient_id
-        ).select_related(
-            "order",
-            "order__patient",
-            "generated_by",
-            "verified_by",
-        ).order_by("-generated_at")[:limit]
-        
+
+        reports = (
+            Report.objects.filter(order__patient_id=patient_id)
+            .select_related(
+                "order",
+                "order__patient",
+                "generated_by",
+                "verified_by",
+            )
+            .order_by("-generated_at")[:limit]
+        )
+
         serializer = self.get_serializer(reports, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     @action(detail=False, methods=["get"])
     def amendments(self, request):
         """
@@ -238,7 +242,7 @@ class ReportViewSet(viewsets.ModelViewSet):
                 {"error": "report_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         try:
             original_report = Report.objects.get(id=report_id)
         except Report.DoesNotExist:
@@ -246,10 +250,12 @@ class ReportViewSet(viewsets.ModelViewSet):
                 {"error": "Report not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        
-        amendments = Report.objects.filter(amended_from=original_report).order_by("-generated_at")
+
+        amendments = Report.objects.filter(amended_from=original_report).order_by(
+            "-generated_at"
+        )
         serializer = self.get_serializer(amendments, many=True)
-        
+
         return Response(
             {
                 "original_report": self.get_serializer(original_report).data,
@@ -370,7 +376,11 @@ class ReportViewSet(viewsets.ModelViewSet):
 
             filename = f"Report_{order.order_id}_{order.id}.pdf"
             report.report_file.save(filename, ContentFile(pdf_content))
-            report.status = ReportStatus.FINAL if request.data.get("is_final", True) else ReportStatus.DRAFT
+            report.status = (
+                ReportStatus.FINAL
+                if request.data.get("is_final", True)
+                else ReportStatus.DRAFT
+            )
             report.template_name = request.data.get("template_name", "default")
             report.save()
 

@@ -4,15 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('results', '0002_testresult_notes_testresult_published_at_and_more'),
+        ("results", "0002_testresult_notes_testresult_published_at_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testresult',
-            name='flag',
-            field=models.CharField(choices=[('', 'Normal'), ('L', 'Low'), ('H', 'High'), ('C', 'Critical'), ('A', 'Abnormal')], default='', max_length=20),
+            model_name="testresult",
+            name="flag",
+            field=models.CharField(
+                choices=[
+                    ("", "Normal"),
+                    ("L", "Low"),
+                    ("H", "High"),
+                    ("C", "Critical"),
+                    ("A", "Abnormal"),
+                ],
+                default="",
+                max_length=20,
+            ),
         ),
     ]

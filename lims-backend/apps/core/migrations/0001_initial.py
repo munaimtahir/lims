@@ -33,7 +33,8 @@ class Migration(migrations.Migration):
                 (
                     "name",
                     models.CharField(
-                        help_text="Human-readable name for this terminal", max_length=255
+                        help_text="Human-readable name for this terminal",
+                        max_length=255,
                     ),
                 ),
                 (
@@ -81,4 +82,3 @@ class Migration(migrations.Migration):
             index=models.Index(fields=["is_active"], name="lab_termin_is_acti_idx"),
         ),
     ]
-

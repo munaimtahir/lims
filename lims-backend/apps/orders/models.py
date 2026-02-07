@@ -1,14 +1,16 @@
-from django.db import models
-from django.conf import settings
-from django.utils import timezone
-from django.core.exceptions import ValidationError
-from decimal import Decimal
 import logging
-from apps.patients.models import Patient
-from apps.laboratory.models import Test, TestPanel
+from decimal import Decimal
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils import timezone
+
 from apps.core.models import CollectionCenter
 from apps.core.numbering import generate_lab_number
 from apps.core.validators import validate_lab_number
+from apps.laboratory.models import Test, TestPanel
+from apps.patients.models import Patient
 
 logger = logging.getLogger(__name__)
 
@@ -64,15 +66,13 @@ class Order(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default="NEW"
-    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="NEW")
     priority = models.CharField(
         max_length=20, choices=PRIORITY_CHOICES, default="ROUTINE"
     )
     notes = models.TextField(blank=True)
     referred_by = models.CharField(max_length=255, blank=True, null=True)
-    
+
     # Lab Numbering (V2)
     lab_number = models.CharField(
         max_length=20,
@@ -80,7 +80,7 @@ class Order(models.Model):
         null=True,
         db_index=True,
         validators=[validate_lab_number],
-        help_text="Tube Label (MDD-XXX)"
+        help_text="Tube Label (MDD-XXX)",
     )
     lab_date = models.DateField(blank=True, null=True, db_index=True)
     daily_serial = models.IntegerField(blank=True, null=True)
@@ -89,7 +89,7 @@ class Order(models.Model):
         on_delete=models.PROTECT,
         null=True,
         blank=True,
-        related_name="orders"
+        related_name="orders",
     )
 
     # Financials
@@ -143,30 +143,34 @@ class Order(models.Model):
         """
         if not self.order_id:
             self.order_id = self.generate_order_id()
-        
+
         # V2 Lab Numbering
         if not self.lab_number:
             if not self.collection_center:
                 # Fallback to Head Office (00) if not set
-                center_00, _ = CollectionCenter.objects.get_or_create(code="00", defaults={"name": "Head Office", "is_active": True})
+                center_00, _ = CollectionCenter.objects.get_or_create(
+                    code="00", defaults={"name": "Head Office", "is_active": True}
+                )
                 self.collection_center = center_00
-            
+
             # Use created_at if available, else now
             generation_dt = self.created_at or timezone.now()
             self.lab_date = generation_dt.date()
-            
+
             # Generate number
-            self.lab_number, self.daily_serial = generate_lab_number(self.collection_center, generation_dt)
+            self.lab_number, self.daily_serial = generate_lab_number(
+                self.collection_center, generation_dt
+            )
 
         # Calculate net amount
         self.net_amount = max(self.total_amount - self.discount, Decimal("0.00"))
-        
+
         # Calculate due amount
         self.due_amount = max(self.net_amount - self.paid_amount, Decimal("0.00"))
-        
+
         # Update is_paid status
         self.is_paid = self.due_amount <= Decimal("0.00")
-        
+
         # Validate status transition if status is being changed
         if self.pk:  # Only validate if this is an update
             try:
@@ -295,17 +299,20 @@ class Order(models.Model):
         This should be called whenever a related Payment is saved or deleted.
         """
         from apps.billing.models import Payment
-        
+
         was_paid_before = self.is_paid
-        
+
         # Sum up all related payments
-        total_paid = self.payments.aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+        total_paid = self.payments.aggregate(total=models.Sum("amount"))[
+            "total"
+        ] or Decimal("0.00")
         self.paid_amount = total_paid
         self.save()
 
         # If the order has just become paid, trigger sample generation
         if not was_paid_before and self.is_paid:
             from apps.samples.services import ensure_samples_for_paid_order
+
             # Assuming the last user to update the order is the one to credit for creation
             ensure_samples_for_paid_order(self, created_by=self.ordered_by)
 

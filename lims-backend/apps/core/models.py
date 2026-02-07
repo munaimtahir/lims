@@ -1,9 +1,12 @@
 """Core models for configuration and infrastructure."""
 
 import os
-from django.db import models
+
 from django.conf import settings
 from django.core.validators import RegexValidator
+from django.db import models
+
+
 def default_print_template_config():
     return {
         "paper_size": "A4",
@@ -33,23 +36,26 @@ class LabTerminal(models.Model):
     Model representing a laboratory terminal/workstation.
     Used for tracking offline entries and synchronization.
     """
+
     name = models.CharField(max_length=255, help_text="Terminal name or identifier")
-    location = models.CharField(max_length=255, blank=True, help_text="Physical location of terminal")
+    location = models.CharField(
+        max_length=255, blank=True, help_text="Physical location of terminal"
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         db_table = "core_labterminal"
         verbose_name = "Lab Terminal"
         verbose_name_plural = "Lab Terminals"
-    
+
     def __str__(self):
         return self.name
 
 
 class SystemSettingsManager(models.Manager):
     """Custom manager for SystemSettings to enforce singleton pattern."""
-    
+
     def create(self, **kwargs):
         """Create or update the singleton settings instance."""
         if self.model.objects.exists():
@@ -66,11 +72,11 @@ class SystemSettingsManager(models.Manager):
 class SystemSettings(models.Model):
     """
     System-wide configuration settings for the LIMS.
-    
+
     Stores lab information, report customization, email settings, and other
     system-wide configurations. Uses a singleton pattern - only one settings
     instance should exist.
-    
+
     Attributes:
         lab_name (str): Name of the laboratory.
         lab_address (str): Address of the laboratory.
@@ -93,9 +99,9 @@ class SystemSettings(models.Model):
         updated_at (datetime): Last update timestamp.
         updated_by (User, optional): User who last updated settings.
     """
-    
+
     objects = SystemSettingsManager()
-    
+
     # Lab Information
     lab_name = models.CharField(max_length=255, default="Laboratory")
     lab_display_name = models.CharField(
@@ -113,7 +119,7 @@ class SystemSettings(models.Model):
         null=True,
         help_text="Laboratory logo for reports and UI",
     )
-    
+
     # Report Customization
     report_header = models.TextField(
         blank=True,
@@ -137,7 +143,7 @@ class SystemSettings(models.Model):
         null=True,
         help_text="Optional footer image for reports and receipts",
     )
-    
+
     # Financial Settings
     currency = models.CharField(max_length=10, default="PKR")
     tax_rate = models.DecimalField(
@@ -146,7 +152,7 @@ class SystemSettings(models.Model):
         default=0.00,
         help_text="Tax rate as percentage",
     )
-    
+
     # Email Configuration
     email_host = models.CharField(max_length=255, blank=True, null=True)
     email_port = models.IntegerField(default=587)
@@ -155,7 +161,7 @@ class SystemSettings(models.Model):
     email_host_user = models.CharField(max_length=255, blank=True, null=True)
     email_host_password = models.CharField(max_length=255, blank=True, null=True)
     email_from = models.EmailField(blank=True, null=True)
-    
+
     # Backup Settings
     backup_enabled = models.BooleanField(default=False)
     backup_frequency = models.CharField(
@@ -167,7 +173,7 @@ class SystemSettings(models.Model):
         ],
         default="daily",
     )
-    
+
     # Metadata
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
@@ -177,16 +183,16 @@ class SystemSettings(models.Model):
         blank=True,
         related_name="settings_updated",
     )
-    
+
     class Meta:
         db_table = "system_settings"
         verbose_name = "System Settings"
         verbose_name_plural = "System Settings"
-    
+
     def __str__(self):
         """Return string representation."""
         return f"System Settings - {self.lab_name}"
-    
+
     def save(self, *args, **kwargs):
         """Override save to ensure singleton pattern."""
         # Ensure only one settings instance exists
@@ -196,21 +202,21 @@ class SystemSettings(models.Model):
                 # Update existing instance instead of creating new one
                 existing = SystemSettings.objects.first()
                 for field in self._meta.fields:
-                    if field.name not in ['id', 'updated_at', 'updated_by']:
+                    if field.name not in ["id", "updated_at", "updated_by"]:
                         setattr(existing, field.name, getattr(self, field.name))
                 # Remove force_insert from kwargs to allow update
-                kwargs.pop('force_insert', None)
+                kwargs.pop("force_insert", None)
                 existing.save(*args, **kwargs)
                 # Update self to match existing instance
                 self.pk = existing.pk
                 return existing
         return super().save(*args, **kwargs)
-    
+
     @classmethod
     def get_settings(cls):
         """
         Get the system settings instance (singleton pattern).
-        
+
         Returns:
             SystemSettings: The settings instance, creating one if it doesn't exist.
         """
@@ -254,7 +260,9 @@ class PrintTemplate(models.Model):
         """Ensure only one active template per type."""
         super().save(*args, **kwargs)
         if self.is_active:
-            PrintTemplate.objects.filter(type=self.type).exclude(pk=self.pk).update(is_active=False)
+            PrintTemplate.objects.filter(type=self.type).exclude(pk=self.pk).update(
+                is_active=False
+            )
 
     @classmethod
     def get_active(cls, template_type):
@@ -269,11 +277,12 @@ class CollectionCenter(models.Model):
     Represents a collection/reception center for the lab.
     Used for scoping numbering sequences (Registration and Lab numbers).
     """
+
     code = models.CharField(
-        max_length=2, 
-        unique=True, 
+        max_length=2,
+        unique=True,
         validators=[RegexValidator(r"^\d{2}$", "Code must be 2 digits (00-99)")],
-        help_text="2-digit unique code (e.g., '00' for Head Office)"
+        help_text="2-digit unique code (e.g., '00' for Head Office)",
     )
     name = models.CharField(max_length=255)
     address = models.TextField(blank=True, null=True)
@@ -298,6 +307,7 @@ class RegistrationCounter(models.Model):
     Format: YYMM-CC-SSSS
     Resets monthly per center.
     """
+
     yymm = models.CharField(max_length=4, help_text="Year-Month string (e.g., '2602')")
     center = models.ForeignKey(CollectionCenter, on_delete=models.PROTECT)
     last_value = models.IntegerField(default=0)
@@ -318,6 +328,7 @@ class LabDailyCounter(models.Model):
     Format: MDD-XXX
     Resets daily per center.
     """
+
     date = models.DateField(help_text="Date of processing")
     center = models.ForeignKey(CollectionCenter, on_delete=models.PROTECT)
     last_value = models.IntegerField(default=0)

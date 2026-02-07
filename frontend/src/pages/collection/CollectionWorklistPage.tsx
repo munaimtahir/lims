@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { sampleApi, orderApi } from '../../api/services';
+import { sampleApi } from '../../api/services';
 import type { SampleCollection } from '../../types';
 import { isSampleBarcodeEnabled } from '../../utils/featureFlags';
 import styles from './CollectionWorklistPage.module.css';
@@ -27,7 +27,7 @@ export default function CollectionWorklistPage() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status, barcode, sampleData }: {
+    mutationFn: ({ id, status, barcode }: {
       id: number;
       status: string;
       barcode?: string;

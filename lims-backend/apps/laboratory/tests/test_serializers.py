@@ -1,18 +1,26 @@
 """
 Tests for laboratory serializers.
 """
-import pytest
 from decimal import Decimal
+
+import pytest
 from rest_framework.exceptions import ValidationError as DRFValidationError
-from apps.laboratory.serializers import ReferenceRangeSerializer
-from apps.laboratory.models import TestCategory, Test, TestParameter, ReferenceRange, Parameter
+
 from apps.accounts.models import User
+from apps.laboratory.models import (
+    Parameter,
+    ReferenceRange,
+    Test,
+    TestCategory,
+    TestParameter,
+)
+from apps.laboratory.serializers import ReferenceRangeSerializer
 
 
 @pytest.mark.django_db
 class TestReferenceRangeSerializer:
     """Test ReferenceRangeSerializer."""
-    
+
     @pytest.fixture
     def user(self):
         """Create test user."""
@@ -23,12 +31,12 @@ class TestReferenceRangeSerializer:
             full_name="Test User",
             role="Admin",
         )
-    
+
     @pytest.fixture
     def category(self):
         """Create test category."""
         return TestCategory.objects.create(name="Hematology")
-    
+
     @pytest.fixture
     def test_instance(self, category):
         """Create test instance."""
@@ -40,7 +48,7 @@ class TestReferenceRangeSerializer:
             price=Decimal("50.00"),
             turnaround_time=24,
         )
-    
+
     @pytest.fixture
     def parameter(self, test_instance):
         """Create test parameter."""
@@ -53,7 +61,7 @@ class TestReferenceRangeSerializer:
             test=test_instance,
             parameter=parameter,
         )
-    
+
     def test_validate_age_min_greater_than_max(self, parameter, user):
         """Test validation when age_min >= age_max."""
         serializer = ReferenceRangeSerializer()
@@ -65,7 +73,7 @@ class TestReferenceRangeSerializer:
         with pytest.raises(DRFValidationError) as exc_info:
             serializer.validate(data)
         assert "age_max" in str(exc_info.value)
-    
+
     def test_validate_reference_min_greater_than_max(self, parameter, user):
         """Test validation when reference_min >= reference_max."""
         serializer = ReferenceRangeSerializer()
@@ -77,7 +85,7 @@ class TestReferenceRangeSerializer:
         with pytest.raises(DRFValidationError) as exc_info:
             serializer.validate(data)
         assert "reference_max" in str(exc_info.value)
-    
+
     def test_validate_valid_data(self, parameter, user):
         """Test validation with valid data."""
         serializer = ReferenceRangeSerializer()
@@ -91,18 +99,16 @@ class TestReferenceRangeSerializer:
         }
         result = serializer.validate(data)
         assert result == data
-    
+
     def test_create_reference_range(self, parameter, user):
         """Test creating a reference range."""
         from rest_framework.test import APIRequestFactory
-        
+
         factory = APIRequestFactory()
-        request = factory.get('/')
+        request = factory.get("/")
         request.user = user
-        
-        serializer = ReferenceRangeSerializer(
-            context={"request": request}
-        )
+
+        serializer = ReferenceRangeSerializer(context={"request": request})
         data = {
             "parameter": parameter,
             "age_min": 18,
@@ -112,16 +118,16 @@ class TestReferenceRangeSerializer:
             "gender": "Both",
         }
         reference_range = serializer.create(data)
-        
+
         assert reference_range.parameter == parameter
         assert reference_range.version == 1
         assert reference_range.is_active is True
         assert reference_range.created_by == user
-    
+
     def test_create_reference_range_deactivates_old(self, parameter, user):
         """Test that creating a new range deactivates old ranges."""
         from rest_framework.test import APIRequestFactory
-        
+
         # Create old range
         old_range = ReferenceRange.objects.create(
             parameter=parameter,
@@ -134,14 +140,12 @@ class TestReferenceRangeSerializer:
             is_active=True,
             created_by=user,
         )
-        
+
         factory = APIRequestFactory()
-        request = factory.get('/')
+        request = factory.get("/")
         request.user = user
-        
-        serializer = ReferenceRangeSerializer(
-            context={"request": request}
-        )
+
+        serializer = ReferenceRangeSerializer(context={"request": request})
         data = {
             "parameter": parameter,
             "age_min": 18,
@@ -151,24 +155,22 @@ class TestReferenceRangeSerializer:
             "gender": "Both",
         }
         new_range = serializer.create(data)
-        
+
         old_range.refresh_from_db()
         assert old_range.is_active is False
         assert new_range.version == 2
         assert new_range.is_active is True
-    
+
     def test_create_reference_range_increments_version(self, parameter, user):
         """Test that version is incremented correctly."""
         from rest_framework.test import APIRequestFactory
-        
+
         # Create first range
         factory = APIRequestFactory()
-        request = factory.get('/')
+        request = factory.get("/")
         request.user = user
-        
-        serializer = ReferenceRangeSerializer(
-            context={"request": request}
-        )
+
+        serializer = ReferenceRangeSerializer(context={"request": request})
         data = {
             "parameter": parameter,
             "age_min": 18,
@@ -179,7 +181,7 @@ class TestReferenceRangeSerializer:
         }
         range1 = serializer.create(data)
         assert range1.version == 1
-        
+
         # Create second range (different age range, so won't deactivate first)
         data2 = {
             "parameter": parameter,
@@ -191,7 +193,7 @@ class TestReferenceRangeSerializer:
         }
         range2 = serializer.create(data2)
         assert range2.version == 1  # Different age range, starts at 1
-        
+
         # Create third range (same age range as first, should increment)
         data3 = {
             "parameter": parameter,
@@ -203,18 +205,16 @@ class TestReferenceRangeSerializer:
         }
         range3 = serializer.create(data3)
         assert range3.version == 2  # Should increment from range1
-    
+
     def test_create_reference_range_no_user(self, parameter):
         """Test creating reference range without authenticated user."""
         from rest_framework.test import APIRequestFactory
-        
+
         factory = APIRequestFactory()
-        request = factory.get('/')
+        request = factory.get("/")
         # No user set
-        
-        serializer = ReferenceRangeSerializer(
-            context={"request": request}
-        )
+
+        serializer = ReferenceRangeSerializer(context={"request": request})
         data = {
             "parameter": parameter,
             "age_min": 18,
@@ -224,6 +224,6 @@ class TestReferenceRangeSerializer:
             "gender": "Both",
         }
         reference_range = serializer.create(data)
-        
+
         assert reference_range.parameter == parameter
         assert reference_range.created_by is None

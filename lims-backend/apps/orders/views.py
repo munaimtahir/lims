@@ -1,21 +1,23 @@
+from django.db.models import OuterRef, Q, Subquery
+from django.http import FileResponse
 from django.utils import timezone
-from rest_framework import viewsets, filters, status
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import PageNumberPagination
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Q, OuterRef, Subquery
-from django.http import FileResponse
-from apps.core.export_utils import export_to_csv, export_to_excel
+
 from apps.billing.models import Payment
 from apps.billing.views import PaymentViewSet
-from apps.reports.models import Report, ReportStatus
+from apps.core.export_utils import export_to_csv, export_to_excel
 from apps.patients.models import Patient
-from .models import Order, OrderItem
-from .serializers import OrderSerializer, OrderItemSerializer
+from apps.reports.models import Report, ReportStatus
+
 from .filters import OrderFilter
+from .models import Order, OrderItem
+from .serializers import OrderItemSerializer, OrderSerializer
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -39,47 +41,58 @@ class OrderViewSet(viewsets.ModelViewSet):
         "patient__full_name",
     ]
     ordering_fields = ["created_at", "total_amount", "net_amount"]
-    
+
     @action(detail=False, methods=["get"])
     def export(self, request):
         """
         Export order search results to CSV or Excel.
-        
+
         Query params:
             - format: 'csv' or 'excel' (default: 'csv')
             - All other order filter params are supported
-        
+
         Returns:
             Response: CSV or Excel file download
         """
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
-        
+
         format_type = request.query_params.get("format", "csv").lower()
         filename = f"orders_export_{timezone.now().strftime('%Y%m%d_%H%M%S')}"
-        
+
         data = serializer.data
         headers = [
-            "Order ID", "Patient", "Status", "Priority", "Total Amount",
-            "Discount", "Net Amount", "Is Paid", "Created At"
+            "Order ID",
+            "Patient",
+            "Status",
+            "Priority",
+            "Total Amount",
+            "Discount",
+            "Net Amount",
+            "Is Paid",
+            "Created At",
         ]
-        
+
         export_data = []
         for item in data:
-            export_data.append([
-                item.get("order_id", ""),
-                (item.get("patient", {}).get("full_name", "")
-                 if isinstance(item.get("patient"), dict)
-                 else str(item.get("patient", ""))),
-                item.get("status", ""),
-                item.get("priority", ""),
-                str(item.get("total_amount", "")),
-                str(item.get("discount", "")),
-                str(item.get("net_amount", "")),
-                "Yes" if item.get("is_paid") else "No",
-                item.get("created_at", ""),
-            ])
-        
+            export_data.append(
+                [
+                    item.get("order_id", ""),
+                    (
+                        item.get("patient", {}).get("full_name", "")
+                        if isinstance(item.get("patient"), dict)
+                        else str(item.get("patient", ""))
+                    ),
+                    item.get("status", ""),
+                    item.get("priority", ""),
+                    str(item.get("total_amount", "")),
+                    str(item.get("discount", "")),
+                    str(item.get("net_amount", "")),
+                    "Yes" if item.get("is_paid") else "No",
+                    item.get("created_at", ""),
+                ]
+            )
+
         if format_type == "excel":
             return export_to_excel(export_data, f"{filename}.xlsx", headers, "Orders")
         else:
@@ -99,7 +112,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         """
         order = self.get_object()
         # Check against mapped statuses if needed, or rely on model validation
-        if order.status == "PUBLISHED": # Using PUBLISHED as completed state
+        if order.status == "PUBLISHED":  # Using PUBLISHED as completed state
             return Response(
                 {"error": "Cannot cancel completed order"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -126,7 +139,9 @@ class OrderViewSet(viewsets.ModelViewSet):
                 {"error": "Receipt not available for this order"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        return PaymentViewSet.as_view({"get": "receipt"})(request._request, pk=payment.pk)
+        return PaymentViewSet.as_view({"get": "receipt"})(
+            request._request, pk=payment.pk
+        )
 
     @action(detail=True, methods=["get"], url_path="report.pdf")
     def report_pdf(self, request, pk=None):
@@ -214,15 +229,25 @@ class WorklistPatientsView(APIView):
                 Q(order_id__icontains=search) | Q(patient__in=matching_patients)
             )
 
-        latest_order_subquery = orders.filter(patient=OuterRef("pk")).order_by("-created_at")
+        latest_order_subquery = orders.filter(patient=OuterRef("pk")).order_by(
+            "-created_at"
+        )
 
         patients = (
             Patient.objects.annotate(
                 latest_order_id=Subquery(latest_order_subquery.values("id")[:1]),
-                latest_order_number=Subquery(latest_order_subquery.values("order_id")[:1]),
-                latest_order_created_at=Subquery(latest_order_subquery.values("created_at")[:1]),
-                latest_order_status=Subquery(latest_order_subquery.values("status")[:1]),
-                latest_order_is_paid=Subquery(latest_order_subquery.values("is_paid")[:1]),
+                latest_order_number=Subquery(
+                    latest_order_subquery.values("order_id")[:1]
+                ),
+                latest_order_created_at=Subquery(
+                    latest_order_subquery.values("created_at")[:1]
+                ),
+                latest_order_status=Subquery(
+                    latest_order_subquery.values("status")[:1]
+                ),
+                latest_order_is_paid=Subquery(
+                    latest_order_subquery.values("is_paid")[:1]
+                ),
             )
             .filter(latest_order_id__isnull=False)
             .order_by("-latest_order_created_at")
@@ -233,10 +258,13 @@ class WorklistPatientsView(APIView):
         order_ids = [patient.latest_order_id for patient in page]
 
         payments = set(
-            Payment.objects.filter(order_id__in=order_ids).values_list("order_id", flat=True)
+            Payment.objects.filter(order_id__in=order_ids).values_list(
+                "order_id", flat=True
+            )
         )
         reports = Report.objects.filter(
-            order_id__in=order_ids, status__in=[ReportStatus.FINAL, ReportStatus.AMENDED]
+            order_id__in=order_ids,
+            status__in=[ReportStatus.FINAL, ReportStatus.AMENDED],
         ).order_by("-generated_at")
         report_map = {}
         for report in reports:
@@ -263,7 +291,9 @@ class WorklistPatientsView(APIView):
             can_reprint_report = bool(
                 report and latest_order_status == "PUBLISHED" and report.report_file
             )
-            age_years = patient.age_years if patient.age_years is not None else patient.age
+            age_years = (
+                patient.age_years if patient.age_years is not None else patient.age
+            )
 
             results.append(
                 {
@@ -281,8 +311,12 @@ class WorklistPatientsView(APIView):
                     "current_status": current_status,
                     "can_reprint_receipt": patient.latest_order_id in payments,
                     "can_reprint_report": can_reprint_report,
-                    "receipt_pdf_url": f"/api/v1/orders/orders/{patient.latest_order_id}/receipt.pdf" if patient.latest_order_id in payments else None,
-                    "report_pdf_url": f"/api/v1/orders/orders/{patient.latest_order_id}/report.pdf" if can_reprint_report else None,
+                    "receipt_pdf_url": f"/api/v1/orders/orders/{patient.latest_order_id}/receipt.pdf"
+                    if patient.latest_order_id in payments
+                    else None,
+                    "report_pdf_url": f"/api/v1/orders/orders/{patient.latest_order_id}/report.pdf"
+                    if can_reprint_report
+                    else None,
                 }
             )
 

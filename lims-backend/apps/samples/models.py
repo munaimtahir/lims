@@ -1,6 +1,7 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 from django.utils import timezone
+
 from apps.orders.models import Order, OrderItem
 
 
@@ -8,6 +9,7 @@ class SampleStatus(models.TextChoices):
     """
     Enumeration for the status of a lab sample.
     """
+
     PENDING = "PENDING", "Pending Collection"
     COLLECTED = "COLLECTED", "Collected"
     RECEIVED = "RECEIVED", "Received in Lab"
@@ -127,7 +129,9 @@ class SampleCollection(models.Model):
         ("rejected", "Rejected"),
     ]
 
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="sample_collections")
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="sample_collections"
+    )
     # Can be linked to specific items or the whole order
     order_items = models.ManyToManyField(OrderItem, related_name="sample_collections")
 

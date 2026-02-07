@@ -6,49 +6,65 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('laboratory', '0004_alter_testparameter_options_and_more'),
+        ("laboratory", "0004_alter_testparameter_options_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CatalogImportJob',
+            name="CatalogImportJob",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('strict', models.BooleanField(default=True)),
-                ('allow_defaults', models.BooleanField(default=False)),
-                ('mode', models.CharField(default='upsert', max_length=20)),
-                ('dry_run', models.BooleanField(default=True)),
-                ('summary_json', models.JSONField(default=dict)),
-                ('errors_json', models.JSONField(default=list)),
-                ('warnings_json', models.JSONField(default=list)),
-                ('source_filename', models.CharField(blank=True, max_length=255)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("strict", models.BooleanField(default=True)),
+                ("allow_defaults", models.BooleanField(default=False)),
+                ("mode", models.CharField(default="upsert", max_length=20)),
+                ("dry_run", models.BooleanField(default=True)),
+                ("summary_json", models.JSONField(default=dict)),
+                ("errors_json", models.JSONField(default=list)),
+                ("warnings_json", models.JSONField(default=list)),
+                ("source_filename", models.CharField(blank=True, max_length=255)),
             ],
             options={
-                'verbose_name': 'Catalog Import Job',
-                'verbose_name_plural': 'Catalog Import Jobs',
-                'db_table': 'catalog_import_jobs',
-                'ordering': ['-created_at'],
+                "verbose_name": "Catalog Import Job",
+                "verbose_name_plural": "Catalog Import Jobs",
+                "db_table": "catalog_import_jobs",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.AlterModelOptions(
-            name='parameterquicktext',
-            options={'verbose_name': 'Parameter Quick Text', 'verbose_name_plural': 'Parameter Quick Texts'},
+            name="parameterquicktext",
+            options={
+                "verbose_name": "Parameter Quick Text",
+                "verbose_name_plural": "Parameter Quick Texts",
+            },
         ),
         migrations.RemoveIndex(
-            model_name='parameter',
-            name='parameters_param_id_idx',
+            model_name="parameter",
+            name="parameters_param_id_idx",
         ),
         migrations.RemoveIndex(
-            model_name='parameterquicktext',
-            name='parameter_q_paramet_210126_idx',
+            model_name="parameterquicktext",
+            name="parameter_q_paramet_210126_idx",
         ),
         migrations.AddField(
-            model_name='catalogimportjob',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='catalog_import_jobs', to=settings.AUTH_USER_MODEL),
+            model_name="catalogimportjob",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="catalog_import_jobs",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

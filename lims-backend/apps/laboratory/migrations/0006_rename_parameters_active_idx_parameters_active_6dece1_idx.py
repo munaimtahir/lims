@@ -4,15 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('laboratory', '0005_catalogimportjob_alter_parameterquicktext_options_and_more'),
+        (
+            "laboratory",
+            "0005_catalogimportjob_alter_parameterquicktext_options_and_more",
+        ),
     ]
 
     operations = [
         migrations.RenameIndex(
-            model_name='parameter',
-            new_name='parameters_active_6dece1_idx',
-            old_name='parameters_active_idx',
+            model_name="parameter",
+            new_name="parameters_active_6dece1_idx",
+            old_name="parameters_active_idx",
         ),
     ]

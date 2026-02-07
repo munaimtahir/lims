@@ -3,10 +3,9 @@ import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { systemSettingsApi, printTemplateApi } from '../../api/services';
 import { normalizeObjectResponse } from '../../utils/apiHelpers';
-import { isSampleBarcodeEnabled, setSampleBarcodeEnabled } from '../../utils/featureFlags';
+import { isSampleBarcodeEnabled, setSampleBarcodeEnabled as setStoredBarcodeEnabled } from '../../utils/featureFlags';
 import type { SystemSettings, PrintTemplate, PrintSignatory, PrintTemplateConfig } from '../../types';
 import styles from './SystemSettingsPage.module.css';
-import { isSampleBarcodeCollectionEnabled, setSampleBarcodeCollectionEnabled } from '../../utils/featureFlags';
 
 export default function SystemSettingsPage() {
   const queryClient = useQueryClient();
@@ -25,7 +24,7 @@ export default function SystemSettingsPage() {
   const [barcodeToggle, setBarcodeToggle] = useState<boolean>(() => isSampleBarcodeEnabled());
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateForm, setTemplateForm] = useState<PrintTemplate | null>(null);
-  const [sampleBarcodeEnabled, setSampleBarcodeEnabled] = useState<boolean>(() => isSampleBarcodeCollectionEnabled());
+  const [sampleBarcodeCollectionEnabled, setSampleBarcodeCollectionEnabled] = useState<boolean>(() => isSampleBarcodeEnabled());
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ['system-settings'],
@@ -233,7 +232,7 @@ export default function SystemSettingsPage() {
 
   const handleBarcodeToggle = (value: boolean) => {
     setBarcodeToggle(value);
-    setSampleBarcodeEnabled(value);
+    setStoredBarcodeEnabled(value);
   };
 
   const updateTemplateConfig = (field: keyof PrintTemplateConfig, value: string | number | boolean) => {
@@ -396,11 +395,11 @@ export default function SystemSettingsPage() {
               <label className={styles.checkboxLabel}>
                 <input
                   type="checkbox"
-                  checked={sampleBarcodeEnabled}
+                  checked={sampleBarcodeCollectionEnabled}
                   onChange={(e) => {
                     const checked = e.target.checked;
-                    setSampleBarcodeEnabled(checked);
                     setSampleBarcodeCollectionEnabled(checked);
+                    setStoredBarcodeEnabled(checked);
                   }}
                   className={styles.checkbox}
                 />

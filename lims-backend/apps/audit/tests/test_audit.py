@@ -1,15 +1,17 @@
 """
 Tests for the audit app.
 """
-import pytest
 from datetime import date
 from decimal import Decimal
+
+import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
+
 from apps.accounts.models import User
-from apps.patients.models import Patient
 from apps.audit.models import AuditLog
-from apps.audit.utils import log_create, log_update, log_delete, model_to_dict_safe
+from apps.audit.utils import log_create, log_delete, log_update, model_to_dict_safe
+from apps.patients.models import Patient
 
 
 @pytest.fixture
@@ -114,7 +116,7 @@ class TestAuditLogModel:
         assert "Admin User" in str(audit_log)
         assert "CREATE" in str(audit_log)
         assert "patients" in str(audit_log)
-    
+
     def test_audit_log_str_no_user(self, patient):
         """Test audit log string representation when user is None."""
         log = AuditLog.objects.create(
@@ -126,11 +128,11 @@ class TestAuditLogModel:
         )
         assert "System" in str(log)
         assert "CREATE" in str(log)
-    
+
     def test_audit_log_with_content_type(self, admin_user, patient):
         """Test audit log with content_type and GenericForeignKey."""
         from django.contrib.contenttypes.models import ContentType
-        
+
         content_type = ContentType.objects.get_for_model(patient)
         log = AuditLog.objects.create(
             user=admin_user,
@@ -181,7 +183,7 @@ class TestAuditUtils:
 
     def test_model_to_dict_safe_handles_decimal(self, db):
         """Test that model_to_dict_safe handles Decimal fields."""
-        from apps.laboratory.models import TestCategory, Test
+        from apps.laboratory.models import Test, TestCategory
 
         category = TestCategory.objects.create(name="Test")
         test = Test.objects.create(
@@ -196,69 +198,73 @@ class TestAuditUtils:
         assert "price" in data
         assert isinstance(data["price"], str)
         assert data["price"] == "100.50"
-    
+
     def test_get_client_ip_with_x_forwarded_for(self):
         """Test get_client_ip with X-Forwarded-For header."""
-        from apps.audit.utils import get_client_ip
         from unittest.mock import Mock
-        
+
+        from apps.audit.utils import get_client_ip
+
         request = Mock()
         request.META = {
             "HTTP_X_FORWARDED_FOR": "192.168.1.1, 10.0.0.1",
             "REMOTE_ADDR": "127.0.0.1",
         }
-        
+
         ip = get_client_ip(request)
         assert ip == "192.168.1.1"
-    
+
     def test_get_client_ip_without_x_forwarded_for(self):
         """Test get_client_ip without X-Forwarded-For header."""
-        from apps.audit.utils import get_client_ip
         from unittest.mock import Mock
-        
+
+        from apps.audit.utils import get_client_ip
+
         request = Mock()
         request.META = {"REMOTE_ADDR": "127.0.0.1"}
-        
+
         ip = get_client_ip(request)
         assert ip == "127.0.0.1"
-    
+
     def test_get_client_ip_none_request(self):
         """Test get_client_ip with None request."""
         from apps.audit.utils import get_client_ip
-        
+
         ip = get_client_ip(None)
         assert ip is None
-    
+
     def test_get_user_agent(self):
         """Test get_user_agent."""
-        from apps.audit.utils import get_user_agent
         from unittest.mock import Mock
-        
+
+        from apps.audit.utils import get_user_agent
+
         request = Mock()
         request.META = {"HTTP_USER_AGENT": "Mozilla/5.0"}
-        
+
         ua = get_user_agent(request)
         assert ua == "Mozilla/5.0"
-    
+
     def test_get_user_agent_none_request(self):
         """Test get_user_agent with None request."""
         from apps.audit.utils import get_user_agent
-        
+
         ua = get_user_agent(None)
         assert ua is None
-    
+
     def test_log_action_with_request(self, admin_user, patient):
         """Test log_action with request object."""
-        from apps.audit.utils import log_action
         from unittest.mock import Mock
-        
+
+        from apps.audit.utils import log_action
+
         request = Mock()
         request.META = {
             "HTTP_X_FORWARDED_FOR": "192.168.1.1",
             "HTTP_USER_AGENT": "Test Agent",
             "REMOTE_ADDR": "127.0.0.1",
         }
-        
+
         log = log_action(
             admin_user,
             "UPDATE",
@@ -268,17 +274,18 @@ class TestAuditUtils:
             request=request,
             notes="Test update",
         )
-        
+
         assert log is not None
         assert log.ip_address == "192.168.1.1"
         assert log.user_agent == "Test Agent"
         assert log.notes == "Test update"
-    
+
     def test_log_action_skip_contenttype(self, admin_user):
         """Test log_action skips ContentType logging."""
-        from apps.audit.utils import log_action
         from django.contrib.contenttypes.models import ContentType
-        
+
+        from apps.audit.utils import log_action
+
         log = log_action(admin_user, "UPDATE", ContentType.objects.first())
         assert log is None
 

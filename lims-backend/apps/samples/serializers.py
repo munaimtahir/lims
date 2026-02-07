@@ -1,6 +1,7 @@
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from django.utils import timezone
+
 from .models import Sample, SampleStatus
 
 
@@ -45,8 +46,12 @@ class SampleSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = [
-            "collected_at", "collected_by", "received_at",
-            "received_by", "created_at", "updated_at"
+            "collected_at",
+            "collected_by",
+            "received_at",
+            "received_by",
+            "created_at",
+            "updated_at",
         ]
 
     def validate_status(self, value):
@@ -76,12 +81,18 @@ class SampleSerializer(serializers.ModelSerializer):
         """
         new_status = validated_data.get("status")
         if new_status:
-            if new_status == SampleStatus.COLLECTED and instance.status != SampleStatus.COLLECTED:
+            if (
+                new_status == SampleStatus.COLLECTED
+                and instance.status != SampleStatus.COLLECTED
+            ):
                 validated_data["collected_at"] = timezone.now()
                 request = self.context.get("request")
                 if request and hasattr(request, "user"):
                     validated_data["collected_by"] = request.user
-            elif new_status == SampleStatus.RECEIVED and instance.status != SampleStatus.RECEIVED:
+            elif (
+                new_status == SampleStatus.RECEIVED
+                and instance.status != SampleStatus.RECEIVED
+            ):
                 validated_data["received_at"] = timezone.now()
                 request = self.context.get("request")
                 if request and hasattr(request, "user"):
