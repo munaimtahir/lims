@@ -336,13 +336,13 @@ class TestResultViewSet(viewsets.ModelViewSet):
         for result_data in results_data:
             order_item_id = result_data.get("order_item")
             test_parameter_id = result_data.get("test_parameter")
-            result_value = result_data.get("result_value")
+            result_value = result_data.get("result_value", "")
 
-            if not all([order_item_id, test_parameter_id, result_value]):
+            if not order_item_id or not test_parameter_id:
                 errors.append(
                     {
                         "data": result_data,
-                        "error": "Missing required fields: order_item, test_parameter, result_value",
+                        "error": "Missing required fields: order_item, test_parameter",
                     }
                 )
                 continue

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { laboratoryApi, orderApi, patientApi } from '../../api/services';
 import type { Order, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
 import { calculateAgeFromDob, calculateDobFromAge } from '../../utils/ageDob';
-import { formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
+import { formatDateDDMMYY, formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
 import { useBranding } from '../../contexts/BrandingContext';
 import { formatCurrency } from '../../utils/currency';
 import styles from './PatientsPage.module.css';

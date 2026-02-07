@@ -40,6 +40,11 @@ log "Environment: $ENV_FILE"
 log "Stopping all services..."
 docker compose --env-file "$ENV_FILE" down --remove-orphans || true
 
+# Clean previous builds and irrelevant containers/images
+log "Cleaning build cache and dangling resources..."
+docker builder prune -f || true
+docker image prune -f || true
+
 # Build Images
 log "Building Backend (No Cache)..."
 docker compose --env-file "$ENV_FILE" build --no-cache backend

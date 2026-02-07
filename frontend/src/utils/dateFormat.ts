@@ -1,6 +1,6 @@
 /**
  * Format a date string or Date object into DD/MM/YY.
- * Accepts ISO strings (YYYY-MM-DD) or already formatted inputs.
+ * Accepts ISO strings (YYYY-MM-DD or full ISO datetime) or already formatted inputs.
  */
 export function formatDobDisplay(input?: string | Date | null): string {
   const date = input instanceof Date
@@ -14,6 +14,17 @@ export function formatDobDisplay(input?: string | Date | null): string {
   const yy = String(date.getFullYear()).slice(-2);
 
   return `${dd}/${mm}/${yy}`;
+}
+
+/**
+ * Format an ISO date/datetime string or Date into DD/MM/YY.
+ * Use for display of created_at, order dates, etc.
+ */
+export function formatDateDDMMYY(input?: string | Date | null): string {
+  if (!input) return '';
+  if (input instanceof Date) return formatDobDisplay(input);
+  const isoDateOnly = String(input).slice(0, 10);
+  return formatDobDisplay(isoDateOnly);
 }
 
 /**

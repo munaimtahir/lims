@@ -13,5 +13,5 @@ export const orderApi = {
     }
     return response;
   },
-  getOrderItem: (id: number) => apiClient.get<OrderItem>(`/orders/items/${id}`),
+  getOrderItem: (id: number) => apiClient.get<OrderItem>(`/orders/order-items/${id}`),
 };

@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.3, pluggy-1.6.0
+django: version: 5.0, settings: config.settings.ci (from ini)
+rootdir: /home/munaim/srv/apps/lims/lims-backend
+configfile: pytest.ini
+plugins: cov-4.1.0, django-4.7.0
+collected 400 items
+
+apps/accounts/tests/test_auth.py ..................                      [  4%]
+apps/audit/tests/test_audit.py ......................                    [ 10%]
+apps/billing/tests/test_billing.py ..X..............                     [ 14%]
+apps/core/tests/test_core.py ............                                [ 17%]
+apps/core/tests/test_numbering.py ............ss..                       [ 21%]
+apps/core/tests/test_serializers.py .......                              [ 23%]
+apps/dashboard/tests/test_dashboard.py .......s.........ss.sss.......... [ 31%]
+                                                                         [ 31%]
+apps/laboratory/tests/test_audit_verification.py .                       [ 31%]
+apps/laboratory/tests/test_catalog_io.py ....                            [ 32%]
+apps/laboratory/tests/test_import_fixes.py ...                           [ 33%]
+apps/laboratory/tests/test_laboratory.py ...............                 [ 37%]
+apps/laboratory/tests/test_management_commands.py ......                 [ 38%]
+apps/laboratory/tests/test_parameter_validation.py ..............        [ 42%]
+apps/laboratory/tests/test_ranges.py ....                                [ 43%]
+apps/laboratory/tests/test_serializers.py .......                        [ 44%]
+apps/laboratory/tests/test_utils.py ........                             [ 46%]
+apps/orders/tests/test_orders.py ......................                  [ 52%]
+apps/orders/tests/test_serializers.py ..........                         [ 54%]
+apps/patients/tests/test_filters.py .......F..                           [ 57%]
+apps/patients/tests/test_patients.py ......................              [ 62%]
+apps/patients/tests/test_serializers.py ........                         [ 64%]
+apps/reports/tests/test_reports.py ..................................    [ 73%]
+apps/results/tests/test_expected_results.py ....                         [ 74%]
+apps/results/tests/test_filters.py .........                             [ 76%]
+apps/results/tests/test_result_flags.py ....                             [ 77%]
+apps/results/tests/test_results.py ...........ss...........              [ 83%]
+apps/results/tests/test_serializers.py ..                                [ 84%]
+apps/samples/tests/test_samples.py ...

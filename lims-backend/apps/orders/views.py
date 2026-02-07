@@ -178,10 +178,19 @@ class OrderItemViewSet(viewsets.ReadOnlyModelViewSet):
     This ViewSet is read-only.
     """
 
-    queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["order", "status"]
+
+    def get_queryset(self):
+        return (
+            OrderItem.objects.select_related(
+                "order",
+                "order__patient",
+                "test",
+                "panel",
+            )
+        )
 
 
 class WorklistPagination(PageNumberPagination):

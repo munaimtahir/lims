@@ -241,6 +241,7 @@ const useResultEntry = (orderItemId: number) => {
 };
 
 const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () => void }) => {
+  const queryClient = useQueryClient();
   const {
     results,
     setResults,
@@ -277,6 +278,8 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
   const handleRetry = () => {
     setLoadingTimeout(false);
     setRetryCount(prev => prev + 1);
+    queryClient.invalidateQueries({ queryKey: ['order-item-details', orderItemId] });
+    queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
     refetchDetails();
   };
 

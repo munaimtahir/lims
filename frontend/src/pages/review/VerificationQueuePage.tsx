@@ -28,7 +28,12 @@ export default function VerificationQueuePage() {
     },
   });
 
-  const results = useMemo(() => queueData?.results || [], [queueData]);
+  const results = useMemo(
+    () => (queueData as { data?: { results?: TestResult[] }; results?: TestResult[] })?.data?.results
+      ?? (queueData as { data?: { results?: TestResult[] }; results?: TestResult[] })?.results
+      ?? [],
+    [queueData]
+  );
 
   // Group results by order_item
   const groupedResults = useMemo(() => {
