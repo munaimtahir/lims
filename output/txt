@@ -1,0 +1,39 @@
+Audit run: 20260206_221831 (UTC)
+Artifacts: AUDIT_RUNS/20260206_221831/
+
+Overall status: MIXED (passes: 7, fails: 8, skipped: 4)
+
+Key passes
+- Frontend type-check (tsc) and unit tests (vitest)
+- Playwright smoke suite
+- Docker compose up + healthchecks (/ and /api/v1/health/ OK)
+
+Key failures
+- Python deps: 43 vulnerabilities (Django, DRF, simplejwt) + 30 via safety
+- Backend formatting, flake8 style issues
+- Django makemigrations --check produced new migrations; DB unavailable
+- Pytest aborted: SECRET_KEY env missing
+- Bandit flagged issues (hardcoded test password, broad except)
+- Frontend eslint errors (unused vars, syntax error in PrintReceiptPage, hook warning)
+
+Skipped
+- Backend type-check: no mypy config
+- Prettier: not configured
+- Semgrep: tool absent
+
+Top fix steps (rerun after each)
+1) Upgrade Python deps (Django>=5.2.8, DRF>=3.15.2, simplejwt>=5.5.1) then rerun pip-audit & safety.
+2) Format backend: black . && isort .; address flake8 line-length/whitespace.
+3) Provide SECRET_KEY (and DB up) for tests; fix pending migrations; rerun pytest & makemigrations --check.
+4) Fix frontend lint errors (unused vars, PrintReceiptPage syntax, hook warning) then npm run lint.
+5) Review Bandit findings; sanitize test passwords and exception handling.
+
+Quick reruns (from repo root)
+- source AUDIT_RUNS/20260206_221831/.venv/bin/activate && pip-audit
+- source AUDIT_RUNS/20260206_221831/.venv/bin/activate && safety check --full-report
+- cd lims-backend && black --check . && isort --check-only .
+- cd lims-backend && flake8 --exclude .venv,media,staticfiles
+- cd lims-backend && SECRET_KEY=dummy pytest
+- cd lims-backend && python manage.py makemigrations --check --dry-run
+- cd frontend && npm run lint
+- cd e2e && npm run test:smoke

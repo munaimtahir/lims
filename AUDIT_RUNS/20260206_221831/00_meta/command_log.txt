@@ -208,3 +208,12 @@ EXIT: 0
 CMD: semgrep (skipped)
 CWD: /home/munaim/srv/apps/lims
 EXIT: 0
+CMD: write output/txt summary
+CWD: /home/munaim/srv/apps/lims
+EXIT: 1
+CMD: mkdir -p output
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: write output/txt summary
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
