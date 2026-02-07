@@ -16,7 +16,12 @@ async function globalSetup(config: FullConfig) {
   dotenv.config({ path: process.env.ENV_PATH || path.join(__dirname, '..', '.env') });
   requireCredentials();
 
-  const baseURL = process.env.BASE_URL || (config.projects[0].use?.baseURL as string) || 'http://localhost:8012';
+  const baseURL =
+    process.env.E2E_BASE_URL ||
+    process.env.PLAYWRIGHT_BASE_URL ||
+    process.env.BASE_URL ||
+    (config.projects[0].use?.baseURL as string) ||
+    'http://localhost:8012';
 
   fs.mkdirSync(path.dirname(storageStatePath), { recursive: true });
 

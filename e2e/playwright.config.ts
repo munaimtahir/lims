@@ -10,14 +10,18 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: process.env.ENV_PATH || path.join(__dirname, '.env') });
 
 const isCI = process.env.CI === 'true' || process.env.CI === '1';
-const baseURL = process.env.BASE_URL || 'http://localhost:8012';
+const baseURL =
+  process.env.E2E_BASE_URL ||
+  process.env.PLAYWRIGHT_BASE_URL ||
+  process.env.BASE_URL ||
+  'http://localhost:8012';
 const storageStatePath = path.join(__dirname, '.auth', 'storageState.json');
 
 export default defineConfig({
   testDir: path.join(__dirname, 'tests'),
   fullyParallel: true,
   forbidOnly: isCI,
-  retries: isCI ? 2 : 0,
+  retries: isCI ? 1 : 0,
   timeout: 60_000,
   expect: {
     timeout: 10_000,
