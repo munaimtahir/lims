@@ -1,0 +1,612 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.3, pluggy-1.6.0
+django: version: 5.0, settings: config.settings.ci (from ini)
+rootdir: /home/munaim/srv/apps/lims/lims-backend
+configfile: pytest.ini
+plugins: cov-4.1.0, django-4.7.0
+collected 400 items
+
+apps/accounts/tests/test_auth.py ..................                      [  4%]
+apps/audit/tests/test_audit.py ......................                    [ 10%]
+apps/billing/tests/test_billing.py ..X..............                     [ 14%]
+apps/core/tests/test_core.py ............                                [ 17%]
+apps/core/tests/test_numbering.py ............sF..                       [ 21%]
+apps/core/tests/test_serializers.py .......                              [ 23%]
+apps/dashboard/tests/test_dashboard.py .......s.........ss.sss.......... [ 31%]
+                                                                         [ 31%]
+apps/laboratory/tests/test_audit_verification.py .                       [ 31%]
+apps/laboratory/tests/test_catalog_io.py ....                            [ 32%]
+apps/laboratory/tests/test_import_fixes.py ...                           [ 33%]
+apps/laboratory/tests/test_laboratory.py ...............                 [ 37%]
+apps/laboratory/tests/test_management_commands.py ....F.                 [ 38%]
+apps/laboratory/tests/test_parameter_validation.py ......FFFFFF.F        [ 42%]
+apps/laboratory/tests/test_ranges.py ....                                [ 43%]
+apps/laboratory/tests/test_serializers.py .......                        [ 44%]
+apps/laboratory/tests/test_utils.py .FFF....                             [ 46%]
+apps/orders/tests/test_orders.py .............F........                  [ 52%]
+apps/orders/tests/test_serializers.py ..........                         [ 54%]
+apps/patients/tests/test_filters.py .......F..                           [ 57%]
+apps/patients/tests/test_patients.py ......................              [ 62%]
+apps/patients/tests/test_serializers.py ........                         [ 64%]
+apps/reports/tests/test_reports.py F...........F.F.FFFFFF.F.FFFFFFFFF    [ 73%]
+apps/results/tests/test_expected_results.py ....                         [ 74%]
+apps/results/tests/test_filters.py .........                             [ 76%]
+apps/results/tests/test_result_flags.py ....                             [ 77%]
+apps/results/tests/test_results.py ........F..ss.........F.              [ 83%]
+apps/results/tests/test_serializers.py ..                                [ 84%]
+apps/samples/tests/test_samples.py ....F....                             [ 86%]
+apps/samples/tests/test_services.py FF.....                              [ 88%]
+apps/core/tests/test_export_utils.py ..................                  [ 92%]
+apps/laboratory/tests/test_import_fixes.py ............................. [ 99%]
+.                                                                        [100%]
+
+=================================== FAILURES ===================================
+_________________ TestConcurrency.test_concurrent_lab_numbers __________________
+.venv/lib/python3.12/site-packages/django/db/models/query.py:946: in get_or_create
+    return self.get(**kwargs), False
+.venv/lib/python3.12/site-packages/django/db/models/query.py:647: in get
+    raise self.model.DoesNotExist(
+E   apps.core.models.LabDailyCounter.DoesNotExist: LabDailyCounter matching query does not exist.
+
+During handling of the above exception, another exception occurred:
+.venv/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+.venv/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:328: in execute
+    return super().execute(query, params)
+E   sqlite3.OperationalError: database table is locked
+
+The above exception was the direct cause of the following exception:
+apps/core/tests/test_numbering.py:241: in test_concurrent_lab_numbers
+    results = [f.result() for f in as_completed(futures)]
+/usr/lib/python3.12/concurrent/futures/_base.py:449: in result
+    return self.__get_result()
+/usr/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+/usr/lib/python3.12/concurrent/futures/thread.py:58: in run
+    result = self.fn(*self.args, **self.kwargs)
+apps/core/tests/test_numbering.py:236: in create_number
+    lab_num, serial = generate_lab_number(center_00, dt)
+apps/core/numbering.py:84: in generate_lab_number
+    counter, created = LabDailyCounter.objects.select_for_update().get_or_create(
+.venv/lib/python3.12/site-packages/django/db/models/query.py:953: in get_or_create
+    return self.create(**params), True
+.venv/lib/python3.12/site-packages/django/db/models/query.py:677: in create
+    obj.save(force_insert=True, using=self.db)
+.venv/lib/python3.12/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+.venv/lib/python3.12/site-packages/django/db/models/base.py:901: in save_base
+    updated = self._save_table(
+.venv/lib/python3.12/site-packages/django/db/models/base.py:1059: in _save_table
+    results = self._do_insert(
+.venv/lib/python3.12/site-packages/django/db/models/base.py:1100: in _do_insert
+    return manager._insert(
+.venv/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+.venv/lib/python3.12/site-packages/django/db/models/query.py:1845: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+.venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+.venv/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+.venv/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+.venv/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+.venv/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+.venv/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+.venv/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:328: in execute
+    return super().execute(query, params)
+E   django.db.utils.OperationalError: database table is locked
+__ TestSeedTestCatalogCommand.test_seed_command_creates_tests_with_parameters __
+apps/laboratory/tests/test_management_commands.py:130: in test_seed_command_creates_tests_with_parameters
+    assert cbc_params.filter(parameter_name="Hemoglobin").exists()
+E   AssertionError: assert False
+E    +  where False = <bound method QuerySet.exists of <QuerySet []>>()
+E    +    where <bound method QuerySet.exists of <QuerySet []>> = <QuerySet []>.exists
+E    +      where <QuerySet []> = <bound method QuerySet.filter of <QuerySet [<TestParameter: CBC - p1>, <TestParameter: CBC - p2>, <TestParameter: CBC - p3>, <TestParameter: CBC - p4>]>>(parameter_name='Hemoglobin')
+E    +        where <bound method QuerySet.filter of <QuerySet [<TestParameter: CBC - p1>, <TestParameter: CBC - p2>, <TestParameter: CBC - p3>, <TestParameter: CBC - p4>]>> = <QuerySet [<TestParameter: CBC - p1>, <TestParameter: CBC - p2>, <TestParameter: CBC - p3>, <TestParameter: CBC - p4>]>.filter
+______ TestExcelImportParameterValidation.test_import_valid_parameter_ids ______
+apps/laboratory/tests/test_parameter_validation.py:123: in test_import_valid_parameter_ids
+    assert summary["parameters_created"] == 3
+E   assert 0 == 3
+__ TestExcelImportParameterValidation.test_import_invalid_parameter_id_format __
+apps/laboratory/tests/test_parameter_validation.py:145: in test_import_invalid_parameter_id_format
+    assert summary["parameters_created"] == 1
+E   assert 0 == 1
+____ TestExcelImportParameterValidation.test_import_duplicate_parameter_ids ____
+apps/laboratory/tests/test_parameter_validation.py:172: in test_import_duplicate_parameter_ids
+    assert summary["parameters_created"] == 1
+E   assert 0 == 1
+_ TestExcelImportParameterValidation.test_import_mapping_with_missing_parameter_id _
+apps/laboratory/tests/test_parameter_validation.py:211: in test_import_mapping_with_missing_parameter_id
+    assert "p999" in error["message"]
+E   AssertionError: assert 'p999' in 'Test or Parameter not found for mapping'
+_ TestExcelImportParameterValidation.test_import_mapping_with_invalid_parameter_id_format _
+apps/laboratory/tests/test_parameter_validation.py:244: in test_import_mapping_with_invalid_parameter_id_format
+    assert "format" in error["message"].lower()
+E   assert 'format' in "invalid parameter_id 'param1'"
+E    +  where "invalid parameter_id 'param1'" = <built-in method lower of str object at 0x7289ba21bdc0>()
+E    +    where <built-in method lower of str object at 0x7289ba21bdc0> = "Invalid parameter_id 'param1'".lower
+___________ TestDryRunImport.test_dry_run_validates_without_writing ____________
+apps/laboratory/tests/test_parameter_validation.py:269: in test_dry_run_validates_without_writing
+    assert summary["parameters_created"] == 2
+E   assert 0 == 2
+_________________ TestDryRunImport.test_dry_run_full_workflow __________________
+apps/laboratory/tests/test_parameter_validation.py:339: in test_dry_run_full_workflow
+    assert summary["status"] == "PASS"
+E   AssertionError: assert 'FAIL' == 'PASS'
+E     - PASS
+E     + FAIL
+____________ TestImportTestsFromExcel.test_import_parameters_sheet _____________
+apps/laboratory/tests/test_utils.py:81: in test_import_parameters_sheet
+    assert summary["parameters_created"] == 2
+E   assert 0 == 2
+_________ TestImportTestsFromExcel.test_import_reference_ranges_sheet __________
+apps/laboratory/tests/test_utils.py:140: in test_import_reference_ranges_sheet
+    assert summary["ranges_created"] == 1
+E   assert 0 == 1
+___________ TestImportTestsFromExcel.test_import_all_sheets_together ___________
+apps/laboratory/tests/test_utils.py:209: in test_import_all_sheets_together
+    assert summary["parameters_created"] == 1
+E   assert 0 == 1
+______________ TestOrderViewSet.test_worklist_reprint_eligibility ______________
+apps/orders/tests/test_orders.py:264: in test_worklist_reprint_eligibility
+    Report.objects.create(
+.venv/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+.venv/lib/python3.12/site-packages/django/db/models/query.py:677: in create
+    obj.save(force_insert=True, using=self.db)
+apps/reports/models.py:159: in save
+    super().save(*args, **kwargs)
+.venv/lib/python3.12/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+.venv/lib/python3.12/site-packages/django/db/models/base.py:901: in save_base
+    updated = self._save_table(
+.venv/lib/python3.12/site-packages/django/db/models/base.py:1059: in _save_table
+    results = self._do_insert(
+.venv/lib/python3.12/site-packages/django/db/models/base.py:1100: in _do_insert
+    return manager._insert(
+.venv/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+.venv/lib/python3.12/site-packages/django/db/models/query.py:1845: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+.venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1821: in execute_sql
+    for sql, params in self.as_sql():
+.venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1747: in as_sql
+    self.prepare_value(field, self.pre_save_val(field, obj))
+.venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1695: in pre_save_val
+    return field.pre_save(obj, add=True)
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:317: in pre_save
+    file.save(file.name, file.file, save=False)
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+_________________ TestPatientFilter.test_filter_by_created_to __________________
+apps/patients/tests/test_filters.py:256: in test_filter_by_created_to
+    assert patient_today not in results
+E   assert <Patient: PAT-TODAY2 - Today2 Patient> not in [<Patient: PAT-TODAY2 - Today2 Patient>, <Patient: PAT-002 - Jane Smith>, <Patient: PAT-001 - John Doe>, <Patient: PAT-YESTERDAY2 - Yesterday2 Patient>]
+_______________________ TestReportModel.test_report_str ________________________
+apps/reports/tests/test_reports.py:148: in test_report_str
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+____________________ TestReportViewSet.test_generate_report ____________________
+apps/reports/tests/test_reports.py:305: in test_generate_report
+    assert response.status_code == status.HTTP_201_CREATED
+E   assert 500 == 201
+E    +  where 500 = <Response status_code=500, "application/json">.status_code
+E    +  and   201 = status.HTTP_201_CREATED
+----------------------------- Captured stderr call -----------------------------
+[ERROR] 2026-02-07 17:46:01 django.request log.log_response:241 - Internal Server Error: /api/v1/reports/generate/
+____________________ TestReportViewSet.test_download_report ____________________
+apps/reports/tests/test_reports.py:322: in test_download_report
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+____________________ TestReportViewSet.test_mark_delivered _____________________
+apps/reports/tests/test_reports.py:353: in test_mark_delivered
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+____________________ TestReportViewSet.test_reprint_report _____________________
+apps/reports/tests/test_reports.py:375: in test_reprint_report
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+_____________________ TestReportViewSet.test_amend_report ______________________
+apps/reports/tests/test_reports.py:394: in test_amend_report
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+______________ TestReportViewSet.test_amend_report_missing_reason ______________
+apps/reports/tests/test_reports.py:417: in test_amend_report_missing_reason
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+_____________ TestReportViewSet.test_amend_report_non_pathologist ______________
+apps/reports/tests/test_reports.py:438: in test_amend_report_non_pathologist
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+____________________ TestReportViewSet.test_patient_history ____________________
+apps/reports/tests/test_reports.py:458: in test_patient_history
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+____________________ TestReportViewSet.test_amendments_list ____________________
+apps/reports/tests/test_reports.py:484: in test_amendments_list
+    original_report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+_____________ TestReportViewSet.test_upload_signature_pathologist ______________
+apps/reports/tests/test_reports.py:522: in test_upload_signature_pathologist
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+______________ TestReportViewSet.test_upload_signature_technician ______________
+apps/reports/tests/test_reports.py:548: in test_upload_signature_technician
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+_____________ TestReportViewSet.test_upload_signature_missing_file _____________
+apps/reports/tests/test_reports.py:575: in test_upload_signature_missing_file
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+_________ TestReportViewSet.test_generate_report_with_order_id_string __________
+apps/reports/tests/test_reports.py:596: in test_generate_report_with_order_id_string
+    assert response.status_code == status.HTTP_201_CREATED
+E   assert 500 == 201
+E    +  where 500 = <Response status_code=500, "application/json">.status_code
+E    +  and   201 = status.HTTP_201_CREATED
+----------------------------- Captured stderr call -----------------------------
+[ERROR] 2026-02-07 17:46:19 django.request log.log_response:241 - Internal Server Error: /api/v1/reports/generate/
+__________ TestReportViewSet.test_generate_report_existing_regenerate __________
+apps/reports/tests/test_reports.py:609: in test_generate_report_existing_regenerate
+    existing_report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+_____________ TestReportViewSet.test_report_generate_report_number _____________
+apps/reports/tests/test_reports.py:629: in test_report_generate_report_number
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+_________________ TestReportViewSet.test_report_mark_delivered _________________
+apps/reports/tests/test_reports.py:644: in test_report_mark_delivered
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+_______________ TestReportViewSet.test_report_increment_reprint ________________
+apps/reports/tests/test_reports.py:664: in test_report_increment_reprint
+    report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+________________ TestReportViewSet.test_report_create_amendment ________________
+apps/reports/tests/test_reports.py:683: in test_report_create_amendment
+    original_report.report_file.save("test.pdf", ContentFile(b"PDF content"))
+.venv/lib/python3.12/site-packages/django/db/models/fields/files.py:93: in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+.venv/lib/python3.12/site-packages/django/core/files/storage/base.py:38: in save
+    name = self._save(name, content)
+.venv/lib/python3.12/site-packages/django/core/files/storage/filesystem.py:87: in _save
+    os.makedirs(directory, exist_ok=True)
+<frozen os>:225: in makedirs
+    ???
+E   PermissionError: [Errno 13] Permission denied: '/home/munaim/srv/apps/lims/lims-backend/media/reports/2026/02/07'
+___________________ TestTestResultViewSet.test_verify_result ___________________
+apps/results/tests/test_results.py:268: in test_verify_result
+    assert response.status_code == status.HTTP_200_OK
+E   assert 403 == 200
+E    +  where 403 = <Response status_code=403, "application/json">.status_code
+E    +  and   200 = status.HTTP_200_OK
+----------------------------- Captured stderr call -----------------------------
+[WARNING] 2026-02-07 17:46:42 django.request log.log_response:241 - Forbidden: /api/v1/results/1/verify/
+_____________ TestTestResultViewSet.test_reject_result_with_reason _____________
+apps/results/tests/test_results.py:634: in test_reject_result_with_reason
+    assert test_result.status == "rejected"
+E   AssertionError: assert 'REJECTED' == 'rejected'
+E     - rejected
+E     + REJECTED
+_____________________ TestSampleViewSet.test_create_sample _____________________
+apps/samples/tests/test_samples.py:152: in test_create_sample
+    assert response.status_code == status.HTTP_201_CREATED
+E   assert 400 == 201
+E    +  where 400 = <Response status_code=400, "application/json">.status_code
+E    +  and   201 = status.HTTP_201_CREATED
+----------------------------- Captured stderr call -----------------------------
+[WARNING] 2026-02-07 17:47:01 django.request log.log_response:241 - Bad Request: /api/v1/samples/
+________ SampleGenerationTestCase.test_ensure_samples_wrapper_function _________
+apps/samples/tests/test_services.py:219: in test_ensure_samples_wrapper_function
+    self.assertEqual(len(samples), 2)
+E   AssertionError: 0 != 2
+________ SampleGenerationTestCase.test_idempotency_no_duplicate_samples ________
+apps/samples/tests/test_services.py:137: in test_idempotency_no_duplicate_samples
+    self.assertEqual(len(samples_1), 2)
+E   AssertionError: 0 != 2
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+.venv/lib/python3.12/site-packages/django/conf/__init__.py:251
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/conf/__init__.py:251: RemovedInDjango51Warning: The STATICFILES_STORAGE setting is deprecated. Use STORAGES instead.
+    warnings.warn(STATICFILES_STORAGE_DEPRECATED_MSG, RemovedInDjango51Warning)
+
+.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    from pkg_resources import DistributionNotFound, get_distribution
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/dashboard/tests/test_dashboard.py)
+    class TestResult(models.Model):
+
+.venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11: DeprecationWarning: ast.NameConstant is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    haveNameConstant = hasattr(ast,'NameConstant')
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/reports/tests/test_reports.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_expected_results.py)
+    class TestResult(models.Model):
+
+apps/results/filters.py:13
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/filters.py:13: PytestCollectionWarning: cannot collect test class 'TestResultFilter' because it has a __init__ constructor (from: apps/results/tests/test_filters.py)
+    class TestResultFilter(django_filters.FilterSet):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_filters.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_result_flags.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_results.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_serializers.py)
+    class TestResult(models.Model):
+
+apps/results/serializers.py:6
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/serializers.py:6: PytestCollectionWarning: cannot collect test class 'TestResultSerializer' because it has a __init__ constructor (from: apps/results/tests/test_serializers.py)
+    class TestResultSerializer(serializers.ModelSerializer):
+
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_username
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_username
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_email
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_email
+apps/accounts/tests/test_auth.py::TestLogoutView::test_logout
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/rest_framework_simplejwt/utils.py:26: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return make_utc(datetime.utcnow())
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_date_range
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_payment_methods_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Payment.payment_date received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_date_range
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_payment_methods_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Payment.payment_date received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Order.created_at received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Order.created_at received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Sample.collected_at received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Sample.collected_at received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField TestResult.entered_at received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField TestResult.entered_at received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField TestResult.verified_at received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField TestResult.verified_at received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/laboratory/tests/test_catalog_io.py: 9 warnings
+apps/laboratory/tests/test_import_fixes.py: 8 warnings
+apps/laboratory/tests/test_laboratory.py: 3 warnings
+apps/laboratory/tests/test_parameter_validation.py: 24 warnings
+apps/laboratory/tests/test_utils.py: 24 warnings
+apps/core/tests/test_export_utils.py: 12 warnings
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/openpyxl/packaging/core.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+apps/laboratory/tests/test_catalog_io.py: 3 warnings
+apps/laboratory/tests/test_import_fixes.py: 2 warnings
+apps/laboratory/tests/test_laboratory.py: 1 warning
+apps/laboratory/tests/test_parameter_validation.py: 8 warnings
+apps/laboratory/tests/test_utils.py: 8 warnings
+apps/core/tests/test_export_utils.py: 12 warnings
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/openpyxl/writer/excel.py:292: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    workbook.properties.modified = datetime.datetime.utcnow()
+
+apps/results/tests/test_results.py::TestTestResultViewSet::test_worklist
+apps/results/tests/test_results.py::TestTestResultViewSet::test_worklist_endpoint
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/rest_framework/pagination.py:200: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'apps.orders.models.OrderItem'> QuerySet.
+    paginator = self.django_paginator_class(queryset, page_size)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED apps/core/tests/test_numbering.py::TestConcurrency::test_concurrent_lab_numbers
+FAILED apps/laboratory/tests/test_management_commands.py::TestSeedTestCatalogCommand::test_seed_command_creates_tests_with_parameters
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_valid_parameter_ids
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_invalid_parameter_id_format
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_duplicate_parameter_ids
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_missing_parameter_id
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_invalid_parameter_id_format
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestDryRunImport::test_dry_run_validates_without_writing
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestDryRunImport::test_dry_run_full_workflow
+FAILED apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_parameters_sheet
+FAILED apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_reference_ranges_sheet
+FAILED apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_all_sheets_together
+FAILED apps/orders/tests/test_orders.py::TestOrderViewSet::test_worklist_reprint_eligibility
+FAILED apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_created_to
+FAILED apps/reports/tests/test_reports.py::TestReportModel::test_report_str
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_generate_report
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_download_report
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_mark_delivered
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_reprint_report
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_amend_report
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_amend_report_missing_reason
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_amend_report_non_pathologist
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_patient_history
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_amendments_list
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_upload_signature_pathologist
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_upload_signature_technician
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_upload_signature_missing_file
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_generate_report_with_order_id_string
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_generate_report_existing_regenerate
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_report_generate_report_number
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_report_mark_delivered
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_report_increment_reprint
+FAILED apps/reports/tests/test_reports.py::TestReportViewSet::test_report_create_amendment
+FAILED apps/results/tests/test_results.py::TestTestResultViewSet::test_verify_result
+FAILED apps/results/tests/test_results.py::TestTestResultViewSet::test_reject_result_with_reason
+FAILED apps/samples/tests/test_samples.py::TestSampleViewSet::test_create_sample
+FAILED apps/samples/tests/test_services.py::SampleGenerationTestCase::test_ensure_samples_wrapper_function
+FAILED apps/samples/tests/test_services.py::SampleGenerationTestCase::test_idempotency_no_duplicate_samples
+= 38 failed, 352 passed, 9 skipped, 1 xpassed, 146 warnings in 205.38s (0:03:25) =

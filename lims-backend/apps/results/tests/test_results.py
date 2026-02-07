@@ -517,7 +517,7 @@ class TestTestResultViewSet:
         )
         assert response.status_code == status.HTTP_200_OK
         test_result.refresh_from_db()
-        assert test_result.status == "rejected"
+        assert test_result.status == "REJECTED"
         assert "Invalid sample" in test_result.remarks
 
     def test_export_results_csv(self, authenticated_client, test_result):
@@ -631,5 +631,5 @@ class TestTestResultViewSet:
         )
         assert response.status_code == status.HTTP_200_OK
         test_result.refresh_from_db()
-        assert test_result.status == "rejected"
+        assert test_result.status == "REJECTED"
         assert "Invalid sample" in test_result.remarks

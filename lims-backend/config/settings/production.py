@@ -61,6 +61,9 @@ if not DB_PASSWORD:
 #   - Public IP address of your server
 # Format: "domain.com,www.domain.com,xxx.xxx.xxx.xxx"
 
+# Initialize logger early for validation messages
+logger = logging.getLogger(__name__)
+
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
@@ -94,7 +97,6 @@ if not non_local_hosts and not IS_VERIFICATION_CONTEXT:
     )
 
 # Log allowed hosts for debugging
-logger = logging.getLogger(__name__)
 logger.info(f"Production ALLOWED_HOSTS configured: {ALLOWED_HOSTS}")
 
 

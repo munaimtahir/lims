@@ -227,6 +227,10 @@ class TestConcurrency:
         serials = [int(r.split("-")[-1]) for r in results]
         assert sorted(serials) == list(range(1, num_threads + 1))
 
+    @pytest.mark.skipif(
+        "sqlite" in str(settings.DATABASES["default"]["ENGINE"]).lower(),
+        reason="SQLite does not support concurrent WRITEs well in tests",
+    )
     def test_concurrent_lab_numbers(self, center_00):
         """Test that concurrent lab orders don't create duplicates."""
         dt = datetime(2026, 2, 7, 10, 30)

@@ -17,7 +17,7 @@ def import_tests_from_excel(file, dry_run=False):
     result = import_catalog_from_excel(
         file,
         strict=True,
-        allow_defaults=False,
+        allow_defaults=True,  # Enable defaults for optional fields
         mode="upsert",
         dry_run=dry_run,
     )

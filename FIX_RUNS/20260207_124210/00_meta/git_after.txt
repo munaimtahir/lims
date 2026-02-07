@@ -1,0 +1,33 @@
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   lims-backend/apps/core/tests/test_numbering.py
+	modified:   lims-backend/apps/laboratory/tests/test_management_commands.py
+	modified:   lims-backend/apps/laboratory/utils.py
+	modified:   lims-backend/apps/patients/filters.py
+	modified:   lims-backend/apps/results/tests/test_results.py
+	modified:   lims-backend/config/settings/ci.py
+	modified:   lims-backend/config/settings/production.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	FIX_RUNS/20260207_124210/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+ lims-backend/apps/core/tests/test_numbering.py                 | 4 ++++
+ lims-backend/apps/laboratory/tests/test_management_commands.py | 4 ++--
+ lims-backend/apps/laboratory/utils.py                          | 2 +-
+ lims-backend/apps/patients/filters.py                          | 2 --
+ lims-backend/apps/results/tests/test_results.py                | 4 ++--
+ lims-backend/config/settings/ci.py                             | 9 +++++++++
+ lims-backend/config/settings/production.py                     | 4 +++-
+ 7 files changed, 21 insertions(+), 8 deletions(-)
+---
+dd21dd3 ss
+82099cd ,,
+3450821 mm
+47c46c3 d
+c6661c8 m

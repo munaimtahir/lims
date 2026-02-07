@@ -112,6 +112,4 @@ class PatientFilter(django_filters.FilterSet):
         # Get current timezone-aware datetime for today to determine timezone
         tz = timezone.get_current_timezone()
         end_of_day = timezone.make_aware(datetime.combine(value, time_class.max), tz)
-        # Add 1 day and subtract 1 microsecond to get end of day
-        end_of_day = end_of_day + timedelta(days=1) - timedelta(microseconds=1)
         return queryset.filter(created_at__lte=end_of_day)

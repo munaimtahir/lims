@@ -1,0 +1,98 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.3, pluggy-1.6.0
+django: version: 5.0, settings: config.settings.ci (from ini)
+rootdir: /home/munaim/srv/apps/lims/lims-backend
+configfile: pytest.ini
+plugins: cov-4.1.0, django-4.7.0
+collected 400 items / 378 deselected / 22 selected
+
+apps/laboratory/tests/test_laboratory.py ..                              [  9%]
+apps/laboratory/tests/test_management_commands.py .                      [ 13%]
+apps/laboratory/tests/test_parameter_validation.py .......F.FF...        [ 77%]
+apps/laboratory/tests/test_utils.py ..                                   [ 86%]
+apps/patients/tests/test_patients.py ...                                 [100%]
+
+=================================== FAILURES ===================================
+__ TestExcelImportParameterValidation.test_import_invalid_parameter_id_format __
+apps/laboratory/tests/test_parameter_validation.py:153: in test_import_invalid_parameter_id_format
+    assert error["column"] == "parameter_id"
+E   KeyError: 'column'
+_ TestExcelImportParameterValidation.test_import_mapping_with_missing_parameter_id _
+apps/laboratory/tests/test_parameter_validation.py:211: in test_import_mapping_with_missing_parameter_id
+    assert "p999" in error["message"]
+E   AssertionError: assert 'p999' in 'Test or Parameter not found for mapping'
+_ TestExcelImportParameterValidation.test_import_mapping_with_invalid_parameter_id_format _
+apps/laboratory/tests/test_parameter_validation.py:244: in test_import_mapping_with_invalid_parameter_id_format
+    assert "format" in error["message"].lower()
+E   assert 'format' in "invalid parameter_id 'param1'"
+E    +  where "invalid parameter_id 'param1'" = <built-in method lower of str object at 0x7a4e4d752380>()
+E    +    where <built-in method lower of str object at 0x7a4e4d752380> = "Invalid parameter_id 'param1'".lower
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+.venv/lib/python3.12/site-packages/django/conf/__init__.py:251
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/conf/__init__.py:251: RemovedInDjango51Warning: The STATICFILES_STORAGE setting is deprecated. Use STORAGES instead.
+    warnings.warn(STATICFILES_STORAGE_DEPRECATED_MSG, RemovedInDjango51Warning)
+
+.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    from pkg_resources import DistributionNotFound, get_distribution
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/dashboard/tests/test_dashboard.py)
+    class TestResult(models.Model):
+
+.venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11: DeprecationWarning: ast.NameConstant is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    haveNameConstant = hasattr(ast,'NameConstant')
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/reports/tests/test_reports.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_expected_results.py)
+    class TestResult(models.Model):
+
+apps/results/filters.py:13
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/filters.py:13: PytestCollectionWarning: cannot collect test class 'TestResultFilter' because it has a __init__ constructor (from: apps/results/tests/test_filters.py)
+    class TestResultFilter(django_filters.FilterSet):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_filters.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_result_flags.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_results.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_serializers.py)
+    class TestResult(models.Model):
+
+apps/results/serializers.py:6
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/serializers.py:6: PytestCollectionWarning: cannot collect test class 'TestResultSerializer' because it has a __init__ constructor (from: apps/results/tests/test_serializers.py)
+    class TestResultSerializer(serializers.ModelSerializer):
+
+apps/laboratory/tests/test_parameter_validation.py: 24 warnings
+apps/laboratory/tests/test_utils.py: 6 warnings
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/openpyxl/packaging/core.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+apps/laboratory/tests/test_parameter_validation.py: 8 warnings
+apps/laboratory/tests/test_utils.py: 2 warnings
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/openpyxl/writer/excel.py:292: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    workbook.properties.modified = datetime.datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_invalid_parameter_id_format
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_missing_parameter_id
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_invalid_parameter_id_format
+========== 3 failed, 19 passed, 378 deselected, 53 warnings in 7.08s ===========

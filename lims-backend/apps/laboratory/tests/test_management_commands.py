@@ -127,8 +127,8 @@ class TestSeedTestCatalogCommand:
         assert cbc_params.count() > 0
 
         # Check specific parameters exist
-        assert cbc_params.filter(parameter_name="Hemoglobin").exists()
-        assert cbc_params.filter(parameter_name="White Blood Cell Count").exists()
+        assert cbc_params.filter(parameter__parameter_name="Hemoglobin").exists()
+        assert cbc_params.filter(parameter__parameter_name="White Blood Cell Count").exists()
 
     def test_seed_command_creates_panels(self):
         """Test that seed command creates test panels."""

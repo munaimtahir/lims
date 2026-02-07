@@ -1,0 +1,8 @@
+ lims-backend/apps/core/tests/test_numbering.py                 | 4 ++++
+ lims-backend/apps/laboratory/tests/test_management_commands.py | 4 ++--
+ lims-backend/apps/laboratory/utils.py                          | 2 +-
+ lims-backend/apps/patients/filters.py                          | 2 --
+ lims-backend/apps/results/tests/test_results.py                | 4 ++--
+ lims-backend/config/settings/ci.py                             | 9 +++++++++
+ lims-backend/config/settings/production.py                     | 4 +++-
+ 7 files changed, 21 insertions(+), 8 deletions(-)

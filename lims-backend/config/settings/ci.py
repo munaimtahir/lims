@@ -1,5 +1,10 @@
 import os
 
+# Set required env vars before importing production settings
+# These are only used during import validation and will be overridden by test DB config
+os.environ.setdefault("SECRET_KEY", "test-secret-key-for-ci-only-not-for-production")
+os.environ.setdefault("DB_PASSWORD", "test-db-password-for-ci-only")
+
 from .production import *
 
 # Override Database for CI/Local verification.
@@ -98,6 +103,10 @@ LOGGING = {
         },
     },
 }
+
+# Use temporary directory for media files during tests to avoid permission issues
+import tempfile
+MEDIA_ROOT = os.path.join(tempfile.gettempdir(), "lims_test_media")
 
 # Disable HTTPS redirect in test context to avoid 301s during local/CI HTTP calls
 SECURE_SSL_REDIRECT = False
