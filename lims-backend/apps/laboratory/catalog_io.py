@@ -645,6 +645,9 @@ def import_catalog_from_excel(
                             },
                         )
                         created_tests[test_id] = test
+                    else:
+                        # In dry-run, track that this test would be created
+                        created_tests[test_id] = True
 
         # Parameters
         if "Parameters" in workbook.sheetnames:
@@ -775,6 +778,9 @@ def import_catalog_from_excel(
                             parameter_id=param_id, **incoming
                         )
                         created_params[param_id] = param
+                    else:
+                        # In dry-run, track that this parameter would be created
+                        created_params[param_id] = True
 
         # Panels
         if "Panels" in workbook.sheetnames:
@@ -1016,11 +1022,7 @@ def import_catalog_from_excel(
                             **incoming,
                         )
                     else:
-                        created_mappings[(test_id, param_id)] = TestParameter(
-                            test=test_obj,
-                            parameter=param_obj,
-                            **incoming,
-                        )
+                        created_mappings[(test_id, param_id)] = True
 
         # PanelTests
         if "PanelTests" in workbook.sheetnames:

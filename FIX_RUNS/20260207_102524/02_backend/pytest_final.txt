@@ -1,0 +1,581 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.3, pluggy-1.6.0 -- /home/munaim/srv/apps/lims/lims-backend/.venv/bin/python3
+cachedir: .pytest_cache
+django: version: 5.0, settings: config.settings.audit (from env)
+rootdir: /home/munaim/srv/apps/lims/lims-backend
+configfile: pytest.ini
+plugins: cov-4.1.0, django-4.7.0
+collecting ... collected 400 items
+
+apps/accounts/tests/test_auth.py::TestUserModel::test_create_user PASSED [  0%]
+apps/accounts/tests/test_auth.py::TestUserModel::test_user_role_properties PASSED [  0%]
+apps/accounts/tests/test_auth.py::TestUserModel::test_user_str PASSED    [  0%]
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_username PASSED [  1%]
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_email PASSED [  1%]
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_invalid_credentials PASSED [  1%]
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_nonexistent_user PASSED [  1%]
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_inactive_user PASSED [  2%]
+apps/accounts/tests/test_auth.py::TestMeView::test_me_authenticated PASSED [  2%]
+apps/accounts/tests/test_auth.py::TestMeView::test_me_unauthenticated PASSED [  2%]
+apps/accounts/tests/test_auth.py::TestLogoutView::test_logout PASSED     [  2%]
+apps/accounts/tests/test_auth.py::TestUserViewSet::test_list_users_admin PASSED [  3%]
+apps/accounts/tests/test_auth.py::TestUserViewSet::test_list_users_non_admin PASSED [  3%]
+apps/accounts/tests/test_auth.py::TestUserViewSet::test_create_user_admin PASSED [  3%]
+apps/accounts/tests/test_auth.py::TestUserViewSet::test_create_user_password_mismatch PASSED [  3%]
+apps/accounts/tests/test_auth.py::TestUserViewSet::test_update_user_admin PASSED [  4%]
+apps/accounts/tests/test_auth.py::TestUserViewSet::test_change_password PASSED [  4%]
+apps/accounts/tests/test_auth.py::TestUserViewSet::test_change_password_wrong_old PASSED [  4%]
+apps/audit/tests/test_audit.py::TestAuditLogModel::test_create_audit_log PASSED [  4%]
+apps/audit/tests/test_audit.py::TestAuditLogModel::test_audit_log_str PASSED [  5%]
+apps/audit/tests/test_audit.py::TestAuditLogModel::test_audit_log_str_no_user PASSED [  5%]
+apps/audit/tests/test_audit.py::TestAuditLogModel::test_audit_log_with_content_type PASSED [  5%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_log_create PASSED   [  5%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_log_update PASSED   [  6%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_log_delete PASSED   [  6%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_model_to_dict_safe_handles_datetime PASSED [  6%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_model_to_dict_safe_handles_decimal PASSED [  6%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_get_client_ip_with_x_forwarded_for PASSED [  7%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_get_client_ip_without_x_forwarded_for PASSED [  7%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_get_client_ip_none_request PASSED [  7%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_get_user_agent PASSED [  7%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_get_user_agent_none_request PASSED [  8%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_log_action_with_request PASSED [  8%]
+apps/audit/tests/test_audit.py::TestAuditUtils::test_log_action_skip_contenttype PASSED [  8%]
+apps/audit/tests/test_audit.py::TestAuditLogViewSet::test_list_audit_logs_admin PASSED [  8%]
+apps/audit/tests/test_audit.py::TestAuditLogViewSet::test_list_audit_logs_manager PASSED [  9%]
+apps/audit/tests/test_audit.py::TestAuditLogViewSet::test_list_audit_logs_unauthorized PASSED [  9%]
+apps/audit/tests/test_audit.py::TestAuditLogViewSet::test_filter_audit_logs_by_action PASSED [  9%]
+apps/audit/tests/test_audit.py::TestAuditLogViewSet::test_filter_audit_logs_by_table PASSED [  9%]
+apps/audit/tests/test_audit.py::TestAuditLogViewSet::test_audit_logs_read_only PASSED [ 10%]
+apps/billing/tests/test_billing.py::TestPaymentModel::test_create_payment PASSED [ 10%]
+apps/billing/tests/test_billing.py::TestPaymentModel::test_payment_str PASSED [ 10%]
+apps/billing/tests/test_billing.py::TestPaymentModel::test_full_payment_marks_order_paid XPASSransaction handling.) [ 10%]
+apps/billing/tests/test_billing.py::TestPaymentModel::test_partial_payment_does_not_mark_paid PASSED [ 11%]
+apps/billing/tests/test_billing.py::TestPaymentModel::test_multiple_payments_mark_paid PASSED [ 11%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_list_payments PASSED [ 11%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_create_payment PASSED [ 11%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_filter_payments_by_order PASSED [ 12%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_filter_payments_by_method PASSED [ 12%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_receipt_generation PASSED [ 12%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_receipt_with_lab_info PASSED [ 12%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_receipt_with_discount PASSED [ 13%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_receipt_with_transaction_id PASSED [ 13%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_receipt_with_notes PASSED [ 13%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_receipt_partial_payment PASSED [ 13%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_receipt_full_payment PASSED [ 14%]
+apps/billing/tests/test_billing.py::TestPaymentViewSet::test_receipt_multiple_payments PASSED [ 14%]
+apps/core/tests/test_core.py::TestSystemSettingsModel::test_create_settings PASSED [ 14%]
+apps/core/tests/test_core.py::TestSystemSettingsModel::test_settings_singleton_pattern PASSED [ 14%]
+apps/core/tests/test_core.py::TestSystemSettingsModel::test_get_settings_classmethod PASSED [ 15%]
+apps/core/tests/test_core.py::TestSystemSettingsModel::test_settings_str PASSED [ 15%]
+apps/core/tests/test_core.py::TestSystemSettingsViewSet::test_get_settings PASSED [ 15%]
+apps/core/tests/test_core.py::TestSystemSettingsViewSet::test_update_settings PASSED [ 15%]
+apps/core/tests/test_core.py::TestSystemSettingsViewSet::test_patch_settings PASSED [ 16%]
+apps/core/tests/test_core.py::TestSystemSettingsViewSet::test_settings_validation PASSED [ 16%]
+apps/core/tests/test_core.py::TestSystemSettingsViewSet::test_settings_tax_rate_validation PASSED [ 16%]
+apps/core/tests/test_core.py::TestSystemSettingsViewSet::test_upload_report_header_image PASSED [ 16%]
+apps/core/tests/test_core.py::TestSystemSettingsViewSet::test_upload_report_header_image_unauthorized PASSED [ 17%]
+apps/core/tests/test_core.py::TestSystemSettingsViewSet::test_get_settings_with_header_image PASSED [ 17%]
+apps/core/tests/test_numbering.py::TestRegistrationNumbering::test_registration_number_format PASSED [ 17%]
+apps/core/tests/test_numbering.py::TestRegistrationNumbering::test_registration_number_increments PASSED [ 17%]
+apps/core/tests/test_numbering.py::TestRegistrationNumbering::test_registration_number_monthly_reset PASSED [ 18%]
+apps/core/tests/test_numbering.py::TestRegistrationNumbering::test_registration_number_center_scoped PASSED [ 18%]
+apps/core/tests/test_numbering.py::TestRegistrationNumbering::test_patient_auto_generates_registration_number PASSED [ 18%]
+apps/core/tests/test_numbering.py::TestLabNumbering::test_lab_number_format PASSED [ 18%]
+apps/core/tests/test_numbering.py::TestLabNumbering::test_lab_number_month_letters PASSED [ 19%]
+apps/core/tests/test_numbering.py::TestLabNumbering::test_lab_number_increments PASSED [ 19%]
+apps/core/tests/test_numbering.py::TestLabNumbering::test_lab_number_daily_reset PASSED [ 19%]
+apps/core/tests/test_numbering.py::TestLabNumbering::test_lab_number_center_scoped PASSED [ 19%]
+apps/core/tests/test_numbering.py::TestLabNumbering::test_lab_number_limit PASSED [ 20%]
+apps/core/tests/test_numbering.py::TestLabNumbering::test_order_auto_generates_lab_number PASSED [ 20%]
+apps/core/tests/test_numbering.py::TestConcurrency::test_concurrent_registration_numbers SKIPPED [ 20%]
+apps/core/tests/test_numbering.py::TestConcurrency::test_concurrent_lab_numbers FAILED [ 20%]
+apps/core/tests/test_numbering.py::TestValidation::test_registration_number_unique PASSED [ 21%]
+apps/core/tests/test_numbering.py::TestValidation::test_center_code_validation PASSED [ 21%]
+apps/core/tests/test_serializers.py::TestSystemSettingsSerializer::test_validate_email_port_too_low PASSED [ 21%]
+apps/core/tests/test_serializers.py::TestSystemSettingsSerializer::test_validate_email_port_too_high PASSED [ 21%]
+apps/core/tests/test_serializers.py::TestSystemSettingsSerializer::test_validate_email_port_valid PASSED [ 22%]
+apps/core/tests/test_serializers.py::TestSystemSettingsSerializer::test_validate_email_port_edge_cases PASSED [ 22%]
+apps/core/tests/test_serializers.py::TestSystemSettingsSerializer::test_validate_tax_rate_negative PASSED [ 22%]
+apps/core/tests/test_serializers.py::TestSystemSettingsSerializer::test_validate_tax_rate_valid PASSED [ 22%]
+apps/core/tests/test_serializers.py::TestSystemSettingsSerializer::test_validate_tax_rate_zero PASSED [ 23%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_get_statistics PASSED [ 23%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report PASSED [ 23%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_date_range PASSED [ 23%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_test_statistics PASSED [ 24%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_turnaround_time PASSED [ 24%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution PASSED [ 24%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_payment_methods PASSED [ 24%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_export_analytics SKIPPED [ 25%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_invalid_date_format PASSED [ 25%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_group_by_week PASSED [ 25%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_group_by_month PASSED [ 25%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_test_statistics_invalid_date PASSED [ 26%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_test_statistics_with_limit PASSED [ 26%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_turnaround_time_invalid_date PASSED [ 26%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_turnaround_time_with_results PASSED [ 26%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range PASSED [ 27%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_payment_methods_with_date_range PASSED [ 27%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_export_analytics_csv_format SKIPPED [ 27%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_export_analytics_test_statistics SKIPPED [ 27%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_export_analytics_invalid_report_type PASSED [ 28%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_export_analytics_tat_report SKIPPED [ 28%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_export_analytics_workload_report SKIPPED [ 28%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_export_analytics_payments_report SKIPPED [ 28%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_invalid_date_from_format PASSED [ 29%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_invalid_date_to_format PASSED [ 29%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_test_statistics_invalid_date_from PASSED [ 29%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_test_statistics_invalid_date_to PASSED [ 29%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_turnaround_time_invalid_date_from PASSED [ 30%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_turnaround_time_invalid_date_to PASSED [ 30%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_invalid_date_from PASSED [ 30%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_invalid_date_to PASSED [ 30%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_payment_methods_invalid_date_from PASSED [ 31%]
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_payment_methods_invalid_date_to PASSED [ 31%]
+apps/laboratory/tests/test_audit_verification.py::TestCatalogAuditReal::test_audit_detects_existing_issues PASSED [ 31%]
+apps/laboratory/tests/test_catalog_io.py::test_export_import_round_trip_noop PASSED [ 31%]
+apps/laboratory/tests/test_catalog_io.py::test_audit_endpoint PASSED     [ 32%]
+apps/laboratory/tests/test_catalog_io.py::test_import_creates_expected_records PASSED [ 32%]
+apps/laboratory/tests/test_catalog_io.py::test_export_endpoint_returns_file PASSED [ 32%]
+apps/laboratory/tests/test_import_fixes.py::TestImportWithAliases::test_import_with_tat_hours_column PASSED [ 32%]
+apps/laboratory/tests/test_import_fixes.py::TestImportWithAliases::test_import_with_na_values PASSED [ 33%]
+apps/laboratory/tests/test_import_fixes.py::TestRegressionGoodFile::test_import_ready_file_parses PASSED [ 33%]
+apps/laboratory/tests/test_laboratory.py::TestTestCategoryModel::test_create_category PASSED [ 33%]
+apps/laboratory/tests/test_laboratory.py::TestTestModel::test_create_test PASSED [ 33%]
+apps/laboratory/tests/test_laboratory.py::TestTestParameterModel::test_create_parameter PASSED [ 34%]
+apps/laboratory/tests/test_laboratory.py::TestTestPanelModel::test_create_panel PASSED [ 34%]
+apps/laboratory/tests/test_laboratory.py::TestTestCategoryViewSet::test_list_categories PASSED [ 34%]
+apps/laboratory/tests/test_laboratory.py::TestTestCategoryViewSet::test_create_category PASSED [ 34%]
+apps/laboratory/tests/test_laboratory.py::TestTestViewSet::test_list_tests PASSED [ 35%]
+apps/laboratory/tests/test_laboratory.py::TestTestViewSet::test_retrieve_test_with_parameters PASSED [ 35%]
+apps/laboratory/tests/test_laboratory.py::TestTestViewSet::test_create_test PASSED [ 35%]
+apps/laboratory/tests/test_laboratory.py::TestTestPanelViewSet::test_list_panels PASSED [ 35%]
+apps/laboratory/tests/test_laboratory.py::TestTestPanelViewSet::test_retrieve_panel_with_tests PASSED [ 36%]
+apps/laboratory/tests/test_laboratory.py::TestImportTestsViewSet::test_import_tests_no_file PASSED [ 36%]
+apps/laboratory/tests/test_laboratory.py::TestImportTestsViewSet::test_import_tests_success PASSED [ 36%]
+apps/laboratory/tests/test_laboratory.py::TestImportTestsViewSet::test_import_tests_invalid_file_format PASSED [ 36%]
+apps/laboratory/tests/test_laboratory.py::TestImportTestsViewSet::test_import_tests_exception_handling PASSED [ 37%]
+apps/laboratory/tests/test_management_commands.py::TestSeedTestCatalogCommand::test_seed_command_creates_data PASSED [ 37%]
+apps/laboratory/tests/test_management_commands.py::TestSeedTestCatalogCommand::test_seed_command_idempotent PASSED [ 37%]
+apps/laboratory/tests/test_management_commands.py::TestSeedTestCatalogCommand::test_seed_command_with_clear PASSED [ 37%]
+apps/laboratory/tests/test_management_commands.py::TestSeedTestCatalogCommand::test_seed_command_creates_categories PASSED [ 38%]
+apps/laboratory/tests/test_management_commands.py::TestSeedTestCatalogCommand::test_seed_command_creates_tests_with_parameters FAILED [ 38%]
+apps/laboratory/tests/test_management_commands.py::TestSeedTestCatalogCommand::test_seed_command_creates_panels PASSED [ 38%]
+apps/laboratory/tests/test_parameter_validation.py::TestParameterIdValidation::test_valid_parameter_id_formats PASSED [ 38%]
+apps/laboratory/tests/test_parameter_validation.py::TestParameterIdValidation::test_uppercase_parameter_id_normalized PASSED [ 39%]
+apps/laboratory/tests/test_parameter_validation.py::TestParameterIdValidation::test_invalid_parameter_id_formats PASSED [ 39%]
+apps/laboratory/tests/test_parameter_validation.py::TestParameterIdValidation::test_validate_parameter_id_function PASSED [ 39%]
+apps/laboratory/tests/test_parameter_validation.py::TestParameterIdValidation::test_parameter_id_uniqueness PASSED [ 39%]
+apps/laboratory/tests/test_parameter_validation.py::TestParameterIdValidation::test_parameter_id_case_insensitive_uniqueness PASSED [ 40%]
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_valid_parameter_ids FAILED [ 40%]
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_invalid_parameter_id_format FAILED [ 40%]
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_duplicate_parameter_ids FAILED [ 40%]
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_missing_parameter_id FAILED [ 41%]
+apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_invalid_parameter_id_format FAILED [ 41%]
+apps/laboratory/tests/test_parameter_validation.py::TestDryRunImport::test_dry_run_validates_without_writing FAILED [ 41%]
+apps/laboratory/tests/test_parameter_validation.py::TestDryRunImport::test_dry_run_detects_errors PASSED [ 41%]
+apps/laboratory/tests/test_parameter_validation.py::TestDryRunImport::test_dry_run_full_workflow FAILED [ 42%]
+apps/laboratory/tests/test_ranges.py::test_pick_reference_range_prefers_gender_match PASSED [ 42%]
+apps/laboratory/tests/test_ranges.py::test_pick_reference_range_boundary_age PASSED [ 42%]
+apps/laboratory/tests/test_ranges.py::test_pick_reference_range_missing_dob_fallback PASSED [ 42%]
+apps/laboratory/tests/test_ranges.py::test_pick_reference_range_missing_ranges_returns_empty PASSED [ 43%]
+apps/laboratory/tests/test_serializers.py::TestReferenceRangeSerializer::test_validate_age_min_greater_than_max PASSED [ 43%]
+apps/laboratory/tests/test_serializers.py::TestReferenceRangeSerializer::test_validate_reference_min_greater_than_max PASSED [ 43%]
+apps/laboratory/tests/test_serializers.py::TestReferenceRangeSerializer::test_validate_valid_data PASSED [ 43%]
+apps/laboratory/tests/test_serializers.py::TestReferenceRangeSerializer::test_create_reference_range PASSED [ 44%]
+apps/laboratory/tests/test_serializers.py::TestReferenceRangeSerializer::test_create_reference_range_deactivates_old PASSED [ 44%]
+apps/laboratory/tests/test_serializers.py::TestReferenceRangeSerializer::test_create_reference_range_increments_version PASSED [ 44%]
+apps/laboratory/tests/test_serializers.py::TestReferenceRangeSerializer::test_create_reference_range_no_user PASSED [ 44%]
+apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_tests_sheet PASSED [ 45%]
+apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_parameters_sheet FAILED [ 45%]
+apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_reference_ranges_sheet FAILED [ 45%]
+apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_all_sheets_together FAILED [ 45%]
+apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_updates_existing_test PASSED [ 46%]
+apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_skips_empty_rows PASSED [ 46%]
+apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_handles_missing_test_for_mapping PASSED [ 46%]
+apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_handles_missing_parameter_for_range PASSED [ 46%]
+apps/orders/tests/test_orders.py::TestOrderModel::test_create_order PASSED [ 47%]
+apps/orders/tests/test_orders.py::TestOrderModel::test_order_id_generation PASSED [ 47%]
+apps/orders/tests/test_orders.py::TestOrderModel::test_calculate_total PASSED [ 47%]
+apps/orders/tests/test_orders.py::TestOrderModel::test_order_with_discount PASSED [ 47%]
+apps/orders/tests/test_orders.py::TestOrderItemModel::test_create_order_item_with_test PASSED [ 48%]
+apps/orders/tests/test_orders.py::TestOrderItemModel::test_create_order_item_with_panel PASSED [ 48%]
+apps/orders/tests/test_orders.py::TestOrderViewSet::test_list_orders PASSED [ 48%]
+apps/orders/tests/test_orders.py::TestOrderViewSet::test_create_order_with_tests PASSED [ 48%]
+apps/orders/tests/test_orders.py::TestOrderViewSet::test_create_order_with_panel PASSED [ 49%]
+apps/orders/tests/test_orders.py::TestOrderViewSet::test_create_order_with_referred_by PASSED [ 49%]
+apps/orders/tests/test_orders.py::TestOrderViewSet::test_update_order_referred_by PASSED [ 49%]
+apps/orders/tests/test_orders.py::TestOrderViewSet::test_retrieve_order PASSED [ 49%]
+apps/orders/tests/test_orders.py::TestOrderViewSet::test_cancel_order PASSED [ 50%]
+apps/orders/tests/test_orders.py::TestOrderViewSet::test_worklist_reprint_eligibility PASSED [ 50%]
+apps/orders/tests/test_orders.py::TestOrderViewSet::test_cancel_completed_order_fails PASSED [ 50%]
+apps/orders/tests/test_orders.py::TestOrderModelMethods::test_validate_status_transition_valid PASSED [ 50%]
+apps/orders/tests/test_orders.py::TestOrderModelMethods::test_validate_status_transition_invalid PASSED [ 51%]
+apps/orders/tests/test_orders.py::TestOrderModelMethods::test_can_transition_to_valid PASSED [ 51%]
+apps/orders/tests/test_orders.py::TestOrderModelMethods::test_can_transition_to_invalid PASSED [ 51%]
+apps/orders/tests/test_orders.py::TestOrderModelMethods::test_transition_to_valid PASSED [ 51%]
+apps/orders/tests/test_orders.py::TestOrderModelMethods::test_transition_to_invalid PASSED [ 52%]
+apps/orders/tests/test_orders.py::TestOrderModelMethods::test_status_final_states_no_transitions PASSED [ 52%]
+apps/orders/tests/test_serializers.py::TestOrderSerializer::test_create_order_with_tests PASSED [ 52%]
+apps/orders/tests/test_serializers.py::TestOrderSerializer::test_create_order_with_panels PASSED [ 52%]
+apps/orders/tests/test_serializers.py::TestOrderSerializer::test_create_order_with_tests_and_panels PASSED [ 53%]
+apps/orders/tests/test_serializers.py::TestOrderSerializer::test_create_order_with_invalid_test_id PASSED [ 53%]
+apps/orders/tests/test_serializers.py::TestOrderSerializer::test_create_order_with_invalid_panel_id PASSED [ 53%]
+apps/orders/tests/test_serializers.py::TestOrderSerializer::test_create_order_with_discount PASSED [ 53%]
+apps/orders/tests/test_serializers.py::TestOrderSerializer::test_create_order_no_user PASSED [ 54%]
+apps/orders/tests/test_serializers.py::TestOrderSerializer::test_samples_auto_created_on_order_creation PASSED [ 54%]
+apps/orders/tests/test_serializers.py::TestOrderSerializer::test_samples_auto_created_for_multiple_items PASSED [ 54%]
+apps/orders/tests/test_serializers.py::TestOrderListSerializer::test_get_item_count PASSED [ 54%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_name_first_name PASSED [ 55%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_name_last_name PASSED [ 55%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_age_min PASSED [ 55%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_age_max PASSED [ 55%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_age_range PASSED [ 56%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_gender PASSED [ 56%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_created_from PASSED [ 56%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_created_to FAILED [ 56%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_phone PASSED [ 57%]
+apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_national_id PASSED [ 57%]
+apps/patients/tests/test_patients.py::TestPatientModel::test_create_patient PASSED [ 57%]
+apps/patients/tests/test_patients.py::TestPatientModel::test_patient_id_generation PASSED [ 57%]
+apps/patients/tests/test_patients.py::TestPatientModel::test_patient_age_calculation PASSED [ 58%]
+apps/patients/tests/test_patients.py::TestPatientModel::test_patient_full_name PASSED [ 58%]
+apps/patients/tests/test_patients.py::TestPatientModel::test_patient_str PASSED [ 58%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_create_patient PASSED [ 58%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_create_patient_validation_phone PASSED [ 59%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_create_patient_future_dob PASSED [ 59%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_create_patient_with_dob_only PASSED [ 59%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_create_patient_with_age_only PASSED [ 59%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_create_patient_missing_age_and_dob PASSED [ 60%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_list_patients PASSED [ 60%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_retrieve_patient PASSED [ 60%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_update_patient PASSED [ 60%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_search_patients PASSED [ 61%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_patient_history PASSED [ 61%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_unauthenticated_access PASSED [ 61%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_patient_history_with_limit PASSED [ 61%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_patient_history_with_parameter_filter PASSED [ 62%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_patient_test_comparison PASSED [ 62%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_patient_test_comparison_missing_parameter_id PASSED [ 62%]
+apps/patients/tests/test_patients.py::TestPatientViewSet::test_patient_test_comparison_invalid_parameter PASSED [ 62%]
+apps/patients/tests/test_serializers.py::TestPatientSerializer::test_validate_phone_valid PASSED [ 63%]
+apps/patients/tests/test_serializers.py::TestPatientSerializer::test_validate_phone_empty PASSED [ 63%]
+apps/patients/tests/test_serializers.py::TestPatientSerializer::test_validate_phone_too_short PASSED [ 63%]
+apps/patients/tests/test_serializers.py::TestPatientSerializer::test_validate_date_of_birth_valid PASSED [ 63%]
+apps/patients/tests/test_serializers.py::TestPatientSerializer::test_validate_date_of_birth_future PASSED [ 64%]
+apps/patients/tests/test_serializers.py::TestPatientCreateSerializer::test_validate_phone_valid PASSED [ 64%]
+apps/patients/tests/test_serializers.py::TestPatientCreateSerializer::test_validate_phone_empty PASSED [ 64%]
+apps/patients/tests/test_serializers.py::TestPatientCreateSerializer::test_validate_phone_too_short PASSED [ 64%]
+apps/reports/tests/test_reports.py::TestReportModel::test_report_str PASSED [ 65%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_report PASSED [ 65%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_nonexistent_order PASSED [ 65%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_with_custom_lab_info PASSED [ 65%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_with_system_settings_exception PASSED [ 66%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_with_report_header_footer PASSED [ 66%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_contains_lab_name PASSED [ 66%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_with_empty_signatories PASSED [ 66%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_with_panel_items PASSED [ 67%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_with_partial_reference_ranges PASSED [ 67%]
+apps/reports/tests/test_reports.py::TestPDFGeneration::test_generate_pdf_with_no_results PASSED [ 67%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_list_reports PASSED [ 67%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_generate_report PASSED [ 68%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_generate_report_missing_order_id PASSED [ 68%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_download_report PASSED [ 68%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_download_report_no_file PASSED [ 68%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_mark_delivered PASSED [ 69%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_reprint_report PASSED [ 69%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_amend_report PASSED [ 69%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_amend_report_missing_reason PASSED [ 69%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_amend_report_non_pathologist PASSED [ 70%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_patient_history PASSED [ 70%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_patient_history_missing_patient_id PASSED [ 70%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_amendments_list PASSED [ 70%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_amendments_missing_report_id PASSED [ 71%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_upload_signature_pathologist PASSED [ 71%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_upload_signature_technician PASSED [ 71%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_upload_signature_missing_file PASSED [ 71%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_generate_report_with_order_id_string PASSED [ 72%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_generate_report_existing_regenerate PASSED [ 72%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_report_generate_report_number PASSED [ 72%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_report_mark_delivered PASSED [ 72%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_report_increment_reprint PASSED [ 73%]
+apps/reports/tests/test_reports.py::TestReportViewSet::test_report_create_amendment PASSED [ 73%]
+apps/results/tests/test_expected_results.py::test_expected_results_single_test_order PASSED [ 73%]
+apps/results/tests/test_expected_results.py::test_expected_results_panel_order PASSED [ 73%]
+apps/results/tests/test_expected_results.py::test_ensure_endpoint_idempotent PASSED [ 74%]
+apps/results/tests/test_expected_results.py::test_ensure_creates_missing_rows PASSED [ 74%]
+apps/results/tests/test_filters.py::TestTestResultFilter::test_filter_by_value_min PASSED [ 74%]
+apps/results/tests/test_filters.py::TestTestResultFilter::test_filter_by_value_max PASSED [ 74%]
+apps/results/tests/test_filters.py::TestTestResultFilter::test_filter_by_value_range PASSED [ 75%]
+apps/results/tests/test_filters.py::TestTestResultFilter::test_filter_by_entered_from PASSED [ 75%]
+apps/results/tests/test_filters.py::TestTestResultFilter::test_filter_by_entered_to PASSED [ 75%]
+apps/results/tests/test_filters.py::TestTestResultFilter::test_filter_by_flag PASSED [ 75%]
+apps/results/tests/test_filters.py::TestTestResultFilter::test_filter_by_status PASSED [ 76%]
+apps/results/tests/test_filters.py::TestTestResultFilter::test_filter_by_order_item PASSED [ 76%]
+apps/results/tests/test_filters.py::TestTestResultFilter::test_filter_handles_non_numeric_values PASSED [ 76%]
+apps/results/tests/test_result_flags.py::test_flag_normal PASSED         [ 76%]
+apps/results/tests/test_result_flags.py::test_flag_low PASSED            [ 77%]
+apps/results/tests/test_result_flags.py::test_flag_high PASSED           [ 77%]
+apps/results/tests/test_result_flags.py::test_flag_critical PASSED       [ 77%]
+apps/results/tests/test_results.py::TestTestResultModel::test_create_result PASSED [ 77%]
+apps/results/tests/test_results.py::TestTestResultModel::test_result_flag_normal PASSED [ 78%]
+apps/results/tests/test_results.py::TestTestResultModel::test_result_flag_high PASSED [ 78%]
+apps/results/tests/test_results.py::TestTestResultModel::test_result_flag_low PASSED [ 78%]
+apps/results/tests/test_results.py::TestTestResultModel::test_result_flag_critical_high PASSED [ 78%]
+apps/results/tests/test_results.py::TestTestResultModel::test_result_flag_critical_low PASSED [ 79%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_list_results PASSED [ 79%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_create_result PASSED [ 79%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_verify_result FAILED [ 79%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_reject_result PASSED [ 80%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_verify_result_non_pathologist_fails PASSED [ 80%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_export_results_csv SKIPPED [ 80%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_export_results_excel SKIPPED [ 80%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_worklist PASSED [ 81%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_verification_queue PASSED [ 81%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_bulk_entry PASSED [ 81%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_bulk_entry_result_status_entered PASSED [ 81%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_bulk_entry_update_sets_entered_status PASSED [ 82%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_verification_queue_shows_entered_results PASSED [ 82%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_bulk_entry_missing_fields PASSED [ 82%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_bulk_entry_empty_results PASSED [ 82%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_bulk_entry_updates_existing PASSED [ 83%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_reject_result_with_reason FAILED [ 83%]
+apps/results/tests/test_results.py::TestTestResultViewSet::test_worklist_endpoint PASSED [ 83%]
+apps/results/tests/test_serializers.py::TestTestResultSerializer::test_create_result_with_user PASSED [ 83%]
+apps/results/tests/test_serializers.py::TestTestResultSerializer::test_create_result_without_user PASSED [ 84%]
+apps/samples/tests/test_samples.py::TestSampleModel::test_create_sample PASSED [ 84%]
+apps/samples/tests/test_samples.py::TestSampleModel::test_sample_str PASSED [ 84%]
+apps/samples/tests/test_samples.py::TestSampleModel::test_sample_barcode_generation PASSED [ 84%]
+apps/samples/tests/test_samples.py::TestSampleViewSet::test_list_samples PASSED [ 85%]
+apps/samples/tests/test_samples.py::TestSampleViewSet::test_create_sample FAILED [ 85%]
+apps/samples/tests/test_samples.py::TestSampleViewSet::test_update_sample_to_collected PASSED [ 85%]
+apps/samples/tests/test_samples.py::TestSampleViewSet::test_reject_status_is_not_allowed PASSED [ 85%]
+apps/samples/tests/test_samples.py::TestSampleViewSet::test_filter_samples_by_status PASSED [ 86%]
+apps/samples/tests/test_samples.py::TestSampleViewSet::test_pending_collections PASSED [ 86%]
+apps/samples/tests/test_services.py::SampleGenerationTestCase::test_ensure_samples_wrapper_function FAILED [ 86%]
+apps/samples/tests/test_services.py::SampleGenerationTestCase::test_idempotency_no_duplicate_samples FAILED [ 86%]
+apps/samples/tests/test_services.py::SampleGenerationTestCase::test_multiple_payments_trigger_sample_generation_once PASSED [ 87%]
+apps/samples/tests/test_services.py::SampleGenerationTestCase::test_no_samples_generated_for_unpaid_order PASSED [ 87%]
+apps/samples/tests/test_services.py::SampleGenerationTestCase::test_partial_payment_no_samples PASSED [ 87%]
+apps/samples/tests/test_services.py::SampleGenerationTestCase::test_sample_barcode_uniqueness PASSED [ 87%]
+apps/samples/tests/test_services.py::SampleGenerationTestCase::test_samples_generated_when_payment_recorded PASSED [ 88%]
+apps/core/tests/test_export_utils.py::TestExportToCSV::test_export_dict_data_with_headers PASSED [ 88%]
+apps/core/tests/test_export_utils.py::TestExportToCSV::test_export_dict_data_without_headers PASSED [ 88%]
+apps/core/tests/test_export_utils.py::TestExportToCSV::test_export_list_data_with_headers PASSED [ 88%]
+apps/core/tests/test_export_utils.py::TestExportToCSV::test_export_list_data_without_headers PASSED [ 89%]
+apps/core/tests/test_export_utils.py::TestExportToCSV::test_export_empty_data PASSED [ 89%]
+apps/core/tests/test_export_utils.py::TestExportToCSV::test_export_dict_with_missing_keys PASSED [ 89%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_dict_data_with_headers PASSED [ 89%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_dict_data_without_headers PASSED [ 90%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_list_data_with_headers PASSED [ 90%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_list_data_without_headers PASSED [ 90%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_empty_data PASSED [ 90%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_dict_with_missing_keys PASSED [ 91%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_custom_sheet_name PASSED [ 91%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_large_data PASSED [ 91%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_with_special_characters PASSED [ 91%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_column_width_adjustment PASSED [ 92%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_excel_with_non_string_cell_value PASSED [ 92%]
+apps/core/tests/test_export_utils.py::TestExportToExcel::test_export_excel_with_none_cell_value PASSED [ 92%]
+apps/laboratory/tests/test_import_fixes.py::TestNormalizeHeader::test_basic_normalization PASSED [ 92%]
+apps/laboratory/tests/test_import_fixes.py::TestNormalizeHeader::test_parentheses_removal PASSED [ 93%]
+apps/laboratory/tests/test_import_fixes.py::TestNormalizeHeader::test_whitespace_handling PASSED [ 93%]
+apps/laboratory/tests/test_import_fixes.py::TestColumnAliases::test_tat_hours_alias PASSED [ 93%]
+apps/laboratory/tests/test_import_fixes.py::TestColumnAliases::test_multiple_aliases PASSED [ 93%]
+apps/laboratory/tests/test_import_fixes.py::TestColumnAliases::test_canonical_column_not_overwritten PASSED [ 94%]
+apps/laboratory/tests/test_import_fixes.py::TestColumnAliases::test_reference_range_aliases PASSED [ 94%]
+apps/laboratory/tests/test_import_fixes.py::TestNullValueHandling::test_none_is_null PASSED [ 94%]
+apps/laboratory/tests/test_import_fixes.py::TestNullValueHandling::test_empty_string_is_null PASSED [ 94%]
+apps/laboratory/tests/test_import_fixes.py::TestNullValueHandling::test_na_variants_are_null PASSED [ 95%]
+apps/laboratory/tests/test_import_fixes.py::TestNullValueHandling::test_null_string_is_null PASSED [ 95%]
+apps/laboratory/tests/test_import_fixes.py::TestNullValueHandling::test_dash_is_null PASSED [ 95%]
+apps/laboratory/tests/test_import_fixes.py::TestNullValueHandling::test_regular_values_not_null PASSED [ 95%]
+apps/laboratory/tests/test_import_fixes.py::TestToInt::test_basic_conversion PASSED [ 96%]
+apps/laboratory/tests/test_import_fixes.py::TestToInt::test_float_to_int PASSED [ 96%]
+apps/laboratory/tests/test_import_fixes.py::TestToInt::test_null_values_return_none PASSED [ 96%]
+apps/laboratory/tests/test_import_fixes.py::TestToInt::test_invalid_values_return_none PASSED [ 96%]
+apps/laboratory/tests/test_import_fixes.py::TestToDecimal::test_basic_conversion PASSED [ 97%]
+apps/laboratory/tests/test_import_fixes.py::TestToDecimal::test_null_values_return_none PASSED [ 97%]
+apps/laboratory/tests/test_import_fixes.py::TestToBool::test_boolean_passthrough PASSED [ 97%]
+apps/laboratory/tests/test_import_fixes.py::TestToBool::test_string_conversion PASSED [ 97%]
+apps/laboratory/tests/test_import_fixes.py::TestToBool::test_null_returns_default PASSED [ 98%]
+apps/laboratory/tests/test_import_fixes.py::TestSerializeForJson::test_decimal_to_string PASSED [ 98%]
+apps/laboratory/tests/test_import_fixes.py::TestSerializeForJson::test_nested_decimals PASSED [ 98%]
+apps/laboratory/tests/test_import_fixes.py::TestSerializeForJson::test_mixed_types PASSED [ 98%]
+apps/laboratory/tests/test_import_fixes.py::TestSerializeForJson::test_tuple_handling PASSED [ 99%]
+apps/laboratory/tests/test_import_fixes.py::TestSerializeForJson::test_set_handling PASSED [ 99%]
+apps/laboratory/tests/test_import_fixes.py::TestValidateSheetHeaders::test_all_required_present PASSED [ 99%]
+apps/laboratory/tests/test_import_fixes.py::TestValidateSheetHeaders::test_missing_required PASSED [ 99%]
+apps/laboratory/tests/test_import_fixes.py::TestValidateSheetHeaders::test_unknown_headers_warning PASSED [100%]
+
+=================================== FAILURES ===================================
+/home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:328: django.db.utils.OperationalError: database table is locked
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_management_commands.py:130: AssertionError: assert False
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_parameter_validation.py:123: assert 0 == 3
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_parameter_validation.py:145: assert 0 == 1
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_parameter_validation.py:172: assert 0 == 1
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_parameter_validation.py:211: AssertionError: assert 'p999' in 'Test or Parameter not found for mapping'
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_parameter_validation.py:244: assert 'format' in "invalid parameter_id 'param1'"
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_parameter_validation.py:269: assert 0 == 2
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_parameter_validation.py:339: AssertionError: assert 'FAIL' == 'PASS'
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_utils.py:81: assert 0 == 2
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_utils.py:140: assert 0 == 1
+/home/munaim/srv/apps/lims/lims-backend/apps/laboratory/tests/test_utils.py:209: assert 0 == 1
+/home/munaim/srv/apps/lims/lims-backend/apps/patients/tests/test_filters.py:256: assert <Patient: PAT-TODAY2 - Today2 Patient> not in [<Patient: PAT-TODAY2 - Today2 Patient>, <Patient: PAT-002 - Jane Smith>, <Patient: PAT-001 - John Doe>, <Patient: PAT-YESTERDAY2 - Yesterday2 Patient>]
+/home/munaim/srv/apps/lims/lims-backend/apps/results/tests/test_results.py:268: assert 403 == 200
+/home/munaim/srv/apps/lims/lims-backend/apps/results/tests/test_results.py:634: AssertionError: assert 'REJECTED' == 'rejected'
+/home/munaim/srv/apps/lims/lims-backend/apps/samples/tests/test_samples.py:152: assert 400 == 201
+/usr/lib/python3.12/unittest/case.py:878: AssertionError: 0 != 2
+/usr/lib/python3.12/unittest/case.py:878: AssertionError: 0 != 2
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+.venv/lib/python3.12/site-packages/django/conf/__init__.py:240
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/conf/__init__.py:240: RemovedInDjango51Warning: The DEFAULT_FILE_STORAGE setting is deprecated. Use STORAGES instead.
+    warnings.warn(DEFAULT_FILE_STORAGE_DEPRECATED_MSG, RemovedInDjango51Warning)
+
+.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    from pkg_resources import DistributionNotFound, get_distribution
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/dashboard/tests/test_dashboard.py)
+    class TestResult(models.Model):
+
+.venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11: DeprecationWarning: ast.NameConstant is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    haveNameConstant = hasattr(ast,'NameConstant')
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/reports/tests/test_reports.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_expected_results.py)
+    class TestResult(models.Model):
+
+apps/results/filters.py:13
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/filters.py:13: PytestCollectionWarning: cannot collect test class 'TestResultFilter' because it has a __init__ constructor (from: apps/results/tests/test_filters.py)
+    class TestResultFilter(django_filters.FilterSet):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_filters.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_result_flags.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_results.py)
+    class TestResult(models.Model):
+
+apps/results/models.py:14
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/results/tests/test_serializers.py)
+    class TestResult(models.Model):
+
+apps/results/serializers.py:6
+  /home/munaim/srv/apps/lims/lims-backend/apps/results/serializers.py:6: PytestCollectionWarning: cannot collect test class 'TestResultSerializer' because it has a __init__ constructor (from: apps/results/tests/test_serializers.py)
+    class TestResultSerializer(serializers.ModelSerializer):
+
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_username
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_username
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_email
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_email
+apps/accounts/tests/test_auth.py::TestLogoutView::test_logout
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/rest_framework_simplejwt/utils.py:26: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return make_utc(datetime.utcnow())
+
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_username
+apps/accounts/tests/test_auth.py::TestLoginView::test_login_with_email
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/jwt/api_jwt.py:153: InsecureKeyLengthWarning: The HMAC key is 24 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_date_range
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_payment_methods_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Payment.payment_date received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_revenue_report_date_range
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_payment_methods_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Payment.payment_date received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Order.created_at received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Order.created_at received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Sample.collected_at received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField Sample.collected_at received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField TestResult.entered_at received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField TestResult.entered_at received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField TestResult.verified_at received a naive datetime (2026-01-31 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/dashboard/tests/test_dashboard.py::TestDashboardStatisticsViewSet::test_workload_distribution_with_date_range
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1595: RuntimeWarning: DateTimeField TestResult.verified_at received a naive datetime (2026-02-07 00:00:00) while time zone support is active.
+    warnings.warn(
+
+apps/laboratory/tests/test_catalog_io.py: 9 warnings
+apps/laboratory/tests/test_import_fixes.py: 8 warnings
+apps/laboratory/tests/test_laboratory.py: 3 warnings
+apps/laboratory/tests/test_parameter_validation.py: 24 warnings
+apps/laboratory/tests/test_utils.py: 24 warnings
+apps/core/tests/test_export_utils.py: 12 warnings
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/openpyxl/packaging/core.py:99: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+apps/laboratory/tests/test_catalog_io.py: 3 warnings
+apps/laboratory/tests/test_import_fixes.py: 2 warnings
+apps/laboratory/tests/test_laboratory.py: 1 warning
+apps/laboratory/tests/test_parameter_validation.py: 8 warnings
+apps/laboratory/tests/test_utils.py: 8 warnings
+apps/core/tests/test_export_utils.py: 12 warnings
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/openpyxl/writer/excel.py:292: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    workbook.properties.modified = datetime.datetime.utcnow()
+
+apps/results/tests/test_results.py::TestTestResultViewSet::test_worklist
+apps/results/tests/test_results.py::TestTestResultViewSet::test_worklist_endpoint
+  /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/rest_framework/pagination.py:200: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'apps.orders.models.OrderItem'> QuerySet.
+    paginator = self.django_paginator_class(queryset, page_size)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED apps/core/tests/test_numbering.py::TestConcurrency::test_concurrent_lab_numbers
+FAILED apps/laboratory/tests/test_management_commands.py::TestSeedTestCatalogCommand::test_seed_command_creates_tests_with_parameters
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_valid_parameter_ids
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_invalid_parameter_id_format
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_duplicate_parameter_ids
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_missing_parameter_id
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestExcelImportParameterValidation::test_import_mapping_with_invalid_parameter_id_format
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestDryRunImport::test_dry_run_validates_without_writing
+FAILED apps/laboratory/tests/test_parameter_validation.py::TestDryRunImport::test_dry_run_full_workflow
+FAILED apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_parameters_sheet
+FAILED apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_reference_ranges_sheet
+FAILED apps/laboratory/tests/test_utils.py::TestImportTestsFromExcel::test_import_all_sheets_together
+FAILED apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_created_to
+FAILED apps/results/tests/test_results.py::TestTestResultViewSet::test_verify_result
+FAILED apps/results/tests/test_results.py::TestTestResultViewSet::test_reject_result_with_reason
+FAILED apps/samples/tests/test_samples.py::TestSampleViewSet::test_create_sample
+FAILED apps/samples/tests/test_services.py::SampleGenerationTestCase::test_ensure_samples_wrapper_function
+FAILED apps/samples/tests/test_services.py::SampleGenerationTestCase::test_idempotency_no_duplicate_samples
+====== 18 failed, 372 passed, 9 skipped, 1 xpassed, 148 warnings in 9.84s ======

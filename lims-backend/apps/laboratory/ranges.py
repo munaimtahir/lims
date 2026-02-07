@@ -29,8 +29,22 @@ def get_patient_age_years(patient, at_date: Optional[date] = None) -> Optional[f
     dob = getattr(patient, "date_of_birth", None) or getattr(patient, "dob", None)
     if not dob:
         return None
+
+    # Handle string DOB (common in tests/mocks)
+    if isinstance(dob, str):
+        from django.utils.dateparse import parse_date
+        dob = parse_date(dob)
+    elif hasattr(dob, "date"):  # Handle datetime objects
+        dob = dob.date()
+
+    if not dob:
+        return None
+
     if at_date is None:
         at_date = timezone.now().date()
+    elif hasattr(at_date, "date"):  # Handle datetime objects
+        at_date = at_date.date()
+
     if dob > at_date:
         return None
     return (

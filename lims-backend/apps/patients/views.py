@@ -485,6 +485,10 @@ class PatientViewSet(viewsets.ModelViewSet):
                 }
             )
 
+        # Get reference range for this specific patient
+        from apps.laboratory.ranges import pick_reference_range
+        range_info = pick_reference_range(parameter, patient)
+
         return Response(
             {
                 "success": True,
@@ -497,22 +501,13 @@ class PatientViewSet(viewsets.ModelViewSet):
                     },
                     "comparison": comparison_data,
                     "reference_range": {
-                        "male": {
-                            "min": float(parameter.reference_min_male)
-                            if parameter.reference_min_male
-                            else None,
-                            "max": float(parameter.reference_max_male)
-                            if parameter.reference_max_male
-                            else None,
-                        },
-                        "female": {
-                            "min": float(parameter.reference_min_female)
-                            if parameter.reference_min_female
-                            else None,
-                            "max": float(parameter.reference_max_female)
-                            if parameter.reference_max_female
-                            else None,
-                        },
+                        "min": float(range_info["ref_min"])
+                        if range_info["ref_min"]
+                        else None,
+                        "max": float(range_info["ref_max"])
+                        if range_info["ref_max"]
+                        else None,
+                        "display": range_info["display"],
                     },
                 },
             },

@@ -26,7 +26,11 @@ router.register(r"reference-ranges", ReferenceRangeViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("export/", CatalogExportView.as_view({"get": "list"}), name="catalog-export"),
+    path(
+        "catalog/export/",
+        CatalogExportView.as_view({"get": "list"}),
+        name="catalog-export",
+    ),
     path(
         "catalog/audit/",
         CatalogAuditView.as_view({"get": "list"}),

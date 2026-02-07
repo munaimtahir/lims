@@ -164,6 +164,25 @@ class Command(BaseCommand):
                     {"p_id": "p11", "order": 4},
                 ],
             },
+            4: {
+                "test_code": "RFT",
+                "test_name": "Renal Function Tests",
+                "category": categories["Clinical Chemistry"],
+                "price": Decimal("1200.00"),
+                "tat": 4,
+                "mappings": [
+                    {"p_id": "p6", "order": 1},
+                    {"p_id": "p7", "order": 2},
+                ],
+            },
+            5: {
+                "test_code": "LIPID",
+                "test_name": "Lipid Profile",
+                "category": categories["Clinical Chemistry"],
+                "price": Decimal("1000.00"),
+                "tat": 8,
+                "mappings": [],  # Add parameters if needed
+            },
         }
 
         created_tests = {}
@@ -194,13 +213,31 @@ class Command(BaseCommand):
         """Create test panels."""
         panels_data = [
             {
-                "panel_code": "P-LFT",
+                "panel_code": "LFT",
                 "panel_name": "Liver Panel",
                 "category": categories["Clinical Chemistry"],
                 "sample_type": "Serum",
                 "price": Decimal("1500.00"),
                 "turnaround_time": 4,
                 "test_codes": ["LFT"],
+            },
+            {
+                "panel_code": "RFT",
+                "panel_name": "Renal Panel",
+                "category": categories["Clinical Chemistry"],
+                "sample_type": "Serum",
+                "price": Decimal("1200.00"),
+                "turnaround_time": 4,
+                "test_codes": ["RFT"],
+            },
+            {
+                "panel_code": "LIPID",
+                "panel_name": "Lipid Profile Panel",
+                "category": categories["Clinical Chemistry"],
+                "sample_type": "Serum",
+                "price": Decimal("1000.00"),
+                "turnaround_time": 8,
+                "test_codes": ["LIPID"],
             },
         ]
 

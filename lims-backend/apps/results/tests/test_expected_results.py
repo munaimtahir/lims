@@ -61,16 +61,23 @@ def _create_test_with_parameters(category, code, name, parameter_names):
     )
     parameters = []
     for idx, param_name in enumerate(parameter_names, start=1):
-        parameters.append(
-            TestParameter.objects.create(
-                test=test,
-                parameter_name=param_name,
-                unit="mg/dL",
-                reference_min_female=Decimal("1.0"),
-                reference_max_female=Decimal("5.0"),
-                display_order=idx,
-            )
+        tp = TestParameter.objects.create(
+            test=test,
+            parameter_name=param_name,
+            unit="mg/dL",
+            display_order=idx,
         )
+        # Create reference range
+        from apps.laboratory.models import ReferenceRange
+        ReferenceRange.objects.create(
+            parameter=tp,
+            gender="Female",
+            age_min=0,
+            age_max=120,
+            reference_min=Decimal("1.0"),
+            reference_max=Decimal("5.0"),
+        )
+        parameters.append(tp)
     return test, parameters
 
 

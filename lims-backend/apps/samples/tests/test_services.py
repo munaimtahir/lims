@@ -45,21 +45,25 @@ class SampleGenerationTestCase(TestCase):
 
         # Create test category and tests
         self.category = TestCategory.objects.create(
-            category_name="Hematology", category_code="HEM"
+            name="Hematology"
         )
 
         self.test_cbc = Test.objects.create(
             test_code="CBC",
             test_name="Complete Blood Count",
             category=self.category,
+            sample_type="Blood",
             price=Decimal("50.00"),
+            turnaround_time=24,
         )
 
         self.test_ua = Test.objects.create(
             test_code="UA",
             test_name="Urinalysis",
             category=self.category,
+            sample_type="Urine",
             price=Decimal("30.00"),
+            turnaround_time=24,
         )
 
         # Create order with items

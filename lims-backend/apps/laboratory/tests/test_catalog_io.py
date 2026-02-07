@@ -43,32 +43,57 @@ def authenticated_client(api_client, admin_user):
 
 @pytest.fixture
 def minimal_catalog_excel_file():
-    """Creates an in-memory Excel file with minimal catalog data for testing."""
-    df = pd.DataFrame(
+    """Creates an in-memory Excel file with multiple sheets for testing."""
+    tests_df = pd.DataFrame(
         {
-            "Test ID": [999],
-            "Test Code": ["MINTST"],
-            "Test Name": ["Minimal Test"],
-            "Category": ["General"],
-            "Sample Type": ["Blood"],
-            "Price": [100.00],
-            "Turnaround Time (hours)": [24],
-            "Parameter ID": ["p999"],
-            "Parameter Name": ["Minimal Param"],
-            "Unit": ["g/dL"],
-            "Display Order": [1],
-            "Reportable": [True],
-            "Gender": ["Both"],
-            "Age Min (years)": [0],
-            "Age Max (years)": [99],
-            "Reference Min": [10.0],
-            "Reference Max": [20.0],
+            "test_id": [999],
+            "test_code": ["MINTST"],
+            "test_name": ["Minimal Test"],
+            "category": ["General"],
+            "price": [100.00],
+            "sample_type": ["Blood"],
+            "turnaround_time": [24],
+        }
+    )
+    params_df = pd.DataFrame(
+        {
+            "parameter_id": ["p999"],
+            "parameter_name": ["Minimal Param"],
+            "unit": ["g/dL"],
+            "data_type": ["Numeric"],
+            "editor_type": ["Plain"],
+            "decimal_places": [2],
+            "flag_direction": ["Both"],
+        }
+    )
+    mapping_df = pd.DataFrame(
+        {
+            "test_id": [999],
+            "parameter_id": ["p999"],
+            "display_order": [1],
+            "reportable": [True],
+        }
+    )
+    ranges_df = pd.DataFrame(
+        {
+            "test_id": [999],
+            "parameter_id": ["p999"],
+            "gender": ["Both"],
+            "age_min": [0],
+            "age_max": [99],
+            "reference_min": [10.0],
+            "reference_max": [20.0],
+            "is_active": [True],
+            "version": [1],
         }
     )
 
     buffer = BytesIO()
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-        df.to_excel(writer, sheet_name="LIMS Test Catalog", index=False)
+        tests_df.to_excel(writer, sheet_name="Tests", index=False)
+        params_df.to_excel(writer, sheet_name="Parameters", index=False)
+        mapping_df.to_excel(writer, sheet_name="Mapping", index=False)
+        ranges_df.to_excel(writer, sheet_name="ReferenceRanges", index=False)
     buffer.seek(0)
     return buffer
 
@@ -151,7 +176,7 @@ def test_import_creates_expected_records(db, minimal_catalog_excel_file):
     assert not result["errors"]
     assert result["counts"]["tests"]["created"] == 1
     assert result["counts"]["parameters"]["created"] == 1
-    assert result["counts"]["test_parameters"]["created"] == 1
+    assert result["counts"]["mappings"]["created"] == 1
     assert result["counts"]["reference_ranges"]["created"] == 1
 
     assert Test.objects.count() == 1
@@ -180,6 +205,6 @@ def test_export_endpoint_returns_file(authenticated_client, catalog_data):
     # Verify the content is a valid excel file
     buffer = BytesIO(response.content)
     df = pd.read_excel(buffer)
-    assert "Test ID" in df.columns
-    assert "Test Name" in df.columns
+    assert "test_id" in df.columns
+    assert "test_name" in df.columns
     assert len(df) > 0

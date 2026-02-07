@@ -18,11 +18,25 @@ urlpatterns = [
         SystemSettingsViewSet.as_view(
             {
                 "get": "list",
-                "put": "list",  # Route PUT to list which handles update
-                "patch": "list",  # Route PATCH to list which handles partial_update
+                "put": "list",
+                "patch": "list",
             }
         ),
         name="settings-list",
+    ),
+    path(
+        "settings/report-header-image/",
+        SystemSettingsViewSet.as_view(
+            {"post": "report_header_image", "delete": "report_header_image"}
+        ),
+        name="settings-report-header-image",
+    ),
+    path(
+        "settings/report-footer-image/",
+        SystemSettingsViewSet.as_view(
+            {"post": "report_footer_image", "delete": "report_footer_image"}
+        ),
+        name="settings-report-footer-image",
     ),
     # Health check endpoint
     path("health/", HealthCheckView.as_view(), name="health-check"),

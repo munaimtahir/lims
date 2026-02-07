@@ -116,6 +116,12 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Email port must be between 1 and 65535")
         return value
 
+    def validate_tax_rate(self, value):
+        """Validate tax rate is non-negative."""
+        if value < 0:
+            raise serializers.ValidationError("Tax rate cannot be negative")
+        return value
+
 
 class PrintTemplateSerializer(serializers.ModelSerializer):
     """
@@ -200,10 +206,4 @@ class PrintTemplateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("signatories entry requires name")
             if "title" not in entry or not entry["title"]:
                 raise serializers.ValidationError("signatories entry requires title")
-        return value
-
-    def validate_tax_rate(self, value):
-        """Validate tax rate is non-negative."""
-        if value < 0:
-            raise serializers.ValidationError("Tax rate cannot be negative")
         return value

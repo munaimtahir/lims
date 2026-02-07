@@ -255,8 +255,9 @@ class TestOrderViewSet:
             payment_method="cash",
             recorded_by=admin_user,
         )
-        order.status = "PUBLISHED"
-        order.save(update_fields=["status"])
+        # Bypass validation to set status for test setup
+        Order.objects.filter(pk=order.pk).update(status="PUBLISHED")
+        order.refresh_from_db()
         report_file = SimpleUploadedFile(
             "report.pdf", b"%PDF-1.4 test", content_type="application/pdf"
         )

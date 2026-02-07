@@ -9,7 +9,7 @@ from apps.results.models import TestResult
 
 
 def _get_panel_tests(panel):
-    return list(panel.tests.all().order_by("test_name", "id"))
+    return list(panel.tests.all().order_by("test_name", "test_id"))
 
 
 def get_orderitem_expected_parameters(order_item, patient) -> list[dict[str, Any]]:

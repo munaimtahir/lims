@@ -23,5 +23,10 @@ ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = ["http://localhost", "http://127.0.0.1"]
 CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
+# Use temporary directory for media during audit/tests to avoid permission issues
+import tempfile
+MEDIA_ROOT = tempfile.mkdtemp()
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
 # Avoid production DB password check if production is imported (though we shouldn't really import production here)
 DB_PASSWORD = os.environ.get("DB_PASSWORD", "audit_pass")
