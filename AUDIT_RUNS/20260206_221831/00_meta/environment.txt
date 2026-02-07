@@ -1,0 +1,38 @@
+CMD: collect environment info
+CWD: /home/munaim/srv/apps/lims
+\n>>> date -u
+Fri Feb  6 22:19:13 UTC 2026
+EXIT: 0
+\n>>> uname -a
+Linux vps.us-central1-f.c.munaimfinance.internal 6.14.0-1021-gcp #22~24.04.1-Ubuntu SMP Sat Nov 22 06:23:18 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+EXIT: 0
+\n>>> whoami
+munaim
+EXIT: 0
+\n>>> pwd
+/home/munaim/srv/apps/lims
+EXIT: 0
+\n>>> node -v
+v20.20.0
+EXIT: 0
+\n>>> npm -v
+11.8.0
+EXIT: 0
+\n>>> pnpm -v
+bash: line 1: pnpm: command not found
+EXIT: 127
+\n>>> yarn -v
+bash: line 1: yarn: command not found
+EXIT: 127
+\n>>> python --version
+bash: line 1: python: command not found
+EXIT: 127
+\n>>> pip --version
+pip 24.0 from /usr/lib/python3/dist-packages/pip (python 3.12)
+EXIT: 0
+\n>>> docker --version
+Docker version 29.2.1, build a5c7197
+EXIT: 0
+\n>>> docker compose version
+Docker Compose version v5.0.2
+EXIT: 0

@@ -1,0 +1,210 @@
+CMD: mkdir -p AUDIT_RUNS/20260206_221831/{00_meta,01_discovery,02_dependencies,03_format_lint,04_tests,05_security,06_runtime,07_reports}
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pwd
+CWD: /home/munaim/srv/apps/lims
+/home/munaim/srv/apps/lims
+EXIT: 0
+CMD: date -u +%Y%m%d_%H%M%S
+CWD: /home/munaim/srv/apps/lims
+20260206_221858
+EXIT: 0
+CMD: collect environment info
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: git status & rev-parse
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: git log -5 --oneline
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: find . -maxdepth 4 -print
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: cat package.json (if exists)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: find package.json
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: find requirements files
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: ls lims-backend/requirements
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: ls lims-backend
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: ls frontend
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: ls e2e
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: sed -n '1,160p' lims-backend/pytest.ini
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: rg --files -g '*ruff*' lims-backend
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: find linters config
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: find . -maxdepth 3 -name '.pre-commit-config.yaml'
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: sed -n '1,120p' lims-backend/requirements/base.txt
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: sed -n '1,200p' lims-backend/requirements/development.txt
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: sed -n '1,200p' frontend/package.json
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: sed -n '1,200p' e2e/package.json
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: find docker-compose files
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: sed -n '1,200p' e2e/playwright.config.ts
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: sed -n '1,200p' docker-compose.yml
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: sed -n '200,400p' docker-compose.yml
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: write detected_stack.md
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: generate file inventory
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: npm ci (frontend)
+CWD: /home/munaim/srv/apps/lims/frontend
+EXIT: 0
+CMD: npm ci (e2e)
+CWD: /home/munaim/srv/apps/lims/e2e
+EXIT: 0
+CMD: npm ls (frontend + e2e)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: npm audit --audit-level=high (frontend + e2e)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: python -m venv AUDIT_RUNS/20260206_221831/.venv
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pip install -r lims-backend/requirements/development.txt (venv)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pip freeze (venv)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: install pip-audit and safety in venv
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pip-audit
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: safety check --full-report
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: black --check . && isort --check-only . (backend)
+CWD: /home/munaim/srv/apps/lims/lims-backend
+CMD: python3 -m venv AUDIT_RUNS/20260206_221831/.venv
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pip install -r lims-backend/requirements/development.txt (venv)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pip freeze (venv)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pip-audit (venv)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pip install pip-audit safety (venv)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pip-audit (venv)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: safety check --full-report (venv)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: black --check . && isort --check-only . (backend)
+CWD: /home/munaim/srv/apps/lims/lims-backend
+CMD: flake8 (backend)
+CWD: /home/munaim/srv/apps/lims/lims-backend
+CMD: flake8 --exclude .venv,media,staticfiles (backend)
+CWD: /home/munaim/srv/apps/lims/lims-backend
+CMD: backend typecheck (none configured)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: frontend format check (prettier)
+CWD: /home/munaim/srv/apps/lims/frontend
+EXIT: 0
+CMD: npm run lint (frontend)
+CWD: /home/munaim/srv/apps/lims/frontend
+CMD: npm run type-check (frontend)
+CWD: /home/munaim/srv/apps/lims/frontend
+CMD: python manage.py check
+CWD: /home/munaim/srv/apps/lims/lims-backend
+CMD: python manage.py makemigrations --check --dry-run
+CWD: /home/munaim/srv/apps/lims/lims-backend
+CMD: pytest
+CWD: /home/munaim/srv/apps/lims/lims-backend
+CMD: npm run test -- --runInBand
+CWD: /home/munaim/srv/apps/lims/frontend
+CMD: npm run test -- --run
+CWD: /home/munaim/srv/apps/lims/frontend
+CMD: npm run test:smoke
+CWD: /home/munaim/srv/apps/lims/e2e
+CMD: record playwright report path
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: pip install bandit (venv)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: bandit -r .
+CWD: /home/munaim/srv/apps/lims/lims-backend
+EXIT: 1 (bandit command)
+CMD: bandit -r . -x .venv,node_modules,staticfiles,media,logs
+CWD: /home/munaim/srv/apps/lims/lims-backend
+EXIT: 1 (bandit with excludes)
+CMD: docker compose config
+CWD: /home/munaim/srv/apps/lims
+CMD: docker compose up -d
+CWD: /home/munaim/srv/apps/lims
+CMD: docker compose ps
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: docker compose logs --no-color --tail=200
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: curl -i http://localhost:8012/
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: curl -i http://localhost:8000/admin/
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: curl -i http://localhost:8000/api/v1/health/
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: write AUDIT_DASHBOARD.md
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: write FAILURES.md
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: write RERUN_COMMANDS.md
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0
+CMD: semgrep (skipped)
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0

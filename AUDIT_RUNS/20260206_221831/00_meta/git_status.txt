@@ -1,0 +1,8 @@
+CMD: git status
+CWD: /home/munaim/srv/apps/lims
+?? AUDIT_RUNS/
+EXIT: 0
+\nCMD: git rev-parse HEAD
+CWD: /home/munaim/srv/apps/lims
+c6661c8bc163c476f68d5b91f6826530bbcc421f
+EXIT: 0

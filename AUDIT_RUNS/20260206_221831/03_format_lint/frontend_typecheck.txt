@@ -1,0 +1,7 @@
+CMD: npm run type-check
+CWD: /home/munaim/srv/apps/lims/frontend
+
+> frontend@0.0.0 type-check
+> tsc --noEmit
+
+EXIT: 0

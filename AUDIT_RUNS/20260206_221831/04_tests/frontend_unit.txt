@@ -1,0 +1,21 @@
+CMD: npm run test -- --run
+CWD: /home/munaim/srv/apps/lims/frontend
+
+> frontend@0.0.0 test
+> vitest --run
+
+
+ RUN  v4.0.16 /home/munaim/srv/apps/lims/frontend
+
+ ✓ src/utils/printPreferences.test.ts (4 tests) 7ms
+ ✓ src/api/contracts/contracts.test.ts (3 tests) 10ms
+ ✓ src/tests/integration.test.tsx (2 tests) 46ms
+ ✓ src/utils/dateFormat.test.ts (3 tests) 5ms
+ ✓ src/utils/ageDob.test.ts (2 tests) 5ms
+
+ Test Files  5 passed (5)
+      Tests  14 passed (14)
+   Start at  03:28:17
+   Duration  2.29s (transform 186ms, setup 993ms, import 636ms, tests 73ms, environment 3.47s)
+
+EXIT: 0

@@ -1,0 +1,3 @@
+CMD: python3 -m venv AUDIT_RUNS/20260206_221831/.venv
+CWD: /home/munaim/srv/apps/lims
+EXIT: 0

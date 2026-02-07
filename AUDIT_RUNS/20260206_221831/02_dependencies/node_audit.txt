@@ -1,0 +1,8 @@
+CMD: npm audit --audit-level=high (frontend)
+CWD: /home/munaim/srv/apps/lims/frontend
+found 0 vulnerabilities
+EXIT: 0
+\nCMD: npm audit --audit-level=high (e2e)
+CWD: /home/munaim/srv/apps/lims/e2e
+found 0 vulnerabilities
+EXIT: 0

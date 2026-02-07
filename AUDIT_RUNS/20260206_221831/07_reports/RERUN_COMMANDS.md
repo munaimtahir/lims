@@ -1,0 +1,26 @@
+# Rerun Commands
+
+- Frontend install: `cd frontend && npm ci`
+- E2E install: `cd e2e && npm ci`
+- Frontend audit: `cd frontend && npm audit --audit-level=high`
+- E2E audit: `cd e2e && npm audit --audit-level=high`
+- Python install: `python3 -m venv AUDIT_RUNS/20260206_221831/.venv && source AUDIT_RUNS/20260206_221831/.venv/bin/activate && pip install -r lims-backend/requirements/development.txt`
+- Pip audit: `source AUDIT_RUNS/20260206_221831/.venv/bin/activate && pip-audit`
+- Safety: `source AUDIT_RUNS/20260206_221831/.venv/bin/activate && safety check --full-report`
+- Backend format: `source AUDIT_RUNS/20260206_221831/.venv/bin/activate && cd lims-backend && black --check . && isort --check-only .`
+- Backend lint: `source AUDIT_RUNS/20260206_221831/.venv/bin/activate && cd lims-backend && flake8 --exclude .venv,media,staticfiles`
+- Backend typecheck (none configured): (skipped)
+- Frontend format: (prettier not configured)
+- Frontend lint: `cd frontend && npm run lint`
+- Frontend typecheck: `cd frontend && npm run type-check`
+- Django check: `source AUDIT_RUNS/20260206_221831/.venv/bin/activate && cd lims-backend && python manage.py check`
+- Django migrations dry-run: `source AUDIT_RUNS/20260206_221831/.venv/bin/activate && cd lims-backend && python manage.py makemigrations --check --dry-run`
+- Backend tests: `SECRET_KEY=dummy source AUDIT_RUNS/20260206_221831/.venv/bin/activate && cd lims-backend && pytest`
+- Frontend unit tests: `cd frontend && npm run test -- --run`
+- E2E Playwright smoke: `cd e2e && npm run test:smoke`
+- Bandit: `source AUDIT_RUNS/20260206_221831/.venv/bin/activate && cd lims-backend && bandit -r . -x .venv,node_modules,staticfiles,media,logs`
+- Docker compose config: `docker compose config`
+- Docker compose up: `docker compose up -d`
+- Healthcheck frontend: `curl -i http://localhost:8012/`
+- Healthcheck admin: `curl -i http://localhost:8000/admin/`
+- API health: `curl -i http://localhost:8000/api/v1/health/`

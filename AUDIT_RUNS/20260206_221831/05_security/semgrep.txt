@@ -1,0 +1,2 @@
+Semgrep not run: semgrep CLI not installed in environment.
+STATUS: SKIPPED

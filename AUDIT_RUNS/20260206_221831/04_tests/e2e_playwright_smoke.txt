@@ -1,0 +1,16 @@
+CMD: npm run test:smoke
+CWD: /home/munaim/srv/apps/lims/e2e
+
+> lims-e2e@0.0.1 test:smoke
+> playwright test tests/smoke --grep @smoke
+
+
+Running 4 tests using 2 workers
+
+  ✓  1 [chromium] › tests/smoke/smoke.auth.spec.ts:7:1 › authenticated session shows dashboard shell @smoke (613ms)
+  ✓  2 [chromium] › tests/smoke/smoke.navigation.spec.ts:6:1 › dashboard shell renders with user info @smoke (1.2s)
+  ✓  3 [chromium] › tests/smoke/smoke.results.spec.ts:11:3 › results module @smoke › results worklist renders @smoke (1.5s)
+  ✓  4 [chromium] › tests/smoke/smoke.results.spec.ts:29:3 › results module @smoke › open first result detail if present @smoke (2.8s)
+
+  4 passed (7.1s)
+EXIT: 0

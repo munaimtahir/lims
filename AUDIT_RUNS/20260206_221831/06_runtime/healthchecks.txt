@@ -1,0 +1,56 @@
+CMD: curl -i http://localhost:8012/
+CWD: /home/munaim/srv/apps/lims
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   455  100   455    0     0   217k      0 --:--:-- --:--:-- --:--:--  222k
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Content-Length: 455
+Content-Type: text/html
+Date: Fri, 06 Feb 2026 22:36:30 GMT
+Etag: "6985d4bd-1c7"
+Last-Modified: Fri, 06 Feb 2026 11:47:09 GMT
+Referrer-Policy: strict-origin-when-cross-origin
+Server: nginx/1.29.4
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Via: 1.1 Caddy
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+    <script type="module" crossorigin src="/assets/index-DArNfN4H.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-_va4NEMj.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+EXIT: 0
+\nCMD: curl -i http://localhost:8000/admin/
+CWD: /home/munaim/srv/apps/lims
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/1.1 302 Found
+Server: gunicorn
+Date: Fri, 06 Feb 2026 22:36:35 GMT
+Connection: close
+Content-Type: text/html; charset=utf-8
+Location: /admin/login/?next=/admin/
+Expires: Fri, 06 Feb 2026 22:36:35 GMT
+Cache-Control: max-age=0, no-cache, no-store, must-revalidate, private
+X-Frame-Options: DENY
+Content-Length: 0
+Vary: origin, Cookie
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+EXIT: 0

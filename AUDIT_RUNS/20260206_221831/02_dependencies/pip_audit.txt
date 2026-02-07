@@ -1,0 +1,49 @@
+CMD: source AUDIT_RUNS/20260206_221831/.venv/bin/activate && pip-audit
+CWD: /home/munaim/srv/apps/lims
+Found 43 known vulnerabilities in 8 packages
+Name                          Version ID             Fix Versions
+----------------------------- ------- -------------- ---------------------------------------
+black                         23.11.0 PYSEC-2024-48  24.3.0
+black                         23.11.0 PYSEC-2024-48  24.3.0
+django                        5.0     PYSEC-2024-28  3.2.24,4.2.10,5.0.2
+django                        5.0     PYSEC-2024-28  3.2.24,4.2.10,5.0.2
+django                        5.0     PYSEC-2024-47  3.2.25,4.2.11,5.0.3
+django                        5.0     PYSEC-2024-47  3.2.25,4.2.11,5.0.3
+django                        5.0     PYSEC-2024-58  4.2.14,5.0.7
+django                        5.0     PYSEC-2024-57  4.2.14,5.0.7
+django                        5.0     PYSEC-2024-56  4.2.14,5.0.7
+django                        5.0     PYSEC-2024-59  4.2.14,5.0.7
+django                        5.0     PYSEC-2024-69  4.2.15,5.0.8
+django                        5.0     PYSEC-2024-70  4.2.15,5.0.8
+django                        5.0     PYSEC-2024-68  4.2.15,5.0.8
+django                        5.0     PYSEC-2024-67  4.2.15,5.0.8
+django                        5.0     PYSEC-2025-13  4.2.20,5.0.13,5.1.7
+django                        5.0     PYSEC-2024-102 4.2.16,5.0.9,5.1.1
+django                        5.0     PYSEC-2024-156 4.2.17,4.2.17,5.0.10,5.0.10,5.1.4,5.1.4
+django                        5.0     PYSEC-2024-157 4.2.17,4.2.17,5.0.10,5.0.10,5.1.4,5.1.4
+django                        5.0     PYSEC-2024-157 4.2.17,5.0.10,5.1.4
+django                        5.0     PYSEC-2024-156 4.2.17,5.0.10,5.1.4
+django                        5.0     PYSEC-2025-1   4.2.18,5.0.11,5.1.5
+django                        5.0     PYSEC-2025-1   4.2.18,4.2.18,5.0.11,5.0.11,5.1.5,5.1.5
+django                        5.0     PYSEC-2025-14  5.0.14,5.1.8
+django                        5.0     PYSEC-2025-13  4.2.20,5.0.13,5.1.7
+django                        5.0     PYSEC-2025-47  4.2.22,5.1.10,5.2.2
+django                        5.0     PYSEC-2024-56  4.2.14,5.0.7
+django                        5.0     PYSEC-2024-59  4.2.14,5.0.7
+django                        5.0     PYSEC-2024-57  4.2.14,5.0.7
+django                        5.0     PYSEC-2024-58  4.2.14,5.0.7
+django                        5.0     CVE-2024-45231 4.2.16,5.0.9,5.1.1
+django                        5.0     CVE-2025-57833 4.2.24,5.1.12,5.2.6
+django                        5.0     CVE-2025-64458 4.2.26,5.1.14,5.2.8
+django                        5.0     CVE-2025-64459 4.2.26,5.1.14,5.2.8
+djangorestframework           3.14.0  CVE-2024-21520 3.15.2
+djangorestframework-simplejwt 5.3.0   CVE-2024-22513 5.5.1
+pillow                        10.1.0  CVE-2023-50447 10.2.0
+pillow                        10.1.0  CVE-2024-28219 10.3.0
+pip                           24.0    CVE-2025-8869  25.3
+pip                           24.0    CVE-2026-1703  26.0
+requests                      2.31.0  CVE-2024-35195 2.32.0
+requests                      2.31.0  CVE-2024-47081 2.32.4
+setuptools                    75.8.0  PYSEC-2025-49  78.1.1
+setuptools                    75.8.0  PYSEC-2025-49  78.1.1
+EXIT: 1

@@ -1,0 +1,4 @@
+CMD: ../AUDIT_RUNS/20260206_221831/.venv/bin/python manage.py check
+CWD: /home/munaim/srv/apps/lims/lims-backend
+System check identified no issues (0 silenced).
+EXIT: 0

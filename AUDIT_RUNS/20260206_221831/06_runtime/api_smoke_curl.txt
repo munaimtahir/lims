@@ -1,0 +1,19 @@
+CMD: curl -i http://localhost:8000/api/v1/health/
+CWD: /home/munaim/srv/apps/lims
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    68  100    68    0     0   6932      0 --:--:-- --:--:-- --:--:--  7555
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Fri, 06 Feb 2026 22:36:40 GMT
+Connection: close
+Content-Type: application/json
+Allow: GET, HEAD, OPTIONS
+X-Frame-Options: DENY
+Content-Length: 68
+Vary: origin, Cookie
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+{"status":"healthy","service":"LIMS Backend","database":"connected"}EXIT: 0
