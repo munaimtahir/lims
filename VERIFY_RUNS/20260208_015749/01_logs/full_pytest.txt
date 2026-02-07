@@ -25,7 +25,7 @@ apps/laboratory/tests/test_serializers.py .......                        [ 44%]
 apps/laboratory/tests/test_utils.py ........                             [ 46%]
 apps/orders/tests/test_orders.py ......................                  [ 52%]
 apps/orders/tests/test_serializers.py ..........                         [ 54%]
-apps/patients/tests/test_filters.py .......F..                           [ 57%]
+apps/patients/tests/test_filters.py ..........                           [ 57%]
 apps/patients/tests/test_patients.py ......................              [ 62%]
 apps/patients/tests/test_serializers.py ........                         [ 64%]
 apps/reports/tests/test_reports.py ..................................    [ 73%]
@@ -40,11 +40,6 @@ apps/core/tests/test_export_utils.py ..................                  [ 92%]
 apps/laboratory/tests/test_import_fixes.py ............................. [ 99%]
 .                                                                        [100%]
 
-=================================== FAILURES ===================================
-_________________ TestPatientFilter.test_filter_by_created_to __________________
-apps/patients/tests/test_filters.py:255: in test_filter_by_created_to
-    assert patient_yesterday in results
-E   assert <Patient: PAT-YESTERDAY2 - Yesterday2 Patient> in []
 =============================== warnings summary ===============================
 .venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37
   /home/munaim/srv/apps/lims/lims-backend/.venv/lib/python3.12/site-packages/dateutil/tz/tz.py:37: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
@@ -172,6 +167,4 @@ apps/results/tests/test_results.py::TestTestResultViewSet::test_worklist_endpoin
     paginator = self.django_paginator_class(queryset, page_size)
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-=========================== short test summary info ============================
-FAILED apps/patients/tests/test_filters.py::TestPatientFilter::test_filter_by_created_to
-= 1 failed, 388 passed, 10 skipped, 1 xpassed, 146 warnings in 206.99s (0:03:26) =
+===== 389 passed, 10 skipped, 1 xpassed, 146 warnings in 201.21s (0:03:21) =====

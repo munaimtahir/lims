@@ -108,8 +108,8 @@ class PatientFilter(django_filters.FilterSet):
             from datetime import date as date_class
 
             value = date_class.fromisoformat(value)
-        # Convert date to end of day in the current timezone
-        # Get current timezone-aware datetime for today to determine timezone
-        tz = timezone.get_current_timezone()
-        end_of_day = timezone.make_aware(datetime.combine(value, time_class.max), tz)
+        # Convert date to end of day in UTC to match created_at storage
+        import pytz
+        end_of_day_naive = datetime.combine(value, time_class.max)
+        end_of_day = timezone.make_aware(end_of_day_naive, pytz.UTC)
         return queryset.filter(created_at__lte=end_of_day)
