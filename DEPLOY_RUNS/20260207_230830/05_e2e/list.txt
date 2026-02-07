@@ -1,0 +1,9 @@
+Listing tests:
+  [chromium] › _sanity.spec.ts:4:1 › sanity harness executes
+  [chromium] › regression/regression.core.spec.ts:7:1 › protected routes require auth @regression
+  [chromium] › regression/regression.core.spec.ts:18:1 › deep link to results renders worklist @regression
+  [chromium] › smoke/smoke.auth.spec.ts:7:1 › authenticated session shows dashboard shell @smoke
+  [chromium] › smoke/smoke.navigation.spec.ts:6:1 › dashboard shell renders with user info @smoke
+  [chromium] › smoke/smoke.results.spec.ts:11:3 › results module @smoke › results worklist renders @smoke
+  [chromium] › smoke/smoke.results.spec.ts:29:3 › results module @smoke › open first result detail if present @smoke
+Total: 7 tests in 5 files

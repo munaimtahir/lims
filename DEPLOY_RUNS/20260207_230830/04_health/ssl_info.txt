@@ -1,0 +1,50 @@
+CONNECTED(00000003)
+---
+Certificate chain
+ 0 s:CN = lims.alshifalab.pk
+   i:C = US, O = Let's Encrypt, CN = E8
+   a:PKEY: id-ecPublicKey, 256 (bit); sigalg: ecdsa-with-SHA384
+   v:NotBefore: Jan 13 12:06:33 2026 GMT; NotAfter: Apr 13 12:06:32 2026 GMT
+ 1 s:C = US, O = Let's Encrypt, CN = E8
+   i:C = US, O = Internet Security Research Group, CN = ISRG Root X1
+   a:PKEY: id-ecPublicKey, 384 (bit); sigalg: RSA-SHA256
+   v:NotBefore: Mar 13 00:00:00 2024 GMT; NotAfter: Mar 12 23:59:59 2027 GMT
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIDkzCCAxigAwIBAgISBmnGbb6mWY2WiRPKkQpuUCFkMAoGCCqGSM49BAMDMDIx
+CzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQDEwJF
+ODAeFw0yNjAxMTMxMjA2MzNaFw0yNjA0MTMxMjA2MzJaMB0xGzAZBgNVBAMTEmxp
+bXMuYWxzaGlmYWxhYi5wazBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABHS4C9vo
+Zki8PQvqjOrOPrQZ+a6A7u+m3ftKt/zoujjUR0M1Zdq79niVK7RrF8f2/+hU7yjp
+d5/fpyWbMQwp+y6jggIhMIICHTAOBgNVHQ8BAf8EBAMCB4AwHQYDVR0lBBYwFAYI
+KwYBBQUHAwEGCCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFN9kw0nI
+oJOkPmC8FYij4ExhI1VKMB8GA1UdIwQYMBaAFI8NE6L2Ln7RUGwzGDhdWY4jcpHK
+MDIGCCsGAQUFBwEBBCYwJDAiBggrBgEFBQcwAoYWaHR0cDovL2U4LmkubGVuY3Iu
+b3JnLzAdBgNVHREEFjAUghJsaW1zLmFsc2hpZmFsYWIucGswEwYDVR0gBAwwCjAI
+BgZngQwBAgEwLgYDVR0fBCcwJTAjoCGgH4YdaHR0cDovL2U4LmMubGVuY3Iub3Jn
+LzEwMS5jcmwwggEEBgorBgEEAdZ5AgQCBIH1BIHyAPAAdwBkEcRspBLsp4kcogIu
+ALyrTygH1B41J6vq/tUDyX3N8AAAAZu3dbfqAAAEAwBIMEYCIQCXjvogDk5SqMca
+UM8wF+9lR8jUsq+bdS0UcX6UAoO0JAIhAI5XJCvEtnPQdX5GECHNJCiKrtbmelom
+Ea3vfbuhhM70AHUAlpdkv1VYl633Q4doNwhCd+nwOtX2pPM2bkakPw/KqcYAAAGb
+t3W4RAAABAMARjBEAiAQTqR67Uk5DPsdcpRgTX803SkfWiQub4jqy1VBCs9X9wIg
+ZbMCRwtVEzt8Pm7h67wuSnxkYOdCc9HA9GHA7KIC7xAwCgYIKoZIzj0EAwMDaQAw
+ZgIxAN4djsCjJrlgBXqHrAG0u/Y225DbwZG/Io+IAdpxYbpR23N0vXXtP357MDy+
+X8iKJwIxAJwspkdjYxcTZw3sc+PFmwrNPJxw7e7IHd0nw4VzXlSheVNGrqgSPz7I
+FX9yng3F7w==
+-----END CERTIFICATE-----
+subject=CN = lims.alshifalab.pk
+issuer=C = US, O = Let's Encrypt, CN = E8
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: ECDSA
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 2397 bytes and written 384 bytes
+Verification: OK
+---
+New, TLSv1.3, Cipher is TLS_AES_128_GCM_SHA256
+Server public key is 256 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE

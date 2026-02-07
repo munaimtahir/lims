@@ -1,0 +1,14 @@
+34.16.82.13
+34.16.82.13
+Ports check:
+udp   UNCONN 0      0                    *:443              *:*    users:(("caddy",pid=664,fd=9))                        
+tcp   LISTEN 0      4096         127.0.0.1:8012       0.0.0.0:*    users:(("docker-proxy",pid=1389862,fd=8))             
+tcp   LISTEN 0      4096         127.0.0.1:8015       0.0.0.0:*    users:(("docker-proxy",pid=1159789,fd=8))             
+tcp   LISTEN 0      4096         127.0.0.1:8081       0.0.0.0:*    users:(("docker-proxy",pid=1159664,fd=8))             
+tcp   LISTEN 0      4096           0.0.0.0:8013       0.0.0.0:*    users:(("docker-proxy",pid=2014,fd=8))                
+tcp   LISTEN 0      4096           0.0.0.0:8000       0.0.0.0:*    users:(("docker-proxy",pid=1389739,fd=8))             
+tcp   LISTEN 0      4096         127.0.0.1:44335      0.0.0.0:*    users:(("language_server",pid=1456400,fd=10))         
+tcp   LISTEN 0      4096                 *:80               *:*    users:(("caddy",pid=664,fd=10))                       
+tcp   LISTEN 0      4096                 *:443              *:*    users:(("caddy",pid=664,fd=8))                        
+tcp   LISTEN 0      4096              [::]:8013          [::]:*    users:(("docker-proxy",pid=2047,fd=8))                
+tcp   LISTEN 0      4096              [::]:8000          [::]:*    users:(("docker-proxy",pid=1389746,fd=8))             

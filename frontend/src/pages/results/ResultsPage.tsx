@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { resultApi, orderApi } from '../../api/services/index';
 import type { TestResult } from '../../types';
 import styles from './ResultsPage.module.css';
+import type { AxiosError } from 'axios';
 
 // Types for the Worklist Item (inferred from backend response)
 interface WorklistOrderItem {
@@ -81,10 +82,11 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th style={{ width: '15%' }}>Order ID</th>
-                <th style={{ width: '30%' }}>Patient</th>
-                <th style={{ width: '30%' }}>Test / Panel</th>
-                <th style={{ width: '10%' }}>Status</th>
+                <th style={{ width: '15%' }}>Lab / Visit ID</th>
+                <th style={{ width: '26%' }}>Patient</th>
+                <th style={{ width: '24%' }}>Test / Panel</th>
+                <th style={{ width: '12%' }}>Created</th>
+                <th style={{ width: '8%' }}>Status</th>
                 <th style={{ width: '15%' }}>Action</th>
               </tr>
             </thead>
@@ -92,13 +94,14 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
               {items.map((item) => (
                 <tr key={item.id} className={styles.resultRow}>
                   <td>
-                    <span className={styles.orderId}>{item.order?.order_id}</span>
+                    <span className={styles.orderId}>{item.order?.order_id || item.order?.lab_number || '—'}</span>
                   </td>
                   <td>
                     <div className={styles.patientInfo}>
-                      <span className={styles.patientName}>{item.order?.patient?.full_name}</span>
+                      <span className={styles.patientName}>{item.order?.patient?.full_name || '—'}</span>
                       <span className={styles.patientSub}>
-                        {item.order?.patient?.age}y / {item.order?.patient?.gender} • {item.order?.patient?.mrn}
+                        {(item.order?.patient?.age ? `${item.order?.patient?.age}y / ` : '')}
+                        {item.order?.patient?.gender || ''} {item.order?.patient?.mrn ? `• ${item.order?.patient?.mrn}` : ''}
                       </span>
                     </div>
                   </td>
@@ -109,6 +112,11 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
                     {item.panel_name && item.test_name && (
                       <span className={styles.paramUnit}>part of {item.panel_name}</span>
                     )}
+                  </td>
+                  <td>
+                    <span className={styles.patientSub}>
+                      {item.order?.created_at ? new Date(item.order.created_at).toLocaleString() : '—'}
+                    </span>
                   </td>
                   <td>
                     <span className={`${styles.statusBadge} ${styles['status-' + (item.status?.toLowerCase() || 'pending')]}`}>
@@ -138,6 +146,16 @@ const useResultEntry = (orderItemId: number) => {
   const queryClient = useQueryClient();
   const [results, setResults] = useState<Record<number, string>>({});
   const [remarks, setRemarks] = useState<Record<number, string>>({});
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const toastTimeoutRef = useRef<number | null>(null);
+
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ type, message });
+    if (toastTimeoutRef.current) {
+      window.clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = window.setTimeout(() => setToast(null), 4000);
+  };
 
   const { data: existingResultsData, isLoading: isLoadingResults, isError, error } = useQuery({
     queryKey: ['results', orderItemId],
@@ -177,8 +195,16 @@ const useResultEntry = (orderItemId: number) => {
       return resultApi.bulkEntry(payload);
     },
     onSuccess: () => {
+      showToast('success', 'Results saved.');
       queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
       queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
+    },
+    onError: (error: AxiosError<{ error?: string; error_details?: unknown }>) => {
+      const backendMessage =
+        (error.response?.data as { error?: string })?.error ||
+        error.message ||
+        'Unable to save results.';
+      showToast('error', backendMessage);
     },
   });
 
@@ -189,15 +215,15 @@ const useResultEntry = (orderItemId: number) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
       queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
-      alert('Results verified successfully!');
+      showToast('success', 'Results verified successfully.');
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { details?: string[] } } };
       const errorData = error.response?.data;
       if (errorData && errorData.details) {
-        alert(`Verification failed:\n- ${errorData.details.join('\n- ')}`);
+        showToast('error', errorData.details.join(' • '));
       } else {
-        alert('An unexpected error occurred during verification.');
+        showToast('error', 'An unexpected error occurred during verification.');
       }
     },
   });
@@ -237,6 +263,8 @@ const useResultEntry = (orderItemId: number) => {
     saveMutation,
     verifyMutation,
     handleKeyDown,
+    toast,
+    showToast,
   };
 };
 
@@ -252,6 +280,8 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
     saveMutation,
     verifyMutation,
     handleKeyDown,
+    toast,
+    showToast,
   } = useResultEntry(orderItemId);
 
   const [loadingTimeout, setLoadingTimeout] = useState(false);
@@ -286,13 +316,25 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
   const handleSaveAndVerify = async () => {
     try {
       await saveMutation.mutateAsync(existingResultsData?.data.results || []);
-      if (confirm('This will lock all results and prevent edits. Continue?')) {
-        const resultIds = existingResultsData?.data.results.map((r: TestResult) => r.id) || [];
-        await verifyMutation.mutateAsync(resultIds);
+      if (!confirm('This will lock all results and prevent edits. Continue?')) {
+        return;
       }
+      // Fetch latest results to avoid stale IDs/status before verification
+      const refreshed = await queryClient.fetchQuery({
+        queryKey: ['results', orderItemId],
+        queryFn: () => resultApi.getByOrderItem(orderItemId),
+      });
+      const latestResults: TestResult[] = refreshed?.data?.results || [];
+      const resultIds = latestResults.map((r: TestResult) => r.id).filter(Boolean) as number[];
+      if (!resultIds.length) {
+        showToast('error', 'No results found to verify.');
+        return;
+      }
+      await verifyMutation.mutateAsync(resultIds);
+      showToast('success', 'Results saved and verified.');
     } catch (err) {
       console.error('Save and verify failed:', err);
-      alert('Failed to save and verify results. Please try again.');
+      showToast('error', 'Failed to save and verify results. Please try again.');
     }
   };
 
@@ -366,6 +408,11 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
 
   return (
     <div className={styles.container}>
+      {toast && (
+        <div className={`${styles.toast} ${toast.type === 'success' ? styles.toastSuccess : styles.toastError}`}>
+          {toast.message}
+        </div>
+      )}
       <button className={styles.backButton} onClick={onBack}>
         &larr; Back to Worklist
       </button>

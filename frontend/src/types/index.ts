@@ -512,6 +512,9 @@ export interface WorklistOrderItem {
       mrn: string;
     };
     priority: string;
+    created_at?: string;
+    lab_number?: string | null;
+    status?: string;
   };
   test_name?: string;
   panel_name?: string;

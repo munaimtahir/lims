@@ -1,0 +1,13 @@
+
+Running 4 tests using 1 worker
+
+[1A[2K[1/4] [chromium] › tests/smoke/smoke.auth.spec.ts:7:1 › authenticated session shows dashboard shell @smoke
+[1A[2K[2/4] [chromium] › tests/smoke/smoke.navigation.spec.ts:6:1 › dashboard shell renders with user info @smoke
+[1A[2K[3/4] [chromium] › tests/smoke/smoke.results.spec.ts:11:3 › results module @smoke › results worklist renders @smoke
+[1A[2K[4/4] [chromium] › tests/smoke/smoke.results.spec.ts:29:3 › results module @smoke › open first result detail if present @smoke
+[1A[2K  4 passed (7.0s)
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m

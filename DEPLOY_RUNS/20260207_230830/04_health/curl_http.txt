@@ -1,0 +1,9 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/1.1 308 Permanent Redirect
+Connection: close
+Location: https://lims.alshifalab.pk/
+Server: Caddy
+Date: Sat, 07 Feb 2026 23:12:00 GMT
+

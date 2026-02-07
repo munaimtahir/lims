@@ -1,0 +1,59 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0   455    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sat, 07 Feb 2026 23:12:00 GMT
+etag: "6987a6d8-1c7"
+last-modified: Sat, 07 Feb 2026 20:55:52 GMT
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
+content-length: 455
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    68  100    68    0     0   1658      0 --:--:-- --:--:-- --:--:--  1700
+HTTP/2 200 
+allow: GET, HEAD, OPTIONS
+alt-svc: h3=":443"; ma=2592000
+content-type: application/json
+cross-origin-opener-policy: same-origin
+date: Sat, 07 Feb 2026 23:12:00 GMT
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
+content-length: 68
+
+{"status":"healthy","service":"LIMS Backend","database":"connected"}  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/2 302 
+alt-svc: h3=":443"; ma=2592000
+cache-control: max-age=0, no-cache, no-store, must-revalidate, private
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sat, 07 Feb 2026 23:12:00 GMT
+expires: Sat, 07 Feb 2026 23:12:00 GMT
+location: /admin/login/?next=/admin/
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
+content-length: 0
+

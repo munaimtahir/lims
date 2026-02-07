@@ -149,28 +149,31 @@ class TestResultViewSet(viewsets.ModelViewSet):
         all_items = (order_items_needing_results | order_items_with_pending).distinct()
 
         # Serialize the data with order information
-        from apps.orders.serializers import OrderItemSerializer, OrderSerializer
+        from apps.orders.serializers import OrderItemSerializer
+
+        def _serialize_item(item):
+            """Keep patient fields from MinimalOrderSerializer and append timeline info."""
+            item_data = OrderItemSerializer(item, context={"request": request}).data
+            order_data = item_data.get("order", {}) or {}
+
+            # Append key fields required by the worklist UI
+            order_data.update(
+                {
+                    "created_at": item.order.created_at,
+                    "lab_number": getattr(item.order, "lab_number", None),
+                    "status": item.order.status,
+                }
+            )
+            item_data["order"] = order_data
+            return item_data
 
         # Create a custom response structure
-        worklist_data = []
-        for item in all_items:
-            item_data = OrderItemSerializer(item, context={"request": request}).data
-            # Add order information
-            order_data = OrderSerializer(item.order, context={"request": request}).data
-            item_data["order"] = order_data
-            worklist_data.append(item_data)
+        worklist_data = [_serialize_item(item) for item in all_items]
 
         page = self.paginate_queryset(all_items)
         if page is not None:
             # Re-serialize paginated items
-            paginated_data = []
-            for item in page:
-                item_data = OrderItemSerializer(item, context={"request": request}).data
-                order_data = OrderSerializer(
-                    item.order, context={"request": request}
-                ).data
-                item_data["order"] = order_data
-                paginated_data.append(item_data)
+            paginated_data = [_serialize_item(item) for item in page]
             return self.get_paginated_response(paginated_data)
 
         return Response(worklist_data)
