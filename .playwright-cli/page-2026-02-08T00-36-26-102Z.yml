@@ -1,0 +1,82 @@
+- generic [ref=e16]:
+  - navigation [ref=e17]:
+    - link "LIMS" [ref=e18] [cursor=pointer]:
+      - /url: /dashboard
+      - heading "LIMS" [level=1] [ref=e19]
+    - list [ref=e20]:
+      - listitem [ref=e21]:
+        - link "Dashboard" [ref=e22] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=e23]:
+        - link "Registration" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard/registration
+      - listitem [ref=e25]:
+        - link "Patients" [ref=e26] [cursor=pointer]:
+          - /url: /dashboard/patients
+      - listitem [ref=e27]:
+        - link "Worklist" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/patients-worklist
+      - listitem [ref=e29]:
+        - link "Samples" [ref=e30] [cursor=pointer]:
+          - /url: /dashboard/samples
+      - listitem [ref=e31]:
+        - link "Results" [ref=e32] [cursor=pointer]:
+          - /url: /dashboard/results
+      - listitem [ref=e33]:
+        - link "Reports" [ref=e34] [cursor=pointer]:
+          - /url: /dashboard/reports
+      - listitem [ref=e35]:
+        - link "Payments" [ref=e36] [cursor=pointer]:
+          - /url: /dashboard/payments
+      - listitem [ref=e37]:
+        - link "Audit Logs" [ref=e38] [cursor=pointer]:
+          - /url: /dashboard/audit
+      - listitem [ref=e39]:
+        - link "Settings" [ref=e40] [cursor=pointer]:
+          - /url: /dashboard/settings
+        - list [ref=e41]:
+          - listitem [ref=e42]:
+            - link "UI Update" [ref=e43] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=ui
+          - listitem [ref=e44]:
+            - link "Report Customization" [ref=e45] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=reports
+          - listitem [ref=e46]:
+            - link "Print Templates" [ref=e47] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=print
+          - listitem [ref=e48]:
+            - link "Test Catalog" [ref=e49] [cursor=pointer]:
+              - /url: /dashboard/tests
+          - listitem [ref=e50]:
+            - link "Normal Ranges" [ref=e51] [cursor=pointer]:
+              - /url: /dashboard/reference-ranges
+    - generic [ref=e52]:
+      - generic [ref=e53]: System Admin
+      - generic [ref=e54]: admin@example.com
+      - button "Sign Out" [ref=e55] [cursor=pointer]
+  - main [ref=e56]:
+    - generic [ref=e57]:
+      - generic [ref=e58]:
+        - heading "Good morning, System!" [level=1] [ref=e59]
+        - paragraph [ref=e60]: Logged in as Admin
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - generic [ref=e63]: 👥
+          - generic [ref=e64]:
+            - generic [ref=e65]: "7"
+            - generic [ref=e66]: Total Patients
+        - generic [ref=e67]:
+          - generic [ref=e68]: 📋
+          - generic [ref=e69]:
+            - generic [ref=e70]: "1"
+            - generic [ref=e71]: Orders Today
+        - generic [ref=e72]:
+          - generic [ref=e73]: 🔬
+          - generic [ref=e74]:
+            - generic [ref=e75]: "0"
+            - generic [ref=e76]: Pending Results
+        - generic [ref=e77]:
+          - generic [ref=e78]: 📄
+          - generic [ref=e79]:
+            - generic [ref=e80]: "2"
+            - generic [ref=e81]: Reports Generated

@@ -19,6 +19,11 @@ export const selectors = {
     enterButton: 'table tbody tr button:has-text("Enter Results")',
     detailHeader: 'h1:has-text("Result Entry")',
     backButton: 'button:has-text("Back to Worklist")',
+    patientName: '[data-testid="results-patient-name"]',
+  },
+  worklist: {
+    printReceipt: '[data-testid="print-receipt"]',
+    printReport: '[data-testid="print-report"]',
   },
   common: {
     toast: '[role="alert"], [role="status"], .Toastify__toast, .toast-success',

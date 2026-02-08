@@ -498,6 +498,8 @@ export interface WorklistPatient {
   can_reprint_report: boolean;
   receipt_pdf_url?: string;
   report_pdf_url?: string;
+  receipt_url?: string;
+  report_url?: string;
 }
 export interface WorklistOrderItem {
   id: number;

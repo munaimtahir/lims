@@ -1,0 +1,77 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - link "LIMS" [ref=e5] [cursor=pointer]:
+      - /url: /dashboard
+      - heading "LIMS" [level=1] [ref=e6]
+    - list [ref=e7]:
+      - listitem [ref=e8]:
+        - link "Dashboard" [ref=e9] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=e10]:
+        - link "Registration" [ref=e11] [cursor=pointer]:
+          - /url: /dashboard/registration
+      - listitem [ref=e12]:
+        - link "Patients" [ref=e13] [cursor=pointer]:
+          - /url: /dashboard/patients
+      - listitem [ref=e14]:
+        - link "Worklist" [ref=e15] [cursor=pointer]:
+          - /url: /dashboard/patients-worklist
+      - listitem [ref=e16]:
+        - link "Samples" [ref=e17] [cursor=pointer]:
+          - /url: /dashboard/samples
+      - listitem [ref=e18]:
+        - link "Results" [ref=e19] [cursor=pointer]:
+          - /url: /dashboard/results
+      - listitem [ref=e20]:
+        - link "Reports" [ref=e21] [cursor=pointer]:
+          - /url: /dashboard/reports
+      - listitem [ref=e22]:
+        - link "Payments" [ref=e23] [cursor=pointer]:
+          - /url: /dashboard/payments
+      - listitem [ref=e24]:
+        - link "Audit Logs" [ref=e25] [cursor=pointer]:
+          - /url: /dashboard/audit
+      - listitem [ref=e26]:
+        - link "Settings" [ref=e27] [cursor=pointer]:
+          - /url: /dashboard/settings
+        - list [ref=e28]:
+          - listitem [ref=e29]:
+            - link "UI Update" [ref=e30] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=ui
+          - listitem [ref=e31]:
+            - link "Report Customization" [ref=e32] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=reports
+          - listitem [ref=e33]:
+            - link "Print Templates" [ref=e34] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=print
+          - listitem [ref=e35]:
+            - link "Test Catalog" [ref=e36] [cursor=pointer]:
+              - /url: /dashboard/tests
+          - listitem [ref=e37]:
+            - link "Normal Ranges" [ref=e38] [cursor=pointer]:
+              - /url: /dashboard/reference-ranges
+    - generic [ref=e39]:
+      - generic [ref=e40]: System Admin
+      - generic [ref=e41]: admin@example.com
+      - button "Sign Out" [ref=e42] [cursor=pointer]
+  - main [ref=e43]:
+    - generic [ref=e44]:
+      - generic [ref=e46]:
+        - heading "Patients Worklist" [level=1] [ref=e47]
+        - paragraph [ref=e48]: Track current workflow status and reprint receipts/reports.
+      - generic [ref=e49]:
+        - textbox "Search by name, mobile, or order number" [ref=e50]
+        - textbox [ref=e51]
+        - textbox [ref=e52]
+        - combobox [ref=e53]:
+          - option "All Statuses" [selected]
+          - option "Registered / Order Created"
+          - option "Paid"
+          - option "Sample Collected"
+          - option "In Testing / Result Pending"
+          - option "Report Ready / Verified"
+          - option "Report Published"
+          - option "Cancelled"
+        - button "Today" [ref=e54] [cursor=pointer]
+        - button "Last 7 Days" [ref=e55] [cursor=pointer]
+      - generic [ref=e56]: Loading worklist...

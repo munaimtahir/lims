@@ -1,0 +1,309 @@
+- generic [ref=e4]:
+  - navigation [ref=e5]:
+    - link "LIMS" [ref=e6] [cursor=pointer]:
+      - /url: /dashboard
+      - heading "LIMS" [level=1] [ref=e7]
+    - list [ref=e8]:
+      - listitem [ref=e9]:
+        - link "Dashboard" [ref=e10] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=e11]:
+        - link "Registration" [ref=e12] [cursor=pointer]:
+          - /url: /dashboard/registration
+      - listitem [ref=e13]:
+        - link "Patients" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard/patients
+      - listitem [ref=e15]:
+        - link "Worklist" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard/patients-worklist
+      - listitem [ref=e17]:
+        - link "Samples" [ref=e18] [cursor=pointer]:
+          - /url: /dashboard/samples
+      - listitem [ref=e19]:
+        - link "Results" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard/results
+      - listitem [ref=e21]:
+        - link "Reports" [ref=e22] [cursor=pointer]:
+          - /url: /dashboard/reports
+      - listitem [ref=e23]:
+        - link "Payments" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard/payments
+      - listitem [ref=e25]:
+        - link "Audit Logs" [ref=e26] [cursor=pointer]:
+          - /url: /dashboard/audit
+      - listitem [ref=e27]:
+        - link "Settings" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/settings
+        - list [ref=e29]:
+          - listitem [ref=e30]:
+            - link "UI Update" [ref=e31] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=ui
+          - listitem [ref=e32]:
+            - link "Report Customization" [ref=e33] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=reports
+          - listitem [ref=e34]:
+            - link "Print Templates" [ref=e35] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=print
+          - listitem [ref=e36]:
+            - link "Test Catalog" [ref=e37] [cursor=pointer]:
+              - /url: /dashboard/tests
+          - listitem [ref=e38]:
+            - link "Normal Ranges" [ref=e39] [cursor=pointer]:
+              - /url: /dashboard/reference-ranges
+    - generic [ref=e40]:
+      - generic [ref=e41]: System Admin
+      - generic [ref=e42]: admin@example.com
+      - button "Sign Out" [ref=e43] [cursor=pointer]
+  - main [ref=e44]:
+    - generic [ref=e141]:
+      - button "← Back to Worklist" [ref=e142] [cursor=pointer]
+      - generic [ref=e143]:
+        - generic [ref=e144]:
+          - heading "Result Entry" [level=1] [ref=e145]
+          - generic [ref=e146]: "#ORD-20260207-0003"
+        - generic [ref=e147]:
+          - text: "Test:"
+          - strong [ref=e148]: CBC
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - generic [ref=e151]: Patient Name
+            - generic [ref=e152]: Munaim
+          - generic [ref=e153]:
+            - generic [ref=e154]: MRN
+            - generic [ref=e155]: PAT-20260205-0007
+          - generic [ref=e156]:
+            - generic [ref=e157]: Age / Gender
+            - generic [ref=e158]: 35y / Male
+      - generic [ref=e159]:
+        - generic [ref=e471]: ✓ All results have been verified.
+        - table [ref=e164]:
+          - rowgroup [ref=e165]:
+            - row "Test Parameter Result Value Unit Reference / Status" [ref=e166]:
+              - columnheader "Test Parameter" [ref=e167]
+              - columnheader "Result Value" [ref=e168]
+              - columnheader "Unit" [ref=e169]
+              - columnheader "Reference / Status" [ref=e170]
+          - rowgroup [ref=e171]:
+            - row "Hemoglobin 1 g/dL verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e472]:
+              - cell "Hemoglobin" [ref=e173]:
+                - generic [ref=e174]: Hemoglobin
+              - cell "1" [ref=e416]:
+                - generic [ref=e176]: "1"
+              - cell "g/dL" [ref=e178]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e473]:
+                - generic [ref=e181]: verified
+                - generic [ref=e474]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Hemoglobin 2 g/dL verified C Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e475]:
+              - cell "Hemoglobin" [ref=e183]:
+                - generic [ref=e184]: Hemoglobin
+              - cell "2" [ref=e418]:
+                - generic [ref=e186]: "2"
+              - cell "g/dL" [ref=e188]
+              - cell "verified C Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e476]:
+                - generic [ref=e190]:
+                  - generic [ref=e191]: verified
+                  - text: C
+                - generic [ref=e477]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Hematocrit (HCT) 3 % verified C Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e478]:
+              - cell "Hematocrit (HCT)" [ref=e193]:
+                - generic [ref=e194]: Hematocrit (HCT)
+              - cell "3" [ref=e420]:
+                - generic [ref=e196]: "3"
+              - cell "%" [ref=e198]
+              - cell "verified C Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e479]:
+                - generic [ref=e200]:
+                  - generic [ref=e201]: verified
+                  - text: C
+                - generic [ref=e480]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Red Blood Cells (RBC) 4 x10^12/L verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e481]:
+              - cell "Red Blood Cells (RBC)" [ref=e203]:
+                - generic [ref=e204]: Red Blood Cells (RBC)
+              - cell "4" [ref=e422]:
+                - generic [ref=e206]: "4"
+              - cell "x10^12/L" [ref=e208]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e482]:
+                - generic [ref=e211]: verified
+                - generic [ref=e483]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "White Blood Cells (WBC/TLC) 5 x10^9/L verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e484]:
+              - cell "White Blood Cells (WBC/TLC)" [ref=e213]:
+                - generic [ref=e214]: White Blood Cells (WBC/TLC)
+              - cell "5" [ref=e424]:
+                - generic [ref=e216]: "5"
+              - cell "x10^9/L" [ref=e218]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e485]:
+                - generic [ref=e221]: verified
+                - generic [ref=e486]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Platelets 6 x10^9/L verified C Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e487]:
+              - cell "Platelets" [ref=e223]:
+                - generic [ref=e224]: Platelets
+              - cell "6" [ref=e426]:
+                - generic [ref=e226]: "6"
+              - cell "x10^9/L" [ref=e228]
+              - cell "verified C Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e488]:
+                - generic [ref=e230]:
+                  - generic [ref=e231]: verified
+                  - text: C
+                - generic [ref=e489]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Mean Cell Volume (MCV) 7 fL verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e490]:
+              - cell "Mean Cell Volume (MCV)" [ref=e233]:
+                - generic [ref=e234]: Mean Cell Volume (MCV)
+              - cell "7" [ref=e428]:
+                - generic [ref=e236]: "7"
+              - cell "fL" [ref=e238]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e491]:
+                - generic [ref=e241]: verified
+                - generic [ref=e492]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Mean Cell Hemoglobin (MCH) 8 pg verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e493]:
+              - cell "Mean Cell Hemoglobin (MCH)" [ref=e243]:
+                - generic [ref=e244]: Mean Cell Hemoglobin (MCH)
+              - cell "8" [ref=e430]:
+                - generic [ref=e246]: "8"
+              - cell "pg" [ref=e248]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e494]:
+                - generic [ref=e251]: verified
+                - generic [ref=e495]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Mean Cell Hb Conc (MCHC) 9 g/dL verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e496]:
+              - cell "Mean Cell Hb Conc (MCHC)" [ref=e253]:
+                - generic [ref=e254]: Mean Cell Hb Conc (MCHC)
+              - cell "9" [ref=e432]:
+                - generic [ref=e256]: "9"
+              - cell "g/dL" [ref=e258]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e497]:
+                - generic [ref=e261]: verified
+                - generic [ref=e498]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "RDW-CV 10 % verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e499]:
+              - cell "RDW-CV" [ref=e263]:
+                - generic [ref=e264]: RDW-CV
+              - cell "10" [ref=e434]:
+                - generic [ref=e266]: "10"
+              - cell "%" [ref=e268]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e500]:
+                - generic [ref=e271]: verified
+                - generic [ref=e501]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "RDW-SD 11 fL verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e502]:
+              - cell "RDW-SD" [ref=e273]:
+                - generic [ref=e274]: RDW-SD
+              - cell "11" [ref=e436]:
+                - generic [ref=e276]: "11"
+              - cell "fL" [ref=e278]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e503]:
+                - generic [ref=e281]: verified
+                - generic [ref=e504]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Mean Platelet Volume (MPV) 12 fL verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e505]:
+              - cell "Mean Platelet Volume (MPV)" [ref=e283]:
+                - generic [ref=e284]: Mean Platelet Volume (MPV)
+              - cell "12" [ref=e438]:
+                - generic [ref=e286]: "12"
+              - cell "fL" [ref=e288]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e506]:
+                - generic [ref=e291]: verified
+                - generic [ref=e507]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Platelet Distribution Width (PDW) 13 - verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e508]:
+              - cell "Platelet Distribution Width (PDW)" [ref=e293]:
+                - generic [ref=e294]: Platelet Distribution Width (PDW)
+              - cell "13" [ref=e440]:
+                - generic [ref=e296]: "13"
+              - cell "-" [ref=e298]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e509]:
+                - generic [ref=e301]: verified
+                - generic [ref=e510]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Plateletcrit (PCT) 14 % verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e511]:
+              - cell "Plateletcrit (PCT)" [ref=e303]:
+                - generic [ref=e304]: Plateletcrit (PCT)
+              - cell "14" [ref=e442]:
+                - generic [ref=e306]: "14"
+              - cell "%" [ref=e308]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e512]:
+                - generic [ref=e311]: verified
+                - generic [ref=e513]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Neutrophils 15 % verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e514]:
+              - cell "Neutrophils" [ref=e313]:
+                - generic [ref=e314]: Neutrophils
+              - cell "15" [ref=e444]:
+                - generic [ref=e316]: "15"
+              - cell "%" [ref=e318]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e515]:
+                - generic [ref=e321]: verified
+                - generic [ref=e516]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Lymphocytes 16 % verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e517]:
+              - cell "Lymphocytes" [ref=e323]:
+                - generic [ref=e324]: Lymphocytes
+              - cell "16" [ref=e446]:
+                - generic [ref=e326]: "16"
+              - cell "%" [ref=e328]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e518]:
+                - generic [ref=e331]: verified
+                - generic [ref=e519]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Monocytes 17 % verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e520]:
+              - cell "Monocytes" [ref=e333]:
+                - generic [ref=e334]: Monocytes
+              - cell "17" [ref=e448]:
+                - generic [ref=e336]: "17"
+              - cell "%" [ref=e338]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e521]:
+                - generic [ref=e341]: verified
+                - generic [ref=e522]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Eosinophils 18 % verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e523]:
+              - cell "Eosinophils" [ref=e343]:
+                - generic [ref=e344]: Eosinophils
+              - cell "18" [ref=e450]:
+                - generic [ref=e346]: "18"
+              - cell "%" [ref=e348]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e524]:
+                - generic [ref=e351]: verified
+                - generic [ref=e525]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Basophils 19 % verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e526]:
+              - cell "Basophils" [ref=e353]:
+                - generic [ref=e354]: Basophils
+              - cell "19" [ref=e452]:
+                - generic [ref=e356]: "19"
+              - cell "%" [ref=e358]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e527]:
+                - generic [ref=e361]: verified
+                - generic [ref=e528]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Neutrophils (Absolute) 20 x10^9/L verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e529]:
+              - cell "Neutrophils (Absolute)" [ref=e363]:
+                - generic [ref=e364]: Neutrophils (Absolute)
+              - cell "20" [ref=e454]:
+                - generic [ref=e366]: "20"
+              - cell "x10^9/L" [ref=e368]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e530]:
+                - generic [ref=e371]: verified
+                - generic [ref=e531]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Lymphocytes (Absolute) 21 x10^9/L verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e532]:
+              - cell "Lymphocytes (Absolute)" [ref=e373]:
+                - generic [ref=e374]: Lymphocytes (Absolute)
+              - cell "21" [ref=e456]:
+                - generic [ref=e376]: "21"
+              - cell "x10^9/L" [ref=e378]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e533]:
+                - generic [ref=e381]: verified
+                - generic [ref=e534]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Monocytes (Absolute) 22 x10^9/L verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e535]:
+              - cell "Monocytes (Absolute)" [ref=e383]:
+                - generic [ref=e384]: Monocytes (Absolute)
+              - cell "22" [ref=e458]:
+                - generic [ref=e386]: "22"
+              - cell "x10^9/L" [ref=e388]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e536]:
+                - generic [ref=e391]: verified
+                - generic [ref=e537]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Eosinophils (Absolute) 23 x10^9/L verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e538]:
+              - cell "Eosinophils (Absolute)" [ref=e393]:
+                - generic [ref=e394]: Eosinophils (Absolute)
+              - cell "23" [ref=e460]:
+                - generic [ref=e396]: "23"
+              - cell "x10^9/L" [ref=e398]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e539]:
+                - generic [ref=e401]: verified
+                - generic [ref=e540]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+            - row "Basophils (Absolute) 24 x10^9/L verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e541]:
+              - cell "Basophils (Absolute)" [ref=e403]:
+                - generic [ref=e404]: Basophils (Absolute)
+              - cell "24" [ref=e462]:
+                - generic [ref=e406]: "24"
+              - cell "x10^9/L" [ref=e408]
+              - cell "verified Verified by System Admin at 2/8/2026, 5:38:40 AM" [ref=e542]:
+                - generic [ref=e411]: verified
+                - generic [ref=e543]: Verified by System Admin at 2/8/2026, 5:38:40 AM
+        - generic [ref=e544]: All results have been verified.

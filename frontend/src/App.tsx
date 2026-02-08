@@ -73,7 +73,8 @@ function App() {
                 <Route path="collection" element={<CollectionWorklistPage />} />
                 <Route path="results" element={<ResultsPage />} />
                 <Route path="worklist" element={<ResultEntryWorklistPage />} />
-                <Route path="review" element={<VerificationQueuePage />} />
+                <Route path="verification" element={<VerificationQueuePage />} />
+                <Route path="review" element={<Navigate to="/dashboard/verification" replace />} />
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="payments" element={<PaymentsPage />} />
                 <Route path="audit" element={<AuditLogsPage />} />

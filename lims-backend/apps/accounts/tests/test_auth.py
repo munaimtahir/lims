@@ -235,7 +235,7 @@ class TestLogoutView:
 
 @pytest.mark.django_db
 class TestUserViewSet:
-    """Tests for the User ViewSet (admin only)."""
+    """Tests for the User ViewSet (admin/manager access)."""
 
     def test_list_users_admin(
         self, authenticated_client, admin_user, receptionist_user

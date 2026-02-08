@@ -7,6 +7,7 @@ import styles from './VerificationQueuePage.module.css';
 export default function VerificationQueuePage() {
   const queryClient = useQueryClient();
   const [selectedOrderItemId, setSelectedOrderItemId] = useState<number | null>(null);
+  const [notice, setNotice] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const { data: queueData, isLoading, error } = useQuery({
     queryKey: ['verification-queue'],
@@ -18,6 +19,9 @@ export default function VerificationQueuePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
     },
+    onError: () => {
+      setNotice({ type: 'error', message: 'Failed to verify result.' });
+    },
   });
 
   const rejectMutation = useMutation({
@@ -25,6 +29,34 @@ export default function VerificationQueuePage() {
       resultApi.reject(resultId, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
+    },
+    onError: () => {
+      setNotice({ type: 'error', message: 'Failed to return result.' });
+    },
+  });
+
+  const bulkVerifyMutation = useMutation({
+    mutationFn: (resultIds: number[]) => resultApi.bulkVerify(resultIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
+      setNotice({ type: 'success', message: 'All results verified successfully.' });
+      setSelectedOrderItemId(null);
+    },
+    onError: () => {
+      setNotice({ type: 'error', message: 'Failed to verify all results.' });
+    },
+  });
+
+  const bulkRejectMutation = useMutation({
+    mutationFn: ({ resultIds, reason }: { resultIds: number[]; reason: string }) =>
+      resultApi.bulkReject(resultIds, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
+      setNotice({ type: 'success', message: 'Results returned to entry worklist.' });
+      setSelectedOrderItemId(null);
+    },
+    onError: () => {
+      setNotice({ type: 'error', message: 'Failed to return results.' });
     },
   });
 
@@ -89,12 +121,36 @@ export default function VerificationQueuePage() {
   };
 
   const selectedGroup = groupedResults.find(g => g.order_item_id === selectedOrderItemId);
+  const selectedResultIds = selectedGroup?.results.map((r) => r.id).filter(Boolean) as number[] | undefined;
+
+  const handleVerifyAll = async () => {
+    if (!selectedResultIds?.length) return;
+    const missing = selectedGroup?.results.filter((r) => !r.result_value || !r.result_value.trim()) || [];
+    if (missing.length) {
+      setNotice({ type: 'error', message: 'Some results are missing values. Please correct before verifying.' });
+      return;
+    }
+    if (!confirm('Verify all results for this order? This will lock the results.')) return;
+    await bulkVerifyMutation.mutateAsync(selectedResultIds);
+  };
+
+  const handleReturnAll = async () => {
+    if (!selectedResultIds?.length) return;
+    const reason = prompt('Enter reason for returning results to entry:');
+    if (!reason) return;
+    await bulkRejectMutation.mutateAsync({ resultIds: selectedResultIds, reason });
+  };
 
   if (isLoading) return <div className={styles.loading}>Loading queue...</div>;
   if (error) return <div className={styles.error}>Failed to load verification queue</div>;
 
   return (
     <div className={styles.container}>
+      {notice && (
+        <div className={`${styles.notice} ${notice.type === 'success' ? styles.noticeSuccess : styles.noticeError}`}>
+          {notice.message}
+        </div>
+      )}
       {selectedOrderItemId ? (
         <div className={styles.detailView}>
           <button className={styles.backButton} onClick={() => setSelectedOrderItemId(null)}>
@@ -104,6 +160,28 @@ export default function VerificationQueuePage() {
           <div className={styles.detailHeader}>
             <h2>Review Results: {selectedGroup?.patient_name}</h2>
             <p>{selectedGroup?.test_name} (#{selectedGroup?.order_id})</p>
+          </div>
+
+          <div className={styles.detailActions}>
+            <div className={styles.actionHint}>
+              Verify all to publish when the full order is complete, or return with a reason for re-entry.
+            </div>
+            <div className={styles.actionButtons}>
+              <button
+                className={`${styles.bulkButton} ${styles.bulkVerify}`}
+                onClick={handleVerifyAll}
+                disabled={bulkVerifyMutation.isPending}
+              >
+                {bulkVerifyMutation.isPending ? 'Verifying...' : 'Verify All'}
+              </button>
+              <button
+                className={`${styles.bulkButton} ${styles.bulkReturn}`}
+                onClick={handleReturnAll}
+                disabled={bulkRejectMutation.isPending}
+              >
+                {bulkRejectMutation.isPending ? 'Returning...' : 'Return All'}
+              </button>
+            </div>
           </div>
 
           <table className={styles.verifyTable}>

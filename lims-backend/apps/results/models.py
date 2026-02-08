@@ -52,6 +52,7 @@ class TestResult(models.Model):
         ("ENTERED", "Entered"),
         ("VERIFIED", "Verified"),
         ("PUBLISHED", "Published"),
+        ("REJECTED", "Rejected"),
     ]
     status = models.CharField(
         max_length=20, choices=VERIFICATION_STATUS, default="DRAFT"

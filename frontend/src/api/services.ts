@@ -16,6 +16,7 @@ import type {
   Report,
   ApiResponse,
   PaginatedResponse,
+  User,
   ReferenceRange,
   ReferenceRangeCreateRequest,
   SystemSettings,
@@ -359,6 +360,45 @@ export const reportApi = {
     formData.append('signature_type', signatureType);
     const response = await api.post<Report>(`/reports/${reportId}/upload_signature/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+};
+
+/**
+ * User management API service
+ */
+export const userApi = {
+  list: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<User>>('/auth/users/', { params });
+    return response.data;
+  },
+
+  create: async (data: {
+    username: string;
+    email: string;
+    full_name: string;
+    role: User['role'];
+    password: string;
+    password_confirm: string;
+  }) => {
+    const response = await api.post<ApiResponse<User>>('/auth/users/', data);
+    return response.data;
+  },
+
+  update: async (id: number, data: Partial<User>) => {
+    const response = await api.patch<ApiResponse<User>>(`/auth/users/${id}/`, data);
+    return response.data;
+  },
+
+  remove: async (id: number) => {
+    await api.delete(`/auth/users/${id}/`);
+  },
+
+  resetPassword: async (id: number, newPassword: string, newPasswordConfirm: string) => {
+    const response = await api.post<{ success: boolean; message?: string }>(`/auth/users/${id}/reset_password/`, {
+      new_password: newPassword,
+      new_password_confirm: newPasswordConfirm,
     });
     return response.data;
   },

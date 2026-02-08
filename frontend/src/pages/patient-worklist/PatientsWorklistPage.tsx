@@ -4,12 +4,15 @@ import { worklistApi } from '../../api/services';
 import type { WorklistPatient } from '../../types';
 import styles from './PatientsWorklistPage.module.css';
 import { formatDateDDMMYY } from '../../utils/dateFormat';
+import { useAuth } from '../../contexts';
 
 export default function PatientsWorklistPage() {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [status, setStatus] = useState('');
+  const [printState, setPrintState] = useState<{ type: 'receipt' | 'report'; orderId: number } | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const toastTimer = useRef<number | null>(null);
 
@@ -47,34 +50,58 @@ export default function PatientsWorklistPage() {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
+  const canPrintByRole = user?.role === 'Admin'
+    || user?.role === 'Receptionist'
+    || user?.role === 'Cashier'
+    || user?.role === 'Manager';
+
+  const resolvePrintUrl = (target: string, fallbackPath: string) => {
+    if (target.startsWith('http') || target.startsWith('/')) {
+      return target;
+    }
+    return `${fallbackPath}/${target}`;
+  };
+
   const handlePrintReceipt = (patient: WorklistPatient) => {
-    const target = patient.receipt_pdf_url || patient.latest_order_number || String(patient.latest_order_id || '');
-    const canPrint = (patient.can_reprint_receipt ?? true) && Boolean(target);
+    const orderId = patient.latest_order_id;
+    const target =
+      patient.receipt_pdf_url ||
+      patient.receipt_url ||
+      String(orderId || '') ||
+      patient.latest_order_number ||
+      '';
+    const canPrint = canPrintByRole && (patient.can_reprint_receipt ?? true) && Boolean(target);
 
     if (!canPrint || !target) {
-      showToast('error', 'Receipt not available for this order.');
+      showToast('error', canPrintByRole ? 'Receipt not available for this order.' : 'You do not have permission to print receipts.');
       return;
     }
 
-    const url = target.startsWith('http')
-      ? target
-      : `/print/receipt/${target}`;
+    setPrintState({ type: 'receipt', orderId: patient.latest_order_id });
+    const url = orderId ? `/print/receipt/${orderId}` : resolvePrintUrl(target, '/print/receipt');
 
     openNewTab(url);
     showToast('success', 'Opening receipt...');
+    setTimeout(() => setPrintState(null), 300);
   };
 
   const handlePrintReport = (patient: WorklistPatient) => {
-    const target = patient.report_pdf_url;
-    const canPrint = (patient.can_reprint_report ?? true) && Boolean(target);
+    const target =
+      patient.report_pdf_url ||
+      patient.report_url ||
+      '';
+    const canPrint = canPrintByRole && (patient.can_reprint_report ?? true) && Boolean(target);
 
     if (!canPrint || !target) {
-      showToast('error', 'Report not available or not yet published.');
+      showToast('error', canPrintByRole ? 'Report not available or not yet published.' : 'You do not have permission to print reports.');
       return;
     }
 
-    openNewTab(target);
+    setPrintState({ type: 'report', orderId: patient.latest_order_id });
+    const url = resolvePrintUrl(target, '/print/report');
+    openNewTab(url);
     showToast('success', 'Opening report...');
+    setTimeout(() => setPrintState(null), 300);
   };
 
   return (
@@ -142,7 +169,17 @@ export default function PatientsWorklistPage() {
             </tr>
           </thead>
           <tbody>
-            {patients.map((item: WorklistPatient) => (
+            {patients.map((item: WorklistPatient) => {
+              const receiptTarget =
+                item.receipt_pdf_url ||
+                item.receipt_url ||
+                String(item.latest_order_id || '') ||
+                item.latest_order_number ||
+                '';
+              const reportTarget = item.report_pdf_url || item.report_url || '';
+              const canPrintReceipt = canPrintByRole && (item.can_reprint_receipt ?? true) && Boolean(receiptTarget);
+              const canPrintReport = canPrintByRole && (item.can_reprint_report ?? true) && Boolean(reportTarget);
+              return (
               <tr key={item.latest_order_id}>
                 <td>
                   <div className={styles.patientCell}>
@@ -160,24 +197,31 @@ export default function PatientsWorklistPage() {
                   <div className={styles.actionButtons}>
                     <button
                       type="button"
-                      className={styles.actionButton}
-                      disabled={item.can_reprint_receipt === false}
+                      className={`${styles.actionButton} ${!canPrintReceipt ? styles.actionButtonDisabled : ''}`}
+                      disabled={!canPrintByRole || (printState?.type === 'receipt' && printState.orderId === item.latest_order_id)}
+                      aria-disabled={!canPrintReceipt}
+                      data-testid="print-receipt"
+                      data-available={canPrintReceipt ? 'true' : 'false'}
                       onClick={() => handlePrintReceipt(item)}
                     >
-                      Print Receipt
+                      {(printState?.type === 'receipt' && printState.orderId === item.latest_order_id) ? 'Opening...' : 'Print Receipt'}
                     </button>
                     <button
                       type="button"
-                      className={styles.actionButton}
-                      disabled={item.can_reprint_report === false}
+                      className={`${styles.actionButton} ${!canPrintReport ? styles.actionButtonDisabled : ''}`}
+                      disabled={!canPrintByRole || (printState?.type === 'report' && printState.orderId === item.latest_order_id)}
+                      aria-disabled={!canPrintReport}
+                      data-testid="print-report"
+                      data-available={canPrintReport ? 'true' : 'false'}
                       onClick={() => handlePrintReport(item)}
                     >
-                      Print Report
+                      {(printState?.type === 'report' && printState.orderId === item.latest_order_id) ? 'Opening...' : 'Print Report'}
                     </button>
                   </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {patients.length === 0 && (
               <tr>
                 <td colSpan={6} className={styles.noData}>No patients found</td>

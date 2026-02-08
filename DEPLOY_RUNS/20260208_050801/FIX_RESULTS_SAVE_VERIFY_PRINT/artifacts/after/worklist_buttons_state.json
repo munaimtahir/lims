@@ -1,0 +1,8 @@
+{
+  "receiptDisabledAttr": null,
+  "reportDisabledAttr": null,
+  "receiptAriaDisabled": "true",
+  "reportAriaDisabled": "true",
+  "receiptPointer": "auto",
+  "reportPointer": "auto"
+}

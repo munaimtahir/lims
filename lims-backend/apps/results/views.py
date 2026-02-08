@@ -155,6 +155,11 @@ class TestResultViewSet(viewsets.ModelViewSet):
             """Keep patient fields from MinimalOrderSerializer and append timeline info."""
             item_data = OrderItemSerializer(item, context={"request": request}).data
             order_data = item_data.get("order", {}) or {}
+            
+            # Explicitly ensure patient is present in order_data
+            from apps.orders.serializers import MinimalPatientSerializer
+            if not order_data.get("patient") and item.order.patient:
+                order_data["patient"] = MinimalPatientSerializer(item.order.patient).data
 
             # Append key fields required by the worklist UI
             order_data.update(
@@ -166,6 +171,20 @@ class TestResultViewSet(viewsets.ModelViewSet):
             )
             item_data["order"] = order_data
             patient = getattr(item.order, "patient", None)
+            if patient:
+                patient_payload = order_data.get("patient") or {}
+                patient_full_name = patient.get_full_name()
+                patient_payload.update(
+                    {
+                        "id": patient.id,
+                        "full_name": patient_full_name,
+                        "age": getattr(patient, "age", None),
+                        "gender": getattr(patient, "gender", None),
+                        "mrn": getattr(patient, "mrn", None),
+                    }
+                )
+                order_data["patient"] = patient_payload
+                item_data["order"] = order_data
             # Flatten patient display fields for frontend fallbacks/search
             item_data["patient_name"] = patient.get_full_name() if patient else None
             item_data["patient_age"] = getattr(patient, "age", None)
@@ -345,6 +364,8 @@ class TestResultViewSet(viewsets.ModelViewSet):
             order_item_id = result_data.get("order_item")
             test_parameter_id = result_data.get("test_parameter")
             result_value = result_data.get("result_value", "")
+            if result_value is None or str(result_value).strip() == "":
+                result_value = "*"
 
             if not order_item_id or not test_parameter_id:
                 errors.append(
@@ -600,3 +621,68 @@ class TestResultViewSet(viewsets.ModelViewSet):
         result.save()
 
         return Response({"status": "result rejected"})
+
+    @action(detail=False, methods=["post"], url_path="bulk-reject")
+    def bulk_reject(self, request):
+        """
+        Reject a list of test results in a single transaction.
+
+        Expects a list of result IDs and a reason in the request data.
+        """
+        result_ids = request.data.get("result_ids", [])
+        reason = request.data.get("reason", "")
+
+        if not result_ids:
+            return Response(
+                {"error": "result_ids list is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not (request.user.is_pathologist or request.user.is_admin):
+            return Response(
+                {"error": "Only pathologists can reject results"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        results_to_reject = TestResult.objects.select_related("test_parameter").filter(
+            id__in=result_ids
+        )
+
+        if results_to_reject.count() != len(result_ids):
+            return Response(
+                {"error": "One or more result IDs were not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        errors = []
+        for result in results_to_reject:
+            if result.status in ["VERIFIED", "PUBLISHED"]:
+                errors.append(
+                    f"Result for '{result.test_parameter.effective_parameter_name}' is already verified."
+                )
+
+        if errors:
+            return Response(
+                {"error": "Rejection failed for some results.", "details": errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        reason_text = reason.strip()
+
+        with transaction.atomic():
+            for result in results_to_reject:
+                if reason_text:
+                    existing = result.remarks or ""
+                    result.remarks = f"Rejected: {reason_text}. {existing}".strip()
+                result.status = "REJECTED"
+                result.verified_by = request.user
+                result.verified_at = timezone.now()
+                result.save(update_fields=["remarks", "status", "verified_by", "verified_at"])
+
+        return Response(
+            {
+                "status": f"{results_to_reject.count()} results rejected successfully.",
+                "rejected_ids": result_ids,
+            },
+            status=status.HTTP_200_OK,
+        )

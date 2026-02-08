@@ -1,0 +1,152 @@
+{
+  "url": "http://localhost:8012/api/v1/results/bulk_entry/",
+  "method": "POST",
+  "body": {
+    "results": [
+      {
+        "order_item": 10,
+        "test_parameter": 1,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 2,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 3,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 4,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 5,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 6,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 7,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 8,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 9,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 10,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 11,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 12,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 13,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 14,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 15,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 16,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 17,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 18,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 19,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 20,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 21,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 22,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 23,
+        "result_value": "1",
+        "remarks": ""
+      },
+      {
+        "order_item": 10,
+        "test_parameter": 24,
+        "result_value": "1",
+        "remarks": ""
+      }
+    ]
+  }
+}

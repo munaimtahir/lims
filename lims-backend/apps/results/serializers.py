@@ -47,6 +47,9 @@ class TestResultSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Convert status to lowercase for frontend compatibility."""
         data = super().to_representation(instance)
+        # Normalize placeholder empty values for frontend display
+        if data.get("result_value") == "*":
+            data["result_value"] = ""
         # Map backend status to frontend status
         status_map = {
             "DRAFT": "pending",

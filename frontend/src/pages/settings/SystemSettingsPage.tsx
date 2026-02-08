@@ -1,19 +1,19 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { systemSettingsApi, printTemplateApi } from '../../api/services';
-import { normalizeObjectResponse } from '../../utils/apiHelpers';
+import { systemSettingsApi, printTemplateApi, userApi } from '../../api/services';
+import { normalizeListResponse, normalizeObjectResponse } from '../../utils/apiHelpers';
 import { isSampleBarcodeEnabled, setSampleBarcodeEnabled as setStoredBarcodeEnabled } from '../../utils/featureFlags';
-import type { SystemSettings, PrintTemplate, PrintSignatory, PrintTemplateConfig } from '../../types';
+import type { SystemSettings, PrintTemplate, PrintSignatory, PrintTemplateConfig, User, UserRole } from '../../types';
 import styles from './SystemSettingsPage.module.css';
 
 export default function SystemSettingsPage() {
   const queryClient = useQueryClient();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'ui' | 'lab' | 'reports' | 'email' | 'backup' | 'print'>(() => {
+  const [activeTab, setActiveTab] = useState<'ui' | 'lab' | 'reports' | 'email' | 'backup' | 'print' | 'users'>(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print') {
+    if (tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print' || tab === 'users') {
       return tab;
     }
     return 'lab';
@@ -25,6 +25,30 @@ export default function SystemSettingsPage() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateForm, setTemplateForm] = useState<PrintTemplate | null>(null);
   const [sampleBarcodeCollectionEnabled, setSampleBarcodeCollectionEnabled] = useState<boolean>(() => isSampleBarcodeEnabled());
+  const [userSearch, setUserSearch] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [userNotice, setUserNotice] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const userNoticeTimeoutRef = useRef<number | null>(null);
+  const [resetPasswordForm, setResetPasswordForm] = useState({ newPassword: '', confirmPassword: '' });
+  const [userForm, setUserForm] = useState({
+    username: '',
+    email: '',
+    full_name: '',
+    role: 'Receptionist' as UserRole,
+    is_active: true,
+    password: '',
+    password_confirm: '',
+  });
+
+  const roleOptions: UserRole[] = [
+    'Admin',
+    'Receptionist',
+    'Cashier',
+    'Phlebotomist',
+    'Lab Technician',
+    'Pathologist',
+    'Manager',
+  ];
 
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ['system-settings'],
@@ -147,6 +171,15 @@ export default function SystemSettingsPage() {
   // Use normalizer to handle both wrapped {data: {...}} and plain object responses
   const settings = normalizeObjectResponse<SystemSettings>(settingsData);
   const templates = useMemo(() => (templatesData || []) as PrintTemplate[], [templatesData]);
+  const isUserTab = activeTab === 'users';
+
+  const { data: usersData, isLoading: isUsersLoading, error: usersError } = useQuery({
+    queryKey: ['users', userSearch],
+    queryFn: () => userApi.list(userSearch ? { search: userSearch } : undefined),
+    enabled: isUserTab,
+  });
+
+  const users = useMemo(() => (usersData ? normalizeListResponse<User>(usersData) : []), [usersData]);
 
   useEffect(() => {
     if (!templates.length) return;
@@ -172,11 +205,19 @@ export default function SystemSettingsPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if ((tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print') && activeTab !== tab) {
+    if ((tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print' || tab === 'users') && activeTab !== tab) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(tab);
     }
   }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    return () => {
+      if (userNoticeTimeoutRef.current) {
+        window.clearTimeout(userNoticeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -272,6 +313,166 @@ export default function SystemSettingsPage() {
     updateTemplateMutation.mutate(templateForm);
   };
 
+  const showUserNotice = (type: 'success' | 'error', message: string) => {
+    setUserNotice({ type, message });
+    if (userNoticeTimeoutRef.current) {
+      window.clearTimeout(userNoticeTimeoutRef.current);
+    }
+    userNoticeTimeoutRef.current = window.setTimeout(() => {
+      setUserNotice(null);
+    }, 4000);
+  };
+
+  const resetUserForm = () => {
+    setSelectedUserId(null);
+    setUserForm({
+      username: '',
+      email: '',
+      full_name: '',
+      role: 'Receptionist' as UserRole,
+      is_active: true,
+      password: '',
+      password_confirm: '',
+    });
+    setResetPasswordForm({ newPassword: '', confirmPassword: '' });
+  };
+
+  const createUserMutation = useMutation({
+    mutationFn: (data: {
+      username: string;
+      email: string;
+      full_name: string;
+      role: UserRole;
+      password: string;
+      password_confirm: string;
+    }) => userApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      showUserNotice('success', 'User created successfully.');
+      resetUserForm();
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Failed to create user.';
+      showUserNotice('error', message);
+    },
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<User> }) => userApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      showUserNotice('success', 'User updated successfully.');
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Failed to update user.';
+      showUserNotice('error', message);
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: number) => userApi.remove(id),
+    onSuccess: (_, removedId) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      showUserNotice('success', 'User removed successfully.');
+      if (selectedUserId === removedId) {
+        resetUserForm();
+      }
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Failed to remove user.';
+      showUserNotice('error', message);
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({ id, newPassword, confirmPassword }: { id: number; newPassword: string; confirmPassword: string }) =>
+      userApi.resetPassword(id, newPassword, confirmPassword),
+    onSuccess: () => {
+      showUserNotice('success', 'Password reset successfully.');
+      setResetPasswordForm({ newPassword: '', confirmPassword: '' });
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Failed to reset password.';
+      showUserNotice('error', message);
+    },
+  });
+
+  const handleUserSave = () => {
+    if (!userForm.username.trim() || !userForm.email.trim() || !userForm.full_name.trim()) {
+      showUserNotice('error', 'Username, email, and full name are required.');
+      return;
+    }
+
+    if (!selectedUserId) {
+      if (!userForm.password || !userForm.password_confirm) {
+        showUserNotice('error', 'Password and confirmation are required for new users.');
+        return;
+      }
+      if (userForm.password !== userForm.password_confirm) {
+        showUserNotice('error', 'Passwords do not match.');
+        return;
+      }
+      createUserMutation.mutate({
+        username: userForm.username.trim(),
+        email: userForm.email.trim(),
+        full_name: userForm.full_name.trim(),
+        role: userForm.role,
+        password: userForm.password,
+        password_confirm: userForm.password_confirm,
+      });
+      return;
+    }
+
+    updateUserMutation.mutate({
+      id: selectedUserId,
+      data: {
+        username: userForm.username.trim(),
+        email: userForm.email.trim(),
+        full_name: userForm.full_name.trim(),
+        role: userForm.role,
+        is_active: userForm.is_active,
+      },
+    });
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUserId(user.id);
+    setUserForm({
+      username: user.username,
+      email: user.email,
+      full_name: user.full_name,
+      role: user.role,
+      is_active: user.is_active,
+      password: '',
+      password_confirm: '',
+    });
+    setResetPasswordForm({ newPassword: '', confirmPassword: '' });
+  };
+
+  const handleDeleteUser = (user: User) => {
+    if (!confirm(`Remove user ${user.full_name}? This cannot be undone.`)) return;
+    deleteUserMutation.mutate(user.id);
+  };
+
+  const handleResetPassword = () => {
+    if (!selectedUserId) return;
+    if (!resetPasswordForm.newPassword || !resetPasswordForm.confirmPassword) {
+      showUserNotice('error', 'Enter a new password and confirm it.');
+      return;
+    }
+    if (resetPasswordForm.newPassword !== resetPasswordForm.confirmPassword) {
+      showUserNotice('error', 'Passwords do not match.');
+      return;
+    }
+    resetPasswordMutation.mutate({
+      id: selectedUserId,
+      newPassword: resetPasswordForm.newPassword,
+      confirmPassword: resetPasswordForm.confirmPassword,
+    });
+  };
+
+  const isEditingUser = Boolean(selectedUserId);
+
   if (isLoading) {
     return <div className={styles.loading}>Loading settings...</div>;
   }
@@ -319,6 +520,12 @@ export default function SystemSettingsPage() {
           Backup Settings
         </button>
         <button
+          className={activeTab === 'users' ? styles.activeTab : styles.tab}
+          onClick={() => setActiveTab('users')}
+        >
+          User Management
+        </button>
+        <button
           className={activeTab === 'print' ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab('print')}
         >
@@ -326,7 +533,248 @@ export default function SystemSettingsPage() {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+      {activeTab === 'users' ? (
+        <div className={styles.tabContent}>
+          <h2>User Management</h2>
+          <p className={styles.description}>
+            Create, update, and deactivate users. Managers and admins can also reset passwords.
+          </p>
+
+          {userNotice && (
+            <div className={`${styles.notice} ${userNotice.type === 'success' ? styles.noticeSuccess : styles.noticeError}`}>
+              {userNotice.message}
+            </div>
+          )}
+
+          <div className={styles.userGrid}>
+            <div className={styles.userCard}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h3>{isEditingUser ? 'Edit User' : 'Create User'}</h3>
+                  <p className={styles.hint}>
+                    {isEditingUser ? 'Update user details or reset the password below.' : 'Fill in the details to create a new user.'}
+                  </p>
+                </div>
+                {isEditingUser && (
+                  <button type="button" className={styles.secondaryButton} onClick={resetUserForm}>
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Username *</label>
+                  <input
+                    className={styles.input}
+                    type="text"
+                    value={userForm.username}
+                    onChange={(e) => setUserForm((prev) => ({ ...prev, username: e.target.value }))}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Email *</label>
+                  <input
+                    className={styles.input}
+                    type="email"
+                    value={userForm.email}
+                    onChange={(e) => setUserForm((prev) => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Full Name *</label>
+                <input
+                  className={styles.input}
+                  type="text"
+                  value={userForm.full_name}
+                  onChange={(e) => setUserForm((prev) => ({ ...prev, full_name: e.target.value }))}
+                />
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Role</label>
+                  <select
+                    className={styles.select}
+                    value={userForm.role}
+                    onChange={(e) => setUserForm((prev) => ({ ...prev, role: e.target.value as UserRole }))}
+                  >
+                    {roleOptions.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={userForm.is_active}
+                      onChange={(e) => setUserForm((prev) => ({ ...prev, is_active: e.target.checked }))}
+                      className={styles.checkbox}
+                    />
+                    Active
+                  </label>
+                </div>
+              </div>
+
+              {!isEditingUser && (
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Password *</label>
+                    <input
+                      className={styles.input}
+                      type="password"
+                      value={userForm.password}
+                      onChange={(e) => setUserForm((prev) => ({ ...prev, password: e.target.value }))}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Confirm Password *</label>
+                    <input
+                      className={styles.input}
+                      type="password"
+                      value={userForm.password_confirm}
+                      onChange={(e) => setUserForm((prev) => ({ ...prev, password_confirm: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className={styles.userFormActions}>
+                <button
+                  type="button"
+                  className={styles.submitButton}
+                  onClick={handleUserSave}
+                  disabled={createUserMutation.isPending || updateUserMutation.isPending}
+                >
+                  {isEditingUser
+                    ? (updateUserMutation.isPending ? 'Updating...' : 'Update User')
+                    : (createUserMutation.isPending ? 'Creating...' : 'Create User')}
+                </button>
+              </div>
+
+              {isEditingUser && (
+                <div className={styles.resetPanel}>
+                  <h4>Reset Password</h4>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label>New Password</label>
+                      <input
+                        className={styles.input}
+                        type="password"
+                        value={resetPasswordForm.newPassword}
+                        onChange={(e) => setResetPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Confirm Password</label>
+                      <input
+                        className={styles.input}
+                        type="password"
+                        value={resetPasswordForm.confirmPassword}
+                        onChange={(e) => setResetPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.resetButton}
+                    onClick={handleResetPassword}
+                    disabled={resetPasswordMutation.isPending}
+                  >
+                    {resetPasswordMutation.isPending ? 'Resetting...' : 'Reset Password'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.userListCard}>
+              <div className={styles.listHeader}>
+                <div>
+                  <h3>Users</h3>
+                  <p className={styles.hint}>Search by name, username, or email.</p>
+                </div>
+                <input
+                  className={styles.searchInput}
+                  type="text"
+                  placeholder="Search users..."
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                />
+              </div>
+
+              {isUsersLoading ? (
+                <div className={styles.loading}>Loading users...</div>
+              ) : usersError ? (
+                <div className={styles.error}>Failed to load users.</div>
+              ) : users.length === 0 ? (
+                <div className={styles.emptyState}>No users found.</div>
+              ) : (
+                <div className={styles.tableWrapper}>
+                  <table className={styles.userTable}>
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => (
+                        <tr key={user.id} className={selectedUserId === user.id ? styles.activeRow : undefined}>
+                          <td>
+                            <div className={styles.userIdentity}>
+                              <span className={styles.userName}>{user.full_name}</span>
+                              <span className={styles.userMeta}>@{user.username}</span>
+                            </div>
+                          </td>
+                          <td>{user.email}</td>
+                          <td>{user.role}</td>
+                          <td>
+                            <span
+                              className={`${styles.statusBadge} ${user.is_active ? styles.statusActive : styles.statusInactive}`}
+                            >
+                              {user.is_active ? 'Active' : 'Disabled'}
+                            </span>
+                          </td>
+                          <td>{user.last_login ? new Date(user.last_login).toLocaleString() : '—'}</td>
+                          <td>
+                            <div className={styles.userActions}>
+                              <button
+                                type="button"
+                                className={`${styles.actionButton} ${styles.actionPrimary}`}
+                                onClick={() => handleEditUser(user)}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className={`${styles.actionButton} ${styles.actionDanger}`}
+                                onClick={() => handleDeleteUser(user)}
+                                disabled={deleteUserMutation.isPending}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className={styles.form}>
         {activeTab === 'ui' && (
           <div className={styles.tabContent}>
             <h2>UI Update</h2>
@@ -922,7 +1370,8 @@ export default function SystemSettingsPage() {
             </button>
           </div>
         )}
-      </form>
+        </form>
+      )}
     </div>
   );
 }

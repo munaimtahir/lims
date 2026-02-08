@@ -1,0 +1,30 @@
+{
+  "status": 400,
+  "body": {
+    "error": "Verification failed for some results.",
+    "details": [
+      "Result for 'Hematocrit (HCT)' is missing a value.",
+      "Result for 'Red Blood Cells (RBC)' is missing a value.",
+      "Result for 'White Blood Cells (WBC/TLC)' is missing a value.",
+      "Result for 'Platelets' is missing a value.",
+      "Result for 'Mean Cell Volume (MCV)' is missing a value.",
+      "Result for 'Mean Cell Hemoglobin (MCH)' is missing a value.",
+      "Result for 'Mean Cell Hb Conc (MCHC)' is missing a value.",
+      "Result for 'RDW-CV' is missing a value.",
+      "Result for 'RDW-SD' is missing a value.",
+      "Result for 'Mean Platelet Volume (MPV)' is missing a value.",
+      "Result for 'Platelet Distribution Width (PDW)' is missing a value.",
+      "Result for 'Plateletcrit (PCT)' is missing a value.",
+      "Result for 'Neutrophils' is missing a value.",
+      "Result for 'Lymphocytes' is missing a value.",
+      "Result for 'Monocytes' is missing a value.",
+      "Result for 'Eosinophils' is missing a value.",
+      "Result for 'Basophils' is missing a value.",
+      "Result for 'Neutrophils (Absolute)' is missing a value.",
+      "Result for 'Lymphocytes (Absolute)' is missing a value.",
+      "Result for 'Monocytes (Absolute)' is missing a value.",
+      "Result for 'Eosinophils (Absolute)' is missing a value.",
+      "Result for 'Basophils (Absolute)' is missing a value."
+    ]
+  }
+}

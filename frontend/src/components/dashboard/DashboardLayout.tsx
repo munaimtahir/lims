@@ -19,9 +19,6 @@ export default function DashboardLayout() {
 
     if (!user) return items;
 
-    // Common items for all roles
-    items.push({ to: '/dashboard', label: 'Dashboard' });
-
     switch (user.role) {
       case 'Admin':
         items.push(
@@ -31,17 +28,18 @@ export default function DashboardLayout() {
           { to: '/dashboard/samples', label: 'Samples' },
           { to: '/dashboard/results', label: 'Results' },
           { to: '/dashboard/reports', label: 'Reports' },
-          { to: '/dashboard/payments', label: 'Payments' },
-          { to: '/dashboard/audit', label: 'Audit Logs' },
           {
             to: '/dashboard/settings',
             label: 'Settings',
             children: [
               { to: '/dashboard/settings?tab=ui', label: 'UI Update' },
+              { to: '/dashboard/settings?tab=users', label: 'User Management' },
               { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
               { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
               { to: '/dashboard/tests', label: 'Test Catalog' },
               { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
+              { to: '/dashboard/payments', label: 'Payments' },
+              { to: '/dashboard/audit', label: 'Audit Logs' },
             ],
           }
         );
@@ -73,22 +71,24 @@ export default function DashboardLayout() {
         break;
       case 'Pathologist':
         items.push(
-          { to: '/dashboard/review', label: 'Review Queue' },
+          { to: '/dashboard/verification', label: 'Verification' },
           { to: '/dashboard/reports', label: 'Reports' }
         );
         break;
       case 'Manager':
         items.push(
           { to: '/dashboard/reports', label: 'Reports' },
-          { to: '/dashboard/audit', label: 'Audit Logs' },
           {
             to: '/dashboard/settings',
             label: 'Settings',
             children: [
+              { to: '/dashboard/settings?tab=users', label: 'User Management' },
               { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
               { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
               { to: '/dashboard/tests', label: 'Test Catalog' },
               { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
+              { to: '/dashboard/payments', label: 'Payments' },
+              { to: '/dashboard/audit', label: 'Audit Logs' },
             ],
           }
         );

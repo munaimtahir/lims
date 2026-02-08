@@ -1,0 +1,107 @@
+- generic [ref=e4]:
+  - navigation [ref=e5]:
+    - link "LIMS" [ref=e6] [cursor=pointer]:
+      - /url: /dashboard
+      - heading "LIMS" [level=1] [ref=e7]
+    - list [ref=e8]:
+      - listitem [ref=e9]:
+        - link "Registration" [ref=e10] [cursor=pointer]:
+          - /url: /dashboard/registration
+      - listitem [ref=e11]:
+        - link "Patients" [ref=e12] [cursor=pointer]:
+          - /url: /dashboard/patients
+      - listitem [ref=e13]:
+        - link "Worklist" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard/patients-worklist
+      - listitem [ref=e15]:
+        - link "Samples" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard/samples
+      - listitem [ref=e17]:
+        - link "Results" [ref=e18] [cursor=pointer]:
+          - /url: /dashboard/results
+      - listitem [ref=e19]:
+        - link "Reports" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard/reports
+      - listitem [ref=e21]:
+        - link "Settings" [ref=e22] [cursor=pointer]:
+          - /url: /dashboard/settings
+        - list [ref=e23]:
+          - listitem [ref=e24]:
+            - link "UI Update" [ref=e25] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=ui
+          - listitem [ref=e26]:
+            - link "User Management" [ref=e27] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=users
+          - listitem [ref=e28]:
+            - link "Report Customization" [ref=e29] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=reports
+          - listitem [ref=e30]:
+            - link "Print Templates" [ref=e31] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=print
+          - listitem [ref=e32]:
+            - link "Test Catalog" [ref=e33] [cursor=pointer]:
+              - /url: /dashboard/tests
+          - listitem [ref=e34]:
+            - link "Normal Ranges" [ref=e35] [cursor=pointer]:
+              - /url: /dashboard/reference-ranges
+          - listitem [ref=e36]:
+            - link "Payments" [ref=e37] [cursor=pointer]:
+              - /url: /dashboard/payments
+          - listitem [ref=e38]:
+            - link "Audit Logs" [ref=e39] [cursor=pointer]:
+              - /url: /dashboard/audit
+    - generic [ref=e40]:
+      - generic [ref=e41]: System Admin
+      - generic [ref=e42]: admin@example.com
+      - button "Sign Out" [ref=e43] [cursor=pointer]
+  - main [ref=e44]:
+    - generic [ref=e128]:
+      - button "← Back to Worklist" [ref=e129] [cursor=pointer]
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - heading "Result Entry" [level=1] [ref=e132]
+          - generic [ref=e133]: "#ORD-20260207-0001"
+        - generic [ref=e134]:
+          - text: "Test:"
+          - strong [ref=e135]: Blood Group & Rh (ABO/RhD)
+        - generic [ref=e136]:
+          - generic [ref=e137]:
+            - generic [ref=e138]: Patient Name
+            - generic [ref=e139]: Munaim
+          - generic [ref=e140]:
+            - generic [ref=e141]: MRN
+            - generic [ref=e142]: PAT-20260205-0007
+          - generic [ref=e143]:
+            - generic [ref=e144]: Age / Gender
+            - generic [ref=e145]: 35y / Male
+      - generic [ref=e146]:
+        - generic [ref=e147]:
+          - button "💾 Save Draft" [ref=e148] [cursor=pointer]
+          - button "✓ Save & Verify All" [ref=e149] [cursor=pointer]
+        - table [ref=e151]:
+          - rowgroup [ref=e152]:
+            - row "Test Parameter Result Value Unit Reference / Status" [ref=e153]:
+              - columnheader "Test Parameter" [ref=e154]
+              - columnheader "Result Value" [ref=e155]
+              - columnheader "Unit" [ref=e156]
+              - columnheader "Reference / Status" [ref=e157]
+          - rowgroup [ref=e158]:
+            - row "ABO Group - pending" [ref=e159]:
+              - cell "ABO Group" [ref=e160]:
+                - generic [ref=e161]: ABO Group
+              - cell [ref=e162]:
+                - textbox "Enter value" [active] [ref=e164]
+              - cell "-" [ref=e165]
+              - cell "pending" [ref=e166]:
+                - generic [ref=e168]: pending
+            - row "Rh(D) - pending" [ref=e169]:
+              - cell "Rh(D)" [ref=e170]:
+                - generic [ref=e171]: Rh(D)
+              - cell [ref=e172]:
+                - textbox "Enter value" [ref=e174]
+              - cell "-" [ref=e175]
+              - cell "pending" [ref=e176]:
+                - generic [ref=e178]: pending
+        - generic [ref=e179]:
+          - button "Save Draft" [ref=e180] [cursor=pointer]
+          - button "✓ Save & Verify All" [ref=e181] [cursor=pointer]

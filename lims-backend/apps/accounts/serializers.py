@@ -175,3 +175,31 @@ class ChangePasswordSerializer(serializers.Serializer):
                 {"new_password": "New password fields didn't match."}
             )
         return attrs
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for resetting a user's password by an admin/manager.
+    """
+
+    new_password = serializers.CharField(required=True, write_only=True)
+    new_password_confirm = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        """
+        Validate that the new password and confirmation match.
+
+        Args:
+            attrs (dict): The dictionary of attributes to validate.
+
+        Returns:
+            dict: The validated attributes.
+
+        Raises:
+            serializers.ValidationError: If the new passwords do not match.
+        """
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise serializers.ValidationError(
+                {"new_password": "New password fields didn't match."}
+            )
+        return attrs

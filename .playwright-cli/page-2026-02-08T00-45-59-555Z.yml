@@ -1,0 +1,139 @@
+- generic [ref=e4]:
+  - navigation [ref=e5]:
+    - link "LIMS" [ref=e6] [cursor=pointer]:
+      - /url: /dashboard
+      - heading "LIMS" [level=1] [ref=e7]
+    - list [ref=e8]:
+      - listitem [ref=e9]:
+        - link "Registration" [ref=e10] [cursor=pointer]:
+          - /url: /dashboard/registration
+      - listitem [ref=e11]:
+        - link "Patients" [ref=e12] [cursor=pointer]:
+          - /url: /dashboard/patients
+      - listitem [ref=e13]:
+        - link "Worklist" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard/patients-worklist
+      - listitem [ref=e15]:
+        - link "Samples" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard/samples
+      - listitem [ref=e17]:
+        - link "Results" [ref=e18] [cursor=pointer]:
+          - /url: /dashboard/results
+      - listitem [ref=e19]:
+        - link "Reports" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard/reports
+      - listitem [ref=e21]:
+        - link "Settings" [ref=e22] [cursor=pointer]:
+          - /url: /dashboard/settings
+        - list [ref=e23]:
+          - listitem [ref=e24]:
+            - link "UI Update" [ref=e25] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=ui
+          - listitem [ref=e26]:
+            - link "User Management" [ref=e27] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=users
+          - listitem [ref=e28]:
+            - link "Report Customization" [ref=e29] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=reports
+          - listitem [ref=e30]:
+            - link "Print Templates" [ref=e31] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=print
+          - listitem [ref=e32]:
+            - link "Test Catalog" [ref=e33] [cursor=pointer]:
+              - /url: /dashboard/tests
+          - listitem [ref=e34]:
+            - link "Normal Ranges" [ref=e35] [cursor=pointer]:
+              - /url: /dashboard/reference-ranges
+          - listitem [ref=e36]:
+            - link "Payments" [ref=e37] [cursor=pointer]:
+              - /url: /dashboard/payments
+          - listitem [ref=e38]:
+            - link "Audit Logs" [ref=e39] [cursor=pointer]:
+              - /url: /dashboard/audit
+    - generic [ref=e40]:
+      - generic [ref=e41]: System Admin
+      - generic [ref=e42]: admin@example.com
+      - button "Sign Out" [ref=e43] [cursor=pointer]
+  - main [ref=e44]:
+    - generic [ref=e45]:
+      - generic [ref=e119]: Opening receipt...
+      - generic [ref=e47]:
+        - heading "Patients Worklist" [level=1] [ref=e48]
+        - paragraph [ref=e49]: Track current workflow status and reprint receipts/reports.
+      - generic [ref=e50]:
+        - textbox "Search by name, mobile, or order number" [ref=e51]
+        - textbox [ref=e52]
+        - textbox [ref=e53]
+        - combobox [ref=e54]:
+          - option "All Statuses" [selected]
+          - option "Registered / Order Created"
+          - option "Paid"
+          - option "Sample Collected"
+          - option "In Testing / Result Pending"
+          - option "Report Ready / Verified"
+          - option "Report Published"
+          - option "Cancelled"
+        - button "Today" [ref=e55] [cursor=pointer]
+        - button "Last 7 Days" [ref=e56] [cursor=pointer]
+      - table [ref=e57]:
+        - rowgroup [ref=e58]:
+          - row "Patient Mobile Order Status Date Actions" [ref=e59]:
+            - columnheader "Patient" [ref=e60]
+            - columnheader "Mobile" [ref=e61]
+            - columnheader "Order" [ref=e62]
+            - columnheader "Status" [ref=e63]
+            - columnheader "Date" [ref=e64]
+            - columnheader "Actions" [ref=e65]
+        - rowgroup [ref=e66]:
+          - row "Munaim Male 03338375050 ORD-20260207-0003 Paid 07/02/26 Print Receipt Print Report" [ref=e67]:
+            - cell "Munaim Male" [ref=e68]:
+              - generic [ref=e69]:
+                - generic [ref=e70]: Munaim
+                - generic [ref=e71]: Male
+            - cell "03338375050" [ref=e72]
+            - cell "ORD-20260207-0003" [ref=e73]
+            - cell "Paid" [ref=e74]
+            - cell "07/02/26" [ref=e75]
+            - cell "Print Receipt Print Report" [ref=e76]:
+              - generic [ref=e77]:
+                - button "Print Receipt" [ref=e78] [cursor=pointer]
+                - button "Print Report" [disabled] [ref=e79] [cursor=pointer]
+          - row "Test Workflow Male 03001234567 ORD-20260207-0002 Paid 07/02/26 Print Receipt Print Report" [ref=e80]:
+            - cell "Test Workflow Male" [ref=e81]:
+              - generic [ref=e82]:
+                - generic [ref=e83]: Test Workflow
+                - generic [ref=e84]: Male
+            - cell "03001234567" [ref=e85]
+            - cell "ORD-20260207-0002" [ref=e86]
+            - cell "Paid" [ref=e87]
+            - cell "07/02/26" [ref=e88]
+            - cell "Print Receipt Print Report" [ref=e89]:
+              - generic [ref=e90]:
+                - button "Print Receipt" [disabled] [ref=e91] [cursor=pointer]
+                - button "Print Report" [disabled] [ref=e92] [cursor=pointer]
+          - row "Test Workflow Male 03001234567 ORD-20260205-0002 Registered / Order Created 05/02/26 Print Receipt Print Report" [ref=e93]:
+            - cell "Test Workflow Male" [ref=e94]:
+              - generic [ref=e95]:
+                - generic [ref=e96]: Test Workflow
+                - generic [ref=e97]: Male
+            - cell "03001234567" [ref=e98]
+            - cell "ORD-20260205-0002" [ref=e99]
+            - cell "Registered / Order Created" [ref=e100]
+            - cell "05/02/26" [ref=e101]
+            - cell "Print Receipt Print Report" [ref=e102]:
+              - generic [ref=e103]:
+                - button "Print Receipt" [disabled] [ref=e104] [cursor=pointer]
+                - button "Print Report" [disabled] [ref=e105] [cursor=pointer]
+          - row "Test Workflow Male 03001234567 ORD-20260205-0001 Registered / Order Created 05/02/26 Print Receipt Print Report" [ref=e106]:
+            - cell "Test Workflow Male" [ref=e107]:
+              - generic [ref=e108]:
+                - generic [ref=e109]: Test Workflow
+                - generic [ref=e110]: Male
+            - cell "03001234567" [ref=e111]
+            - cell "ORD-20260205-0001" [ref=e112]
+            - cell "Registered / Order Created" [ref=e113]
+            - cell "05/02/26" [ref=e114]
+            - cell "Print Receipt Print Report" [ref=e115]:
+              - generic [ref=e116]:
+                - button "Print Receipt" [disabled] [ref=e117] [cursor=pointer]
+                - button "Print Report" [disabled] [ref=e118] [cursor=pointer]

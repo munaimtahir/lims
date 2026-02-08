@@ -10,10 +10,11 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
-from .permissions import IsAdmin
+from .permissions import IsManagerOrAdmin
 from .serializers import (
     ChangePasswordSerializer,
     LoginSerializer,
+    ResetPasswordSerializer,
     UserCreateSerializer,
     UserSerializer,
 )
@@ -119,13 +120,13 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     ViewSet for User CRUD operations.
 
-    This ViewSet is restricted to admin users. It allows for creating,
+    This ViewSet is restricted to admin and manager users. It allows for creating,
     retrieving, updating, and deleting users.
     """
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated, IsManagerOrAdmin]
     filterset_fields = ["role", "is_active"]
     search_fields = ["username", "email", "full_name"]
     ordering_fields = ["date_joined", "username"]
@@ -225,5 +226,29 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(
             {"success": True, "message": "Password changed successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"])
+    def reset_password(self, request, pk=None):
+        """
+        Reset a user's password (admin/manager action).
+
+        Args:
+            request (Request): The request object containing new password fields.
+            pk (int, optional): The primary key of the user. Defaults to None.
+
+        Returns:
+            Response: A success or failure message.
+        """
+        user = self.get_object()
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user.set_password(serializer.validated_data["new_password"])
+        user.save()
+
+        return Response(
+            {"success": True, "message": "Password reset successfully"},
             status=status.HTTP_200_OK,
         )

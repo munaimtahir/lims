@@ -1,0 +1,136 @@
+- generic [ref=e4]:
+  - navigation [ref=e5]:
+    - link "LIMS" [ref=e6] [cursor=pointer]:
+      - /url: /dashboard
+      - heading "LIMS" [level=1] [ref=e7]
+    - list [ref=e8]:
+      - listitem [ref=e9]:
+        - link "Dashboard" [ref=e10] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=e11]:
+        - link "Registration" [ref=e12] [cursor=pointer]:
+          - /url: /dashboard/registration
+      - listitem [ref=e13]:
+        - link "Patients" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard/patients
+      - listitem [ref=e15]:
+        - link "Worklist" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard/patients-worklist
+      - listitem [ref=e17]:
+        - link "Samples" [ref=e18] [cursor=pointer]:
+          - /url: /dashboard/samples
+      - listitem [ref=e19]:
+        - link "Results" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard/results
+      - listitem [ref=e21]:
+        - link "Reports" [ref=e22] [cursor=pointer]:
+          - /url: /dashboard/reports
+      - listitem [ref=e23]:
+        - link "Payments" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard/payments
+      - listitem [ref=e25]:
+        - link "Audit Logs" [ref=e26] [cursor=pointer]:
+          - /url: /dashboard/audit
+      - listitem [ref=e27]:
+        - link "Settings" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/settings
+        - list [ref=e29]:
+          - listitem [ref=e30]:
+            - link "UI Update" [ref=e31] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=ui
+          - listitem [ref=e32]:
+            - link "Report Customization" [ref=e33] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=reports
+          - listitem [ref=e34]:
+            - link "Print Templates" [ref=e35] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=print
+          - listitem [ref=e36]:
+            - link "Test Catalog" [ref=e37] [cursor=pointer]:
+              - /url: /dashboard/tests
+          - listitem [ref=e38]:
+            - link "Normal Ranges" [ref=e39] [cursor=pointer]:
+              - /url: /dashboard/reference-ranges
+    - generic [ref=e40]:
+      - generic [ref=e41]: System Admin
+      - generic [ref=e42]: admin@example.com
+      - button "Sign Out" [ref=e43] [cursor=pointer]
+  - main [ref=e44]:
+    - generic [ref=e545]:
+      - generic [ref=e546]:
+        - heading "Pending Results Worklist" [level=1] [ref=e548]
+        - textbox "Search by Order ID, Patient, or Test..." [ref=e550]
+      - table [ref=e552]:
+        - rowgroup [ref=e553]:
+          - row "Lab / Visit ID Patient Test / Panel Created Status Action" [ref=e554]:
+            - columnheader "Lab / Visit ID" [ref=e555]
+            - columnheader "Patient" [ref=e556]
+            - columnheader "Test / Panel" [ref=e557]
+            - columnheader "Created" [ref=e558]
+            - columnheader "Status" [ref=e559]
+            - columnheader "Action" [ref=e560]
+        - rowgroup [ref=e561]:
+          - row "ORD-20260207-0001 Munaim 35y / Male • PAT-20260205-0007 Blood Group & Rh (ABO/RhD) 2/7/2026, 3:29:19 PM NEW Enter Results" [ref=e562]:
+            - cell "ORD-20260207-0001" [ref=e563]
+            - cell "Munaim 35y / Male • PAT-20260205-0007" [ref=e564]:
+              - generic [ref=e565]:
+                - generic [ref=e566]: Munaim
+                - generic [ref=e567]: 35y / Male • PAT-20260205-0007
+            - cell "Blood Group & Rh (ABO/RhD)" [ref=e568]:
+              - generic [ref=e569]: Blood Group & Rh (ABO/RhD)
+            - cell "2/7/2026, 3:29:19 PM" [ref=e570]
+            - cell "NEW" [ref=e571]:
+              - generic [ref=e572]: NEW
+            - cell "Enter Results" [ref=e573]:
+              - button "Enter Results" [ref=e574]
+          - row "ORD-20260207-0002 Test Workflow 30y / Male • PAT-20260205-0006 Erythrocyte Sedimentation Rate (ESR) 2/7/2026, 3:30:44 PM NEW Enter Results" [ref=e575]:
+            - cell "ORD-20260207-0002" [ref=e576]
+            - cell "Test Workflow 30y / Male • PAT-20260205-0006" [ref=e577]:
+              - generic [ref=e578]:
+                - generic [ref=e579]: Test Workflow
+                - generic [ref=e580]: 30y / Male • PAT-20260205-0006
+            - cell "Erythrocyte Sedimentation Rate (ESR)" [ref=e581]:
+              - generic [ref=e582]: Erythrocyte Sedimentation Rate (ESR)
+            - cell "2/7/2026, 3:30:44 PM" [ref=e583]
+            - cell "NEW" [ref=e584]:
+              - generic [ref=e585]: NEW
+            - cell "Enter Results" [ref=e586]:
+              - button "Enter Results" [ref=e587]
+          - row "ORD-20260206-0001 Munaim 35y / Male • PAT-20260205-0007 2 Hours Postprandial Blood Sugar (2HPP) 2/6/2026, 12:55:14 PM NEW Enter Results" [ref=e588]:
+            - cell "ORD-20260206-0001" [ref=e589]
+            - cell "Munaim 35y / Male • PAT-20260205-0007" [ref=e590]:
+              - generic [ref=e591]:
+                - generic [ref=e592]: Munaim
+                - generic [ref=e593]: 35y / Male • PAT-20260205-0007
+            - cell "2 Hours Postprandial Blood Sugar (2HPP)" [ref=e594]:
+              - generic [ref=e595]: 2 Hours Postprandial Blood Sugar (2HPP)
+            - cell "2/6/2026, 12:55:14 PM" [ref=e596]
+            - cell "NEW" [ref=e597]:
+              - generic [ref=e598]: NEW
+            - cell "Enter Results" [ref=e599]:
+              - button "Enter Results" [ref=e600]
+          - row "ORD-20260205-0004 Munaim 35y / Male • PAT-20260205-0007 Complete Blood Count (CBC) 2/6/2026, 3:08:05 AM NEW Enter Results" [ref=e601]:
+            - cell "ORD-20260205-0004" [ref=e602]
+            - cell "Munaim 35y / Male • PAT-20260205-0007" [ref=e603]:
+              - generic [ref=e604]:
+                - generic [ref=e605]: Munaim
+                - generic [ref=e606]: 35y / Male • PAT-20260205-0007
+            - cell "Complete Blood Count (CBC)" [ref=e607]:
+              - generic [ref=e608]: Complete Blood Count (CBC)
+            - cell "2/6/2026, 3:08:05 AM" [ref=e609]
+            - cell "NEW" [ref=e610]:
+              - generic [ref=e611]: NEW
+            - cell "Enter Results" [ref=e612]:
+              - button "Enter Results" [ref=e613]
+          - row "ORD-20260207-0002 Test Workflow 30y / Male • PAT-20260205-0006 Complete Blood Count (CBC) 2/7/2026, 3:30:44 PM NEW Enter Results" [ref=e614]:
+            - cell "ORD-20260207-0002" [ref=e615]
+            - cell "Test Workflow 30y / Male • PAT-20260205-0006" [ref=e616]:
+              - generic [ref=e617]:
+                - generic [ref=e618]: Test Workflow
+                - generic [ref=e619]: 30y / Male • PAT-20260205-0006
+            - cell "Complete Blood Count (CBC)" [ref=e620]:
+              - generic [ref=e621]: Complete Blood Count (CBC)
+            - cell "2/7/2026, 3:30:44 PM" [ref=e622]
+            - cell "NEW" [ref=e623]:
+              - generic [ref=e624]: NEW
+            - cell "Enter Results" [ref=e625]:
+              - button "Enter Results" [ref=e626]

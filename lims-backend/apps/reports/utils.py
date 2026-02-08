@@ -260,6 +260,9 @@ def generate_pdf_report(
         results_data = [["Parameter", "Result", "Unit", "Range", "Flag"]]
 
         for result in item.results.all().order_by("test_parameter__display_order"):
+            result_value = (result.result_value or "").strip()
+            if not result_value or result_value == "*":
+                continue
             param = result.test_parameter
             range_info = pick_reference_range(param, order.patient)
             ref_range = range_info["display"]
@@ -289,7 +292,7 @@ def generate_pdf_report(
             results_data.append(
                 [
                     param.effective_parameter_name,
-                    result.result_value,
+                    result_value,
                     param.unit,
                     ref_range,
                     Paragraph(flag_text, styles["Normal"]),

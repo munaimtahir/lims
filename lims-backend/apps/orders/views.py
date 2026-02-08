@@ -297,9 +297,15 @@ class WorklistPatientsView(APIView):
                 current_status = "Cancelled"
 
             report = report_map.get(patient.latest_order_id)
-            can_reprint_report = bool(
-                report and latest_order_status == "PUBLISHED" and report.report_file
-            )
+            can_reprint_report = bool(report and report.report_file)
+            receipt_pdf_url = None
+            report_pdf_url = None
+            if patient.latest_order_id and patient.latest_order_id in payments:
+                receipt_pdf_url = (
+                    f"/api/v1/orders/orders/{patient.latest_order_id}/receipt.pdf"
+                )
+            if patient.latest_order_id and can_reprint_report and report:
+                report_pdf_url = report.report_file.url
             age_years = (
                 patient.age_years if patient.age_years is not None else patient.age
             )
@@ -320,12 +326,13 @@ class WorklistPatientsView(APIView):
                     "current_status": current_status,
                     "can_reprint_receipt": patient.latest_order_id in payments,
                     "can_reprint_report": can_reprint_report,
-                    "receipt_pdf_url": f"/api/v1/orders/orders/{patient.latest_order_id}/receipt.pdf"
-                    if patient.latest_order_id in payments
+                    "receipt_pdf_url": receipt_pdf_url,
+                    "report_pdf_url": report_pdf_url,
+                    # Backwards-compatible fields for existing clients
+                    "receipt_url": str(patient.latest_order_id)
+                    if patient.latest_order_id
                     else None,
-                    "report_pdf_url": f"/api/v1/orders/orders/{patient.latest_order_id}/report.pdf"
-                    if can_reprint_report
-                    else None,
+                    "report_url": report_pdf_url,
                 }
             )
 

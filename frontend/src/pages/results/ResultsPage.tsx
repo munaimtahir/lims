@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type KeyboardEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { resultApi, orderApi } from '../../api/services/index';
+import { useAuth } from '../../contexts';
 import type { TestResult } from '../../types';
 import styles from './ResultsPage.module.css';
 import type { AxiosError } from 'axios';
@@ -20,6 +21,9 @@ interface WorklistOrderItem {
       mrn: string;
     };
     priority: string;
+    created_at?: string;
+    lab_number?: string | null;
+    status?: string;
   };
   test_name?: string;
   panel_name?: string;
@@ -47,9 +51,10 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
   const items = rawItems.filter(item => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
+    const patientName = (item.order?.patient?.full_name || item.patient_name || '').toLowerCase();
     return (
       item.order?.order_id?.toLowerCase().includes(term) ||
-      item.order?.patient?.full_name?.toLowerCase().includes(term) ||
+      patientName.includes(term) ||
       item.order?.patient?.mrn?.toLowerCase().includes(term) ||
       (item.test_name || '').toLowerCase().includes(term) ||
       (item.panel_name || '').toLowerCase().includes(term)
@@ -101,18 +106,25 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
                   </td>
                   <td>
                     <div className={styles.patientInfo}>
-                      <span className={styles.patientName}>{item.order?.patient?.full_name || item.patient_name || '—'}</span>
-                      <span className={styles.patientSub}>
-                        {(() => {
-                          const age = item.order?.patient?.age ?? item.patient_age;
-                          const gender = item.order?.patient?.gender || item.patient_gender;
-                          const mrn = item.order?.patient?.mrn;
-                          const agePart = age ? `${age}y${gender ? ' / ' : ''}` : '';
-                          const genderPart = gender || '';
-                          const mrnPart = mrn ? ` • ${mrn}` : '';
-                          return `${agePart}${genderPart}${mrnPart}`.trim() || ' ';
-                        })()}
-                      </span>
+                      {(() => {
+                        const patientName = [item.order?.patient?.full_name, item.patient_name]
+                          .map((value) => (value ?? '').trim())
+                          .find(Boolean);
+                        const age = item.order?.patient?.age ?? item.patient_age;
+                        const gender = item.order?.patient?.gender || item.patient_gender;
+                        const mrn = item.order?.patient?.mrn;
+                        const agePart = age ? `${age}y${gender ? ' / ' : ''}` : '';
+                        const genderPart = gender || '';
+                        const mrnPart = mrn ? ` • ${mrn}` : '';
+                        const subline = `${agePart}${genderPart}${mrnPart}`.trim();
+
+                        return (
+                          <>
+                            <span className={styles.patientName} data-testid="results-patient-name">{patientName || '—'}</span>
+                            <span className={styles.patientSub}>{subline || '—'}</span>
+                          </>
+                        );
+                      })()}
                     </div>
                   </td>
                   <td>
@@ -135,6 +147,7 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
                   </td>
                   <td>
                     <button
+                      type="button"
                       className={styles.verifyMainButton}
                       style={{ fontSize: '13px', padding: '8px 16px' }}
                       onClick={() => onSelect(item.id)}
@@ -184,7 +197,8 @@ const useResultEntry = (orderItemId: number) => {
       const initialResults: Record<number, string> = {};
       const initialRemarks: Record<number, string> = {};
       existingResultsData.data.results.forEach((r: TestResult) => {
-        initialResults[r.test_parameter] = r.result_value || '';
+        const value = r.result_value === '*' ? '' : (r.result_value || '');
+        initialResults[r.test_parameter] = value;
         initialRemarks[r.test_parameter] = r.remarks || '';
       });
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -196,12 +210,17 @@ const useResultEntry = (orderItemId: number) => {
 
   const saveMutation = useMutation({
     mutationFn: async (resultsToSave: TestResult[]) => {
-      const payload = resultsToSave.map(r => ({
-        order_item: orderItemId,
-        test_parameter: r.test_parameter,
-        result_value: results[r.test_parameter] ?? '',
-        remarks: remarks[r.test_parameter] ?? '',
-      }));
+      const payload = resultsToSave.map(r => {
+        const rawValue = (results[r.test_parameter] ?? '').toString();
+        const trimmedValue = rawValue.trim();
+        const resultValue = trimmedValue === '' ? '*' : trimmedValue;
+        return {
+          order_item: orderItemId,
+          test_parameter: r.test_parameter,
+          result_value: resultValue,
+          remarks: remarks[r.test_parameter] ?? '',
+        };
+      });
       return resultApi.bulkEntry(payload);
     },
     onSuccess: () => {
@@ -209,9 +228,15 @@ const useResultEntry = (orderItemId: number) => {
       queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
       queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
     },
-    onError: (error: AxiosError<{ error?: string; error_details?: unknown }>) => {
+    onError: (error: AxiosError<{ error?: string; error_details?: Array<{ error?: string }> }>) => {
+      const errorDetails = error.response?.data?.error_details || [];
+      const detailMessage = errorDetails
+        .map((detail) => detail?.error)
+        .filter(Boolean)
+        .join(' • ');
       const backendMessage =
-        (error.response?.data as { error?: string })?.error ||
+        detailMessage ||
+        error.response?.data?.error ||
         error.message ||
         'Unable to save results.';
       showToast('error', backendMessage);
@@ -225,16 +250,13 @@ const useResultEntry = (orderItemId: number) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
       queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
-      showToast('success', 'Results verified successfully.');
     },
     onError: (err: unknown) => {
-      const error = err as { response?: { data?: { details?: string[] } } };
+      const error = err as { response?: { data?: { error?: string; details?: string[] } } };
       const errorData = error.response?.data;
-      if (errorData && errorData.details) {
-        showToast('error', errorData.details.join(' • '));
-      } else {
-        showToast('error', 'An unexpected error occurred during verification.');
-      }
+      const detailMessage = errorData?.details?.length ? errorData.details.join(' • ') : '';
+      const backendMessage = detailMessage || errorData?.error || 'An unexpected error occurred during verification.';
+      showToast('error', backendMessage);
     },
   });
 
@@ -280,9 +302,12 @@ const useResultEntry = (orderItemId: number) => {
 
 const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () => void }) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const {
     results,
     setResults,
+    remarks,
+    setRemarks,
     existingResultsData,
     isLoadingResults,
     isError,
@@ -296,6 +321,7 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
 
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const canVerify = user?.role === 'Admin' || user?.role === 'Pathologist';
 
   const { data: orderItemDetails, isLoading: isLoadingDetails, isError: isDetailsError, error: detailsError, refetch: refetchDetails } = useQuery({
     queryKey: ['order-item-details', orderItemId],
@@ -324,8 +350,18 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
   };
 
   const handleSaveAndVerify = async () => {
+    if (!canVerify) {
+      showToast('error', 'You do not have permission to verify results.');
+      return;
+    }
+    if (!existingResultsData?.data.results?.length) {
+      showToast('error', 'No results found to verify.');
+      return;
+    }
     try {
-      await saveMutation.mutateAsync(existingResultsData?.data.results || []);
+      const resultItems = existingResultsData?.data.results || [];
+      await saveMutation.mutateAsync(resultItems);
+
       if (!confirm('This will lock all results and prevent edits. Continue?')) {
         return;
       }
@@ -344,7 +380,6 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
       showToast('success', 'Results saved and verified.');
     } catch (err) {
       console.error('Save and verify failed:', err);
-      showToast('error', 'Failed to save and verify results. Please try again.');
     }
   };
 
@@ -414,6 +449,14 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
   const patientInfo = orderInfo?.patient;
   const testInfo = orderDetails?.test_name || orderDetails?.panel_name;
   const allVerified = resultItems.every((r: TestResult) => r.status === 'verified');
+  const rejectedResults = resultItems.filter((r: TestResult) => r.status?.toLowerCase() === 'rejected');
+  const verifyDisabled = !canVerify || saveMutation.isPending || verifyMutation.isPending;
+  const saveAndVerifyLabel = saveMutation.isPending
+    ? 'Saving...'
+    : verifyMutation.isPending
+      ? 'Verifying...'
+      : '✓ Save & Verify All';
+  const verifyDisabledReason = !canVerify ? 'Only Admin or Pathologist can verify results.' : undefined;
 
 
   return (
@@ -464,6 +507,7 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
             {!allVerified && (
               <>
                 <button
+                  type="button"
                   className={styles.saveButton}
                   onClick={() => saveMutation.mutate(resultItems)}
                   disabled={saveMutation.isPending || verifyMutation.isPending}
@@ -471,11 +515,13 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
                   {saveMutation.isPending ? 'Saving...' : '💾 Save Draft'}
                 </button>
                 <button
+                  type="button"
                   className={`${styles.verifyMainButton} ${styles.saveButton}`}
                   onClick={handleSaveAndVerify}
-                  disabled={saveMutation.isPending || verifyMutation.isPending}
+                  disabled={verifyDisabled}
+                  title={verifyDisabledReason}
                 >
-                  {verifyMutation.isPending ? 'Verifying...' : '✓ Save & Verify All'}
+                  {saveAndVerifyLabel}
                 </button>
               </>
             )}
@@ -534,6 +580,9 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
                       </td>
                       <td>
                         <div className={styles.refRange}>
+                          <span className={styles.refValue}>
+                            {result.reference_range || '—'}
+                          </span>
                           <span className={`${styles.statusBadge} ${styles['status-' + (result.status?.toLowerCase() || 'pending')]}`}>
                             {result.status || 'Pending'}
                           </span>
@@ -557,6 +606,7 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
             {!allVerified && (
               <>
                 <button
+                  type="button"
                   className={styles.saveButton}
                   onClick={() => saveMutation.mutate(resultItems)}
                   disabled={saveMutation.isPending || verifyMutation.isPending}
@@ -564,11 +614,13 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
                   {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
                 </button>
                 <button
+                  type="button"
                   className={`${styles.verifyMainButton} ${styles.saveButton}`}
                   onClick={handleSaveAndVerify}
-                  disabled={saveMutation.isPending || verifyMutation.isPending}
+                  disabled={verifyDisabled}
+                  title={verifyDisabledReason}
                 >
-                  {verifyMutation.isPending ? 'Verifying...' : 'Save & Verify All'}
+                  {saveAndVerifyLabel}
                 </button>
               </>
             )}

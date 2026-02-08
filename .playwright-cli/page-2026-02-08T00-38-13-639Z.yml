@@ -1,0 +1,290 @@
+- generic [ref=e4]:
+  - navigation [ref=e5]:
+    - link "LIMS" [ref=e6] [cursor=pointer]:
+      - /url: /dashboard
+      - heading "LIMS" [level=1] [ref=e7]
+    - list [ref=e8]:
+      - listitem [ref=e9]:
+        - link "Dashboard" [ref=e10] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=e11]:
+        - link "Registration" [ref=e12] [cursor=pointer]:
+          - /url: /dashboard/registration
+      - listitem [ref=e13]:
+        - link "Patients" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard/patients
+      - listitem [ref=e15]:
+        - link "Worklist" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard/patients-worklist
+      - listitem [ref=e17]:
+        - link "Samples" [ref=e18] [cursor=pointer]:
+          - /url: /dashboard/samples
+      - listitem [ref=e19]:
+        - link "Results" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard/results
+      - listitem [ref=e21]:
+        - link "Reports" [ref=e22] [cursor=pointer]:
+          - /url: /dashboard/reports
+      - listitem [ref=e23]:
+        - link "Payments" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard/payments
+      - listitem [ref=e25]:
+        - link "Audit Logs" [ref=e26] [cursor=pointer]:
+          - /url: /dashboard/audit
+      - listitem [ref=e27]:
+        - link "Settings" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/settings
+        - list [ref=e29]:
+          - listitem [ref=e30]:
+            - link "UI Update" [ref=e31] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=ui
+          - listitem [ref=e32]:
+            - link "Report Customization" [ref=e33] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=reports
+          - listitem [ref=e34]:
+            - link "Print Templates" [ref=e35] [cursor=pointer]:
+              - /url: /dashboard/settings?tab=print
+          - listitem [ref=e36]:
+            - link "Test Catalog" [ref=e37] [cursor=pointer]:
+              - /url: /dashboard/tests
+          - listitem [ref=e38]:
+            - link "Normal Ranges" [ref=e39] [cursor=pointer]:
+              - /url: /dashboard/reference-ranges
+    - generic [ref=e40]:
+      - generic [ref=e41]: System Admin
+      - generic [ref=e42]: admin@example.com
+      - button "Sign Out" [ref=e43] [cursor=pointer]
+  - main [ref=e44]:
+    - generic [ref=e141]:
+      - generic [ref=e463]: Results saved.
+      - button "← Back to Worklist" [ref=e142] [cursor=pointer]
+      - generic [ref=e143]:
+        - generic [ref=e144]:
+          - heading "Result Entry" [level=1] [ref=e145]
+          - generic [ref=e146]: "#ORD-20260207-0003"
+        - generic [ref=e147]:
+          - text: "Test:"
+          - strong [ref=e148]: CBC
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - generic [ref=e151]: Patient Name
+            - generic [ref=e152]: Munaim
+          - generic [ref=e153]:
+            - generic [ref=e154]: MRN
+            - generic [ref=e155]: PAT-20260205-0007
+          - generic [ref=e156]:
+            - generic [ref=e157]: Age / Gender
+            - generic [ref=e158]: 35y / Male
+      - generic [ref=e159]:
+        - generic [ref=e160]:
+          - button "💾 Save Draft" [ref=e161] [cursor=pointer]
+          - button "✓ Save & Verify All" [ref=e162] [cursor=pointer]
+        - table [ref=e164]:
+          - rowgroup [ref=e165]:
+            - row "Test Parameter Result Value Unit Reference / Status" [ref=e166]:
+              - columnheader "Test Parameter" [ref=e167]
+              - columnheader "Result Value" [ref=e168]
+              - columnheader "Unit" [ref=e169]
+              - columnheader "Reference / Status" [ref=e170]
+          - rowgroup [ref=e171]:
+            - row "Hemoglobin 1 g/dL pending" [ref=e415]:
+              - cell "Hemoglobin" [ref=e173]:
+                - generic [ref=e174]: Hemoglobin
+              - cell "1" [ref=e416]:
+                - textbox "Enter value" [ref=e177]: "1"
+              - cell "g/dL" [ref=e178]
+              - cell "pending" [ref=e179]:
+                - generic [ref=e181]: pending
+            - row "Hemoglobin 2 g/dL pending C" [ref=e464]:
+              - cell "Hemoglobin" [ref=e183]:
+                - generic [ref=e184]: Hemoglobin
+              - cell "2" [ref=e418]:
+                - textbox "Enter value" [ref=e187]: "2"
+              - cell "g/dL" [ref=e188]
+              - cell "pending C" [ref=e465]:
+                - generic [ref=e190]:
+                  - generic [ref=e191]: pending
+                  - text: C
+            - row "Hematocrit (HCT) 3 % pending C" [ref=e466]:
+              - cell "Hematocrit (HCT)" [ref=e193]:
+                - generic [ref=e194]: Hematocrit (HCT)
+              - cell "3" [ref=e420]:
+                - textbox "Enter value" [ref=e197]: "3"
+              - cell "%" [ref=e198]
+              - cell "pending C" [ref=e467]:
+                - generic [ref=e200]:
+                  - generic [ref=e201]: pending
+                  - text: C
+            - row "Red Blood Cells (RBC) 4 x10^12/L pending" [ref=e421]:
+              - cell "Red Blood Cells (RBC)" [ref=e203]:
+                - generic [ref=e204]: Red Blood Cells (RBC)
+              - cell "4" [ref=e422]:
+                - textbox "Enter value" [ref=e207]: "4"
+              - cell "x10^12/L" [ref=e208]
+              - cell "pending" [ref=e209]:
+                - generic [ref=e211]: pending
+            - row "White Blood Cells (WBC/TLC) 5 x10^9/L pending" [ref=e423]:
+              - cell "White Blood Cells (WBC/TLC)" [ref=e213]:
+                - generic [ref=e214]: White Blood Cells (WBC/TLC)
+              - cell "5" [ref=e424]:
+                - textbox "Enter value" [ref=e217]: "5"
+              - cell "x10^9/L" [ref=e218]
+              - cell "pending" [ref=e219]:
+                - generic [ref=e221]: pending
+            - row "Platelets 6 x10^9/L pending C" [ref=e468]:
+              - cell "Platelets" [ref=e223]:
+                - generic [ref=e224]: Platelets
+              - cell "6" [ref=e426]:
+                - textbox "Enter value" [ref=e227]: "6"
+              - cell "x10^9/L" [ref=e228]
+              - cell "pending C" [ref=e469]:
+                - generic [ref=e230]:
+                  - generic [ref=e231]: pending
+                  - text: C
+            - row "Mean Cell Volume (MCV) 7 fL pending" [ref=e427]:
+              - cell "Mean Cell Volume (MCV)" [ref=e233]:
+                - generic [ref=e234]: Mean Cell Volume (MCV)
+              - cell "7" [ref=e428]:
+                - textbox "Enter value" [ref=e237]: "7"
+              - cell "fL" [ref=e238]
+              - cell "pending" [ref=e239]:
+                - generic [ref=e241]: pending
+            - row "Mean Cell Hemoglobin (MCH) 8 pg pending" [ref=e429]:
+              - cell "Mean Cell Hemoglobin (MCH)" [ref=e243]:
+                - generic [ref=e244]: Mean Cell Hemoglobin (MCH)
+              - cell "8" [ref=e430]:
+                - textbox "Enter value" [ref=e247]: "8"
+              - cell "pg" [ref=e248]
+              - cell "pending" [ref=e249]:
+                - generic [ref=e251]: pending
+            - row "Mean Cell Hb Conc (MCHC) 9 g/dL pending" [ref=e431]:
+              - cell "Mean Cell Hb Conc (MCHC)" [ref=e253]:
+                - generic [ref=e254]: Mean Cell Hb Conc (MCHC)
+              - cell "9" [ref=e432]:
+                - textbox "Enter value" [ref=e257]: "9"
+              - cell "g/dL" [ref=e258]
+              - cell "pending" [ref=e259]:
+                - generic [ref=e261]: pending
+            - row "RDW-CV 10 % pending" [ref=e433]:
+              - cell "RDW-CV" [ref=e263]:
+                - generic [ref=e264]: RDW-CV
+              - cell "10" [ref=e434]:
+                - textbox "Enter value" [ref=e267]: "10"
+              - cell "%" [ref=e268]
+              - cell "pending" [ref=e269]:
+                - generic [ref=e271]: pending
+            - row "RDW-SD 11 fL pending" [ref=e435]:
+              - cell "RDW-SD" [ref=e273]:
+                - generic [ref=e274]: RDW-SD
+              - cell "11" [ref=e436]:
+                - textbox "Enter value" [ref=e277]: "11"
+              - cell "fL" [ref=e278]
+              - cell "pending" [ref=e279]:
+                - generic [ref=e281]: pending
+            - row "Mean Platelet Volume (MPV) 12 fL pending" [ref=e437]:
+              - cell "Mean Platelet Volume (MPV)" [ref=e283]:
+                - generic [ref=e284]: Mean Platelet Volume (MPV)
+              - cell "12" [ref=e438]:
+                - textbox "Enter value" [ref=e287]: "12"
+              - cell "fL" [ref=e288]
+              - cell "pending" [ref=e289]:
+                - generic [ref=e291]: pending
+            - row "Platelet Distribution Width (PDW) 13 - pending" [ref=e439]:
+              - cell "Platelet Distribution Width (PDW)" [ref=e293]:
+                - generic [ref=e294]: Platelet Distribution Width (PDW)
+              - cell "13" [ref=e440]:
+                - textbox "Enter value" [ref=e297]: "13"
+              - cell "-" [ref=e298]
+              - cell "pending" [ref=e299]:
+                - generic [ref=e301]: pending
+            - row "Plateletcrit (PCT) 14 % pending" [ref=e441]:
+              - cell "Plateletcrit (PCT)" [ref=e303]:
+                - generic [ref=e304]: Plateletcrit (PCT)
+              - cell "14" [ref=e442]:
+                - textbox "Enter value" [ref=e307]: "14"
+              - cell "%" [ref=e308]
+              - cell "pending" [ref=e309]:
+                - generic [ref=e311]: pending
+            - row "Neutrophils 15 % pending" [ref=e443]:
+              - cell "Neutrophils" [ref=e313]:
+                - generic [ref=e314]: Neutrophils
+              - cell "15" [ref=e444]:
+                - textbox "Enter value" [ref=e317]: "15"
+              - cell "%" [ref=e318]
+              - cell "pending" [ref=e319]:
+                - generic [ref=e321]: pending
+            - row "Lymphocytes 16 % pending" [ref=e445]:
+              - cell "Lymphocytes" [ref=e323]:
+                - generic [ref=e324]: Lymphocytes
+              - cell "16" [ref=e446]:
+                - textbox "Enter value" [ref=e327]: "16"
+              - cell "%" [ref=e328]
+              - cell "pending" [ref=e329]:
+                - generic [ref=e331]: pending
+            - row "Monocytes 17 % pending" [ref=e447]:
+              - cell "Monocytes" [ref=e333]:
+                - generic [ref=e334]: Monocytes
+              - cell "17" [ref=e448]:
+                - textbox "Enter value" [ref=e337]: "17"
+              - cell "%" [ref=e338]
+              - cell "pending" [ref=e339]:
+                - generic [ref=e341]: pending
+            - row "Eosinophils 18 % pending" [ref=e449]:
+              - cell "Eosinophils" [ref=e343]:
+                - generic [ref=e344]: Eosinophils
+              - cell "18" [ref=e450]:
+                - textbox "Enter value" [ref=e347]: "18"
+              - cell "%" [ref=e348]
+              - cell "pending" [ref=e349]:
+                - generic [ref=e351]: pending
+            - row "Basophils 19 % pending" [ref=e451]:
+              - cell "Basophils" [ref=e353]:
+                - generic [ref=e354]: Basophils
+              - cell "19" [ref=e452]:
+                - textbox "Enter value" [ref=e357]: "19"
+              - cell "%" [ref=e358]
+              - cell "pending" [ref=e359]:
+                - generic [ref=e361]: pending
+            - row "Neutrophils (Absolute) 20 x10^9/L pending" [ref=e453]:
+              - cell "Neutrophils (Absolute)" [ref=e363]:
+                - generic [ref=e364]: Neutrophils (Absolute)
+              - cell "20" [ref=e454]:
+                - textbox "Enter value" [ref=e367]: "20"
+              - cell "x10^9/L" [ref=e368]
+              - cell "pending" [ref=e369]:
+                - generic [ref=e371]: pending
+            - row "Lymphocytes (Absolute) 21 x10^9/L pending" [ref=e455]:
+              - cell "Lymphocytes (Absolute)" [ref=e373]:
+                - generic [ref=e374]: Lymphocytes (Absolute)
+              - cell "21" [ref=e456]:
+                - textbox "Enter value" [ref=e377]: "21"
+              - cell "x10^9/L" [ref=e378]
+              - cell "pending" [ref=e379]:
+                - generic [ref=e381]: pending
+            - row "Monocytes (Absolute) 22 x10^9/L pending" [ref=e457]:
+              - cell "Monocytes (Absolute)" [ref=e383]:
+                - generic [ref=e384]: Monocytes (Absolute)
+              - cell "22" [ref=e458]:
+                - textbox "Enter value" [ref=e387]: "22"
+              - cell "x10^9/L" [ref=e388]
+              - cell "pending" [ref=e389]:
+                - generic [ref=e391]: pending
+            - row "Eosinophils (Absolute) 23 x10^9/L pending" [ref=e459]:
+              - cell "Eosinophils (Absolute)" [ref=e393]:
+                - generic [ref=e394]: Eosinophils (Absolute)
+              - cell "23" [ref=e460]:
+                - textbox "Enter value" [ref=e397]: "23"
+              - cell "x10^9/L" [ref=e398]
+              - cell "pending" [ref=e399]:
+                - generic [ref=e401]: pending
+            - row "Basophils (Absolute) 24 x10^9/L pending" [ref=e461]:
+              - cell "Basophils (Absolute)" [ref=e403]:
+                - generic [ref=e404]: Basophils (Absolute)
+              - cell "24" [ref=e462]:
+                - textbox "Enter value" [ref=e407]: "24"
+              - cell "x10^9/L" [ref=e408]
+              - cell "pending" [ref=e409]:
+                - generic [ref=e411]: pending
+        - generic [ref=e412]:
+          - button "Save Draft" [ref=e413] [cursor=pointer]
+          - button "✓ Save & Verify All" [ref=e414] [cursor=pointer]
