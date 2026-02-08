@@ -507,8 +507,63 @@
   font-size: 14px;
 }
 
+.twoColumn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.reportPreviewPage {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 30px;
+  min-height: 400px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.previewHeader {
+  border-bottom: 2px solid #000;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+.previewFooter {
+  border-top: 1px solid #ccc;
+  margin-top: 20px;
+  padding-top: 10px;
+  font-size: 11px;
+  color: #666;
+}
+
+.previewRefresher {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.refreshButton {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
 @media (max-width: 1024px) {
   .userGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .twoColumn {
     grid-template-columns: 1fr;
   }
 

@@ -369,6 +369,7 @@ export interface SystemSettings {
   lab_address?: string;
   lab_phone?: string;
   lab_email?: string;
+  lab_whatsapp?: string;
   lab_logo?: string;
   report_header?: string;
   report_footer?: string;
@@ -385,6 +386,10 @@ export interface SystemSettings {
   email_from?: string;
   backup_enabled: boolean;
   backup_frequency: 'daily' | 'weekly' | 'monthly';
+  backup_drive?: 'local' | 'google_drive' | 'dropbox' | 'onedrive';
+  backup_path?: string;
+  backup_auto_upload?: boolean;
+  last_backup?: string;
   updated_at: string;
   updated_by?: number;
   updated_by_name?: string;
