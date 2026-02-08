@@ -292,6 +292,16 @@ export const resultApi = {
     const response = await api.post('/results/bulk_entry/', { results });
     return response.data;
   },
+
+  bulkVerify: async (resultIds: number[]) => {
+    const response = await api.post('/results/bulk-verify/', { result_ids: resultIds });
+    return response.data;
+  },
+
+  bulkReject: async (resultIds: number[], reason: string) => {
+    const response = await api.post('/results/bulk-reject/', { result_ids: resultIds, reason });
+    return response.data;
+  },
 };
 
 /**
