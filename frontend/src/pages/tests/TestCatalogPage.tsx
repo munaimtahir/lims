@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { laboratoryApi, referenceRangeApi } from '../../api/services';
@@ -123,6 +123,41 @@ export default function TestCatalogPage() {
     } catch (err) {
       console.error('Delete failed', err);
       alert('Failed to delete item');
+    }
+  };
+
+  const handleSave = async (data: any) => {
+    try {
+      const type = modalType!;
+      const isEdit = !!selectedItem;
+      // Some items use 'test_id' instead of 'id'
+      const id = selectedItem?.id ?? selectedItem?.test_id;
+
+      if (type === 'test') {
+        if (isEdit) await laboratoryApi.updateTest(id, data);
+        else await laboratoryApi.createTest(data);
+      } else if (type === 'panel') {
+        if (isEdit) await laboratoryApi.updatePanel(id, data);
+        else await laboratoryApi.createPanel(data);
+      } else if (type === 'parameter') {
+        if (isEdit) await laboratoryApi.updateParameter(id, data);
+        else await laboratoryApi.createParameter(data);
+      } else if (type === 'range') {
+        if (isEdit) await referenceRangeApi.update(id, data);
+        else await referenceRangeApi.create(data);
+      }
+
+      setIsEditModalOpen(false);
+      // Invalidate relevant queries
+      if (type === 'range') {
+        queryClient.invalidateQueries({ queryKey: ['reference-ranges'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: [type + 's'] });
+      }
+
+    } catch (err) {
+      console.error('Save failed', err);
+      alert('Failed to save item');
     }
   };
 
@@ -450,11 +485,19 @@ function GenericForm({ type, initialData, categories, onSubmit, onCancel }: Gene
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  const fields = {
+  type FieldConfig = {
+    name: string;
+    label: string;
+    type: string; // 'text' | 'number' | 'select'
+    options?: { value: string | number; label: string }[];
+    placeholder?: string;
+  };
+
+  const fields: Record<string, FieldConfig[]> = {
     test: [
       { name: 'test_code', label: 'Test Code', type: 'text' },
       { name: 'test_name', label: 'Test Name', type: 'text' },
-      { name: 'category', label: 'Category', type: 'select', options: categories.map(c => ({ value: c.id, label: c.name })) },
+      { name: 'category', label: 'Category', type: 'select', options: categories.map((c: any) => ({ value: c.id, label: c.name })) },
       { name: 'sample_type', label: 'Sample Type', type: 'text' },
       { name: 'price', label: 'Price', type: 'number' },
       { name: 'turnaround_time', label: 'TAT (Hours)', type: 'number' },
@@ -462,7 +505,7 @@ function GenericForm({ type, initialData, categories, onSubmit, onCancel }: Gene
     panel: [
       { name: 'panel_code', label: 'Panel Code', type: 'text' },
       { name: 'panel_name', label: 'Panel Name', type: 'text' },
-      { name: 'category', label: 'Category', type: 'select', options: categories.map(c => ({ value: c.id, label: c.name })) },
+      { name: 'category', label: 'Category', type: 'select', options: categories.map((c: any) => ({ value: c.id, label: c.name })) },
       { name: 'sample_type', label: 'Sample Type', type: 'text' },
       { name: 'price', label: 'Price', type: 'number' },
       { name: 'turnaround_time', label: 'TAT (Hours)', type: 'number' },

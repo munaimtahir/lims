@@ -324,7 +324,7 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
     existingResultsData,
     isLoadingResults,
     isError,
-    error,
+
     saveMutation,
     verifyMutation,
     handleKeyDown,
@@ -333,10 +333,10 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
   } = useResultEntry(orderItemId);
 
   const [loadingTimeout, setLoadingTimeout] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const [, setRetryCount] = useState(0);
   const canVerify = user?.role === 'Admin' || user?.role === 'Pathologist';
 
-  const { data: orderItemDetails, isLoading: isLoadingDetails, isError: isDetailsError, error: detailsError, refetch: refetchDetails } = useQuery({
+  const { data: orderItemDetails, isLoading: isLoadingDetails, isError: isDetailsError, refetch: refetchDetails } = useQuery({
     queryKey: ['order-item-details', orderItemId],
     queryFn: () => orderApi.getOrderItem(orderItemId),
     enabled: !!orderItemId,
