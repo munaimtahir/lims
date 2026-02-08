@@ -226,6 +226,7 @@ class PatientViewSet(viewsets.ModelViewSet):
                 {
                     "id": patient.id,
                     "patient_id": patient.patient_id,
+                    "registration_number": patient.registration_number,
                     "full_name": patient.get_full_name(),
                     "phone": patient.phone,
                     "age": patient.age,

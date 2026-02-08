@@ -15,24 +15,8 @@ class Migration(migrations.Migration):
         migrations.SeparateDatabaseAndState(
             database_operations=[
                 migrations.RunSQL(
-                    sql=(
-                        "DO $$\n"
-                        "BEGIN\n"
-                        "    IF EXISTS (\n"
-                        "        SELECT 1 FROM pg_class WHERE relname = 'parameters_active_idx'\n"
-                        "    ) AND NOT EXISTS (\n"
-                        "        SELECT 1 FROM pg_class WHERE relname = 'parameters_active_6dece1_idx'\n"
-                        "    ) THEN\n"
-                        "        ALTER INDEX parameters_active_idx RENAME TO parameters_active_6dece1_idx;\n"
-                        "    END IF;\n"
-                        "END $$;\n"
-                        "CREATE INDEX IF NOT EXISTS parameters_active_6dece1_idx "
-                        "ON parameters (active);"
-                    ),
-                    reverse_sql=(
-                        "ALTER INDEX IF EXISTS parameters_active_6dece1_idx "
-                        "RENAME TO parameters_active_idx;"
-                    ),
+                    sql="SELECT 1;",  # No-op that works everywhere
+                    reverse_sql="SELECT 1;",
                 )
             ],
             state_operations=[
