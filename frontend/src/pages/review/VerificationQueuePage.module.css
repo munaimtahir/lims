@@ -207,6 +207,21 @@
   cursor: not-allowed;
 }
 
+@media (max-width: 900px) {
+  .detailActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actionButtons {
+    width: 100%;
+  }
+
+  .bulkButton {
+    flex: 1;
+  }
+}
+
 .verifyTable {
   width: 100%;
   border-collapse: collapse;

@@ -4,23 +4,26 @@
 }
 
 .sidebar {
-  width: 250px;
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-  color: white;
+  width: 264px;
+  background: #0b0f17;
+  color: #e5e7eb;
   display: flex;
   flex-direction: column;
   position: fixed;
   height: 100vh;
   left: 0;
   top: 0;
+  border-right: 1px solid #121826;
+  box-shadow: 0 12px 30px rgba(8, 12, 20, 0.35);
+  font-family: 'Manrope', 'General Sans', 'SF Pro Display', 'Segoe UI', sans-serif;
 }
 
 .logo {
-  padding: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
   transition: opacity 0.2s;
 }
@@ -30,21 +33,22 @@
 }
 
 .logoImage {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
 }
 
 .logo h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #667eea;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f8fafc;
   margin: 0;
+  letter-spacing: 0.02em;
 }
 
 .navList {
   list-style: none;
-  padding: 16px;
+  padding: 14px 14px 18px;
   margin: 0;
   flex: 1;
   overflow-y: auto;
@@ -54,9 +58,18 @@
   margin-bottom: 4px;
 }
 
+.navSection {
+  padding: 10px 12px 6px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(148, 163, 184, 0.9);
+  margin-top: 10px;
+}
+
 .subNavList {
   list-style: none;
-  margin: 4px 0 8px 12px;
+  margin: 6px 0 12px 12px;
   padding: 0;
 }
 
@@ -74,19 +87,20 @@
 }
 
 .subNavLink:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
+  background: rgba(148, 163, 184, 0.12);
+  color: #e2e8f0;
 }
 
 .subNavLink.active {
-  background: rgba(102, 126, 234, 0.35);
-  color: white;
+  background: rgba(148, 163, 184, 0.18);
+  color: #f8fafc;
+  box-shadow: inset 2px 0 0 #d7b670;
 }
 
 .navLink {
   display: block;
-  padding: 12px 16px;
-  color: #94a3b8;
+  padding: 10px 12px;
+  color: #9aa3b2;
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.2s;
@@ -94,18 +108,20 @@
 }
 
 .navLink:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: rgba(148, 163, 184, 0.12);
+  color: #f8fafc;
 }
 
 .navLink.active {
-  background: #667eea;
-  color: white;
+  background: rgba(148, 163, 184, 0.18);
+  color: #f8fafc;
+  box-shadow: inset 3px 0 0 #d7b670;
 }
 
 .userInfo {
-  padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 18px 20px 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0c1120;
 }
 
 .userName {
@@ -122,9 +138,9 @@
 .logoutButton {
   width: 100%;
   padding: 10px;
-  background: transparent;
-  border: 1px solid #ef4444;
-  color: #ef4444;
+  background: #111827;
+  border: 1px solid #1f2937;
+  color: #e5e7eb;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
@@ -132,14 +148,14 @@
 }
 
 .logoutButton:hover {
-  background: #ef4444;
-  color: white;
+  background: #1f2937;
+  color: #f8fafc;
 }
 
 .main {
   flex: 1;
-  margin-left: 250px;
+  margin-left: 264px;
   padding: 24px;
-  background: #f1f5f9;
+  background: #f5f7fb;
   min-height: 100vh;
 }

@@ -200,6 +200,57 @@
   margin-top: 2px;
 }
 
+.remarksInput {
+  width: 100%;
+  min-height: 54px;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.remarksText {
+  display: block;
+  font-size: 13px;
+  color: #475569;
+  white-space: pre-wrap;
+}
+
+.rejectionNotice {
+  margin: 16px 0 24px;
+  padding: 16px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rejectionNotice strong {
+  font-size: 15px;
+}
+
+.rejectionList {
+  margin: 0;
+  padding-left: 18px;
+  color: #7f1d1d;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.rejectionItem {
+  margin-bottom: 6px;
+}
+
+.rejectionParam {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
 /* Worklist Patient Cell */
 .patientInfo {
   display: flex;

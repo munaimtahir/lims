@@ -109,8 +109,12 @@ export default function VerificationQueuePage() {
     return Object.values(groups);
   }, [results]);
 
-  const handleVerify = async (resultId: number) => {
-    await verifyMutation.mutateAsync(resultId);
+  const handleVerify = async (result: TestResult) => {
+    if (!result.result_value || !result.result_value.trim()) {
+      setNotice({ type: 'error', message: 'Result value is missing. Please return for correction.' });
+      return;
+    }
+    await verifyMutation.mutateAsync(result.id);
   };
 
   const handleRepeat = async (resultId: number) => {
@@ -210,7 +214,7 @@ export default function VerificationQueuePage() {
                     <div className={styles.btnGroup}>
                       <button
                         className={styles.verifyBtn}
-                        onClick={() => handleVerify(r.id)}
+                        onClick={() => handleVerify(r)}
                         disabled={verifyMutation.isPending}
                       >
                         Verify

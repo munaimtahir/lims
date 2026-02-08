@@ -498,6 +498,21 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
         )}
       </div>
 
+      {rejectedResults.length > 0 && (
+        <div className={styles.rejectionNotice}>
+          <strong>Returned for correction</strong>
+          <span>Please review the pathologist comments before resubmitting.</span>
+          <ul className={styles.rejectionList}>
+            {rejectedResults.map((result) => (
+              <li key={result.id} className={styles.rejectionItem}>
+                <span className={styles.rejectionParam}>{result.parameter_name || `Param ${result.test_parameter}`}</span>
+                <span>{result.remarks || 'No rejection reason provided.'}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {resultItems.length === 0 ? (
         <div className={styles.message}>Initializing result form...</div>
       ) : (
@@ -536,10 +551,11 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
             <table className={styles.resultTable}>
               <thead>
                 <tr>
-                  <th style={{ width: '35%' }}>Test Parameter</th>
-                  <th style={{ width: '25%' }}>Result Value</th>
-                  <th style={{ width: '15%' }}>Unit</th>
-                  <th style={{ width: '25%' }}>Reference / Status</th>
+                  <th style={{ width: '26%' }}>Test Parameter</th>
+                  <th style={{ width: '18%' }}>Result Value</th>
+                  <th style={{ width: '10%' }}>Unit</th>
+                  <th style={{ width: '24%' }}>Remarks / Instructions</th>
+                  <th style={{ width: '22%' }}>Reference / Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -577,6 +593,19 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
                       </td>
                       <td>
                         <span className={styles.paramUnit}>{result.unit || '-'}</span>
+                      </td>
+                      <td>
+                        {isVerified ? (
+                          <span className={styles.remarksText}>{result.remarks || '—'}</span>
+                        ) : (
+                          <textarea
+                            className={styles.remarksInput}
+                            rows={2}
+                            placeholder="Enter remarks or read pathologist notes..."
+                            value={remarks[result.test_parameter] || ''}
+                            onChange={(e) => setRemarks(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
+                          />
+                        )}
                       </td>
                       <td>
                         <div className={styles.refRange}>

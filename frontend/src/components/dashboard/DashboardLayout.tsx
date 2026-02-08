@@ -13,85 +13,93 @@ export default function DashboardLayout() {
     navigate('/login');
   };
 
+  type NavChild = { to: string; label: string };
+  type NavItem = { label: string; to?: string; children?: NavChild[] };
+
   // Get navigation items based on user role
   const getNavItems = () => {
-    const items: { to: string; label: string; children?: { to: string; label: string }[] }[] = [];
+    const items: NavItem[] = [];
 
     if (!user) return items;
 
+    const addSection = (label: string, children: NavChild[]) => {
+      if (children.length) {
+        items.push({ label, children });
+      }
+    };
+
     switch (user.role) {
       case 'Admin':
-        items.push(
+        addSection('Operations', [
           { to: '/dashboard/registration', label: 'Registration' },
           { to: '/dashboard/patients', label: 'Patients' },
           { to: '/dashboard/patients-worklist', label: 'Worklist' },
           { to: '/dashboard/samples', label: 'Samples' },
-          { to: '/dashboard/results', label: 'Results' },
+        ]);
+        addSection('Results', [
+          { to: '/dashboard/results', label: 'Result Entry' },
+          { to: '/dashboard/verification', label: 'Verification' },
           { to: '/dashboard/reports', label: 'Reports' },
-          {
-            to: '/dashboard/settings',
-            label: 'Settings',
-            children: [
-              { to: '/dashboard/settings?tab=ui', label: 'UI Update' },
-              { to: '/dashboard/settings?tab=users', label: 'User Management' },
-              { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
-              { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
-              { to: '/dashboard/tests', label: 'Test Catalog' },
-              { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
-              { to: '/dashboard/payments', label: 'Payments' },
-              { to: '/dashboard/audit', label: 'Audit Logs' },
-            ],
-          }
-        );
+        ]);
+        addSection('Administration', [
+          { to: '/dashboard/settings?tab=ui', label: 'UI Update' },
+          { to: '/dashboard/settings?tab=users', label: 'User Management' },
+          { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
+          { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
+          { to: '/dashboard/tests', label: 'Test Catalog' },
+          { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
+          { to: '/dashboard/payments', label: 'Payments' },
+          { to: '/dashboard/audit', label: 'Audit Logs' },
+        ]);
         break;
       case 'Receptionist':
-        items.push(
+        addSection('Operations', [
           { to: '/dashboard/registration', label: 'Registration' },
           { to: '/dashboard/patients', label: 'Patients' },
           { to: '/dashboard/patients-worklist', label: 'Worklist' },
-          { to: '/dashboard/payments', label: 'Payments' }
-        );
+        ]);
+        addSection('Billing', [
+          { to: '/dashboard/payments', label: 'Payments' },
+        ]);
         break;
       case 'Cashier':
-        items.push(
-          { to: '/dashboard/payments', label: 'Payments' }
-        );
+        addSection('Billing', [
+          { to: '/dashboard/payments', label: 'Payments' },
+        ]);
         break;
       case 'Phlebotomist':
-        items.push(
+        addSection('Operations', [
           { to: '/dashboard/collection', label: 'Collection Worklist' },
-          { to: '/dashboard/samples', label: 'Samples' }
-        );
+          { to: '/dashboard/samples', label: 'Samples' },
+        ]);
         break;
       case 'Lab Technician':
-        items.push(
-          { to: '/dashboard/worklist', label: 'Result Entry' },
-          { to: '/dashboard/samples', label: 'Samples' }
-        );
+        addSection('Results', [
+          { to: '/dashboard/results', label: 'Result Entry' },
+        ]);
+        addSection('Operations', [
+          { to: '/dashboard/samples', label: 'Samples' },
+        ]);
         break;
       case 'Pathologist':
-        items.push(
+        addSection('Results', [
           { to: '/dashboard/verification', label: 'Verification' },
-          { to: '/dashboard/reports', label: 'Reports' }
-        );
+          { to: '/dashboard/reports', label: 'Reports' },
+        ]);
         break;
       case 'Manager':
-        items.push(
+        addSection('Results', [
           { to: '/dashboard/reports', label: 'Reports' },
-          {
-            to: '/dashboard/settings',
-            label: 'Settings',
-            children: [
-              { to: '/dashboard/settings?tab=users', label: 'User Management' },
-              { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
-              { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
-              { to: '/dashboard/tests', label: 'Test Catalog' },
-              { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
-              { to: '/dashboard/payments', label: 'Payments' },
-              { to: '/dashboard/audit', label: 'Audit Logs' },
-            ],
-          }
-        );
+        ]);
+        addSection('Administration', [
+          { to: '/dashboard/settings?tab=users', label: 'User Management' },
+          { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
+          { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
+          { to: '/dashboard/tests', label: 'Test Catalog' },
+          { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
+          { to: '/dashboard/payments', label: 'Payments' },
+          { to: '/dashboard/audit', label: 'Audit Logs' },
+        ]);
         break;
     }
 
@@ -113,16 +121,20 @@ export default function DashboardLayout() {
 
         <ul className={styles.navList}>
           {getNavItems().map((item) => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                end={item.to === '/dashboard'}
-                className={({ isActive }) =>
-                  isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
-                }
-              >
-                {item.label}
-              </NavLink>
+            <li key={item.to ?? item.label}>
+              {item.to ? (
+                <NavLink
+                  to={item.to}
+                  end={item.to === '/dashboard'}
+                  className={({ isActive }) =>
+                    isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ) : (
+                <div className={styles.navSection}>{item.label}</div>
+              )}
               {item.children && (
                 <ul className={styles.subNavList}>
                   {item.children.map((child) => (

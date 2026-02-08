@@ -4,20 +4,13 @@ from io import BytesIO
 from django.conf import settings
 from django.utils import timezone
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-from reportlab.lib.pagesizes import A4, A5, letter
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
-from reportlab.platypus import (
-    Image,
-    Paragraph,
-    SimpleDocTemplate,
-    Spacer,
-    Table,
-    TableStyle,
-)
+from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from apps.core.models import (
     PrintTemplate,
@@ -39,6 +32,79 @@ def _merge_template_config(config):
         else:
             base[key] = value
     return base
+
+
+def safe_text(value, fallback="—"):
+    if value is None:
+        return fallback
+    if isinstance(value, str):
+        cleaned = value.strip()
+        return cleaned if cleaned else fallback
+    return str(value)
+
+
+def fmt_dt(value):
+    if not value:
+        return "—"
+    try:
+        dt = timezone.localtime(value)
+    except Exception:
+        dt = value
+    try:
+        return dt.strftime("%d/%m/%Y %I:%M %p")
+    except Exception:
+        return "—"
+
+
+def fmt_age_gender(patient):
+    if not patient:
+        return "—"
+    age = None
+    for field in ("age_years", "age"):
+        try:
+            candidate = getattr(patient, field, None)
+        except Exception:
+            candidate = None
+        if candidate:
+            age = candidate
+            break
+    gender = safe_text(getattr(patient, "gender", None))
+    parts = []
+    if age is not None:
+        parts.append(f"{age}")
+    if gender != "—":
+        parts.append(gender)
+    return " / ".join(parts) if parts else "—"
+
+
+class PageNumCanvas(canvas.Canvas):
+    def __init__(self, *args, **kwargs):
+        self._saved_page_states = []
+        self._bottom_margin = kwargs.pop("bottom_margin", 0.6 * inch)
+        self._right_margin = kwargs.pop("right_margin", 0.6 * inch)
+        super().__init__(*args, **kwargs)
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        page_count = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self._draw_page_number(page_count)
+            super().showPage()
+        super().save()
+
+    def _draw_page_number(self, page_count):
+        self.setFont("Helvetica", 9)
+        self.setFillColor(colors.grey)
+        self.drawRightString(
+            self._pagesize[0] - self._right_margin,
+            self._bottom_margin * 0.6,
+            f"Page {self._pageNumber} of {page_count}",
+        )
+        self.setFillColor(colors.black)
 
 
 def generate_pdf_report(
@@ -68,36 +134,37 @@ def generate_pdf_report(
     Raises:
         ValueError: If the order is not found.
     """
-    # Get system settings for lab information with fallback to environment variables
+    # Get system settings with locked template fallbacks
     try:
         system_settings = SystemSettings.get_settings()
         if lab_name is None:
-            lab_name = system_settings.lab_name or os.environ.get(
-                "LAB_NAME", "Laboratory"
+            lab_name = (
+                system_settings.lab_name
+                or os.environ.get("LAB_NAME")
+                or "Al Shifa Diagnostic Laboratory"
             )
         if lab_address is None:
-            lab_address = system_settings.lab_address or os.environ.get(
-                "LAB_ADDRESS", ""
+            lab_address = (
+                system_settings.lab_address
+                or os.environ.get("LAB_ADDRESS")
+                or "Circular Road, Jaranwala"
             )
         if lab_phone is None:
-            lab_phone = system_settings.lab_phone or os.environ.get("LAB_PHONE", "")
+            lab_phone = (
+                system_settings.lab_phone
+                or os.environ.get("LAB_PHONE")
+                or "041-4312286"
+            )
         if lab_email is None:
             lab_email = system_settings.lab_email or os.environ.get("LAB_EMAIL", "")
-        report_header = system_settings.report_header or ""
-        report_footer = system_settings.report_footer or ""
         report_header_image = system_settings.report_header_image
-        report_footer_image = system_settings.report_footer_image
         lab_logo = system_settings.lab_logo
     except Exception:
-        # Fallback to environment variables if settings don't exist
-        lab_name = lab_name or os.environ.get("LAB_NAME", "Laboratory")
-        lab_address = lab_address or os.environ.get("LAB_ADDRESS", "")
-        lab_phone = lab_phone or os.environ.get("LAB_PHONE", "")
+        lab_name = lab_name or os.environ.get("LAB_NAME") or "Al Shifa Diagnostic Laboratory"
+        lab_address = lab_address or os.environ.get("LAB_ADDRESS") or "Circular Road, Jaranwala"
+        lab_phone = lab_phone or os.environ.get("LAB_PHONE") or "041-4312286"
         lab_email = lab_email or os.environ.get("LAB_EMAIL", "")
-        report_header = ""
-        report_footer = ""
         report_header_image = None
-        report_footer_image = None
         lab_logo = None
 
     template = PrintTemplate.get_active(PrintTemplate.TYPE_REPORT)
@@ -105,22 +172,27 @@ def generate_pdf_report(
     font_scale = float(template_config.get("font_scale", 1.0) or 1.0)
     margins = template_config.get("margins", {})
 
-    paper_size_str = template_config.get("paper_size", "A4").upper()
-    if paper_size_str == "A5":
-        page_size = A5
-    elif paper_size_str == "LETTER":
-        page_size = letter
-    else:
-        page_size = A4
+    def _margin_value(key, default):
+        try:
+            return float(margins.get(key, default) or default) * inch
+        except (TypeError, ValueError):
+            return float(default) * inch
+
+    left_margin = _margin_value("left", 1.0)
+    right_margin = _margin_value("right", 1.0)
+    top_margin = _margin_value("top", 1.0)
+    bottom_margin = _margin_value("bottom", 1.0)
+
+    page_size = A4
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
         pagesize=page_size,
-        rightMargin=float(margins.get("right", 1.0)) * inch,
-        leftMargin=float(margins.get("left", 1.0)) * inch,
-        topMargin=float(margins.get("top", 1.0)) * inch,
-        bottomMargin=float(margins.get("bottom", 1.0)) * inch,
+        rightMargin=right_margin,
+        leftMargin=left_margin,
+        topMargin=top_margin,
+        bottomMargin=bottom_margin,
         pageCompression=0,
     )
     story = []
@@ -128,264 +200,296 @@ def generate_pdf_report(
 
     try:
         order = (
-            Order.objects.select_related("patient")
+            Order.objects.select_related("patient", "ordered_by")
             .prefetch_related(
-                "items__test", "items__panel", "items__results__test_parameter"
+                "items__test",
+                "items__panel",
+                "items__results__test_parameter",
+                "items__results__test_parameter__reference_ranges",
+                "items__samples",
             )
             .get(id=order_id)
         )
     except Order.DoesNotExist:
         raise ValueError("Order not found")
 
-    # Custom styles
+    available_width = page_size[0] - left_margin - right_margin
+
     title_style = ParagraphStyle(
-        "CustomTitle",
+        "ReportTitle",
         parent=styles["Heading1"],
-        fontSize=18 * font_scale,
-        textColor=colors.HexColor("#1a1a1a"),
-        spaceAfter=30,
+        fontSize=16 * font_scale,
+        leading=20 * font_scale,
         alignment=TA_CENTER,
-    )
-
-    heading_style = ParagraphStyle(
-        "CustomHeading",
-        parent=styles["Heading2"],
-        fontSize=12 * font_scale,
-        textColor=colors.HexColor("#333333"),
         spaceAfter=12,
+    )
+    section_style = ParagraphStyle(
+        "SectionHeading",
+        parent=styles["Heading2"],
+        fontSize=11 * font_scale,
+        leading=14 * font_scale,
         spaceBefore=12,
+        spaceAfter=6,
+        textColor=colors.HexColor("#1f2937"),
+    )
+    lab_info_style = ParagraphStyle(
+        "LabInfo",
+        parent=styles["Normal"],
+        fontSize=10 * font_scale,
+        leading=13 * font_scale,
+        alignment=TA_LEFT,
+    )
+    label_style = ParagraphStyle(
+        "Label",
+        parent=styles["Normal"],
+        fontSize=9 * font_scale,
+        leading=12 * font_scale,
+        fontName="Helvetica-Bold",
+    )
+    value_style = ParagraphStyle(
+        "Value",
+        parent=styles["Normal"],
+        fontSize=9 * font_scale,
+        leading=12 * font_scale,
+    )
+    table_header_style = ParagraphStyle(
+        "TableHeader",
+        parent=styles["Normal"],
+        fontSize=9 * font_scale,
+        leading=12 * font_scale,
+        fontName="Helvetica-Bold",
+    )
+    table_cell_style = ParagraphStyle(
+        "TableCell",
+        parent=styles["Normal"],
+        fontSize=9 * font_scale,
+        leading=12 * font_scale,
     )
 
-    # Header
-    header_data = []
+    # Header image (if present)
+    if report_header_image:
+        add_report_image(story, report_header_image, max_width=available_width)
 
-    # Custom header from settings
-    if report_header:
-        header_data.append([Paragraph(report_header, styles["Normal"])])
-        header_data.append([Spacer(1, 0.1 * inch)])
+    # Header with logo + lab info
+    logo_flowable = ""
+    logo_col_width = 1.25 * inch
+    if lab_logo:
+        try:
+            image_reader = ImageReader(lab_logo)
+            img_width, img_height = image_reader.getSize()
+            scale = min(logo_col_width / img_width, 1)
+            logo_flowable = Image(
+                image_reader, width=img_width * scale, height=img_height * scale
+            )
+        except Exception:
+            logo_flowable = ""
 
-    if template_config.get("show_header_image", True):
-        add_report_image(story, report_header_image)
-
-    if template_config.get("show_logo", True):
-        add_report_image(story, lab_logo, max_width=2.0 * inch, spacer=0.1 * inch)
-
-    header_data.append([Paragraph(f"<b>{lab_name}</b>", title_style)])
-    if lab_address:
-        header_data.append([Paragraph(lab_address, styles["Normal"])])
-    if lab_phone or lab_email:
-        contact_info = []
-        if lab_phone:
-            contact_info.append(f"Phone: {lab_phone}")
-        if lab_email:
-            contact_info.append(f"Email: {lab_email}")
-        header_data.append([Paragraph(" | ".join(contact_info), styles["Normal"])])
-
+    lab_info_text = (
+        f"<b>{safe_text(lab_name)}</b><br/>"
+        f"{safe_text(lab_address)}<br/>"
+        f"Phone: {safe_text(lab_phone)}"
+    )
     header_table = Table(
-        header_data,
-        colWidths=[
-            page_size[0]
-            - (float(margins.get("left", 1.0)) + float(margins.get("right", 1.0)))
-            * inch
-        ],
+        [[logo_flowable, Paragraph(lab_info_text, lab_info_style)]],
+        colWidths=[logo_col_width, available_width - logo_col_width],
     )
     header_table.setStyle(
         TableStyle(
             [
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("ALIGN", (0, 0), (0, 0), "LEFT"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
             ]
         )
     )
     story.append(header_table)
-    story.append(Spacer(1, 0.2 * inch))
+    story.append(Spacer(1, 0.15 * inch))
 
     # Report title
-    story.append(Paragraph("<b>LABORATORY REPORT</b>", title_style))
-    story.append(Spacer(1, 0.1 * inch))
+    items = list(order.items.all())
+    report_title = "Laboratory Report"
+    if len(items) == 1:
+        item = items[0]
+        if item.test:
+            report_title = f"{safe_text(item.test.test_name)} Report"
+        elif item.panel:
+            report_title = f"{safe_text(item.panel.panel_name)} Report"
+    story.append(Paragraph(f"<b>{safe_text(report_title)}</b>", title_style))
 
-    # Patient Information
-    story.append(Paragraph("<b>Patient Information</b>", heading_style))
-    patient_data = [
-        ["Patient Name:", order.patient.get_full_name()],
-        ["Patient ID:", order.patient.patient_id],
-        [
-            "Date of Birth:",
-            order.patient.date_of_birth.strftime("%d/%m/%y")
-            if order.patient.date_of_birth
-            else "N/A",
-        ],
-        ["Gender:", order.patient.gender],
-        ["Order ID:", order.order_id],
-        ["Order Date:", order.created_at.strftime("%Y-%m-%d %H:%M")],
-        ["Report Date:", timezone.now().strftime("%Y-%m-%d %H:%M")],
+    # Demographics block
+    patient = getattr(order, "patient", None)
+    visit_ref = safe_text(order.order_id or order.id)
+    mrn = safe_text(getattr(patient, "mrn", None) or getattr(patient, "patient_id", None))
+    patient_name = safe_text(patient.get_full_name() if patient else None)
+    mobile = safe_text(getattr(patient, "phone", None))
+    consultant = safe_text(getattr(getattr(order, "ordered_by", None), "full_name", None))
+    booking_dt = fmt_dt(getattr(order, "created_at", None))
+
+    all_results = []
+    all_samples = []
+    for item in items:
+        all_results.extend(list(item.results.all()))
+        all_samples.extend(list(item.samples.all()))
+
+    verified_times = [r.verified_at for r in all_results if r.verified_at]
+    reporting_dt = fmt_dt(max(verified_times) if verified_times else timezone.now())
+
+    sample_times = []
+    for sample in all_samples:
+        if sample.collected_at:
+            sample_times.append(sample.collected_at)
+        elif sample.received_at:
+            sample_times.append(sample.received_at)
+    sample_collected = fmt_dt(min(sample_times) if sample_times else None)
+
+    ref_by = safe_text(
+        getattr(order, "referred_by", None)
+        or getattr(patient, "default_referred_by", None)
+    )
+
+    demographics_rows = [
+        ("Ref #", visit_ref),
+        ("MR #", mrn),
+        ("Patient Name", patient_name),
+        ("Age/Gender", fmt_age_gender(patient)),
+        ("Mobile", mobile),
+        ("Consultant", consultant),
+        ("Booking Date/Time", booking_dt),
+        ("Reporting Date/Time", reporting_dt),
+        ("Sample Collected", sample_collected),
+        ("Ref By", ref_by),
     ]
-    patient_table = Table(patient_data, colWidths=[1.5 * inch, 3 * inch])
-    patient_table.setStyle(
+    demographics_data = [
+        [Paragraph(label, label_style), Paragraph(safe_text(value), value_style)]
+        for label, value in demographics_rows
+    ]
+    demographics_table = Table(
+        demographics_data,
+        colWidths=[1.8 * inch, available_width - 1.8 * inch],
+    )
+    demographics_table.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#f0f0f0")),
+                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#f8fafc")),
                 ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
-                ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10 * font_scale),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
             ]
         )
     )
-    story.append(patient_table)
-    story.append(Spacer(1, 0.3 * inch))
+    story.append(demographics_table)
+    story.append(Spacer(1, 0.2 * inch))
 
-    # Test Results
-    story.append(Paragraph("<b>Test Results</b>", heading_style))
+    # Results block
+    story.append(Paragraph("<b>Results</b>", section_style))
+    results_data = [
+        [
+            Paragraph("Test", table_header_style),
+            Paragraph("Result", table_header_style),
+            Paragraph("Unit", table_header_style),
+            Paragraph("Reference Range", table_header_style),
+        ]
+    ]
 
-    for item in order.items.all():
-        test_name = (
-            item.test.test_name
-            if item.test
-            else item.panel.panel_name
-            if item.panel
-            else "Unknown Test"
-        )
-
-        # Test header
-        story.append(Paragraph(f"<b>{test_name}</b>", styles["Heading3"]))
-        story.append(Spacer(1, 0.1 * inch))
-
-        # Results table
-        results_data = [["Parameter", "Result", "Unit", "Range", "Flag"]]
-
-        for result in item.results.all().order_by("test_parameter__display_order"):
-            result_value = (result.result_value or "").strip()
-            if not result_value or result_value == "*":
-                continue
+    for item in items:
+        results = item.results.all().order_by("test_parameter__display_order")
+        for result in results:
             param = result.test_parameter
-            range_info = pick_reference_range(param, order.patient)
-            ref_range = range_info["display"]
-
-            flag_map = {
-                "C": "Critical",
-                "L": "Low",
-                "H": "High",
-                "critical_low": "Critical Low",
-                "critical_high": "Critical High",
-                "low": "Low",
-                "high": "High",
-                "normal": "Normal",
-                "abnormal": "Abnormal",
-            }
-            flag_label = flag_map.get(
-                result.flag, "Normal" if not result.flag else result.flag
-            )
-
-            # Format flag with color indication
-            flag_text = flag_label
-            if "Critical" in flag_label:
-                flag_text = f"<font color='red'><b>{flag_text}</b></font>"
-            elif result.flag in ["high", "low", "H", "L"]:
-                flag_text = f"<font color='orange'>{flag_text}</font>"
-
+            test_name = safe_text(getattr(param, "effective_parameter_name", None))
+            result_value = safe_text((result.result_value or "").strip())
+            unit = safe_text(getattr(param, "unit", None))
+            range_info = pick_reference_range(param, patient)
+            ref_range = safe_text(range_info.get("display"))
             results_data.append(
                 [
-                    param.effective_parameter_name,
-                    result_value,
-                    param.unit,
-                    ref_range,
-                    Paragraph(flag_text, styles["Normal"]),
+                    Paragraph(test_name, table_cell_style),
+                    Paragraph(result_value, table_cell_style),
+                    Paragraph(unit, table_cell_style),
+                    Paragraph(ref_range, table_cell_style),
                 ]
             )
 
-        if len(results_data) > 1:  # If there are results
-            col_widths = [1.2 * inch, 0.8 * inch, 0.6 * inch, 1.2 * inch, 0.8 * inch]
-            results_table = Table(results_data, colWidths=col_widths)
-            results_table.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4472C4")),
-                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, 0), 10 * font_scale),
-                        ("FONTSIZE", (0, 1), (-1, -1), 9 * font_scale),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                        ("TOPPADDING", (0, 0), (-1, -1), 8),
-                        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                        (
-                            "ROWBACKGROUNDS",
-                            (0, 1),
-                            (-1, -1),
-                            [colors.white, colors.HexColor("#f9f9f9")],
-                        ),
-                    ]
-                )
-            )
-            story.append(results_table)
-        else:
-            story.append(Paragraph("<i>No results available</i>", styles["Normal"]))
-
-        story.append(Spacer(1, 0.2 * inch))
-
-    # Footer with signatures
-    if template_config.get("show_signatures", True):
-        story.append(Spacer(1, 0.3 * inch))
-        story.append(Paragraph("<b>Authorized Signatures</b>", heading_style))
-        signatories = (
-            template.signatories
-            if template and isinstance(template.signatories, list)
-            else []
-        )
-        signature_rows = []
-        for entry in signatories:
-            name = entry.get("name", "")
-            title = entry.get("title", "")
-            reg_no = entry.get("reg_no", "")
-            line1 = entry.get("line1", "")
-            line2 = entry.get("line2", "")
-            signature_rows.append([f"{title}:", f"{name} {reg_no}".strip()])
-            if line1:
-                signature_rows.append(["", line1])
-            if line2:
-                signature_rows.append(["", line2])
-            signature_rows.append(["Signature:", "___________________"])
-            signature_rows.append(["", ""])
-        if not signature_rows:
-            signature_rows = [
-                ["Authorized By:", "___________________"],
-                ["Date:", "___________________"],
+    if len(results_data) == 1:
+        results_data.append(
+            [
+                Paragraph("—", table_cell_style),
+                Paragraph("—", table_cell_style),
+                Paragraph("—", table_cell_style),
+                Paragraph("—", table_cell_style),
             ]
-        signature_table = Table(signature_rows, colWidths=[1.5 * inch, 3.5 * inch])
-        signature_table.setStyle(
-            TableStyle(
-                [
-                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10 * font_scale),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                    ("TOPPADDING", (0, 0), (-1, -1), 6),
-                ]
-            )
         )
-        story.append(signature_table)
 
-    if template_config.get("show_footer_image", True):
-        add_report_image(story, report_footer_image, spacer=0.1 * inch)
+    col_widths = [
+        available_width * 0.42,
+        available_width * 0.18,
+        available_width * 0.12,
+        available_width * 0.28,
+    ]
+    results_table = Table(results_data, colWidths=col_widths, repeatRows=1)
+    results_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e5e7eb")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5f5")),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ]
+        )
+    )
+    story.append(results_table)
 
-    # Custom footer from settings
-    if report_footer:
-        story.append(Spacer(1, 0.1 * inch))
-        story.append(Paragraph(report_footer, styles["Normal"]))
+    # Impression (optional)
+    interpretation = safe_text(
+        getattr(order, "interpretation", None) or getattr(order, "impression", None)
+    )
+    if interpretation != "—":
+        story.append(Spacer(1, 0.15 * inch))
+        story.append(Paragraph("<b>Impression</b>", section_style))
+        story.append(Paragraph(interpretation, value_style))
 
-    if template_config.get("show_disclaimer", True):
-        disclaimer = template.disclaimer_text if template else ""
-        if disclaimer:
-            story.append(Spacer(1, 0.1 * inch))
-            story.append(Paragraph(disclaimer, styles["Normal"]))
+    # Footer
+    story.append(Spacer(1, 0.25 * inch))
+    disclaimer_text = (
+        "Electronically verified. Laboratory results should be interpreted by a physician "
+        "in correlation with clinical and radiologic findings."
+    )
+    story.append(Paragraph(disclaimer_text, value_style))
+    story.append(Spacer(1, 0.2 * inch))
+    story.append(Paragraph("<b>Authorized Signatories</b>", section_style))
+    signatory_lines = [
+        "Dr. Mubashir Ahmad - MBBS, M.Phil (Biochemistry), Consultant Pathologist",
+        "Dr. Muhammad Munaim Tahir - MBBS, M.Phil (Hematology), In-Charge Pathologist",
+    ]
+    signatory_table = Table(
+        [[Paragraph(line, value_style)] for line in signatory_lines],
+        colWidths=[available_width],
+    )
+    signatory_table.setStyle(
+        TableStyle(
+            [
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ]
+        )
+    )
+    story.append(signatory_table)
 
-    # Build PDF
-    doc.build(story)
+    # Build PDF with page numbers
+    doc.build(
+        story,
+        canvasmaker=lambda *args, **kwargs: PageNumCanvas(
+            *args, **kwargs, bottom_margin=bottom_margin, right_margin=right_margin
+        ),
+    )
     pdf = buffer.getvalue()
     buffer.close()
     return pdf
