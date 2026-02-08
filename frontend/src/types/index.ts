@@ -79,7 +79,15 @@ export interface Order {
   id: number;
   patient: number;
   patient_name: string;
-// ...
+  order_id: string;
+  lab_number?: string;
+  status: string;
+  total_amount: string;
+  paid_amount: string;
+  due_amount: string;
+  created_at: string;
+  items?: any[];
+}
 export interface WorklistOrderItem {
   id: number;
   order: {
