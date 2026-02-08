@@ -24,7 +24,8 @@ export default function SystemSettingsPage() {
   const [barcodeToggle, setBarcodeToggle] = useState<boolean>(() => isSampleBarcodeEnabled());
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateForm, setTemplateForm] = useState<PrintTemplate | null>(null);
-  const [sampleBarcodeCollectionEnabled, setSampleBarcodeCollectionEnabled] = useState<boolean>(() => isSampleBarcodeEnabled());
+
+  // Replaced duplicate state with just one source of truth where possible, but keeping barcodeToggle for UI binding
   const [userSearch, setUserSearch] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [userNotice, setUserNotice] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -39,6 +40,9 @@ export default function SystemSettingsPage() {
     password: '',
     password_confirm: '',
   });
+
+  // Report Preview State
+  const [previewKey, setPreviewKey] = useState(0);
 
   const roleOptions: UserRole[] = [
     'Admin',
@@ -168,7 +172,6 @@ export default function SystemSettingsPage() {
     },
   });
 
-  // Use normalizer to handle both wrapped {data: {...}} and plain object responses
   const settings = normalizeObjectResponse<SystemSettings>(settingsData);
   const templates = useMemo(() => (templatesData || []) as PrintTemplate[], [templatesData]);
   const isUserTab = activeTab === 'users';
@@ -190,9 +193,8 @@ export default function SystemSettingsPage() {
       : templates[0]?.id;
 
     if (targetId && targetId !== selectedTemplateId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedTemplateId(targetId);
-      return; // Determine form on next render to avoid race/double set
+      return;
     }
 
     // Sync form with selected template if form is stale
@@ -206,7 +208,6 @@ export default function SystemSettingsPage() {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
     if ((tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print' || tab === 'users') && activeTab !== tab) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(tab);
     }
   }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -230,6 +231,7 @@ export default function SystemSettingsPage() {
     if (formData.get('lab_address')) data.lab_address = formData.get('lab_address') as string;
     if (formData.get('lab_phone')) data.lab_phone = formData.get('lab_phone') as string;
     if (formData.get('lab_email')) data.lab_email = formData.get('lab_email') as string;
+    if (formData.get('lab_whatsapp')) data.lab_whatsapp = formData.get('lab_whatsapp') as string;
 
     // Report Customization
     if (formData.get('report_header')) data.report_header = formData.get('report_header') as string;
@@ -251,6 +253,9 @@ export default function SystemSettingsPage() {
     // Backup Settings
     if (formData.get('backup_enabled')) data.backup_enabled = formData.get('backup_enabled') === 'on';
     if (formData.get('backup_frequency')) data.backup_frequency = formData.get('backup_frequency') as 'daily' | 'weekly' | 'monthly';
+    if (formData.get('backup_drive')) data.backup_drive = formData.get('backup_drive') as any;
+    if (formData.get('backup_path')) data.backup_path = formData.get('backup_path') as string;
+    if (formData.get('backup_auto_upload')) data.backup_auto_upload = formData.get('backup_auto_upload') === 'on';
 
     updateMutation.mutate(data);
   };
@@ -775,601 +780,688 @@ export default function SystemSettingsPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className={styles.form}>
-        {activeTab === 'ui' && (
-          <div className={styles.tabContent}>
-            <h2>UI Update</h2>
-            <p className={styles.description}>
-              Customize the branding that appears in your application header and login page.
-            </p>
+          {activeTab === 'ui' && (
+            <div className={styles.tabContent}>
+              <h2>UI Update</h2>
+              <p className={styles.description}>
+                Customize the branding that appears in your application header and login page.
+              </p>
 
-            <div className={styles.formGroup}>
-              <label>Laboratory Display Name</label>
-              <input
-                type="text"
-                name="lab_display_name"
-                defaultValue={settings.lab_display_name || ''}
-                placeholder="Enter display name for UI (optional, defaults to Lab Name)"
-                className={styles.input}
-              />
-              <small className={styles.hint}>
-                This name will appear in the header and login page. If not set, the Lab Name will be used.
-              </small>
-            </div>
+              <div className={styles.formGroup}>
+                <label>Laboratory Display Name</label>
+                <input
+                  type="text"
+                  name="lab_display_name"
+                  defaultValue={settings.lab_display_name || ''}
+                  placeholder="Enter display name for UI (optional, defaults to Lab Name)"
+                  className={styles.input}
+                />
+                <small className={styles.hint}>
+                  This name will appear in the header and login page. If not set, the Lab Name will be used.
+                </small>
+              </div>
 
-            <div className={styles.formGroup}>
-              <label>Laboratory Logo</label>
-              {settings.lab_logo && (
-                <div className={styles.brandingPreview}>
-                  <div className={styles.previewCard}>
-                    <img src={settings.lab_logo} alt="Lab logo" />
-                    <div className={styles.previewInfo}>
-                      <strong>{settings.lab_display_name || settings.lab_name}</strong>
-                      <span>Current logo</span>
+              <div className={styles.formGroup}>
+                <label>Laboratory Logo</label>
+                {settings.lab_logo && (
+                  <div className={styles.brandingPreview}>
+                    <div className={styles.previewCard}>
+                      <img src={settings.lab_logo} alt="Lab logo" />
+                      <div className={styles.previewInfo}>
+                        <strong>{settings.lab_display_name || settings.lab_name}</strong>
+                        <span>Current logo</span>
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => removeLogoMutation.mutate()}
+                      className={styles.removeButton}
+                      disabled={removeLogoMutation.isPending}
+                    >
+                      {removeLogoMutation.isPending ? 'Removing...' : 'Remove Logo'}
+                    </button>
                   </div>
+                )}
+                <div className={styles.uploadRow}>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+                  />
                   <button
                     type="button"
-                    onClick={() => removeLogoMutation.mutate()}
-                    className={styles.removeButton}
-                    disabled={removeLogoMutation.isPending}
+                    className={styles.uploadButton}
+                    disabled={!logoFile || uploadLogoMutation.isPending}
+                    onClick={() => logoFile && uploadLogoMutation.mutate(logoFile)}
                   >
-                    {removeLogoMutation.isPending ? 'Removing...' : 'Remove Logo'}
+                    {uploadLogoMutation.isPending ? 'Uploading...' : 'Upload Logo'}
                   </button>
                 </div>
-              )}
-              <div className={styles.uploadRow}>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/jpg,image/webp"
-                  onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
-                />
-                <button
-                  type="button"
-                  className={styles.uploadButton}
-                  disabled={!logoFile || uploadLogoMutation.isPending}
-                  onClick={() => logoFile && uploadLogoMutation.mutate(logoFile)}
-                >
-                  {uploadLogoMutation.isPending ? 'Uploading...' : 'Upload Logo'}
-                </button>
+                <small className={styles.hint}>
+                  Accepted formats: PNG, JPG, JPEG, WEBP (max 5MB). Logo will appear in header and login page.
+                </small>
               </div>
-              <small className={styles.hint}>
-                Accepted formats: PNG, JPG, JPEG, WEBP (max 5MB). Logo will appear in header and login page.
-              </small>
-            </div>
 
+              {(settings.lab_logo || settings.lab_display_name) && (
+                <div className={styles.previewSection}>
+                  <h3>Preview</h3>
+                  <div className={styles.headerPreview}>
+                    {settings.lab_logo && (
+                      <img src={settings.lab_logo} alt="Logo preview" className={styles.previewLogo} />
+                    )}
+                    <span className={styles.previewName}>
+                      {settings.lab_display_name || settings.lab_name}
+                    </span>
+                  </div>
+                </div>
+              )}
 
-
-            <div className={styles.formGroup}>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={sampleBarcodeCollectionEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setSampleBarcodeCollectionEnabled(checked);
-                    setStoredBarcodeEnabled(checked);
-                  }}
-                  className={styles.checkbox}
-                />
-                Enable sample barcode collection
-              </label>
-              <small className={styles.hint}>
-                Default is off. When disabled, collect samples flow will hide barcode entry prompts.
-              </small>
-            </div>
-
-            {(settings.lab_logo || settings.lab_display_name) && (
-              <div className={styles.previewSection}>
-                <h3>Preview</h3>
-                <div className={styles.headerPreview}>
-                  {settings.lab_logo && (
-                    <img src={settings.lab_logo} alt="Logo preview" className={styles.previewLogo} />
-                  )}
-                  <span className={styles.previewName}>
-                    {settings.lab_display_name || settings.lab_name}
+              <div className={styles.formGroup}>
+                <label>Enable sample barcode collection</label>
+                <div className={styles.toggleRow}>
+                  <input
+                    type="checkbox"
+                    checked={barcodeToggle}
+                    onChange={(e) => handleBarcodeToggle(e.target.checked)}
+                    style={{ width: '18px', height: '18px', marginRight: '10px', verticalAlign: 'bottom' }}
+                  />
+                  <span className={styles.hint} style={{ display: 'inline-block' }}>
+                    When off, barcode entry prompts are hidden in Collection/Samples. Default: OFF.
                   </span>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            <div className={styles.formGroup}>
-              <label>Enable sample barcode collection</label>
-              <div className={styles.toggleRow}>
-                <input
-                  type="checkbox"
-                  checked={barcodeToggle}
-                  onChange={(e) => handleBarcodeToggle(e.target.checked)}
-                  style={{ width: '18px', height: '18px' }}
-                />
-                <span className={styles.hint}>
-                  When off, barcode entry prompts are hidden in Collection/Samples. Default: OFF.
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'lab' && (
-          <div className={styles.tabContent}>
-            <h2>Laboratory Information</h2>
-            <div className={styles.formGroup}>
-              <label>Lab Name *</label>
-              <input
-                type="text"
-                name="lab_name"
-                defaultValue={settings.lab_name}
-                required
-                className={styles.input}
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Lab Address</label>
-              <textarea
-                name="lab_address"
-                defaultValue={settings.lab_address || ''}
-                className={styles.textarea}
-                rows={3}
-              />
-            </div>
-            <div className={styles.formRow}>
+          {activeTab === 'lab' && (
+            <div className={styles.tabContent}>
+              <h2>Laboratory Information</h2>
               <div className={styles.formGroup}>
-                <label>Lab Phone</label>
+                <label>Lab Name *</label>
                 <input
                   type="text"
-                  name="lab_phone"
-                  defaultValue={settings.lab_phone || ''}
+                  name="lab_name"
+                  defaultValue={settings.lab_name}
+                  required
                   className={styles.input}
                 />
               </div>
               <div className={styles.formGroup}>
-                <label>Lab Email</label>
+                <label>Lab Address</label>
+                <textarea
+                  name="lab_address"
+                  defaultValue={settings.lab_address || ''}
+                  className={styles.textarea}
+                  rows={3}
+                />
+              </div>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Lab Phone</label>
+                  <input
+                    type="text"
+                    name="lab_phone"
+                    defaultValue={settings.lab_phone || ''}
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Lab Whatsapp Number</label>
+                  <input
+                    type="text"
+                    name="lab_whatsapp"
+                    defaultValue={settings.lab_whatsapp || ''}
+                    placeholder="+1234567890"
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Lab Email</label>
+                  <input
+                    type="email"
+                    name="lab_email"
+                    defaultValue={settings.lab_email || ''}
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'reports' && (
+            <div className={styles.tabContent}>
+              <h2>Report Customization</h2>
+              <div className={styles.twoColumn}>
+                <div className={styles.column}>
+                  <div className={styles.formGroup}>
+                    <label>Header Image</label>
+                    {settings.report_header_image && (
+                      <div className={styles.imagePreview}>
+                        <img src={settings.report_header_image} alt="Report header" />
+                        <button
+                          type="button"
+                          onClick={() => removeHeaderMutation.mutate()}
+                          className={styles.removeButton}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                    <div className={styles.uploadRow}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setHeaderFile(e.target.files?.[0] || null)}
+                      />
+                      <button
+                        type="button"
+                        className={styles.uploadButton}
+                        disabled={!headerFile || uploadHeaderMutation.isPending}
+                        onClick={() => headerFile && uploadHeaderMutation.mutate(headerFile)}
+                      >
+                        {uploadHeaderMutation.isPending ? 'Uploading...' : 'Upload'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Report Header</label>
+                    <textarea
+                      name="report_header"
+                      defaultValue={settings.report_header || ''}
+                      className={styles.textarea}
+                      rows={4}
+                      placeholder="Custom header text for reports"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Report Footer</label>
+                    <textarea
+                      name="report_footer"
+                      defaultValue={settings.report_footer || ''}
+                      className={styles.textarea}
+                      rows={4}
+                      placeholder="Custom footer text for reports"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Footer Image</label>
+                    {settings.report_footer_image && (
+                      <div className={styles.imagePreview}>
+                        <img src={settings.report_footer_image} alt="Report footer" />
+                        <button
+                          type="button"
+                          onClick={() => removeFooterMutation.mutate()}
+                          className={styles.removeButton}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                    <div className={styles.uploadRow}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setFooterFile(e.target.files?.[0] || null)}
+                      />
+                      <button
+                        type="button"
+                        className={styles.uploadButton}
+                        disabled={!footerFile || uploadFooterMutation.isPending}
+                        onClick={() => footerFile && uploadFooterMutation.mutate(footerFile)}
+                      >
+                        {uploadFooterMutation.isPending ? 'Uploading...' : 'Upload'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label>Currency</label>
+                      <input
+                        type="text"
+                        name="currency"
+                        defaultValue={settings.currency}
+                        className={styles.input}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Tax Rate (%)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="tax_rate"
+                        defaultValue={settings.tax_rate}
+                        className={styles.input}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.column}>
+                  <div className={styles.previewRefresher}>
+                    <button type="button" className={styles.refreshButton} onClick={() => setPreviewKey(k => k + 1)}>
+                      Refresh Preview
+                    </button>
+                  </div>
+                  <div className={styles.reportPreviewPage} key={previewKey}>
+                    {/* Mock Report Preview */}
+                    <div className={styles.previewHeader}>
+                      {settings.report_header_image ? (
+                        <img src={settings.report_header_image} alt="Header" style={{ maxWidth: '100%', maxHeight: '50px' }} />
+                      ) : (
+                        <h3>{settings.lab_name}</h3>
+                      )}
+                      <p>{settings.report_header || "Lab Address & Contact Info"}</p>
+                    </div>
+                    <div style={{ flex: 1, padding: '20px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '4px' }}>
+                      <h4>Patient Report</h4>
+                      <p><strong>Patient:</strong> John Doe</p>
+                      <p><strong>Test:</strong> Complete Blood Count</p>
+                      <br />
+                      <table style={{ width: '100%', fontSize: '11px', textAlign: 'left' }}>
+                        <thead><tr><th>Parameter</th><th>Result</th><th>Ref Range</th></tr></thead>
+                        <tbody>
+                          <tr><td>Hemoglobin</td><td>14.5 g/dL</td><td>13.0 - 17.0</td></tr>
+                          <tr><td>WBC</td><td>7.2 x10^9/L</td><td>4.0 - 11.0</td></tr>
+                          <tr><td>Platelets</td><td>250 x10^9/L</td><td>150 - 450</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className={styles.previewFooter}>
+                      <p>{settings.report_footer || "End of Report"}</p>
+                      {settings.report_footer_image && (
+                        <img src={settings.report_footer_image} alt="Footer" style={{ maxWidth: '100%', maxHeight: '40px', marginTop: '5px' }} />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'email' && (
+            <div className={styles.tabContent}>
+              <h2>Email Configuration</h2>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>SMTP Host</label>
+                  <input
+                    type="text"
+                    name="email_host"
+                    defaultValue={settings.email_host || ''}
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>SMTP Port</label>
+                  <input
+                    type="number"
+                    name="email_port"
+                    defaultValue={settings.email_port}
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="email_use_tls"
+                      defaultChecked={settings.email_use_tls}
+                      className={styles.checkbox}
+                    />
+                    Use TLS
+                  </label>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="email_use_ssl"
+                      defaultChecked={settings.email_use_ssl}
+                      className={styles.checkbox}
+                    />
+                    Use SSL
+                  </label>
+                </div>
+              </div>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>SMTP Username</label>
+                  <input
+                    type="text"
+                    name="email_host_user"
+                    defaultValue={settings.email_host_user || ''}
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>SMTP Password</label>
+                  <input
+                    type="password"
+                    name="email_host_password"
+                    defaultValue={settings.email_host_password || ''}
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>From Email Address</label>
                 <input
                   type="email"
-                  name="lab_email"
-                  defaultValue={settings.lab_email || ''}
+                  name="email_from"
+                  defaultValue={settings.email_from || ''}
                   className={styles.input}
                 />
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {activeTab === 'reports' && (
-          <div className={styles.tabContent}>
-            <h2>Report Customization</h2>
-            <div className={styles.formGroup}>
-              <label>Header Image</label>
-              {settings.report_header_image && (
-                <div className={styles.imagePreview}>
-                  <img src={settings.report_header_image} alt="Report header" />
-                  <button
-                    type="button"
-                    onClick={() => removeHeaderMutation.mutate()}
-                    className={styles.removeButton}
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
-              <div className={styles.uploadRow}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setHeaderFile(e.target.files?.[0] || null)}
-                />
-                <button
-                  type="button"
-                  className={styles.uploadButton}
-                  disabled={!headerFile || uploadHeaderMutation.isPending}
-                  onClick={() => headerFile && uploadHeaderMutation.mutate(headerFile)}
-                >
-                  {uploadHeaderMutation.isPending ? 'Uploading...' : 'Upload'}
-                </button>
-              </div>
-            </div>
-            <div className={styles.formGroup}>
-              <label>Report Header</label>
-              <textarea
-                name="report_header"
-                defaultValue={settings.report_header || ''}
-                className={styles.textarea}
-                rows={4}
-                placeholder="Custom header text for reports"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Report Footer</label>
-              <textarea
-                name="report_footer"
-                defaultValue={settings.report_footer || ''}
-                className={styles.textarea}
-                rows={4}
-                placeholder="Custom footer text for reports"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Footer Image</label>
-              {settings.report_footer_image && (
-                <div className={styles.imagePreview}>
-                  <img src={settings.report_footer_image} alt="Report footer" />
-                  <button
-                    type="button"
-                    onClick={() => removeFooterMutation.mutate()}
-                    className={styles.removeButton}
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
-              <div className={styles.uploadRow}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFooterFile(e.target.files?.[0] || null)}
-                />
-                <button
-                  type="button"
-                  className={styles.uploadButton}
-                  disabled={!footerFile || uploadFooterMutation.isPending}
-                  onClick={() => footerFile && uploadFooterMutation.mutate(footerFile)}
-                >
-                  {uploadFooterMutation.isPending ? 'Uploading...' : 'Upload'}
-                </button>
-              </div>
-            </div>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Currency</label>
-                <input
-                  type="text"
-                  name="currency"
-                  defaultValue={settings.currency}
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Tax Rate (%)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="tax_rate"
-                  defaultValue={settings.tax_rate}
-                  className={styles.input}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+          {activeTab === 'backup' && (
+            <div className={styles.tabContent}>
+              <h2>Backup Settings</h2>
 
-        {activeTab === 'email' && (
-          <div className={styles.tabContent}>
-            <h2>Email Configuration</h2>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>SMTP Host</label>
-                <input
-                  type="text"
-                  name="email_host"
-                  defaultValue={settings.email_host || ''}
-                  className={styles.input}
-                />
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Backup Location</label>
+                  <select
+                    name="backup_drive"
+                    defaultValue={settings.backup_drive || 'local'}
+                    className={styles.select}
+                  >
+                    <option value="local">Local Storage</option>
+                    <option value="google_drive">Google Drive</option>
+                    <option value="dropbox">Dropbox</option>
+                    <option value="onedrive">OneDrive</option>
+                  </select>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Backup Path / Folder</label>
+                  <input
+                    type="text"
+                    name="backup_path"
+                    defaultValue={settings.backup_path || '/var/backups/lims'}
+                    className={styles.input}
+                    placeholder="/path/to/backup/folder"
+                  />
+                </div>
               </div>
-              <div className={styles.formGroup}>
-                <label>SMTP Port</label>
-                <input
-                  type="number"
-                  name="email_port"
-                  defaultValue={settings.email_port}
-                  className={styles.input}
-                />
-              </div>
-            </div>
-            <div className={styles.formRow}>
+
               <div className={styles.formGroup}>
                 <label>
                   <input
                     type="checkbox"
-                    name="email_use_tls"
-                    defaultChecked={settings.email_use_tls}
+                    name="backup_auto_upload"
+                    defaultChecked={settings.backup_auto_upload}
                     className={styles.checkbox}
                   />
-                  Use TLS
+                  Auto-upload to Cloud
                 </label>
               </div>
+
+              <div className={styles.formGroup}>
+                <button type="button" className={styles.secondaryButton} onClick={() => alert('Connect Logic Placeholder')}>
+                  Login / Connect Account
+                </button>
+              </div>
+
+              <hr style={{ margin: '20px 0', border: 0, borderTop: '1px solid #eee' }} />
+
               <div className={styles.formGroup}>
                 <label>
                   <input
                     type="checkbox"
-                    name="email_use_ssl"
-                    defaultChecked={settings.email_use_ssl}
+                    name="backup_enabled"
+                    defaultChecked={settings.backup_enabled}
                     className={styles.checkbox}
                   />
-                  Use SSL
+                  Enable Automated Backups Schedule
                 </label>
               </div>
-            </div>
-            <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label>SMTP Username</label>
-                <input
-                  type="text"
-                  name="email_host_user"
-                  defaultValue={settings.email_host_user || ''}
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>SMTP Password</label>
-                <input
-                  type="password"
-                  name="email_host_password"
-                  defaultValue={settings.email_host_password || ''}
-                  className={styles.input}
-                />
+                <label>Backup Frequency</label>
+                <select
+                  name="backup_frequency"
+                  defaultValue={settings.backup_frequency}
+                  className={styles.select}
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
               </div>
             </div>
-            <div className={styles.formGroup}>
-              <label>From Email Address</label>
-              <input
-                type="email"
-                name="email_from"
-                defaultValue={settings.email_from || ''}
-                className={styles.input}
-              />
-            </div>
-          </div>
-        )}
+          )}
 
-        {activeTab === 'backup' && (
-          <div className={styles.tabContent}>
-            <h2>Backup Settings</h2>
-            <div className={styles.formGroup}>
-              <label>
-                <input
-                  type="checkbox"
-                  name="backup_enabled"
-                  defaultChecked={settings.backup_enabled}
-                  className={styles.checkbox}
-                />
-                Enable Automated Backups
-              </label>
-            </div>
-            <div className={styles.formGroup}>
-              <label>Backup Frequency</label>
-              <select
-                name="backup_frequency"
-                defaultValue={settings.backup_frequency}
-                className={styles.select}
-              >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
-            </div>
-          </div>
-        )}
+          {activeTab === 'print' && (
+            <div className={styles.tabContent}>
+              <h2>Print Templates</h2>
+              <p className={styles.description}>
+                Configure report and receipt layouts. Margins are in inches.
+              </p>
 
-        {activeTab === 'print' && templateForm && (
-          <div className={styles.tabContent}>
-            <h2>Print Templates</h2>
-            <p className={styles.description}>
-              Configure report and receipt layouts. Margins are in inches.
-            </p>
-
-            <div className={styles.formGroup}>
-              <label>Template</label>
-              <select
-                className={styles.select}
-                value={selectedTemplateId || ''}
-                onChange={(e) => setSelectedTemplateId(Number(e.target.value))}
-              >
-                {templates.map((template) => (
-                  <option key={template.id} value={template.id}>
-                    {template.type} — {template.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Name</label>
-              <input
-                className={styles.input}
-                type="text"
-                value={templateForm.name}
-                onChange={(e) => updateTemplateField('name', e.target.value)}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Description</label>
-              <textarea
-                className={styles.textarea}
-                value={templateForm.description || ''}
-                onChange={(e) => updateTemplateField('description', e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Paper Size</label>
-              <select
-                className={styles.select}
-                value={templateForm.config.paper_size}
-                onChange={(e) => updateTemplateConfig('paper_size', e.target.value)}
-              >
-                <option value="A4">A4</option>
-                <option value="Letter">Letter</option>
-              </select>
-            </div>
-
-            <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label>Margin Top</label>
-                <input
-                  className={styles.input}
-                  type="number"
-                  step="0.1"
-                  value={templateForm.config.margins.top}
-                  onChange={(e) => updateMargin('top', Number(e.target.value))}
-                />
+                <label>Template</label>
+                {templates.length > 0 ? (
+                  <select
+                    className={styles.select}
+                    value={selectedTemplateId || ''}
+                    onChange={(e) => setSelectedTemplateId(Number(e.target.value))}
+                  >
+                    {templates.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.type} — {template.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className={styles.notice}>No templates found. Please contact support to seed default templates.</div>
+                )}
               </div>
-              <div className={styles.formGroup}>
-                <label>Margin Right</label>
-                <input
-                  className={styles.input}
-                  type="number"
-                  step="0.1"
-                  value={templateForm.config.margins.right}
-                  onChange={(e) => updateMargin('right', Number(e.target.value))}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Margin Bottom</label>
-                <input
-                  className={styles.input}
-                  type="number"
-                  step="0.1"
-                  value={templateForm.config.margins.bottom}
-                  onChange={(e) => updateMargin('bottom', Number(e.target.value))}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Margin Left</label>
-                <input
-                  className={styles.input}
-                  type="number"
-                  step="0.1"
-                  value={templateForm.config.margins.left}
-                  onChange={(e) => updateMargin('left', Number(e.target.value))}
-                />
-              </div>
-            </div>
 
-            <div className={styles.formGroup}>
-              <label>Font Scale</label>
-              <input
-                className={styles.input}
-                type="number"
-                step="0.1"
-                min="0.5"
-                max="2"
-                value={templateForm.config.font_scale}
-                onChange={(e) => updateTemplateConfig('font_scale', Number(e.target.value))}
-              />
-            </div>
+              {templateForm && (
+                <>
+                  <div className={styles.formGroup}>
+                    <label>Name</label>
+                    <input
+                      className={styles.input}
+                      type="text"
+                      value={templateForm.name}
+                      onChange={(e) => updateTemplateField('name', e.target.value)}
+                    />
+                  </div>
 
-            <div className={styles.formRow}>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={templateForm.config.show_logo}
-                  onChange={(e) => updateTemplateConfig('show_logo', e.target.checked)}
-                />
-                Show Logo
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={templateForm.config.show_header_image}
-                  onChange={(e) => updateTemplateConfig('show_header_image', e.target.checked)}
-                />
-                Show Header Image
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={templateForm.config.show_footer_image}
-                  onChange={(e) => updateTemplateConfig('show_footer_image', e.target.checked)}
-                />
-                Show Footer Image
-              </label>
-            </div>
+                  <div className={styles.formGroup}>
+                    <label>Description</label>
+                    <textarea
+                      className={styles.textarea}
+                      value={templateForm.description || ''}
+                      onChange={(e) => updateTemplateField('description', e.target.value)}
+                      rows={3}
+                    />
+                  </div>
 
-            <div className={styles.formRow}>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={templateForm.config.show_disclaimer}
-                  onChange={(e) => updateTemplateConfig('show_disclaimer', e.target.checked)}
-                />
-                Show Disclaimer
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={templateForm.config.show_signatures}
-                  onChange={(e) => updateTemplateConfig('show_signatures', e.target.checked)}
-                />
-                Show Signatures
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={templateForm.is_active}
-                  onChange={(e) => updateTemplateField('is_active', e.target.checked)}
-                />
-                Set Active
-              </label>
-            </div>
+                  <div className={styles.formGroup}>
+                    <label>Paper Size</label>
+                    <select
+                      className={styles.select}
+                      value={templateForm.config.paper_size}
+                      onChange={(e) => updateTemplateConfig('paper_size', e.target.value)}
+                    >
+                      <option value="A4">A4</option>
+                      <option value="Letter">Letter</option>
+                    </select>
+                  </div>
 
-            <div className={styles.formGroup}>
-              <label>Disclaimer Text</label>
-              <textarea
-                className={styles.textarea}
-                rows={3}
-                value={templateForm.disclaimer_text || ''}
-                onChange={(e) => updateTemplateField('disclaimer_text', e.target.value)}
-              />
-            </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label>Margin Top</label>
+                      <input
+                        className={styles.input}
+                        type="number"
+                        step="0.1"
+                        value={templateForm.config.margins.top}
+                        onChange={(e) => updateMargin('top', Number(e.target.value))}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Margin Right</label>
+                      <input
+                        className={styles.input}
+                        type="number"
+                        step="0.1"
+                        value={templateForm.config.margins.right}
+                        onChange={(e) => updateMargin('right', Number(e.target.value))}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Margin Bottom</label>
+                      <input
+                        className={styles.input}
+                        type="number"
+                        step="0.1"
+                        value={templateForm.config.margins.bottom}
+                        onChange={(e) => updateMargin('bottom', Number(e.target.value))}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Margin Left</label>
+                      <input
+                        className={styles.input}
+                        type="number"
+                        step="0.1"
+                        value={templateForm.config.margins.left}
+                        onChange={(e) => updateMargin('left', Number(e.target.value))}
+                      />
+                    </div>
+                  </div>
 
-            <div className={styles.formGroup}>
-              <label>Signatories</label>
-              {templateForm.signatories?.map((signatory, idx) => (
-                <div key={idx} className={styles.signatoryRow}>
-                  <input
-                    className={styles.input}
-                    placeholder="Name"
-                    value={signatory.name}
-                    onChange={(e) => updateSignatory(idx, 'name', e.target.value)}
-                  />
-                  <input
-                    className={styles.input}
-                    placeholder="Title"
-                    value={signatory.title}
-                    onChange={(e) => updateSignatory(idx, 'title', e.target.value)}
-                  />
-                  <input
-                    className={styles.input}
-                    placeholder="Reg No"
-                    value={signatory.reg_no || ''}
-                    onChange={(e) => updateSignatory(idx, 'reg_no', e.target.value)}
-                  />
-                  <button type="button" className={styles.removeButton} onClick={() => removeSignatory(idx)}>
-                    Remove
-                  </button>
-                </div>
-              ))}
-              <button type="button" className={styles.secondaryButton} onClick={addSignatory}>
-                + Add Signatory
-              </button>
-            </div>
+                  <div className={styles.formGroup}>
+                    <label>Font Scale</label>
+                    <input
+                      className={styles.input}
+                      type="number"
+                      step="0.1"
+                      min="0.5"
+                      max="2"
+                      value={templateForm.config.font_scale}
+                      onChange={(e) => updateTemplateConfig('font_scale', Number(e.target.value))}
+                    />
+                  </div>
 
+                  <div className={styles.formRow}>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={templateForm.config.show_logo}
+                        onChange={(e) => updateTemplateConfig('show_logo', e.target.checked)}
+                      />
+                      Show Logo
+                    </label>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={templateForm.config.show_header_image}
+                        onChange={(e) => updateTemplateConfig('show_header_image', e.target.checked)}
+                      />
+                      Show Header Image
+                    </label>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={templateForm.config.show_footer_image}
+                        onChange={(e) => updateTemplateConfig('show_footer_image', e.target.checked)}
+                      />
+                      Show Footer Image
+                    </label>
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={templateForm.config.show_disclaimer}
+                        onChange={(e) => updateTemplateConfig('show_disclaimer', e.target.checked)}
+                      />
+                      Show Disclaimer
+                    </label>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={templateForm.config.show_signatures}
+                        onChange={(e) => updateTemplateConfig('show_signatures', e.target.checked)}
+                      />
+                      Show Signatures
+                    </label>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={templateForm.is_active}
+                        onChange={(e) => updateTemplateField('is_active', e.target.checked)}
+                      />
+                      Set Active
+                    </label>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Disclaimer Text</label>
+                    <textarea
+                      className={styles.textarea}
+                      rows={3}
+                      value={templateForm.disclaimer_text || ''}
+                      onChange={(e) => updateTemplateField('disclaimer_text', e.target.value)}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Signatories</label>
+                    {templateForm.signatories?.map((signatory, idx) => (
+                      <div key={idx} className={styles.signatoryRow}>
+                        <input
+                          className={styles.input}
+                          placeholder="Name"
+                          value={signatory.name}
+                          onChange={(e) => updateSignatory(idx, 'name', e.target.value)}
+                        />
+                        <input
+                          className={styles.input}
+                          placeholder="Title"
+                          value={signatory.title}
+                          onChange={(e) => updateSignatory(idx, 'title', e.target.value)}
+                        />
+                        <input
+                          className={styles.input}
+                          placeholder="Reg No"
+                          value={signatory.reg_no || ''}
+                          onChange={(e) => updateSignatory(idx, 'reg_no', e.target.value)}
+                        />
+                        <button type="button" className={styles.removeButton} onClick={() => removeSignatory(idx)}>
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button type="button" className={styles.secondaryButton} onClick={addSignatory}>
+                      + Add Signatory
+                    </button>
+                  </div>
+
+                  <div className={styles.formActions}>
+                    <button type="button" className={styles.submitButton} onClick={handleTemplateSave}>
+                      Save Template
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {activeTab !== 'print' && (
             <div className={styles.formActions}>
-              <button type="button" className={styles.submitButton} onClick={handleTemplateSave}>
-                Save Template
+              <button type="submit" className={styles.submitButton} disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? 'Saving...' : 'Save Settings'}
               </button>
             </div>
-          </div>
-        )}
-
-        {activeTab !== 'print' && (
-          <div className={styles.formActions}>
-            <button type="submit" className={styles.submitButton} disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? 'Saving...' : 'Save Settings'}
-            </button>
-          </div>
-        )}
+          )}
         </form>
       )}
     </div>

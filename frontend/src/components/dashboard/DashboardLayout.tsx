@@ -58,14 +58,6 @@ export default function DashboardLayout() {
           { to: '/dashboard/patients', label: 'Patients' },
           { to: '/dashboard/patients-worklist', label: 'Worklist' },
         ]);
-        addSection('Billing', [
-          { to: '/dashboard/payments', label: 'Payments' },
-        ]);
-        break;
-      case 'Cashier':
-        addSection('Billing', [
-          { to: '/dashboard/payments', label: 'Payments' },
-        ]);
         break;
       case 'Phlebotomist':
         addSection('Operations', [
@@ -97,7 +89,6 @@ export default function DashboardLayout() {
           { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
           { to: '/dashboard/tests', label: 'Test Catalog' },
           { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
-          { to: '/dashboard/payments', label: 'Payments' },
           { to: '/dashboard/audit', label: 'Audit Logs' },
         ]);
         break;
