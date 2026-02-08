@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type KeyboardEvent } from 'react';
+import { useState, useEffect, useRef, useMemo, type KeyboardEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { resultApi, orderApi } from '../../api/services/index';
@@ -41,6 +41,7 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
     queryFn: () => resultApi.getWorklist(),
   });
 
+  const [expandedPatientId, setExpandedPatientId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Handle potential pagination or list response
@@ -48,7 +49,7 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
     ? worklistData?.data.results
     : worklistData?.data.results || [];
 
-  const items = rawItems.filter(item => {
+  const items = useMemo(() => rawItems.filter(item => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     const patientName = (item.order?.patient?.full_name || item.patient_name || '').toLowerCase();
@@ -59,7 +60,18 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
       (item.test_name || '').toLowerCase().includes(term) ||
       (item.panel_name || '').toLowerCase().includes(term)
     );
-  });
+  }), [rawItems, searchTerm]);
+
+  // Group by Patient
+  const groupedByPatient = useMemo(() => {
+    const groups: Record<number, WorklistOrderItem[]> = {};
+    items.forEach(item => {
+      const pId = item.order?.patient?.id || 0;
+      if (!groups[pId]) groups[pId] = [];
+      groups[pId].push(item);
+    });
+    return groups;
+  }, [items]);
 
   if (isLoading) return <div className={styles.message}>Loading worklist...</div>;
 
@@ -67,12 +79,12 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.headerTop}>
-          <h1>Pending Results Worklist</h1>
+          <h1>Result Entry Worklist</h1>
         </div>
         <div className={styles.controls}>
           <input
             type="text"
-            placeholder="Search by Order ID, Patient, or Test..."
+            placeholder="Search by Patient, Order, or Test..."
             className={styles.resultInput}
             style={{ maxWidth: '400px' }}
             value={searchTerm}
@@ -87,78 +99,80 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
             {searchTerm ? 'No matching orders found.' : 'No pending results found.'}
           </div>
         ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th style={{ width: '15%' }}>Lab / Visit ID</th>
-                <th style={{ width: '26%' }}>Patient</th>
-                <th style={{ width: '24%' }}>Test / Panel</th>
-                <th style={{ width: '12%' }}>Created</th>
-                <th style={{ width: '8%' }}>Status</th>
-                <th style={{ width: '15%' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id} className={styles.resultRow}>
-                  <td>
-                    <span className={styles.orderId}>{item.order?.order_id || item.order?.lab_number || '—'}</span>
-                  </td>
-                  <td>
-                    <div className={styles.patientInfo}>
-                      {(() => {
-                        const patientName = [item.order?.patient?.full_name, item.patient_name]
-                          .map((value) => (value ?? '').trim())
-                          .find(Boolean);
-                        const age = item.order?.patient?.age ?? item.patient_age;
-                        const gender = item.order?.patient?.gender || item.patient_gender;
-                        const mrn = item.order?.patient?.mrn;
-                        const agePart = age ? `${age}y${gender ? ' / ' : ''}` : '';
-                        const genderPart = gender || '';
-                        const mrnPart = mrn ? ` • ${mrn}` : '';
-                        const subline = `${agePart}${genderPart}${mrnPart}`.trim();
+          <div className={styles.accordion}>
+            {Object.entries(groupedByPatient).map(([patientIdStr, patientItems]) => {
+              const patientId = Number(patientIdStr);
+              const firstItem = patientItems[0];
+              const patient = firstItem.order?.patient;
+              const isExpanded = expandedPatientId === patientId;
 
-                        return (
-                          <>
-                            <span className={styles.patientName} data-testid="results-patient-name">{patientName || '—'}</span>
-                            <span className={styles.patientSub}>{subline || '—'}</span>
-                          </>
-                        );
-                      })()}
+              return (
+                <div key={patientId} className={styles.accordionItem} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '12px', overflow: 'hidden' }}>
+                  <div
+                    onClick={() => setExpandedPatientId(isExpanded ? null : patientId)}
+                    style={{
+                      padding: '16px',
+                      background: '#f8fafc',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{patient?.full_name || firstItem.patient_name || 'Unknown Patient'}</div>
+                      <div style={{ fontSize: '14px', color: '#64748b' }}>
+                        {patient?.age}y / {patient?.gender} • MRN: {patient?.mrn}
+                      </div>
                     </div>
-                  </td>
-                  <td>
-                    <span className={styles.paramName}>
-                      {item.test_name || item.panel_name || 'Unknown Test'}
-                    </span>
-                    {item.panel_name && item.test_name && (
-                      <span className={styles.paramUnit}>part of {item.panel_name}</span>
-                    )}
-                  </td>
-                  <td>
-                    <span className={styles.patientSub}>
-                      {item.order?.created_at ? new Date(item.order.created_at).toLocaleString() : '—'}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`${styles.statusBadge} ${styles['status-' + (item.status?.toLowerCase() || 'pending')]}`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className={styles.verifyMainButton}
-                      style={{ fontSize: '13px', padding: '8px 16px' }}
-                      onClick={() => onSelect(item.id)}
-                    >
-                      Enter Results
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 500 }}>
+                        {patientItems.length} test{patientItems.length !== 1 ? 's' : ''} pending
+                      </span>
+                      <span>{isExpanded ? '▼' : '▶'}</span>
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div style={{ padding: '0', background: 'white' }}>
+                      <table className={styles.table} style={{ margin: 0 }}>
+                        <thead style={{ background: '#f1f5f9' }}>
+                          <tr>
+                            <th style={{ width: '20%' }}>Order ID</th>
+                            <th style={{ width: '40%' }}>Test / Panel</th>
+                            <th style={{ width: '20%' }}>Status</th>
+                            <th style={{ width: '20%' }}>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {patientItems.map(item => (
+                            <tr key={item.id} className={styles.resultRow}>
+                              <td><span className={styles.orderId}>{item.order?.order_id}</span></td>
+                              <td><span className={styles.paramName}>{item.test_name || item.panel_name}</span></td>
+                              <td>
+                                <span className={`${styles.statusBadge} ${styles['status-' + (item.status?.toLowerCase() || 'pending')]}`}>
+                                  {item.status}
+                                </span>
+                              </td>
+                              <td>
+                                <button
+                                  className={styles.verifyMainButton}
+                                  style={{ fontSize: '12px', padding: '6px 12px' }}
+                                  onClick={(e) => { e.stopPropagation(); onSelect(item.id); }}
+                                >
+                                  Enter Result
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
@@ -187,7 +201,7 @@ const useResultEntry = (orderItemId: number) => {
   });
 
   const initializedRef = useRef(false);
-  // Reset initialization if orderItemId changes (though key prop should handle this, safety first)
+  // Reset initialization if orderItemId changes
   useEffect(() => {
     initializedRef.current = false;
   }, [orderItemId]);
@@ -201,7 +215,6 @@ const useResultEntry = (orderItemId: number) => {
         initialResults[r.test_parameter] = value;
         initialRemarks[r.test_parameter] = r.remarks || '';
       });
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults(initialResults);
       setRemarks(initialRemarks);
       initializedRef.current = true;
@@ -264,12 +277,10 @@ const useResultEntry = (orderItemId: number) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       if (e.ctrlKey) {
-        // Save all results
         saveMutation.mutate(existingResultsData?.data.results || []);
         return;
       }
       if (e.shiftKey) {
-        // Save current row
         saveMutation.mutate([result]);
         return;
       }
@@ -300,9 +311,11 @@ const useResultEntry = (orderItemId: number) => {
   };
 };
 
-const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () => void }) => {
+const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: number; onBack: () => void; onChangeItem: (id: number) => void }) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+
+  // Custom Hook Logic
   const {
     results,
     setResults,
@@ -331,12 +344,26 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
     retryDelay: 1000,
   });
 
-  // Timeout detection for stuck loading
+  // Fetch sibling items (using worklist cache if available, or fetch fresh)
+  // We need to find other items for the SAME patient.
+  const { data: worklistData } = useQuery({
+    queryKey: ['result-worklist'],
+    queryFn: () => resultApi.getWorklist(),
+    staleTime: 60000, // Reuse worklist data for 1 minute
+  });
+
+  const patientId = (orderItemDetails?.data as any)?.order?.patient?.id;
+
+  const siblingItems = useMemo(() => {
+    if (!worklistData?.data.results || !patientId) return [];
+    const allItems = worklistData.data.results as WorklistOrderItem[];
+    return allItems.filter(item => item.order?.patient?.id === patientId && item.id !== orderItemId);
+  }, [worklistData, patientId, orderItemId]);
+
+  // Timeout detection
   useEffect(() => {
     if (isLoadingResults || isLoadingDetails) {
-      const timer = setTimeout(() => {
-        setLoadingTimeout(true);
-      }, 15000); // 15 second timeout
+      const timer = setTimeout(() => setLoadingTimeout(true), 15000);
       return () => clearTimeout(timer);
     }
   }, [isLoadingResults, isLoadingDetails]);
@@ -365,7 +392,6 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
       if (!confirm('This will lock all results and prevent edits. Continue?')) {
         return;
       }
-      // Fetch latest results to avoid stale IDs/status before verification
       const refreshed = await queryClient.fetchQuery({
         queryKey: ['results', orderItemId],
         queryFn: () => resultApi.getByOrderItem(orderItemId),
@@ -385,65 +411,41 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
 
   const isLoading = isLoadingResults || isLoadingDetails;
 
-  // Loading timeout state
   if (loadingTimeout && isLoading) {
     return (
       <div className={styles.container}>
         <div className={styles.errorContainer}>
-          <div className={styles.errorIcon}>⚠️</div>
           <h2>Loading Timeout</h2>
-          <p>The request is taking longer than expected. This might be due to network issues or server load.</p>
-          <div className={styles.errorActions}>
-            <button className={styles.retryButton} onClick={handleRetry}>
-              Retry Loading
-            </button>
-            <button className={styles.backButton} onClick={onBack}>
-              Back to Worklist
-            </button>
-          </div>
-          {retryCount > 0 && <p className={styles.retryInfo}>Retry attempt: {retryCount}</p>}
+          <button className={styles.retryButton} onClick={handleRetry}>Retry</button>
+          <button className={styles.backButton} onClick={onBack}>Back</button>
         </div>
       </div>
     );
   }
 
-  // Loading state
   if (isLoading) {
     return (
       <div className={styles.container}>
         <div className={styles.loadingContainer}>
           <div className={styles.spinner}></div>
           <p>Loading results data...</p>
-          <p className={styles.loadingHint}>This should only take a few seconds</p>
         </div>
       </div>
     );
   }
 
-  // Error states with retry
   if (isError || isDetailsError) {
-    const errorMessage = (error as Error)?.message || (detailsError as Error)?.message || 'Unknown error occurred';
     return (
       <div className={styles.container}>
         <div className={styles.errorContainer}>
-          <div className={styles.errorIcon}>❌</div>
-          <h2>Failed to Load Results</h2>
-          <p className={styles.errorMessage}>{errorMessage}</p>
-          <div className={styles.errorActions}>
-            <button className={styles.retryButton} onClick={handleRetry}>
-              Retry
-            </button>
-            <button className={styles.backButton} onClick={onBack}>
-              Back to Worklist
-            </button>
-          </div>
+          <p>Error loading results.</p>
+          <button className={styles.backButton} onClick={onBack}>Back</button>
         </div>
       </div>
     );
   }
 
   const resultItems = existingResultsData?.data.results || [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const orderDetails = orderItemDetails?.data as any;
   const orderInfo = orderDetails?.order;
   const patientInfo = orderInfo?.patient;
@@ -451,13 +453,6 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
   const allVerified = resultItems.every((r: TestResult) => r.status === 'verified');
   const rejectedResults = resultItems.filter((r: TestResult) => r.status?.toLowerCase() === 'rejected');
   const verifyDisabled = !canVerify || saveMutation.isPending || verifyMutation.isPending;
-  const saveAndVerifyLabel = saveMutation.isPending
-    ? 'Saving...'
-    : verifyMutation.isPending
-      ? 'Verifying...'
-      : '✓ Save & Verify All';
-  const verifyDisabledReason = !canVerify ? 'Only Admin or Pathologist can verify results.' : undefined;
-
 
   return (
     <div className={styles.container}>
@@ -470,30 +465,42 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
         &larr; Back to Worklist
       </button>
 
+      {/* Tabs for Sibling Tests */}
+      {siblingItems.length > 0 && (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+          <div style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', borderRadius: '6px', fontWeight: 'bold' }}>
+            Current: {testInfo}
+          </div>
+          {siblingItems.map(item => (
+            <button
+              key={item.id}
+              onClick={() => onChangeItem(item.id)}
+              style={{
+                padding: '8px 16px',
+                background: '#f1f5f9',
+                border: '1px solid #cbd5e1',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                color: '#475569'
+              }}
+            >
+              {item.test_name || item.panel_name}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <h1>Result Entry</h1>
-          <span className={styles.orderId}>#{orderInfo?.order_id || 'ID Loading...'}</span>
+          <span className={styles.orderId}>#{orderInfo?.order_id}</span>
         </div>
-
-        <div className={styles.subtitle}>
-          Test: <strong>{testInfo || 'Loading...'}</strong>
-        </div>
-
+        <div className={styles.subtitle}>Test: <strong>{testInfo}</strong></div>
         {patientInfo && (
           <div className={styles.patientBanner}>
-            <div className={styles.patientField}>
-              <span className={styles.fieldLabel}>Patient Name</span>
-              <span className={styles.fieldValue}>{patientInfo.full_name}</span>
-            </div>
-            <div className={styles.patientField}>
-              <span className={styles.fieldLabel}>MRN</span>
-              <span className={styles.fieldValue}>{patientInfo.mrn}</span>
-            </div>
-            <div className={styles.patientField}>
-              <span className={styles.fieldLabel}>Age / Gender</span>
-              <span className={styles.fieldValue}>{patientInfo.age}y / {patientInfo.gender}</span>
-            </div>
+            <div className={styles.patientField}><span className={styles.fieldLabel}>Patient</span><span className={styles.fieldValue}>{patientInfo.full_name}</span></div>
+            <div className={styles.patientField}><span className={styles.fieldLabel}>MRN</span><span className={styles.fieldValue}>{patientInfo.mrn}</span></div>
+            <div className={styles.patientField}><span className={styles.fieldLabel}>Age/Sex</span><span className={styles.fieldValue}>{patientInfo.age}y / {patientInfo.gender}</span></div>
           </div>
         )}
       </div>
@@ -501,166 +508,69 @@ const ResultEntry = ({ orderItemId, onBack }: { orderItemId: number; onBack: () 
       {rejectedResults.length > 0 && (
         <div className={styles.rejectionNotice}>
           <strong>Returned for correction</strong>
-          <span>Please review the pathologist comments before resubmitting.</span>
-          <ul className={styles.rejectionList}>
+          <ul>
             {rejectedResults.map((result) => (
-              <li key={result.id} className={styles.rejectionItem}>
-                <span className={styles.rejectionParam}>{result.parameter_name || `Param ${result.test_parameter}`}</span>
-                <span>{result.remarks || 'No rejection reason provided.'}</span>
-              </li>
+              <li key={result.id}>{result.remarks}</li>
             ))}
           </ul>
         </div>
       )}
 
-      {resultItems.length === 0 ? (
-        <div className={styles.message}>Initializing result form...</div>
-      ) : (
-        <div className={styles.form}>
-          {/* Sticky Action Bar at Top */}
-          <div className={styles.stickyActionBar}>
-            {!allVerified && (
-              <>
-                <button
-                  type="button"
-                  className={styles.saveButton}
-                  onClick={() => saveMutation.mutate(resultItems)}
-                  disabled={saveMutation.isPending || verifyMutation.isPending}
-                >
-                  {saveMutation.isPending ? 'Saving...' : '💾 Save Draft'}
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.verifyMainButton} ${styles.saveButton}`}
-                  onClick={handleSaveAndVerify}
-                  disabled={verifyDisabled}
-                  title={verifyDisabledReason}
-                >
-                  {saveAndVerifyLabel}
-                </button>
-              </>
-            )}
-            {allVerified && (
-              <div className={styles.allVerifiedMessage}>
-                ✓ All results have been verified.
-              </div>
-            )}
-          </div>
-
-          <div className={styles.tableContainer}>
-            <table className={styles.resultTable}>
-              <thead>
-                <tr>
-                  <th style={{ width: '26%' }}>Test Parameter</th>
-                  <th style={{ width: '18%' }}>Result Value</th>
-                  <th style={{ width: '10%' }}>Unit</th>
-                  <th style={{ width: '24%' }}>Remarks / Instructions</th>
-                  <th style={{ width: '22%' }}>Reference / Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resultItems.map((result: TestResult, index: number) => {
-                  const isVerified = result.status?.toLowerCase() === 'verified' || result.status?.toLowerCase() === 'published';
-
-                  return (
-                    <tr key={result.test_parameter} className={`${styles.resultRow} ${isVerified ? styles.verifiedRow : ''}`}>
-                      <td>
-                        <span className={styles.paramName}>
-                          {result.parameter_name || `Param ${result.test_parameter}`}
-                        </span>
-                      </td>
-                      <td>
-                        {isVerified ? (
-                          <div className={styles.verifiedField}>
-                            <span className={styles.verifiedText}>{result.result_value}</span>
-                          </div>
-                        ) : (
-                          <div className={styles.inputWrapper}>
-                            <input
-                              type="text"
-                              data-index={index}
-                              value={results[result.test_parameter] || ''}
-                              onChange={(e) => setResults(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
-                              onKeyDown={(e) => handleKeyDown(e, result, index, resultItems.length)}
-                              className={styles.resultInput}
-                              placeholder="Enter value"
-                              autoFocus={index === 0}
-                              required
-                              disabled={isVerified}
-                            />
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        <span className={styles.paramUnit}>{result.unit || '-'}</span>
-                      </td>
-                      <td>
-                        {isVerified ? (
-                          <span className={styles.remarksText}>{result.remarks || '—'}</span>
-                        ) : (
-                          <textarea
-                            className={styles.remarksInput}
-                            rows={2}
-                            placeholder="Enter remarks or read pathologist notes..."
-                            value={remarks[result.test_parameter] || ''}
-                            onChange={(e) => setRemarks(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
-                          />
-                        )}
-                      </td>
-                      <td>
-                        <div className={styles.refRange}>
-                          <span className={styles.refValue}>
-                            {result.reference_range || '—'}
-                          </span>
-                          <span className={`${styles.statusBadge} ${styles['status-' + (result.status?.toLowerCase() || 'pending')]}`}>
-                            {result.status || 'Pending'}
-                          </span>
-                          {result.flag && <span className={`${styles.flag} ${styles['flag' + result.flag]}`}>{result.flag}</span>}
-                        </div>
-                        {isVerified && result.verified_by_name && (
-                          <div className={styles.verifiedBy}>
-                            Verified by {result.verified_by_name} at {new Date(result.verified_at!).toLocaleString()}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Footer buttons for convenience */}
-          <div className={styles.footer}>
-            {!allVerified && (
-              <>
-                <button
-                  type="button"
-                  className={styles.saveButton}
-                  onClick={() => saveMutation.mutate(resultItems)}
-                  disabled={saveMutation.isPending || verifyMutation.isPending}
-                >
-                  {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.verifyMainButton} ${styles.saveButton}`}
-                  onClick={handleSaveAndVerify}
-                  disabled={verifyDisabled}
-                  title={verifyDisabledReason}
-                >
-                  {saveAndVerifyLabel}
-                </button>
-              </>
-            )}
-            {allVerified && (
-              <div className={styles.allVerifiedMessage}>
-                All results have been verified.
-              </div>
-            )}
-          </div>
+      <div className={styles.form}>
+        <div className={styles.stickyActionBar}>
+          {!allVerified && (
+            <>
+              <button onClick={() => saveMutation.mutate(resultItems)} disabled={saveMutation.isPending} className={styles.saveButton}>
+                {saveMutation.isPending ? 'Saving...' : 'Draft'}
+              </button>
+              <button onClick={handleSaveAndVerify} disabled={verifyDisabled} className={`${styles.verifyMainButton} ${styles.saveButton}`}>
+                {verifyMutation.isPending ? 'Verifying...' : 'Verify Draft'}
+              </button>
+            </>
+          )}
         </div>
-      )}
+
+        <div className={styles.tableContainer}>
+          <table className={styles.resultTable}>
+            <thead>
+              <tr>
+                <th>Test Parameter</th>
+                <th>Result Value</th>
+                <th>Unit</th>
+                <th>Remarks</th>
+                <th>Ref. Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resultItems.map((result: TestResult, index: number) => (
+                <tr key={result.test_parameter}>
+                  <td>{result.parameter_name}</td>
+                  <td>
+                    <input
+                      type="text"
+                      data-index={index}
+                      value={results[result.test_parameter] || ''}
+                      onChange={(e) => setResults(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
+                      onKeyDown={(e) => handleKeyDown(e, result, index, resultItems.length)}
+                      className={styles.resultInput}
+                      disabled={result.status === 'verified'}
+                    />
+                  </td>
+                  <td>{result.unit}</td>
+                  <td>
+                    <textarea
+                      className={styles.remarksInput}
+                      value={remarks[result.test_parameter] || ''}
+                      onChange={(e) => setRemarks(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
+                    />
+                  </td>
+                  <td>{result.reference_range}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
@@ -669,6 +579,10 @@ export default function ResultsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const orderItemIdStr = searchParams.get('orderItemId') || searchParams.get('orderItem');
   const orderItemId = orderItemIdStr ? Number(orderItemIdStr) : null;
+
+  const handleChangeItem = (id: number) => {
+    setSearchParams({ orderItemId: id.toString() });
+  };
 
   return (
     <div>
@@ -682,6 +596,7 @@ export default function ResultsPage() {
             newParams.delete('orderItem');
             return newParams;
           })}
+          onChangeItem={handleChangeItem}
         />
       ) : (
         <ResultWorklist

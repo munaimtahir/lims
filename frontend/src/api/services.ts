@@ -205,11 +205,12 @@ export const sampleApi = {
     return response.data;
   },
 
-  updateStatus: async (id: number, status: string, barcode?: string, postponement_reason?: string) => {
+  updateStatus: async (id: number, status: string, barcode?: string, postponement_reason?: string, additionalData?: Record<string, unknown>) => {
     const response = await api.patch<SampleCollection>(`/samples/${id}/`, {
       status,
       ...(barcode && { barcode }),
       ...(postponement_reason && { postponement_reason }),
+      ...additionalData,
     });
     return response.data;
   },
