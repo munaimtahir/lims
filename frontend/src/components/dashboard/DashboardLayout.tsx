@@ -47,8 +47,8 @@ export default function DashboardLayout() {
           { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
           { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
           { to: '/dashboard/tests', label: 'Test Catalog' },
-          { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
-          { to: '/dashboard/payments', label: 'Payments' },
+          { to: '/dashboard/tests?tab=parameters', label: 'Parameters' },
+          { to: '/dashboard/tests?tab=ranges', label: 'Normal Ranges' },
           { to: '/dashboard/audit', label: 'Audit Logs' },
         ]);
         break;
@@ -88,7 +88,8 @@ export default function DashboardLayout() {
           { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
           { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
           { to: '/dashboard/tests', label: 'Test Catalog' },
-          { to: '/dashboard/reference-ranges', label: 'Normal Ranges' },
+          { to: '/dashboard/tests?tab=parameters', label: 'Parameters' },
+          { to: '/dashboard/tests?tab=ranges', label: 'Normal Ranges' },
           { to: '/dashboard/audit', label: 'Audit Logs' },
         ]);
         break;

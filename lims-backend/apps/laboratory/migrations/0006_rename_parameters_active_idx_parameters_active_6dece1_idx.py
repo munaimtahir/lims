@@ -12,9 +12,35 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameIndex(
-            model_name="parameter",
-            new_name="parameters_active_6dece1_idx",
-            old_name="parameters_active_idx",
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    sql=(
+                        "DO $$\n"
+                        "BEGIN\n"
+                        "    IF EXISTS (\n"
+                        "        SELECT 1 FROM pg_class WHERE relname = 'parameters_active_idx'\n"
+                        "    ) AND NOT EXISTS (\n"
+                        "        SELECT 1 FROM pg_class WHERE relname = 'parameters_active_6dece1_idx'\n"
+                        "    ) THEN\n"
+                        "        ALTER INDEX parameters_active_idx RENAME TO parameters_active_6dece1_idx;\n"
+                        "    END IF;\n"
+                        "END $$;\n"
+                        "CREATE INDEX IF NOT EXISTS parameters_active_6dece1_idx "
+                        "ON parameters (active);"
+                    ),
+                    reverse_sql=(
+                        "ALTER INDEX IF EXISTS parameters_active_6dece1_idx "
+                        "RENAME TO parameters_active_idx;"
+                    ),
+                )
+            ],
+            state_operations=[
+                migrations.RenameIndex(
+                    model_name="parameter",
+                    new_name="parameters_active_6dece1_idx",
+                    old_name="parameters_active_idx",
+                )
+            ],
         ),
     ]

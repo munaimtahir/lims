@@ -1,0 +1,29 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-7.4.3, pluggy-1.6.0
+django: version: 5.0, settings: config.settings.development (from env)
+rootdir: /app
+configfile: pytest.ini
+plugins: django-4.7.0
+collected 34 items
+
+apps/reports/tests/test_reports.py ..................................    [100%]
+
+=============================== warnings summary ===============================
+../usr/local/lib/python3.12/site-packages/dateutil/tz/tz.py:37
+  /usr/local/lib/python3.12/site-packages/dateutil/tz/tz.py:37: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+../usr/local/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1
+  /usr/local/lib/python3.12/site-packages/rest_framework_simplejwt/__init__.py:1: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    from pkg_resources import DistributionNotFound, get_distribution
+
+../usr/local/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11
+  /usr/local/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:11: DeprecationWarning: ast.NameConstant is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    haveNameConstant = hasattr(ast,'NameConstant')
+
+apps/results/models.py:14
+  /app/apps/results/models.py:14: PytestCollectionWarning: cannot collect test class 'TestResult' because it has a __init__ constructor (from: apps/reports/tests/test_reports.py)
+    class TestResult(models.Model):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 34 passed, 4 warnings in 33.14s ========================

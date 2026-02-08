@@ -8,13 +8,14 @@
 }
 
 .header h1 {
-  font-size: 1.75rem;
-  color: #1e293b;
+  font-size: 1.65rem;
+  color: #111827;
   margin-bottom: 4px;
+  letter-spacing: -0.01em;
 }
 
 .role {
-  color: #64748b;
+  color: #6b7280;
   font-size: 0.9rem;
 }
 
@@ -25,23 +26,33 @@
 }
 
 .statCard {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 22px 24px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #e6e8ef;
+  box-shadow: 0 18px 30px -28px rgba(15, 23, 42, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .statCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #d5d9e3;
+  box-shadow: 0 22px 36px -28px rgba(15, 23, 42, 0.45);
 }
 
 .statIcon {
-  font-size: 2.5rem;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e6e8ef;
+  font-size: 1.4rem;
 }
 
 .statContent {
@@ -49,32 +60,33 @@
 }
 
 .statValue {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .statTitle {
   font-size: 0.875rem;
-  color: #64748b;
+  color: #6b7280;
   margin-top: 4px;
 }
 
 .welcomeCard {
-  background: white;
-  border-radius: 12px;
+  background: #ffffff;
+  border-radius: 14px;
   padding: 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e6e8ef;
+  box-shadow: 0 18px 30px -28px rgba(15, 23, 42, 0.35);
 }
 
 .welcomeCard p {
-  color: #64748b;
+  color: #6b7280;
   font-size: 1rem;
 }
 
 .loading {
   text-align: center;
   padding: 48px;
-  color: #64748b;
+  color: #6b7280;
   font-size: 1rem;
 }

@@ -278,6 +278,67 @@ class TestTestResultViewSet:
         test_result.refresh_from_db()
         assert test_result.status == "REJECTED"
 
+    def test_bulk_reject_results(self, api_client, pathologist_user, test_result, test_instance):
+        """Test bulk rejecting results with a reason."""
+        from apps.laboratory.models import Parameter, ReferenceRange, TestParameter
+
+        api_client.force_authenticate(user=pathologist_user)
+        order_item = test_result.order_item
+
+        extra_parameter = Parameter.objects.create(
+            parameter_id="p2",
+            parameter_name="Platelets",
+            unit="10^9/L",
+        )
+        extra_test_param = TestParameter.objects.create(
+            test=test_instance,
+            parameter=extra_parameter,
+            display_order=2,
+        )
+        ReferenceRange.objects.create(
+            parameter=extra_test_param,
+            gender="Male",
+            min_value=150,
+            max_value=450,
+            min_critical=50,
+            max_critical=700,
+            age_min=0,
+            age_max=150,
+        )
+        ReferenceRange.objects.create(
+            parameter=extra_test_param,
+            gender="Female",
+            min_value=150,
+            max_value=450,
+            min_critical=50,
+            max_critical=700,
+            age_min=0,
+            age_max=150,
+        )
+
+        extra_result = TestResult.objects.create(
+            order_item=order_item,
+            test_parameter=extra_test_param,
+            result_value="220",
+            entered_by=test_result.entered_by,
+            status="ENTERED",
+        )
+        test_result.status = "ENTERED"
+        test_result.save(update_fields=["status"])
+
+        response = api_client.post(
+            "/api/v1/results/bulk-reject/",
+            {"result_ids": [test_result.id, extra_result.id], "reason": "Sample issue"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        test_result.refresh_from_db()
+        extra_result.refresh_from_db()
+        assert test_result.status == "REJECTED"
+        assert extra_result.status == "REJECTED"
+        assert "Sample issue" in test_result.remarks
+        assert "Sample issue" in extra_result.remarks
+
     def test_verify_result_non_pathologist_fails(
         self, api_client, technician_user, test_result
     ):

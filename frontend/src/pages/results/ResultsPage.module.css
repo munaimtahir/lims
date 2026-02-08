@@ -1,11 +1,12 @@
 .container {
   padding: 32px;
   background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  border: 1px solid #e6e8ef;
+  box-shadow: 0 20px 40px -32px rgba(15, 23, 42, 0.35);
   max-width: 1200px;
   margin: 0 auto;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: inherit;
 }
 
 .toast {
@@ -16,24 +17,24 @@
   border-radius: 10px;
   color: #0f172a;
   font-weight: 600;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 18px 30px -20px rgba(15, 23, 42, 0.5);
   z-index: 999;
 }
 
 .toastSuccess {
-  background: #ecfeff;
-  border: 1px solid #22c55e;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
 }
 
 .toastError {
   background: #fff1f2;
-  border: 1px solid #ef4444;
+  border: 1px solid #fecaca;
 }
 
 /* Header Section */
 .header {
   margin-bottom: 32px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #edf1f7;
   padding-bottom: 24px;
 }
 
@@ -46,26 +47,26 @@
 
 .header h1 {
   margin: 0;
-  color: #0f172a;
+  color: #111827;
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .orderId {
-  background: #f1f5f9;
+  background: #f8fafc;
   padding: 6px 16px;
   border-radius: 999px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
   color: #475569;
   font-weight: 600;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e6e8ef;
 }
 
 .subtitle {
   margin: 0;
-  color: #64748b;
+  color: #6b7280;
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -91,9 +92,9 @@
 
 /* Patient Banner */
 .patientBanner {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: #fbfcfe;
+  border: 1px solid #e6e8ef;
+  border-radius: 14px;
   padding: 20px;
   margin-top: 24px;
   display: grid;
@@ -204,7 +205,7 @@
   width: 100%;
   min-height: 54px;
   padding: 8px 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 13px;
   font-family: inherit;
@@ -222,8 +223,8 @@
   margin: 16px 0 24px;
   padding: 16px;
   border-radius: 10px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
   color: #991b1b;
   display: flex;
   flex-direction: column;
@@ -278,10 +279,10 @@
 .resultInput {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 15px;
-  font-family: 'Inter', monospace;
+  font-family: 'JetBrains Mono', monospace;
   /* Monospace for numbers alignment */
   transition: all 0.2s;
   color: #0f172a;
@@ -289,8 +290,8 @@
 
 .resultInput:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #c9a357;
+  box-shadow: 0 0 0 3px rgba(201, 163, 87, 0.2);
 }
 
 .resultInput::placeholder {
@@ -309,23 +310,23 @@
 }
 
 .status-pending {
-  background: #f1f5f9;
-  color: #64748b;
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .status-entered {
-  background: #e0f2fe;
-  color: #0284c7;
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 
 .status-verified {
-  background: #dcfce7;
+  background: #ecfdf3;
   color: #166534;
 }
 
 .status-rejected {
   background: #fef2f2;
-  color: #dc2626;
+  color: #b91c1c;
 }
 
 /* Reference Range */
@@ -334,21 +335,21 @@
   flex-direction: column;
   gap: 6px;
   align-items: flex-start;
-  color: #64748b;
+  color: #6b7280;
   font-size: 12px;
   white-space: normal;
 }
 
 .refValue {
   font-size: 12px;
-  color: #475569;
+  color: #4b5563;
 }
 
 /* Actions Footer */
 .footer {
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #edf1f7;
   display: flex;
   justify-content: flex-end;
   gap: 16px;
@@ -368,29 +369,28 @@
 }
 
 .saveButton {
-  background: white;
-  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
   color: #475569;
 }
 
 .saveButton:hover:not(:disabled) {
   background: #f8fafc;
-  border-color: #94a3b8;
-  color: #1e293b;
+  border-color: #9ca3af;
+  color: #111827;
 }
 
 .verifyMainButton {
-  background: #2563eb;
-  /* Primary Blue */
-  border: none;
-  color: white;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  background: #0f172a;
+  border: 1px solid #0f172a;
+  color: #f8fafc;
+  box-shadow: 0 18px 30px -20px rgba(15, 23, 42, 0.55);
 }
 
 .verifyMainButton:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: #111827;
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 20px 32px -20px rgba(15, 23, 42, 0.65);
 }
 
 .verifyMainButton:disabled,
@@ -404,8 +404,8 @@
 .inlineVerifyBtn {
   margin-left: 8px;
   padding: 6px 12px;
-  background: #e0f2fe;
-  color: #0284c7;
+  background: #f8fafc;
+  color: #111827;
   border: none;
   border-radius: 6px;
   font-size: 12px;
@@ -414,7 +414,7 @@
 }
 
 .inlineVerifyBtn:hover {
-  background: #bae6fd;
+  background: #e5e7eb;
 }
 
 /* Verified State */
@@ -438,7 +438,7 @@
 .message {
   padding: 40px;
   text-align: center;
-  color: #64748b;
+  color: #6b7280;
   font-size: 16px;
   background: #f8fafc;
   border-radius: 8px;
@@ -449,14 +449,14 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: white;
+  background: #ffffff;
   padding: 16px 24px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 1px solid #edf1f7;
   margin-bottom: 16px;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px -22px rgba(15, 23, 42, 0.5);
 }
 
 .allVerifiedMessage {
@@ -466,7 +466,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: #dcfce7;
+  background: #ecfdf3;
   border-radius: 8px;
 }
 
@@ -482,7 +482,7 @@
 
 .loadingContainer p {
   margin: 16px 0 0 0;
-  color: #475569;
+  color: #4b5563;
   font-size: 16px;
   font-weight: 500;
 }
@@ -496,8 +496,8 @@
 .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border: 4px solid #e5e7eb;
+  border-top-color: #c9a357;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

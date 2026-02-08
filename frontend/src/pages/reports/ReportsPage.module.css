@@ -1,28 +1,29 @@
 .container {
   padding: 32px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e6e8ef;
+  box-shadow: 0 20px 40px -32px rgba(15, 23, 42, 0.35);
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .header {
   margin-bottom: 32px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #edf1f7;
   padding-bottom: 24px;
 }
 
 .header h1 {
   margin: 0 0 8px 0;
-  color: #0f172a;
-  font-size: 28px;
+  color: #111827;
+  font-size: 26px;
   font-weight: 700;
 }
 
 .subtitle {
   margin: 0;
-  color: #64748b;
+  color: #6b7280;
   font-size: 16px;
 }
 
@@ -38,13 +39,13 @@
 
 .loadingContainer p {
   margin: 16px 0 0 0;
-  color: #475569;
+  color: #4b5563;
   font-size: 16px;
   font-weight: 500;
 }
 
 .loadingHint {
-  color: #94a3b8 !important;
+  color: #9ca3af !important;
   font-size: 14px !important;
   margin-top: 8px !important;
 }
@@ -52,8 +53,8 @@
 .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border: 4px solid #e5e7eb;
+  border-top-color: #c9a357;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -72,9 +73,9 @@
   justify-content: center;
   padding: 80px 40px;
   text-align: center;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 12px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
 }
 
 .errorIcon {
@@ -84,23 +85,23 @@
 
 .errorContainer h2 {
   margin: 0 0 12px 0;
-  color: #991b1b;
+  color: #9a3412;
   font-size: 24px;
   font-weight: 700;
 }
 
 .errorContainer p {
   margin: 0 0 24px 0;
-  color: #dc2626;
+  color: #b45309;
   font-size: 16px;
 }
 
 .errorMessage {
   font-family: 'JetBrains Mono', monospace;
-  background: white;
+  background: #ffffff;
   padding: 12px 16px;
   border-radius: 6px;
-  border: 1px solid #fca5a5;
+  border: 1px solid #fed7aa;
   font-size: 14px !important;
 }
 
@@ -112,8 +113,8 @@
 
 .retryButton {
   padding: 12px 24px;
-  background: #dc2626;
-  color: white;
+  background: #0f172a;
+  color: #f8fafc;
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -123,14 +124,14 @@
 }
 
 .retryButton:hover {
-  background: #b91c1c;
+  background: #111827;
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 18px 30px -20px rgba(15, 23, 42, 0.5);
 }
 
 .retryInfo {
   margin-top: 16px !important;
-  color: #64748b !important;
+  color: #6b7280 !important;
   font-size: 14px !important;
   font-style: italic;
 }
@@ -139,9 +140,10 @@
 .emptyState {
   text-align: center;
   padding: 80px 40px;
-  color: #64748b;
+  color: #6b7280;
   background: #f8fafc;
-  border-radius: 12px;
+  border: 1px solid #e6e8ef;
+  border-radius: 14px;
   font-size: 18px;
 }
 
@@ -153,16 +155,16 @@
 }
 
 .reportCard {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border: 1px solid #e6e8ef;
+  border-radius: 14px;
   padding: 24px;
   transition: all 0.2s;
-  background: white;
+  background: #ffffff;
 }
 
 .reportCard:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  border-color: #cbd5e1;
+  box-shadow: 0 22px 36px -28px rgba(15, 23, 42, 0.45);
+  border-color: #d5d9e3;
 }
 
 .reportHeader {
@@ -171,19 +173,19 @@
   align-items: start;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #edf1f7;
 }
 
 .reportInfo h3 {
   margin: 0 0 4px 0;
   font-size: 18px;
   font-weight: 600;
-  color: #1e293b;
+  color: #111827;
 }
 
 .orderId {
   font-size: 13px;
-  color: #64748b;
+  color: #6b7280;
   font-family: 'JetBrains Mono', monospace;
 }
 
@@ -196,13 +198,13 @@
 }
 
 .final {
-  background: #dcfce7;
+  background: #ecfdf3;
   color: #166534;
 }
 
 .draft {
-  background: #fef3c7;
-  color: #92400e;
+  background: #fff7ed;
+  color: #9a3412;
 }
 
 .reportDetails {
@@ -219,25 +221,25 @@
 
 .label {
   font-weight: 500;
-  color: #64748b;
+  color: #6b7280;
   min-width: 120px;
 }
 
 .value {
-  color: #1e293b;
+  color: #111827;
 }
 
 .reportActions {
   display: flex;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #edf1f7;
 }
 
 .downloadButton {
   padding: 10px 20px;
-  background: #3b82f6;
-  color: white;
+  background: #0f172a;
+  color: #f8fafc;
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -251,7 +253,7 @@
 }
 
 .downloadButton:hover {
-  background: #2563eb;
+  background: #111827;
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 18px 30px -20px rgba(15, 23, 42, 0.5);
 }

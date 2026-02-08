@@ -1,0 +1,35 @@
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   frontend/src/App.css
+	modified:   frontend/src/api/services.ts
+	modified:   frontend/src/components/dashboard/DashboardLayout.module.css
+	modified:   frontend/src/components/dashboard/DashboardLayout.tsx
+	modified:   frontend/src/index.css
+	modified:   frontend/src/pages/audit/AuditLogsPage.module.css
+	modified:   frontend/src/pages/dashboard/DashboardHome.module.css
+	modified:   frontend/src/pages/registration/RegistrationPage.tsx
+	modified:   frontend/src/pages/reports/ReportsPage.module.css
+	modified:   frontend/src/pages/results/ResultsPage.module.css
+	modified:   frontend/src/pages/review/VerificationQueuePage.module.css
+	modified:   frontend/src/pages/settings/SystemSettingsPage.module.css
+	modified:   frontend/src/pages/tests/TestCatalogPage.module.css
+	modified:   frontend/src/pages/tests/TestCatalogPage.tsx
+	modified:   frontend/src/types/index.ts
+	modified:   lims-backend/apps/accounts/tests/test_auth.py
+	modified:   lims-backend/apps/laboratory/migrations/0006_rename_parameters_active_idx_parameters_active_6dece1_idx.py
+	modified:   lims-backend/apps/patients/models.py
+	modified:   lims-backend/apps/reports/utils.py
+	modified:   lims-backend/apps/results/tests/test_results.py
+	modified:   lims-backend/requirements/base.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	DEPLOY_RUNS/20260208_204344/
+	lims-backend/apps/patients/migrations/0006_patient_whatsapp_number.py
+	lims-backend/apps/results/migrations/0004_alter_testresult_status.py
+
+no changes added to commit (use "git add" and/or "git commit -a")

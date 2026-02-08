@@ -147,6 +147,55 @@ export const laboratoryApi = {
     const response = await api.get('/laboratory/import/download-template/', { responseType: 'blob' });
     return response.data as Blob;
   },
+
+  // Mutations
+  createTest: async (data: Partial<LabTest>) => {
+    const response = await api.post<LabTest>('/laboratory/tests/', data);
+    return response.data;
+  },
+  updateTest: async (id: number, data: Partial<LabTest>) => {
+    const response = await api.patch<LabTest>(`/laboratory/tests/${id}/`, data);
+    return response.data;
+  },
+  deleteTest: async (id: number) => {
+    await api.delete(`/laboratory/tests/${id}/`);
+  },
+
+  createPanel: async (data: Partial<TestPanel>) => {
+    const response = await api.post<TestPanel>('/laboratory/panels/', data);
+    return response.data;
+  },
+  updatePanel: async (id: number, data: Partial<TestPanel>) => {
+    const response = await api.patch<TestPanel>(`/laboratory/panels/${id}/`, data);
+    return response.data;
+  },
+  deletePanel: async (id: number) => {
+    await api.delete(`/laboratory/panels/${id}/`);
+  },
+
+  createParameter: async (data: Partial<TestParameter>) => {
+    const response = await api.post<TestParameter>('/laboratory/parameters/', data);
+    return response.data;
+  },
+  updateParameter: async (id: number, data: Partial<TestParameter>) => {
+    const response = await api.patch<TestParameter>(`/laboratory/parameters/${id}/`, data);
+    return response.data;
+  },
+  deleteParameter: async (id: number) => {
+    await api.delete(`/laboratory/parameters/${id}/`);
+  },
+
+  createCategory: async (data: Partial<TestCategory>) => {
+    const response = await api.post<TestCategory>('/laboratory/categories/', data);
+    return response.data;
+  },
+  updateCategory: async (id: number, data: Partial<TestCategory>) => {
+    const response = await api.patch<TestCategory>(`/laboratory/categories/${id}/`, data);
+    return response.data;
+  },
+  deleteCategory: async (id: number) => {
+    await api.delete(`/laboratory/categories/${id}/`);
+  },
 };
 
 /**

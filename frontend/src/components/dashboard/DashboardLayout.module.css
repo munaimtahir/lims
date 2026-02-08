@@ -156,6 +156,6 @@
   flex: 1;
   margin-left: 264px;
   padding: 24px;
-  background: #f5f7fb;
+  background: radial-gradient(circle at top left, #f8fafc 0%, #f1f5f9 45%, #eef2f7 100%);
   min-height: 100vh;
 }

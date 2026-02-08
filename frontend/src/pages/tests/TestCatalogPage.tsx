@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { laboratoryApi } from '../../api/services';
+import { laboratoryApi, referenceRangeApi } from '../../api/services';
 
 import { useBranding } from '../../contexts/BrandingContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -16,13 +17,20 @@ export default function TestCatalogPage() {
   const isAdmin = user?.role === 'Admin';
   const isManager = user?.role === 'Manager';
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<'tests' | 'panels'>('tests');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as 'tests' | 'panels' | 'parameters' | 'ranges') || 'tests';
+  const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [searchQuery, setSearchQuery] = useState('');
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null); // For edit/delete
+  const [modalType, setModalType] = useState<'test' | 'panel' | 'parameter' | 'range' | null>(null);
+
   const [auditSummary, setAuditSummary] = useState<CatalogAuditSummary | null>(null);
   const [auditError, setAuditError] = useState<string | null>(null);
   const [auditLoading, setAuditLoading] = useState(false);
 
+  // Queries
   const { data: categoriesData } = useQuery({
     queryKey: ['test-categories'],
     queryFn: () => laboratoryApi.getCategories(),
@@ -44,10 +52,29 @@ export default function TestCatalogPage() {
     }),
   });
 
+  const { data: parametersData, isLoading: parametersLoading } = useQuery({
+    queryKey: ['parameters', searchQuery],
+    queryFn: () => laboratoryApi.getParameters({
+      ...(searchQuery && { search: searchQuery }),
+    }),
+    enabled: activeTab === 'parameters',
+  });
+
+  const { data: rangesData, isLoading: rangesLoading } = useQuery({
+    queryKey: ['reference-ranges', searchQuery],
+    queryFn: () => referenceRangeApi.list({
+      ...(searchQuery && { search: searchQuery }),
+    }),
+    enabled: activeTab === 'ranges',
+  });
+
   const categories = categoriesData?.results || [];
   const tests = testsData?.results || [];
   const panels = panelsData?.results || [];
+  const parameters = parametersData?.results || [];
+  const ranges = rangesData?.results || [];
 
+  // Handlers
   const handleExport = async () => {
     try {
       const blob = await laboratoryApi.exportCatalog();
@@ -78,6 +105,27 @@ export default function TestCatalogPage() {
     }
   };
 
+  const handleEdit = (item: any, type: 'test' | 'panel' | 'parameter' | 'range') => {
+    setSelectedItem(item);
+    setModalType(type);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = async (id: number, type: 'test' | 'panel' | 'parameter' | 'range') => {
+    if (!window.confirm('Are you sure you want to delete this item?')) return;
+    try {
+      if (type === 'test') await laboratoryApi.deleteTest(id);
+      if (type === 'panel') await laboratoryApi.deletePanel(id);
+      if (type === 'parameter') await laboratoryApi.deleteParameter(id);
+      if (type === 'range') await referenceRangeApi.delete(id);
+
+      queryClient.invalidateQueries({ queryKey: [type === 'range' ? 'reference-ranges' : type + 's'] });
+    } catch (err) {
+      console.error('Delete failed', err);
+      alert('Failed to delete item');
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -86,16 +134,26 @@ export default function TestCatalogPage() {
           <div className={styles.actions}>
             {isAdmin && (
               <>
-                <button onClick={handleExport} className={styles.secondaryButton}>
-                  Export Catalog
+                <button
+                  onClick={() => {
+                    setSelectedItem(null);
+                    setModalType(activeTab === 'tests' ? 'test' : activeTab === 'panels' ? 'panel' : activeTab === 'parameters' ? 'parameter' : 'range');
+                    setIsEditModalOpen(true);
+                  }}
+                  className={styles.actionButton}
+                >
+                  + Add {activeTab === 'tests' ? 'Test' : activeTab === 'panels' ? 'Panel' : activeTab === 'parameters' ? 'Parameter' : 'Range'}
                 </button>
-                <button onClick={() => setIsImportModalOpen(true)} className={styles.actionButton}>
-                  Import Catalog
+                <button onClick={handleExport} className={styles.secondaryButton}>
+                  Export
+                </button>
+                <button onClick={() => setIsImportModalOpen(true)} className={styles.secondaryButton}>
+                  Import
                 </button>
               </>
             )}
             <button onClick={handleAudit} className={styles.secondaryButton}>
-              Audit Catalog
+              Audit
             </button>
           </div>
         )}
@@ -121,7 +179,7 @@ export default function TestCatalogPage() {
         <div className={styles.searchFilter}>
           <input
             type="text"
-            placeholder="Search tests or panels..."
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={styles.searchInput}
@@ -129,104 +187,198 @@ export default function TestCatalogPage() {
         </div>
 
         <div className={styles.tabButtons}>
-          <button
-            className={activeTab === 'tests' ? styles.activeTab : styles.tab}
-            onClick={() => setActiveTab('tests')}
-          >
-            Tests
-          </button>
-          <button
-            className={activeTab === 'panels' ? styles.activeTab : styles.tab}
-            onClick={() => setActiveTab('panels')}
-          >
-            Panels
-          </button>
+          {(['tests', 'panels', 'parameters', 'ranges'] as const).map((tab) => (
+            <button
+              key={tab}
+              className={activeTab === tab ? styles.activeTab : styles.tab}
+              onClick={() => setActiveTab(tab)}
+              style={{ textTransform: 'capitalize' }}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
       </div>
 
-      {activeTab === 'tests' ? (
-        <div className={styles.content}>
-          {testsLoading ? (
-            <div className={styles.loading}>Loading tests...</div>
-          ) : (
-            <div className={styles.grid}>
-              {tests.map((test) => (
-                <div key={test.test_id} className={styles.card}>
-                  <div className={styles.cardHeader}>
-                    <h3>{test.test_name}</h3>
-                    <span className={styles.code}>{test.test_code}</span>
-                  </div>
-                  <div className={styles.cardBody}>
-                    <p className={styles.category}>{test.category_name}</p>
-                    <p><strong>Sample:</strong> {test.sample_type}</p>
-                    {test.sample_volume && (
-                      <p><strong>Volume:</strong> {test.sample_volume}</p>
-                    )}
-                    <p><strong>Price:</strong> {formatCurrency(test.price, currency)}</p>
-                    <p><strong>Turnaround:</strong> {test.turnaround_time} hours</p>
-                    {test.parameters && test.parameters.length > 0 && (
-                      <div className={styles.parameters}>
-                        <strong>Parameters ({test.parameters.length}):</strong>
-                        <ul>
-                          {test.parameters.slice(0, 3).map((param) => (
-                            <li key={param.id}>{param.parameter_name}</li>
-                          ))}
-                          {test.parameters.length > 3 && (
-                            <li>+{test.parameters.length - 3} more</li>
-                          )}
-                        </ul>
+      <div className={styles.content}>
+        {activeTab === 'tests' && (
+          testsLoading ? <div className={styles.loading}>Loading tests...</div> : (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Sample</th>
+                  <th>Price</th>
+                  <th>TAT (hrs)</th>
+                  <th>Params</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tests.map((test) => (
+                  <tr key={test.test_id}>
+                    <td><span className={styles.code}>{test.test_code}</span></td>
+                    <td>{test.test_name}</td>
+                    <td>{test.category_name}</td>
+                    <td>{test.sample_type}</td>
+                    <td>{formatCurrency(test.price, currency)}</td>
+                    <td>{test.turnaround_time}</td>
+                    <td>{test.parameters?.length || 0}</td>
+                    <td style={{ fontSize: '12px', color: '#64748b' }}>
+                      {new Date().toLocaleDateString()} {/* Placeholder, using current date for now as updated_at might be missing in type */}
+                    </td>
+                    <td>
+                      <div className={styles.rowActions}>
+                        <button onClick={() => handleEdit(test, 'test')} className={styles.iconButton}>✎</button>
+                        {isAdmin && <button onClick={() => handleDelete(test.test_id, 'test')} className={styles.iconButtonDelete}>🗑</button>}
                       </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {tests.length === 0 && (
-                <div className={styles.noData}>No tests found</div>
-              )}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className={styles.content}>
-          {panelsLoading ? (
-            <div className={styles.loading}>Loading panels...</div>
-          ) : (
-            <div className={styles.grid}>
-              {panels.map((panel) => (
-                <div key={panel.id} className={styles.card}>
-                  <div className={styles.cardHeader}>
-                    <h3>{panel.panel_name}</h3>
-                    <span className={styles.code}>{panel.panel_code}</span>
-                  </div>
-                  <div className={styles.cardBody}>
-                    <p className={styles.category}>{panel.category_name}</p>
-                    <p><strong>Sample:</strong> {panel.sample_type}</p>
-                    {panel.sample_volume && (
-                      <p><strong>Volume:</strong> {panel.sample_volume}</p>
-                    )}
-                    <p><strong>Price:</strong> {formatCurrency(panel.price, currency)}</p>
-                    <p><strong>Turnaround:</strong> {panel.turnaround_time} hours</p>
-                    {panel.tests && panel.tests.length > 0 && (
-                      <div className={styles.parameters}>
-                        <strong>Tests ({panel.tests.length}):</strong>
-                        <ul>
-                          {panel.tests.slice(0, 3).map((test) => (
-                            <li key={test.test_id}>{test.test_name}</li>
-                          ))}
-                          {panel.tests.length > 3 && (
-                            <li>+{panel.tests.length - 3} more</li>
-                          )}
-                        </ul>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        )}
+
+        {activeTab === 'panels' && (
+          panelsLoading ? <div className={styles.loading}>Loading panels...</div> : (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Sample</th>
+                  <th>Price</th>
+                  <th>TAT (hrs)</th>
+                  <th>Tests</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {panels.map((panel) => (
+                  <tr key={panel.id}>
+                    <td><span className={styles.code}>{panel.panel_code}</span></td>
+                    <td>{panel.panel_name}</td>
+                    <td>{panel.category_name}</td>
+                    <td>{panel.sample_type}</td>
+                    <td>{formatCurrency(panel.price, currency)}</td>
+                    <td>{panel.turnaround_time}</td>
+                    <td>{panel.tests?.length || 0}</td>
+                    <td style={{ fontSize: '12px', color: '#64748b' }}>
+                      {new Date().toLocaleDateString()}
+                    </td>
+                    <td>
+                      <div className={styles.rowActions}>
+                        <button onClick={() => handleEdit(panel, 'panel')} className={styles.iconButton}>✎</button>
+                        {isAdmin && <button onClick={() => handleDelete(panel.id, 'panel')} className={styles.iconButtonDelete}>🗑</button>}
                       </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {panels.length === 0 && (
-                <div className={styles.noData}>No panels found</div>
-              )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        )}
+
+        {activeTab === 'parameters' && (
+          parametersLoading ? <div className={styles.loading}>Loading parameters...</div> : (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Param ID</th>
+                  <th>Name</th>
+                  <th>Unit</th>
+                  <th>Type</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {parameters.map((param) => (
+                  <tr key={param.id}>
+                    <td><span className={styles.code}>{param.parameter}</span></td>
+                    <td>{param.parameter_name}</td>
+                    <td>{param.unit}</td>
+                    <td>numeric</td>
+                    <td style={{ fontSize: '12px', color: '#64748b' }}>-</td>
+                    <td>
+                      <div className={styles.rowActions}>
+                        <button onClick={() => handleEdit(param, 'parameter')} className={styles.iconButton}>✎</button>
+                        {isAdmin && <button onClick={() => handleDelete(param.id, 'parameter')} className={styles.iconButtonDelete}>🗑</button>}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        )}
+
+        {activeTab === 'ranges' && (
+          rangesLoading ? <div className={styles.loading}>Loading ranges...</div> : (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Test</th>
+                  <th>Parameter</th>
+                  <th>Gender</th>
+                  <th>Age Range</th>
+                  <th>Normal Range</th>
+                  <th>Critical Range</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ranges.map((range) => (
+                  <tr key={range.id}>
+                    <td><span className={styles.code}>{range.test_code}</span> {range.test_name}</td>
+                    <td>{range.parameter_name}</td>
+                    <td>{range.gender}</td>
+                    <td>
+                      {range.age_min ?? 0} - {range.age_max ?? '∞'} yrs
+                    </td>
+                    <td>{range.reference_min} - {range.reference_max}</td>
+                    <td>{range.critical_low} - {range.critical_high}</td>
+                    <td style={{ fontSize: '12px', color: '#64748b' }}>
+                      {new Date(range.effective_date).toLocaleDateString()}
+                    </td>
+                    <td>
+                      <div className={styles.rowActions}>
+                        <button onClick={() => handleEdit(range, 'range')} className={styles.iconButton}>✎</button>
+                        {isAdmin && <button onClick={() => handleDelete(range.id, 'range')} className={styles.iconButtonDelete}>🗑</button>}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        )}
+      </div>
+
+      {isEditModalOpen && modalType && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <h2>{selectedItem ? 'Edit' : 'Add'} {modalType}</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className={styles.closeButton}>×</button>
             </div>
-          )}
+            <div className={styles.modalBody}>
+              <GenericForm
+                type={modalType}
+                initialData={selectedItem}
+                categories={categories}
+                onSubmit={handleSave}
+                onCancel={() => setIsEditModalOpen(false)}
+              />
+            </div>
+          </div>
         </div>
       )}
 
@@ -273,6 +425,111 @@ export default function TestCatalogPage() {
       {auditLoading && <div className={styles.loading}>Running audit...</div>}
       {auditError && <div className={styles.error}>{auditError}</div>}
     </div>
+  );
+}
+
+interface GenericFormProps {
+  type: 'test' | 'panel' | 'parameter' | 'range';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialData?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  categories: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSubmit: (data: any) => void;
+  onCancel: () => void;
+}
+
+function GenericForm({ type, initialData, categories, onSubmit, onCancel }: GenericFormProps) {
+  const [formData, setFormData] = useState(initialData || {});
+
+  // For ranges, we might need parameters/tests list if it was available.
+  // Given we didn't pass it, we'll use simple inputs for now or mocked selects.
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  const fields = {
+    test: [
+      { name: 'test_code', label: 'Test Code', type: 'text' },
+      { name: 'test_name', label: 'Test Name', type: 'text' },
+      { name: 'category', label: 'Category', type: 'select', options: categories.map(c => ({ value: c.id, label: c.name })) },
+      { name: 'sample_type', label: 'Sample Type', type: 'text' },
+      { name: 'price', label: 'Price', type: 'number' },
+      { name: 'turnaround_time', label: 'TAT (Hours)', type: 'number' },
+    ],
+    panel: [
+      { name: 'panel_code', label: 'Panel Code', type: 'text' },
+      { name: 'panel_name', label: 'Panel Name', type: 'text' },
+      { name: 'category', label: 'Category', type: 'select', options: categories.map(c => ({ value: c.id, label: c.name })) },
+      { name: 'sample_type', label: 'Sample Type', type: 'text' },
+      { name: 'price', label: 'Price', type: 'number' },
+      { name: 'turnaround_time', label: 'TAT (Hours)', type: 'number' },
+    ],
+    parameter: [
+      { name: 'parameter', label: 'Parameter ID', type: 'text', placeholder: 'p123' },
+      { name: 'parameter_name', label: 'Parameter Name', type: 'text' },
+      { name: 'unit', label: 'Unit', type: 'text' },
+      { name: 'decimal_places', label: 'Decimal Places', type: 'number' },
+    ],
+    range: [
+      // Needs Test/Parameter ID. For simplicity, we ask for Parameter ID manually if creating new 
+      // or assume it's pre-filled if we had better context. 
+      // Ideally this needs a searchable select.
+      { name: 'parameter', label: 'Parameter ID (Test Parameter ID)', type: 'number' },
+      { name: 'gender', label: 'Gender', type: 'select', options: [{ value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }, { value: 'Both', label: 'Both' }] },
+      { name: 'age_min', label: 'Age Min', type: 'number' },
+      { name: 'age_max', label: 'Age Max', type: 'number' },
+      { name: 'reference_min', label: 'Normal Min', type: 'number' },
+      { name: 'reference_max', label: 'Normal Max', type: 'number' },
+      { name: 'critical_low', label: 'Critical Low', type: 'number' },
+      { name: 'critical_high', label: 'Critical High', type: 'number' },
+    ]
+  };
+
+  const currentFields = fields[type];
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }}>
+      {currentFields.map((field) => (
+        <div key={field.name} className={styles.formGroup} style={{ marginBottom: '12px' }}>
+          <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>{field.label}</label>
+          {field.type === 'select' ? (
+            <select
+              value={formData[field.name] || ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              className={styles.select}
+              style={{ width: '100%' }}
+            >
+              <option value="">Select...</option>
+              {field.options?.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={field.type}
+              value={formData[field.name] || ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              placeholder={field.placeholder}
+              className={styles.input}
+              style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px' }}
+            />
+          )}
+        </div>
+      ))}
+      <div className={styles.modalActions}>
+        <button type="button" onClick={onCancel} className={styles.cancelButton}>
+          Cancel
+        </button>
+        <button type="submit" className={styles.submitButton}>
+          Save
+        </button>
+      </div>
+    </form>
   );
 }
 

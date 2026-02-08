@@ -250,6 +250,12 @@ class TestUserViewSet:
         response = api_client.get("/api/v1/auth/users/")
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
+    def test_list_users_manager(self, api_client, manager_user, receptionist_user):
+        """Test listing users as manager."""
+        api_client.force_authenticate(user=manager_user)
+        response = api_client.get("/api/v1/auth/users/")
+        assert response.status_code == status.HTTP_200_OK
+
     def test_create_user_admin(self, authenticated_client):
         """Test creating a user as admin."""
         response = authenticated_client.post(
@@ -265,6 +271,23 @@ class TestUserViewSet:
         )
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["data"]["username"] == "newuser"
+
+    def test_create_user_manager(self, api_client, manager_user):
+        """Test creating a user as manager."""
+        api_client.force_authenticate(user=manager_user)
+        response = api_client.post(
+            "/api/v1/auth/users/",
+            {
+                "username": "managercreated",
+                "email": "managercreated@test.com",
+                "full_name": "Manager Created",
+                "role": "Receptionist",
+                "password": "managerpass123",
+                "password_confirm": "managerpass123",
+            },
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["data"]["username"] == "managercreated"
 
     def test_create_user_password_mismatch(self, authenticated_client):
         """Test creating a user with mismatched passwords."""
@@ -289,6 +312,21 @@ class TestUserViewSet:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["data"]["full_name"] == "Updated Name"
 
+    def test_update_user_manager(self, api_client, manager_user, receptionist_user):
+        """Test updating a user as manager."""
+        api_client.force_authenticate(user=manager_user)
+        response = api_client.patch(
+            f"/api/v1/auth/users/{receptionist_user.id}/", {"full_name": "Manager Updated"}
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["data"]["full_name"] == "Manager Updated"
+
+    def test_delete_user_manager(self, api_client, manager_user, receptionist_user):
+        """Test deleting a user as manager."""
+        api_client.force_authenticate(user=manager_user)
+        response = api_client.delete(f"/api/v1/auth/users/{receptionist_user.id}/")
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
     def test_change_password(self, authenticated_client, admin_user):
         """Test changing user password."""
         response = authenticated_client.post(
@@ -312,3 +350,15 @@ class TestUserViewSet:
             },
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_reset_password_manager(self, api_client, manager_user, receptionist_user):
+        """Test resetting a user's password as manager."""
+        api_client.force_authenticate(user=manager_user)
+        response = api_client.post(
+            f"/api/v1/auth/users/{receptionist_user.id}/reset_password/",
+            {
+                "new_password": "resetpass123",
+                "new_password_confirm": "resetpass123",
+            },
+        )
+        assert response.status_code == status.HTTP_200_OK

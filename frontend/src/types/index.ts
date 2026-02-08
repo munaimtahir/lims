@@ -49,7 +49,8 @@ export interface AuthState {
  */
 export interface Patient {
   id: number;
-  patient_id: string;
+  patient_id: string; // Legacy ID/MRN
+  registration_number?: string; // New V2 ID (YYMM-CC-SSSS)
   first_name: string;
   last_name: string;
   full_name: string;
@@ -60,6 +61,7 @@ export interface Patient {
   age: number;
   gender: 'Male' | 'Female' | 'Other';
   phone: string;
+  whatsapp_number?: string;
   email?: string;
   national_id?: string;
   cnic?: string;
@@ -73,6 +75,42 @@ export interface Patient {
   last_visit?: string;
 }
 
+export interface Order {
+  id: number;
+  patient: number;
+  patient_name: string;
+// ...
+export interface WorklistOrderItem {
+  id: number;
+  order: {
+    id: number;
+    order_id: string;
+    lab_number?: string; // New V2 ID
+    patient: {
+      // ...
+      date_of_birth?: string;
+      age_years?: number;
+      age_months?: number;
+      age_days?: number;
+      age: number;
+      gender: 'Male' | 'Female' | 'Other';
+      phone: string;
+      whatsapp_number?: string;
+      email?: string;
+      national_id?: string;
+      cnic?: string;
+      father_husband_name?: string;
+      default_referred_by?: string;
+      last_order_referred_by?: string;
+      address?: string;
+      created_at: string;
+      updated_at: string;
+      total_orders: number;
+      last_visit?: string;
+    }
+  }
+}
+
 export interface PatientCreateRequest {
   first_name?: string;
   last_name?: string;
@@ -83,6 +121,7 @@ export interface PatientCreateRequest {
   age_days?: number;
   gender: 'Male' | 'Female' | 'Other';
   phone: string;
+  whatsapp_number?: string;
   email?: string;
   national_id?: string;
   cnic?: string;
@@ -171,6 +210,7 @@ export interface OrderItem {
 export interface Order {
   id: number;
   order_id: string;
+  lab_number?: string; // New V2 ID
   patient: number;
   patient_name: string;
   ordered_by?: number;
@@ -400,7 +440,8 @@ export interface SystemSettings {
  */
 export interface PatientLookupResult {
   id: number;
-  patient_id: string;
+  patient_id: string; // Legacy
+  registration_number?: string; // New V2
   full_name: string;
   phone: string;
   age?: number;

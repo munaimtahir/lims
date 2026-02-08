@@ -186,15 +186,6 @@ def generate_pdf_report(
     page_size = A4
 
     buffer = BytesIO()
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=page_size,
-        rightMargin=right_margin,
-        leftMargin=left_margin,
-        topMargin=top_margin,
-        bottomMargin=bottom_margin,
-        pageCompression=0,
-    )
     story = []
     styles = getSampleStyleSheet()
 
@@ -266,11 +257,7 @@ def generate_pdf_report(
         leading=12 * font_scale,
     )
 
-    # Header image (if present)
-    if report_header_image:
-        add_report_image(story, report_header_image, max_width=available_width)
-
-    # Header with logo + lab info
+    # Header with logo + lab info (rendered on each page)
     logo_flowable = ""
     logo_col_width = 1.25 * inch
     if lab_logo:
@@ -304,8 +291,40 @@ def generate_pdf_report(
             ]
         )
     )
-    story.append(header_table)
-    story.append(Spacer(1, 0.15 * inch))
+
+    header_flowables = []
+    if report_header_image:
+        try:
+            image_reader = ImageReader(report_header_image)
+            img_width, img_height = image_reader.getSize()
+            scale = min(available_width / img_width, 1)
+            header_flowables.append(
+                Image(
+                    image_reader,
+                    width=img_width * scale,
+                    height=img_height * scale,
+                )
+            )
+            header_flowables.append(Spacer(1, 0.15 * inch))
+        except Exception:
+            pass
+    header_flowables.append(header_table)
+    header_flowables.append(Spacer(1, 0.15 * inch))
+
+    header_height = 0
+    for flowable in header_flowables:
+        _, flow_height = flowable.wrap(available_width, page_size[1])
+        header_height += flow_height
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=page_size,
+        rightMargin=right_margin,
+        leftMargin=left_margin,
+        topMargin=top_margin + header_height,
+        bottomMargin=bottom_margin,
+        pageCompression=0,
+    )
 
     # Report title
     items = list(order.items.all())
@@ -483,9 +502,20 @@ def generate_pdf_report(
     )
     story.append(signatory_table)
 
-    # Build PDF with page numbers
+    def _draw_header(canvas_obj, doc_obj):
+        canvas_obj.saveState()
+        cursor_y = page_size[1] - top_margin
+        for flowable in header_flowables:
+            flow_width, flow_height = flowable.wrap(available_width, page_size[1])
+            cursor_y -= flow_height
+            flowable.drawOn(canvas_obj, left_margin, cursor_y)
+        canvas_obj.restoreState()
+
+    # Build PDF with repeated header + page numbers
     doc.build(
         story,
+        onFirstPage=_draw_header,
+        onLaterPages=_draw_header,
         canvasmaker=lambda *args, **kwargs: PageNumCanvas(
             *args, **kwargs, bottom_margin=bottom_margin, right_margin=right_margin
         ),

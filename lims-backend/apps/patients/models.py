@@ -123,6 +123,13 @@ class Patient(models.Model):
 
     # Contact Information
     phone = models.CharField(max_length=20, validators=[phone_validator])
+    whatsapp_number = models.CharField(
+        max_length=20,
+        validators=[phone_validator],
+        blank=True,
+        null=True,
+        help_text="Whatsapp number if different from phone"
+    )
     email = models.EmailField(blank=True, null=True)
 
     default_referred_by = models.CharField(

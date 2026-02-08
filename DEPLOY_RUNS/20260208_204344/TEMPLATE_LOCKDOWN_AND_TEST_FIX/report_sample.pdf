@@ -1,0 +1,2116 @@
+%PDF-1.4
+%“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
+1 0 obj
+<<
+/F1 2 0 R /F2 3 0 R
+>>
+endobj
+2 0 obj
+<<
+/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+>>
+endobj
+3 0 obj
+<<
+/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+>>
+endobj
+4 0 obj
+<<
+/Contents 10 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 9 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+5 0 obj
+<<
+/Contents 11 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 9 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+6 0 obj
+<<
+/Contents 12 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 9 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+7 0 obj
+<<
+/PageMode /UseNone /Pages 9 0 R /Type /Catalog
+>>
+endobj
+8 0 obj
+<<
+/Author (\(anonymous\)) /CreationDate (D:20260208204844-05'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260208204844-05'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
+  /Subject (\(unspecified\)) /Title (\(anonymous\)) /Trapped /False
+>>
+endobj
+9 0 obj
+<<
+/Count 3 /Kids [ 4 0 R 5 0 R 6 0 R ] /Type /Pages
+>>
+endobj
+10 0 obj
+<<
+/Length 8170
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+q
+1 0 0 1 72 721.8898 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 35 Tm  T* ET
+q
+1 0 0 1 90 6 cm
+q
+BT 1 0 0 1 0 29 Tm 13 TL /F2 10 Tf 0 0 0 rg (Al Shifa Laboratory) Tj /F1 10 Tf  T* (Circular Road Jaranwala) Tj  T* (Phone: 0414316686) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 72 711.0898 cm
+Q
+Q
+q
+1 0 0 1 78 685.0898 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4 Tm /F2 16 Tf 20 TL 149.8538 0 Td (Laboratory Report) Tj T* -149.8538 0 Td ET
+Q
+Q
+q
+1 0 0 1 72 433.0898 cm
+q
+.972549 .980392 .988235 rg
+n 0 240 129.6 -240 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Ref #) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (ORD-20260208-0001) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (MR #) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (PAT-20260205-0007) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Patient Name) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Munaim) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Age/Gender) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (35 / Male) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Mobile) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (03338375050) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Consultant) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (System Admin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Booking Date/Time) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (08/02/2026 06:56 PM) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Reporting Date/Time) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (08/02/2026 07:03 PM) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Sample Collected) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (08/02/2026 06:58 PM) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Ref By) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.6 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Dr. Munaim) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.886275 .909804 .941176 RG
+.5 w
+n 0 240 m 451.2756 240 l S
+n 0 0 m 451.2756 0 l S
+n 0 0 m 0 240 l S
+n 451.2756 0 m 451.2756 240 l S
+n 0 216 m 451.2756 216 l S
+n 0 192 m 451.2756 192 l S
+n 0 168 m 451.2756 168 l S
+n 0 144 m 451.2756 144 l S
+n 0 120 m 451.2756 120 l S
+n 0 96 m 451.2756 96 l S
+n 0 72 m 451.2756 72 l S
+n 0 48 m 451.2756 48 l S
+n 0 24 m 451.2756 24 l S
+n 129.6 0 m 129.6 240 l S
+Q
+Q
+Q
+q
+1 0 0 1 78 418.6898 cm
+Q
+q
+1 0 0 1 78 392.6898 cm
+q
+.121569 .160784 .215686 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Results) Tj T* ET
+Q
+Q
+q
+1 0 0 1 72 98.68976 cm
+q
+.898039 .905882 .921569 rg
+n 0 288 451.2756 -24 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Test) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Result) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Unit) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Reference Range) Tj T* ET
+Q
+Q
+0 0 0 rg
+q
+1 0 0 1 6 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Crossmatch Result) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (compatible) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Comments) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (*) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Hemoglobin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (11.2) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (g/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Hemoglobin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (11;5) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (g/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (13.50 - 17.50) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Hematocrit \(HCT\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (43;4) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (%) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (36.00 - 52.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Red Blood Cells \(RBC\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (4;55) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (x10^12/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (4.00 - 6.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (White Blood Cells \(WBC/TLC\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (4;5) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (x10^9/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (4.00 - 11.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Platelets) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (334) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (x10^9/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (150.00 - 400.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Mean Cell Volume \(MCV\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (67) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (fL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Mean Cell Hemoglobin \(MCH\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (28) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (pg) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Mean Cell Hb Conc \(MCHC\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (18) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (g/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.796078 .835294 .960784 RG
+.5 w
+n 0 288 m 451.2756 288 l S
+n 0 0 m 0 288 l S
+n 451.2756 0 m 451.2756 288 l S
+n 0 0 m 451.2756 0 l S
+n 0 264 m 451.2756 264 l S
+n 0 240 m 451.2756 240 l S
+n 0 216 m 451.2756 216 l S
+n 0 192 m 451.2756 192 l S
+n 0 168 m 451.2756 168 l S
+n 0 144 m 451.2756 144 l S
+n 0 120 m 451.2756 120 l S
+n 0 96 m 451.2756 96 l S
+n 0 72 m 451.2756 72 l S
+n 0 48 m 451.2756 48 l S
+n 0 24 m 451.2756 24 l S
+n 189.5357 0 m 189.5357 288 l S
+n 270.7654 0 m 270.7654 288 l S
+n 324.9184 0 m 324.9184 288 l S
+Q
+Q
+Q
+BT /F1 9 Tf 10.8 TL ET
+.501961 .501961 .501961 rg
+BT 1 0 0 1 477.2406 43.2 Tm (Page 1 of 3) Tj T* ET
+0 0 0 rg
+ 
+endstream
+endobj
+11 0 obj
+<<
+/Length 11083
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+q
+1 0 0 1 72 721.8898 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 35 Tm  T* ET
+q
+1 0 0 1 90 6 cm
+q
+BT 1 0 0 1 0 29 Tm 13 TL /F2 10 Tf 0 0 0 rg (Al Shifa Laboratory) Tj /F1 10 Tf  T* (Circular Road Jaranwala) Tj  T* (Phone: 0414316686) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 72 711.0898 cm
+Q
+Q
+q
+1 0 0 1 72 81.08976 cm
+q
+.898039 .905882 .921569 rg
+n 0 624 451.2756 -24 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 606 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Test) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 606 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Result) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 606 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Unit) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 606 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Reference Range) Tj T* ET
+Q
+Q
+0 0 0 rg
+q
+1 0 0 1 6 582 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (RDW-CV) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 582 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (15) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 582 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (%) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 582 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 558 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (RDW-SD) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 558 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (82) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 558 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (fL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 558 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 534 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Mean Platelet Volume \(MPV\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 534 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (7.6) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 534 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (fL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 534 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 510 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Platelet Distribution Width \(PDW\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 510 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (32) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 510 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 510 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 486 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Plateletcrit \(PCT\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 486 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (33) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 486 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (%) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 486 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 462 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Neutrophils) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 462 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (90) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 462 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (%) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 462 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 438 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Lymphocytes) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 438 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (05) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 438 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (%) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 438 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 414 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Monocytes) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 414 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (05) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 414 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (%) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 414 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 390 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Eosinophils) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 390 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 390 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (%) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 390 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 366 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Basophils) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 366 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (*) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 366 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (%) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 366 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 342 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Neutrophils \(Absolute\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 342 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (*) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 342 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (x10^9/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 342 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 318 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Lymphocytes \(Absolute\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 318 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (*) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 318 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (x10^9/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 318 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 294 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Monocytes \(Absolute\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 294 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (*) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 294 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (x10^9/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 294 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Eosinophils \(Absolute\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (*) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (x10^9/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Basophils \(Absolute\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (*) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (x10^9/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (ALT) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (U/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 222 cm
+q
+BT 1 0 0 1 0 3 Tm 12 TL /F1 9 Tf 0 0 0 rg (<) Tj (= 41.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (AST) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (U/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 198 cm
+q
+BT 1 0 0 1 0 3 Tm 12 TL /F1 9 Tf 0 0 0 rg (<) Tj (= 40.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (ALP) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (U/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (44.00 - 147.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (GGT) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (U/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 150 cm
+q
+BT 1 0 0 1 0 3 Tm 12 TL /F1 9 Tf 0 0 0 rg (<) Tj (= 55.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Total Bilirubin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (0.20 - 1.20) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Direct Bilirubin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (0.00 - 0.30) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Indirect Bilirubin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (0.20 - 0.90) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Total Protein) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (g/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (6.00 - 8.30) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Albumin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (g/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (3.50 - 5.20) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Globulin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (g/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.796078 .835294 .960784 RG
+.5 w
+n 0 624 m 451.2756 624 l S
+n 0 600 m 0 624 l S
+n 0 0 m 0 600 l S
+n 451.2756 600 m 451.2756 624 l S
+n 451.2756 0 m 451.2756 600 l S
+n 0 600 m 451.2756 600 l S
+n 189.5357 600 m 189.5357 624 l S
+n 270.7654 600 m 270.7654 624 l S
+n 324.9184 600 m 324.9184 624 l S
+n 0 0 m 451.2756 0 l S
+n 0 576 m 451.2756 576 l S
+n 0 552 m 451.2756 552 l S
+n 0 528 m 451.2756 528 l S
+n 0 504 m 451.2756 504 l S
+n 0 480 m 451.2756 480 l S
+n 0 456 m 451.2756 456 l S
+n 0 432 m 451.2756 432 l S
+n 0 408 m 451.2756 408 l S
+n 0 384 m 451.2756 384 l S
+n 0 360 m 451.2756 360 l S
+n 0 336 m 451.2756 336 l S
+n 0 312 m 451.2756 312 l S
+n 0 288 m 451.2756 288 l S
+n 0 264 m 451.2756 264 l S
+n 0 240 m 451.2756 240 l S
+n 0 216 m 451.2756 216 l S
+n 0 192 m 451.2756 192 l S
+n 0 168 m 451.2756 168 l S
+n 0 144 m 451.2756 144 l S
+n 0 120 m 451.2756 120 l S
+n 0 96 m 451.2756 96 l S
+n 0 72 m 451.2756 72 l S
+n 0 48 m 451.2756 48 l S
+n 0 24 m 451.2756 24 l S
+n 189.5357 0 m 189.5357 600 l S
+n 270.7654 0 m 270.7654 600 l S
+n 324.9184 0 m 324.9184 600 l S
+Q
+Q
+Q
+BT /F1 9 Tf 10.8 TL ET
+.501961 .501961 .501961 rg
+BT 1 0 0 1 477.2406 43.2 Tm (Page 2 of 3) Tj T* ET
+0 0 0 rg
+ 
+endstream
+endobj
+12 0 obj
+<<
+/Length 8744
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+q
+1 0 0 1 72 721.8898 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 35 Tm  T* ET
+q
+1 0 0 1 90 6 cm
+q
+BT 1 0 0 1 0 29 Tm 13 TL /F2 10 Tf 0 0 0 rg (Al Shifa Laboratory) Tj /F1 10 Tf  T* (Circular Road Jaranwala) Tj  T* (Phone: 0414316686) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 72 711.0898 cm
+Q
+Q
+q
+1 0 0 1 72 273.0898 cm
+q
+.898039 .905882 .921569 rg
+n 0 432 451.2756 -24 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 414 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Test) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 414 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Result) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 414 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Unit) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 414 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2 9 Tf 12 TL (Reference Range) Tj T* ET
+Q
+Q
+0 0 0 rg
+q
+1 0 0 1 6 390 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Total Cholesterol) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 390 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 390 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 390 cm
+q
+BT 1 0 0 1 0 3 Tm 12 TL /F1 9 Tf 0 0 0 rg (<) Tj (= 200.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 366 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Triglycerides) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 366 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 366 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 366 cm
+q
+BT 1 0 0 1 0 3 Tm 12 TL /F1 9 Tf 0 0 0 rg (<) Tj (= 150.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 342 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (HDL Cholesterol) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 342 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 342 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 342 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (>= 40.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 318 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (LDL Cholesterol) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 318 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 318 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 318 cm
+q
+BT 1 0 0 1 0 3 Tm 12 TL /F1 9 Tf 0 0 0 rg (<) Tj (= 130.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 294 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (VLDL Cholesterol) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 294 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 294 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 294 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (5.00 - 40.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Urea) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (35) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 270 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (15.00 - 45.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Creatinine) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (1.2) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 246 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (0.70 - 1.30) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Sodium) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (144) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mmol/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 222 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (135.00 - 145.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Potassium) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (123) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mmol/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 198 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (3.50 - 5.10) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Chloride) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (113) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (mmol/L) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 174 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (98.00 - 107.00) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (ABO Group) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 150 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Crossmatch Result) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 126 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Rh\(D\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 102 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Comments) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 78 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Result) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Result) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Result) Tj T* ET
+Q
+Q
+q
+1 0 0 1 195.5357 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 276.7654 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 0 0 1 330.9184 6 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (\227) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.796078 .835294 .960784 RG
+.5 w
+n 0 432 m 451.2756 432 l S
+n 0 408 m 0 432 l S
+n 0 0 m 0 408 l S
+n 451.2756 408 m 451.2756 432 l S
+n 451.2756 0 m 451.2756 408 l S
+n 0 0 m 451.2756 0 l S
+n 189.5357 408 m 189.5357 432 l S
+n 270.7654 408 m 270.7654 432 l S
+n 324.9184 408 m 324.9184 432 l S
+n 0 408 m 451.2756 408 l S
+n 0 384 m 451.2756 384 l S
+n 0 360 m 451.2756 360 l S
+n 0 336 m 451.2756 336 l S
+n 0 312 m 451.2756 312 l S
+n 0 288 m 451.2756 288 l S
+n 0 264 m 451.2756 264 l S
+n 0 240 m 451.2756 240 l S
+n 0 216 m 451.2756 216 l S
+n 0 192 m 451.2756 192 l S
+n 0 168 m 451.2756 168 l S
+n 0 144 m 451.2756 144 l S
+n 0 120 m 451.2756 120 l S
+n 0 96 m 451.2756 96 l S
+n 0 72 m 451.2756 72 l S
+n 0 48 m 451.2756 48 l S
+n 0 24 m 451.2756 24 l S
+n 189.5357 0 m 189.5357 408 l S
+n 270.7654 0 m 270.7654 408 l S
+n 324.9184 0 m 324.9184 408 l S
+Q
+Q
+Q
+q
+1 0 0 1 78 255.0898 cm
+Q
+q
+1 0 0 1 78 231.0898 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 15 Tm /F1 9 Tf 12 TL (Electronically verified. Laboratory results should be interpreted by a physician in correlation with clinical and) Tj T* (radiologic findings.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 78 216.6898 cm
+Q
+q
+1 0 0 1 78 190.6898 cm
+q
+.121569 .160784 .215686 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Authorized Signatories) Tj T* ET
+Q
+Q
+q
+1 0 0 1 72 146.6898 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 23 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Dr. Mubashir Ahmad - MBBS, M.Phil \(Biochemistry\), Consultant Pathologist) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 4 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F1 9 Tf 12 TL (Dr. Muhammad Munaim Tahir - MBBS, M.Phil \(Hematology\), In-Charge Pathologist) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+BT /F1 9 Tf 10.8 TL ET
+.501961 .501961 .501961 rg
+BT 1 0 0 1 477.2406 43.2 Tm (Page 3 of 3) Tj T* ET
+0 0 0 rg
+ 
+endstream
+endobj
+xref
+0 13
+0000000000 65535 f 
+0000000073 00000 n 
+0000000114 00000 n 
+0000000221 00000 n 
+0000000333 00000 n 
+0000000537 00000 n 
+0000000741 00000 n 
+0000000945 00000 n 
+0000001013 00000 n 
+0000001296 00000 n 
+0000001367 00000 n 
+0000009589 00000 n 
+0000020725 00000 n 
+trailer
+<<
+/ID 
+[<39f5205d8e8d2381af118ec0349e930e><39f5205d8e8d2381af118ec0349e930e>]
+% ReportLab generated PDF document -- digest (http://www.reportlab.com)
+
+/Info 8 0 R
+/Root 7 0 R
+/Size 13
+>>
+startxref
+29521
+%%EOF

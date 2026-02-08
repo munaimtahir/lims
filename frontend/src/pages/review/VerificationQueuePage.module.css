@@ -1,8 +1,9 @@
 .container {
   padding: 24px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e6e8ef;
+  box-shadow: 0 18px 30px -28px rgba(15, 23, 42, 0.35);
 }
 
 .header {
@@ -11,14 +12,14 @@
 
 .header h1 {
   margin: 0 0 8px 0;
-  color: #1e293b;
-  font-size: 24px;
+  color: #111827;
+  font-size: 22px;
   font-weight: 600;
 }
 
 .subtitle {
   margin: 0;
-  color: #64748b;
+  color: #6b7280;
   font-size: 14px;
 }
 
@@ -29,8 +30,8 @@
 }
 
 .statCard {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #fbfcfe;
+  border: 1px solid #e6e8ef;
   border-radius: 8px;
   padding: 20px;
   min-width: 200px;
@@ -38,14 +39,14 @@
 
 .statValue {
   font-size: 32px;
-  font-weight: 700;
-  color: #3b82f6;
+  font-weight: 600;
+  color: #111827;
   margin-bottom: 8px;
 }
 
 .statLabel {
   font-size: 14px;
-  color: #64748b;
+  color: #6b7280;
 }
 
 
@@ -85,16 +86,17 @@
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e6e8ef;
+  box-shadow: 0 18px 30px -28px rgba(15, 23, 42, 0.35);
 }
 
 .queueTable th {
   background: #f8fafc;
   padding: 12px 16px;
   text-align: left;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 1px solid #e6e8ef;
   color: #475569;
   font-weight: 600;
 }
@@ -106,12 +108,12 @@
 
 .bold {
   font-weight: 600;
-  color: #1e293b;
+  color: #111827;
 }
 
 .reviewBtn {
-  background: #3b82f6;
-  color: white;
+  background: #0f172a;
+  color: #f8fafc;
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -121,7 +123,7 @@
 }
 
 .reviewBtn:hover {
-  background: #2563eb;
+  background: #111827;
 }
 
 /* Detail View */
@@ -132,7 +134,7 @@
 .backButton {
   background: none;
   border: none;
-  color: #64748b;
+  color: #6b7280;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -143,7 +145,7 @@
 }
 
 .backButton:hover {
-  color: #1e293b;
+  color: #111827;
   text-decoration: underline;
 }
 
@@ -153,12 +155,12 @@
 
 .detailHeader h2 {
   margin: 0;
-  color: #1e293b;
+  color: #111827;
 }
 
 .detailHeader p {
   margin: 4px 0 0 0;
-  color: #64748b;
+  color: #6b7280;
 }
 
 .detailActions {
@@ -168,14 +170,14 @@
   align-items: center;
   margin-bottom: 16px;
   padding: 12px 16px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #fbfcfe;
+  border: 1px solid #e6e8ef;
   border-radius: 8px;
 }
 
 .actionHint {
   font-size: 13px;
-  color: #475569;
+  color: #4b5563;
 }
 
 .actionButtons {
@@ -193,13 +195,14 @@
 }
 
 .bulkVerify {
-  background: #dcfce7;
-  color: #166534;
+  background: #0f172a;
+  color: #f8fafc;
 }
 
 .bulkReturn {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
 }
 
 .bulkButton:disabled {
@@ -226,7 +229,7 @@
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e6e8ef;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -235,8 +238,8 @@
   background: #f8fafc;
   padding: 12px 16px;
   text-align: left;
-  border-bottom: 2px solid #e2e8f0;
-  color: #64748b;
+  border-bottom: 1px solid #e6e8ef;
+  color: #6b7280;
 }
 
 .verifyTable td {
@@ -251,7 +254,7 @@
 .resultValue {
   font-weight: 700;
   font-size: 16px;
-  color: #1e293b;
+  color: #111827;
 }
 
 .flagSymbol {
@@ -283,7 +286,7 @@
 }
 
 .rangeCell {
-  color: #64748b;
+  color: #6b7280;
   font-size: 13px;
 }
 
@@ -304,21 +307,21 @@
 }
 
 .verifyBtn {
-  background: #dcfce7;
-  color: #166534;
+  background: #0f172a;
+  color: #f8fafc;
 }
 
 .verifyBtn:hover {
-  background: #bbf7d0;
+  background: #111827;
 }
 
 .repeatBtn {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #fff7ed;
+  color: #9a3412;
 }
 
 .repeatBtn:hover {
-  background: #fecaca;
+  background: #ffedd5;
 }
 
 @keyframes fadeIn {

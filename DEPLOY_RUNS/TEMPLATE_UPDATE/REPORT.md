@@ -5,6 +5,13 @@
 - Added helper functions `safe_text()`, `fmt_dt()`, and `fmt_age_gender()` to avoid crashes on missing optional fields.
 - Added page numbering "Page X of Y" using a custom canvas.
 - Preserved PrintTemplate margin configuration while keeping sane defaults.
+- Updated the report renderer to repeat the header on every page (via `onFirstPage`/`onLaterPages`).
+- Fixed the `parameters_active_idx` migration to be idempotent so tests can create a fresh DB.
+
+## Update (2026-02-08)
+- Visual QA completed with new PNG renders; all checklist items passed.
+- Tests now pass in the backend container (34 passed, 4 warnings).
+- Latest evidence and artifacts are in `DEPLOY_RUNS/20260208_204344/TEMPLATE_LOCKDOWN_AND_TEST_FIX/`.
 
 ## Field mapping
 - Header
@@ -46,7 +53,7 @@
 
 - Tests (backend container)
   - Command: `docker compose exec -T backend pytest apps/reports/tests -q`
-  - Output (error summary): `django.db.utils.ProgrammingError: relation "parameters_active_idx" does not exist`
+  - Output (latest): `34 passed, 4 warnings in 33.06s`
 
 - PDF generation (dev DB)
   - Command (inside container):
@@ -76,8 +83,11 @@
 - Rendered PNGs for visual inspection:
   - `DEPLOY_RUNS/TEMPLATE_UPDATE/report_sample_pages/report_sample_page-1.png`
   - `DEPLOY_RUNS/TEMPLATE_UPDATE/report_sample_pages/report_sample_page-2.png`
+  - Latest renders: `DEPLOY_RUNS/20260208_204344/TEMPLATE_LOCKDOWN_AND_TEST_FIX/report_sample_pages/`
 
 ## Artifacts
 - Sample PDF: `DEPLOY_RUNS/TEMPLATE_UPDATE/report_sample.pdf`
 - Copy for convenience: `output/pdf/report_sample.pdf`
 - Page renders: `DEPLOY_RUNS/TEMPLATE_UPDATE/report_sample_pages/`
+- Latest PDF: `DEPLOY_RUNS/20260208_204344/TEMPLATE_LOCKDOWN_AND_TEST_FIX/report_sample.pdf`
+- Latest page renders: `DEPLOY_RUNS/20260208_204344/TEMPLATE_LOCKDOWN_AND_TEST_FIX/report_sample_pages/`
