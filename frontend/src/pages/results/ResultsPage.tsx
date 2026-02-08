@@ -26,6 +26,9 @@ interface WorklistOrderItem {
   test_code?: string;
   panel_code?: string;
   status: string;
+  patient_name?: string;
+  patient_age?: number;
+  patient_gender?: string;
 }
 
 const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
@@ -98,10 +101,17 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
                   </td>
                   <td>
                     <div className={styles.patientInfo}>
-                      <span className={styles.patientName}>{item.order?.patient?.full_name || '—'}</span>
+                      <span className={styles.patientName}>{item.order?.patient?.full_name || item.patient_name || '—'}</span>
                       <span className={styles.patientSub}>
-                        {(item.order?.patient?.age ? `${item.order?.patient?.age}y / ` : '')}
-                        {item.order?.patient?.gender || ''} {item.order?.patient?.mrn ? `• ${item.order?.patient?.mrn}` : ''}
+                        {(() => {
+                          const age = item.order?.patient?.age ?? item.patient_age;
+                          const gender = item.order?.patient?.gender || item.patient_gender;
+                          const mrn = item.order?.patient?.mrn;
+                          const agePart = age ? `${age}y${gender ? ' / ' : ''}` : '';
+                          const genderPart = gender || '';
+                          const mrnPart = mrn ? ` • ${mrn}` : '';
+                          return `${agePart}${genderPart}${mrnPart}`.trim() || ' ';
+                        })()}
                       </span>
                     </div>
                   </td>

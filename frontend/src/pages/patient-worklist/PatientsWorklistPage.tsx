@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { worklistApi } from '../../api/services';
 import type { WorklistPatient } from '../../types';
@@ -10,6 +10,16 @@ export default function PatientsWorklistPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [status, setStatus] = useState('');
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const toastTimer = useRef<number | null>(null);
+
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ type, message });
+    if (toastTimer.current) {
+      window.clearTimeout(toastTimer.current);
+    }
+    toastTimer.current = window.setTimeout(() => setToast(null), 3000);
+  };
 
   const params = useMemo(() => ({
     search: search || undefined,
@@ -33,23 +43,47 @@ export default function PatientsWorklistPage() {
     setDateTo(today.toISOString().slice(0, 10));
   };
 
-  const handlePrintReceipt = (orderNumber?: string, fallbackUrl?: string) => {
-    if (orderNumber) {
-      window.open(`/print/receipt/${orderNumber}`, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    if (fallbackUrl) {
-      window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
-    }
+  const openNewTab = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  const handlePrintReport = (url?: string) => {
-    if (!url) return;
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const handlePrintReceipt = (patient: WorklistPatient) => {
+    const target = patient.receipt_pdf_url || patient.latest_order_number || String(patient.latest_order_id || '');
+    const canPrint = (patient.can_reprint_receipt ?? true) && Boolean(target);
+
+    if (!canPrint || !target) {
+      showToast('error', 'Receipt not available for this order.');
+      return;
+    }
+
+    const url = target.startsWith('http')
+      ? target
+      : `/print/receipt/${target}`;
+
+    openNewTab(url);
+    showToast('success', 'Opening receipt...');
+  };
+
+  const handlePrintReport = (patient: WorklistPatient) => {
+    const target = patient.report_pdf_url;
+    const canPrint = (patient.can_reprint_report ?? true) && Boolean(target);
+
+    if (!canPrint || !target) {
+      showToast('error', 'Report not available or not yet published.');
+      return;
+    }
+
+    openNewTab(target);
+    showToast('success', 'Opening report...');
   };
 
   return (
     <div className={styles.container}>
+      {toast && (
+        <div className={`${styles.toast} ${toast.type === 'success' ? styles.toastSuccess : styles.toastError}`}>
+          {toast.message}
+        </div>
+      )}
       <div className={styles.header}>
         <div>
           <h1>Patients Worklist</h1>
@@ -127,16 +161,16 @@ export default function PatientsWorklistPage() {
                     <button
                       type="button"
                       className={styles.actionButton}
-                      disabled={!item.can_reprint_receipt}
-                      onClick={() => handlePrintReceipt(item.latest_order_number || String(item.latest_order_id), item.receipt_pdf_url)}
+                      disabled={item.can_reprint_receipt === false}
+                      onClick={() => handlePrintReceipt(item)}
                     >
                       Print Receipt
                     </button>
                     <button
                       type="button"
                       className={styles.actionButton}
-                      disabled={!item.can_reprint_report}
-                      onClick={() => handlePrintReport(item.report_pdf_url)}
+                      disabled={item.can_reprint_report === false}
+                      onClick={() => handlePrintReport(item)}
                     >
                       Print Report
                     </button>

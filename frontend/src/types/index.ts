@@ -521,4 +521,7 @@ export interface WorklistOrderItem {
   test_code?: string;
   panel_code?: string;
   status: string;
+  patient_name?: string;
+  patient_age?: number;
+  patient_gender?: string;
 }

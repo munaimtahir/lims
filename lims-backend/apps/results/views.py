@@ -165,6 +165,11 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 }
             )
             item_data["order"] = order_data
+            patient = getattr(item.order, "patient", None)
+            # Flatten patient display fields for frontend fallbacks/search
+            item_data["patient_name"] = patient.get_full_name() if patient else None
+            item_data["patient_age"] = getattr(patient, "age", None)
+            item_data["patient_gender"] = getattr(patient, "gender", None)
             return item_data
 
         # Create a custom response structure

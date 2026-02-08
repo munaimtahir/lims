@@ -5,6 +5,28 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #0f172a;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+}
+
+.toastSuccess {
+  background: #ecfeff;
+  border: 1px solid #22c55e;
+}
+
+.toastError {
+  background: #fff1f2;
+  border: 1px solid #ef4444;
+}
+
 .header {
   display: flex;
   justify-content: space-between;
