@@ -75,49 +75,6 @@ export interface Patient {
   last_visit?: string;
 }
 
-export interface Order {
-  id: number;
-  patient: number;
-  patient_name: string;
-  order_id: string;
-  lab_number?: string;
-  status: string;
-  total_amount: string;
-  paid_amount: string;
-  due_amount: string;
-  created_at: string;
-  items?: any[];
-}
-export interface WorklistOrderItem {
-  id: number;
-  order: {
-    id: number;
-    order_id: string;
-    lab_number?: string; // New V2 ID
-    patient: {
-      // ...
-      date_of_birth?: string;
-      age_years?: number;
-      age_months?: number;
-      age_days?: number;
-      age: number;
-      gender: 'Male' | 'Female' | 'Other';
-      phone: string;
-      whatsapp_number?: string;
-      email?: string;
-      national_id?: string;
-      cnic?: string;
-      father_husband_name?: string;
-      default_referred_by?: string;
-      last_order_referred_by?: string;
-      address?: string;
-      created_at: string;
-      updated_at: string;
-      total_orders: number;
-      last_visit?: string;
-    }
-  }
-}
 
 export interface PatientCreateRequest {
   first_name?: string;
