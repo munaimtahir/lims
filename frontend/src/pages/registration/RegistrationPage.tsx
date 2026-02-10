@@ -140,7 +140,8 @@ export default function RegistrationPage() {
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [globalSuggestions, setGlobalSuggestions] = useState<PatientLookupResult[]>([]);
   const [showGlobalSuggestions, setShowGlobalSuggestions] = useState(false);
-  const [, setLoadingGlobalSearch] = useState(false);
+  const [selectedGlobalIndex, setSelectedGlobalIndex] = useState(-1);
+  const [loadingGlobalSearch, setLoadingGlobalSearch] = useState(false);
 
   // Receipt Modal State
   const [showReceipt, setShowReceipt] = useState(false);
@@ -148,8 +149,11 @@ export default function RegistrationPage() {
   const [lastOrderDisplayId, setLastOrderDisplayId] = useState('');
 
   const globalSearchRef = useRef<HTMLInputElement>(null);
+  const globalSearchContainerRef = useRef<HTMLDivElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const testSearchRef = useRef<HTMLInputElement>(null);
+  const serviceRegistrationRef = useRef<HTMLDivElement>(null);
+  const [serviceSectionExpanded, setServiceSectionExpanded] = useState(false);
 
   // Focus mobile input on mount
   useEffect(() => {
@@ -252,18 +256,20 @@ export default function RegistrationPage() {
     }
   }, [mobileNumber]);
 
-  // --- GLOBAL PATIENT SEARCH ---
+  // --- GLOBAL PATIENT SEARCH (debounced ~300ms) ---
   useEffect(() => {
-    if (globalSearchQuery.length >= 2) {
+    if (globalSearchQuery.trim().length >= 2) {
       setLoadingGlobalSearch(true);
       const timer = setTimeout(async () => {
         try {
-          const response = await patientApi.search(globalSearchQuery);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          setGlobalSuggestions((response.results || (response as any).data || []) as PatientLookupResult[]);
+          const response = await patientApi.search(globalSearchQuery.trim());
+          const results = (response.results ?? (response as { data?: PatientLookupResult[] }).data ?? []) as PatientLookupResult[];
+          setGlobalSuggestions(results);
           setShowGlobalSuggestions(true);
+          setSelectedGlobalIndex(results.length > 0 ? 0 : -1);
         } catch {
           setGlobalSuggestions([]);
+          setSelectedGlobalIndex(-1);
         } finally {
           setLoadingGlobalSearch(false);
         }
@@ -272,8 +278,20 @@ export default function RegistrationPage() {
     } else {
       setGlobalSuggestions([]);
       setShowGlobalSuggestions(false);
+      setSelectedGlobalIndex(-1);
     }
   }, [globalSearchQuery]);
+
+  // Close global search on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (globalSearchContainerRef.current && !globalSearchContainerRef.current.contains(e.target as Node)) {
+        setShowGlobalSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // --- TEST SEARCH ---
   useEffect(() => {
@@ -315,6 +333,40 @@ export default function RegistrationPage() {
     // until user edits it *for that transaction*. 
     // But since `totalAmount` changes when tests are added, usually you want Paid to match Net.
   }, [totalAmount, discountAmount]);
+
+  const handleGlobalSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (!showGlobalSuggestions) {
+      if (e.key === 'Escape') (e.target as HTMLInputElement).blur();
+      return;
+    }
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedGlobalIndex(prev =>
+          prev < globalSuggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedGlobalIndex(prev => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedGlobalIndex >= 0 && selectedGlobalIndex < globalSuggestions.length) {
+          loadPatient(globalSuggestions[selectedGlobalIndex].id);
+        }
+        setShowGlobalSuggestions(false);
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowGlobalSuggestions(false);
+        setSelectedGlobalIndex(-1);
+        globalSearchRef.current?.blur();
+        break;
+      default:
+        break;
+    }
+  };
 
   const handleMobileKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!showSuggestions || patientSuggestions.length === 0) return;
@@ -399,8 +451,11 @@ export default function RegistrationPage() {
     onSuccess: (response) => {
       const patient = response.data;
       setSelectedPatient(patient);
-      // Focus test search
-      setTimeout(() => testSearchRef.current?.focus(), 100);
+      setServiceSectionExpanded(true);
+      setTimeout(() => {
+        serviceRegistrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        testSearchRef.current?.focus();
+      }, 150);
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -427,6 +482,7 @@ export default function RegistrationPage() {
 
   const resetForm = () => {
     setSelectedPatient(null);
+    setServiceSectionExpanded(false);
     setPatientFormData({ phone: '', whatsapp_number: '', gender: 'Male', email: '', address: '', father_husband_name: '', cnic: '' });
     setMobileNumber('');
     setDobInput('');
@@ -556,15 +612,15 @@ export default function RegistrationPage() {
         />
       )}
 
-      {/* Modern Header */}
+      {/* Page Header: Left = Title, Right = Search */}
       <div className={styles.header}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">New Registration</h1>
+          <h1 className={styles.pageTitle}>Patient Registration</h1>
           <p className={styles.subtitle}>Enter patient details and select tests</p>
         </div>
 
         {/* Global Patient Search - Top Right */}
-        <div className={styles.globalSearchWrapper}>
+        <div className={styles.globalSearchWrapper} ref={globalSearchContainerRef}>
           <div className={styles.searchIconWrapper}>
             <svg className={styles.searchIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -575,34 +631,46 @@ export default function RegistrationPage() {
             type="text"
             value={globalSearchQuery}
             onChange={(e) => setGlobalSearchQuery(e.target.value)}
+            onKeyDown={handleGlobalSearchKeyDown}
             className={styles.globalSearchInput}
-            placeholder="Looking for existing patient? Search here..."
+            placeholder="Search by name, mobile, or reg #"
+            autoComplete="off"
+            aria-label="Search patient by name, mobile, or registration number"
           />
-          {showGlobalSuggestions && globalSuggestions.length > 0 && (
+          {showGlobalSuggestions && globalSearchQuery.trim().length >= 2 && (
             <div className={styles.suggestions}>
-              {globalSuggestions.map((patient) => (
-                <div
-                  key={patient.id}
-                  className={styles.suggestionItem}
-                  onClick={() => loadPatient(patient.id)}
-                >
-                  <div className={styles.suggestionMain}>{patient.full_name}</div>
-                  <div className={styles.suggestionMeta}>
-                    {patient.phone} • {patient.gender} • MRN: {patient.registration_number || patient.patient_id}
-                  </div>
+              {loadingGlobalSearch ? (
+                <div className={`${styles.suggestionItem} ${styles.suggestionEmpty}`}>
+                  Searching…
                 </div>
-              ))}
+              ) : globalSuggestions.length > 0 ? (
+                globalSuggestions.map((patient, index) => (
+                  <div
+                    key={patient.id}
+                    className={`${styles.suggestionItem} ${index === selectedGlobalIndex ? styles.suggestionActive : ''}`}
+                    onClick={() => loadPatient(patient.id)}
+                  >
+                    <div className={styles.suggestionMain}>{patient.full_name}</div>
+                    <div className={styles.suggestionMeta}>
+                      {patient.phone} • {patient.gender} • MRN: {patient.registration_number || patient.patient_id}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={`${styles.suggestionItem} ${styles.suggestionEmpty}`}>
+                  No matches found
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
 
       <div className={styles.splitView}>
-        {/* PATIENT REGISTRATION FORM */}
+        {/* LEFT: Patient Registration Card */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h2 className={styles.sectionTitle}>
-              <span style={{ marginRight: '10px' }}>👤</span>
               {selectedPatient ? 'Edit Patient Details' : 'Patient Information'}
             </h2>
             {selectedPatient && (
@@ -612,187 +680,203 @@ export default function RegistrationPage() {
             )}
           </div>
 
-          <form onSubmit={handlePatientSubmit} className={styles.formGrid}>
-
-            {/* Row 1: Mobile & Name */}
-            <div className={styles.formGroup}>
-              <label>
-                Mobile Number <span className="text-red-500">*</span>
-                <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'normal', marginLeft: '0.5rem' }}>
-                  (Multiple patients can share the same number)
-                </span>
-              </label>
-              <div className={styles.lookupWrapper}>
-                <input
-                  ref={mobileInputRef}
-                  type="text"
-                  value={mobileNumber}
-                  onChange={(e) => {
-                    setMobileNumber(e.target.value);
-                    setPatientFormData({ ...patientFormData, phone: e.target.value });
-                  }}
-                  onKeyDown={handleMobileKeyDown}
-                  className={styles.input}
-                  placeholder="03xxxxxxxxx"
-                  required
-                  autoComplete="off"
-                />
-                {showSuggestions && patientSuggestions.length > 0 && (
-                  <div className={styles.suggestions}>
-                    <div className={styles.suggestionHeader}>
-                      Found {patientSuggestions.length} existing patient{patientSuggestions.length > 1 ? 's' : ''} with this number
-                    </div>
-                    {patientSuggestions.map((patient, index) => (
-                      <div
-                        key={patient.id}
-                        className={`${styles.suggestionItem} ${index === selectedSuggestionIndex ? styles.suggestionActive : ''} `}
-                        onClick={() => loadPatient(patient.id)}
-                      >
-                        <div className={styles.suggestionName}>
-                          <strong>{patient.full_name}</strong>
-                          <span className={styles.registrationBadge}>MRN: {patient.patient_id}</span>
-                        </div>
-                        <div className={styles.suggestionMeta}>
-                          {patient.gender} • {patient.age ? `${patient.age} years` : 'Age unknown'}
-                          {patient.last_visit && ` • Last visit: ${new Date(patient.last_visit).toLocaleDateString()}`}
-                        </div>
+          <form onSubmit={handlePatientSubmit} className={styles.registrationForm}>
+            {/* Two-column grid: Patient Identity (left) | Contact & Consultant (right) */}
+            <div className={styles.twoColGrid}>
+              {/* LEFT COLUMN — Patient Identity */}
+              <div className={styles.sectionBlock}>
+                <h3 className={styles.sectionLabel}>Patient Identity</h3>
+                {selectedPatient && (
+                  <div className={styles.formGroup}>
+                    <label>Registration #</label>
+                    <input
+                      type="text"
+                      readOnly
+                      value={selectedPatient.registration_number || selectedPatient.patient_id || ''}
+                      className={styles.inputReadOnly}
+                      aria-readonly
+                    />
+                  </div>
+                )}
+                <div className={styles.formGroup}>
+                  <label>Patient Name <span className={styles.required}>*</span></label>
+                  <input
+                    type="text"
+                    value={patientFormData.full_name || ''}
+                    onChange={(e) => setPatientFormData({ ...patientFormData, full_name: e.target.value })}
+                    className={styles.input}
+                    required
+                  />
+                </div>
+                <div className={styles.rowGroup}>
+                  <div className={styles.formGroup}>
+                    <label>Date of Birth</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="DD/MM/YY"
+                      value={dobInput}
+                      onChange={(e) => handleDobChange(e.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Age (Y / M / D)</label>
+                    <div className={styles.ageGroup}>
+                      <div className={styles.ageInput}>
+                        <input
+                          type="number"
+                          placeholder="Y"
+                          value={ageYears}
+                          onChange={e => handleAgeChange(parseInt(e.target.value) || '', ageMonths, ageDays)}
+                        />
+                        <span>Yrs</span>
                       </div>
-                    ))}
-                    <div
-                      className={`${styles.suggestionItem} ${styles.createNewOption} ${selectedSuggestionIndex === patientSuggestions.length ? styles.suggestionActive : ''}`}
-                      onClick={() => {
-                        setShowSuggestions(false);
-                        setSelectedSuggestionIndex(-1);
-                      }}
-                    >
-                      <div className={styles.suggestionName}>
-                        <strong>➕ Create New Patient</strong>
+                      <div className={styles.ageInput}>
+                        <input
+                          type="number"
+                          placeholder="M"
+                          value={ageMonths}
+                          onChange={e => handleAgeChange(ageYears, parseInt(e.target.value) || '', ageDays)}
+                        />
+                        <span>Mth</span>
                       </div>
-                      <div className={styles.suggestionMeta}>
-                        Register a new patient with this mobile number
+                      <div className={styles.ageInput}>
+                        <input
+                          type="number"
+                          placeholder="D"
+                          value={ageDays}
+                          onChange={e => handleAgeChange(ageYears, ageMonths, parseInt(e.target.value) || '')}
+                        />
+                        <span>Day</span>
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Full Name <span className="text-red-500">*</span></label>
-              <input
-                type="text"
-                value={patientFormData.full_name || ''}
-                onChange={(e) => setPatientFormData({ ...patientFormData, full_name: e.target.value })}
-                className={styles.input}
-                required
-              />
-            </div>
-
-            {/* Row 2: Age & DOB (Synced) */}
-            <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                </div>
                 <div className={styles.formGroup}>
-                  <label>Date of Birth</label>
+                  <label>Gender <span className={styles.required}>*</span></label>
+                  <select
+                    value={patientFormData.gender}
+                    onChange={(e) => setPatientFormData({ ...patientFormData, gender: e.target.value as 'Male' | 'Female' | 'Other' })}
+                    className={styles.select}
+                    required
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Father / Husband Name</label>
                   <input
                     type="text"
-                    inputMode="numeric"
-                    placeholder="DD/MM/YY"
-                    value={dobInput}
-                    onChange={(e) => handleDobChange(e.target.value)}
+                    value={patientFormData.father_husband_name || ''}
+                    onChange={(e) => setPatientFormData({ ...patientFormData, father_husband_name: e.target.value })}
                     className={styles.input}
                   />
                 </div>
-                <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
-                  <label>Age (Y / M / D)</label>
-                  <div className={styles.ageGroup}>
-                    <div className={styles.ageInput}>
-                      <input
-                        type="number"
-                        placeholder="Y"
-                        value={ageYears}
-                        onChange={e => handleAgeChange(parseInt(e.target.value) || '', ageMonths, ageDays)}
-                      />
-                      <span>Yrs</span>
-                    </div>
-                    <div className={styles.ageInput}>
-                      <input
-                        type="number"
-                        placeholder="M"
-                        value={ageMonths}
-                        onChange={e => handleAgeChange(ageYears, parseInt(e.target.value) || '', ageDays)}
-                      />
-                      <span>Mth</span>
-                    </div>
-                    <div className={styles.ageInput}>
-                      <input
-                        type="number"
-                        placeholder="D"
-                        value={ageDays}
-                        onChange={e => handleAgeChange(ageYears, ageMonths, parseInt(e.target.value) || '')}
-                      />
-                      <span>Day</span>
-                    </div>
+                <div className={styles.formGroup}>
+                  <label>CNIC / National ID</label>
+                  <input
+                    type="text"
+                    value={patientFormData.cnic || patientFormData.national_id || ''}
+                    onChange={(e) => setPatientFormData({ ...patientFormData, cnic: e.target.value })}
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN — Contact & Consultant */}
+              <div className={styles.sectionBlock}>
+                <h3 className={styles.sectionLabel}>Contact & Consultant</h3>
+                <div className={styles.formGroup}>
+                  <label>Mobile Number <span className={styles.required}>*</span></label>
+                  <div className={styles.lookupWrapper}>
+                    <input
+                      ref={mobileInputRef}
+                      type="text"
+                      value={mobileNumber}
+                      onChange={(e) => {
+                        setMobileNumber(e.target.value);
+                        setPatientFormData({ ...patientFormData, phone: e.target.value });
+                      }}
+                      onKeyDown={handleMobileKeyDown}
+                      className={styles.input}
+                      placeholder="03xxxxxxxxx"
+                      required
+                      autoComplete="off"
+                    />
+                    {showSuggestions && patientSuggestions.length > 0 && (
+                      <div className={styles.suggestions}>
+                        <div className={styles.suggestionHeader}>
+                          Found {patientSuggestions.length} existing patient{patientSuggestions.length > 1 ? 's' : ''} with this number
+                        </div>
+                        {patientSuggestions.map((patient, index) => (
+                          <div
+                            key={patient.id}
+                            className={`${styles.suggestionItem} ${index === selectedSuggestionIndex ? styles.suggestionActive : ''}`}
+                            onClick={() => loadPatient(patient.id)}
+                          >
+                            <div className={styles.suggestionName}>
+                              <strong>{patient.full_name}</strong>
+                              <span className={styles.registrationBadge}>MRN: {patient.patient_id}</span>
+                            </div>
+                            <div className={styles.suggestionMeta}>
+                              {patient.gender} • {patient.age ? `${patient.age} years` : 'Age unknown'}
+                              {patient.last_visit && ` • Last visit: ${new Date(patient.last_visit).toLocaleDateString()}`}
+                            </div>
+                          </div>
+                        ))}
+                        <div
+                          className={`${styles.suggestionItem} ${styles.createNewOption} ${selectedSuggestionIndex === patientSuggestions.length ? styles.suggestionActive : ''}`}
+                          onClick={() => {
+                            setShowSuggestions(false);
+                            setSelectedSuggestionIndex(-1);
+                          }}
+                        >
+                          <div className={styles.suggestionName}>
+                            <strong>➕ Create New Patient</strong>
+                          </div>
+                          <div className={styles.suggestionMeta}>
+                            Register a new patient with this mobile number
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Consultant / Ref-By</label>
+                  <input
+                    type="text"
+                    value={referredBy}
+                    onChange={(e) => setReferredBy(e.target.value)}
+                    className={styles.input}
+                    placeholder="Referring doctor or clinic"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Email (Optional)</label>
+                  <input
+                    type="email"
+                    value={patientFormData.email || ''}
+                    onChange={(e) => setPatientFormData({ ...patientFormData, email: e.target.value })}
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Address</label>
+                  <textarea
+                    value={patientFormData.address || ''}
+                    onChange={(e) => setPatientFormData({ ...patientFormData, address: e.target.value })}
+                    className={styles.textarea}
+                    rows={3}
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Row 3: Gender & Father Name */}
-            <div className={styles.formGroup}>
-              <label>Gender <span className="text-red-500">*</span></label>
-              <select
-                value={patientFormData.gender}
-                onChange={(e) => setPatientFormData({ ...patientFormData, gender: e.target.value as 'Male' | 'Female' | 'Other' })}
-                className={styles.select}
-                required
-              >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Father / Husband Name</label>
-              <input
-                type="text"
-                value={patientFormData.father_husband_name || ''}
-                onChange={(e) => setPatientFormData({ ...patientFormData, father_husband_name: e.target.value })}
-                className={styles.input}
-              />
-            </div>
-
-            {/* Optional Fields Toggle or Just visible */}
-            <div className={styles.formGroup}>
-              <label>CNIC / National ID</label>
-              <input
-                type="text"
-                value={patientFormData.cnic || patientFormData.national_id || ''}
-                onChange={(e) => setPatientFormData({ ...patientFormData, cnic: e.target.value })}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Email (Optional)</label>
-              <input
-                type="email"
-                value={patientFormData.email || ''}
-                onChange={(e) => setPatientFormData({ ...patientFormData, email: e.target.value })}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
-              <label>Address</label>
-              <textarea
-                value={patientFormData.address || ''}
-                onChange={(e) => setPatientFormData({ ...patientFormData, address: e.target.value })}
-                className={styles.input}
-                style={{ minHeight: '60px', resize: 'vertical' }}
-              />
-            </div>
-
+            {/* Footer Actions */}
             <div className={styles.formActions}>
               <button
                 type="submit"
@@ -801,23 +885,32 @@ export default function RegistrationPage() {
               >
                 {savePatientMutation.isPending ? 'Saving...' : selectedPatient ? 'Update & Proceed to Tests' : 'Save Patient & Proceed'}
               </button>
+              {selectedPatient && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className={styles.secondaryButton}
+                >
+                  Clear / New Patient
+                </button>
+              )}
             </div>
           </form>
         </div>
 
-        {/* ORDER / TEST BOOKING FORM */}
+        {/* SERVICE REGISTRATION — Order Tests & Billing (visually distinct, expands after save) */}
         <div
-          className={styles.card}
+          ref={serviceRegistrationRef}
+          className={`${styles.card} ${styles.serviceRegistrationCard} ${serviceSectionExpanded ? styles.serviceRegistrationCardExpanded : ''}`}
           style={{
             opacity: selectedPatient ? 1 : 0.5,
             pointerEvents: selectedPatient ? 'auto' : 'none',
-            transition: 'opacity 0.3s ease'
+            transition: 'opacity 0.3s ease, box-shadow 0.3s ease'
           }}
         >
           <div className={styles.cardHeader}>
             <h2 className={styles.sectionTitle}>
-              <span style={{ marginRight: '10px' }}>🧪</span>
-              Order Tests & Billing
+              Service Registration
             </h2>
           </div>
 
@@ -832,18 +925,32 @@ export default function RegistrationPage() {
                   onChange={(e) => setTestQuery(e.target.value)}
                   onKeyDown={handleTestKeyDown}
                   className={styles.largeSearchInput}
-                  placeholder="🔍 Search tests by name or code... (Press Enter to select)"
+                  placeholder="Search tests or panels by name or code (Enter to add)"
                 />
                 {showTestSuggestions && testSuggestions.length > 0 && (
                   <div className={styles.suggestions}>
                     {testSuggestions.map((test, index) => (
                       <div
-                        key={test.test_id ?? test.id}
+                        key={test.id}
                         className={`${styles.suggestionItem} ${index === selectedTestIndex ? styles.suggestionActive : ''} `}
                         onClick={() => addTest(test)}
                       >
                         <div className={styles.suggestionName}>
                           <span style={{ fontWeight: 'bold', color: 'var(--color-primary)' }}>{test.test_code}</span> - {test.test_name}
+                          {test.type === 'panel' && (
+                            <span style={{
+                              marginLeft: '8px',
+                              backgroundColor: '#8b5cf6',
+                              color: 'white',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontSize: '0.7em',
+                              fontWeight: '600',
+                              textTransform: 'uppercase'
+                            }}>
+                              Panel
+                            </span>
+                          )}
                         </div>
                         <div className={styles.suggestionMeta}>
                           {test.category_name} • {formatCurrency(test.price, currency)}
@@ -875,7 +982,24 @@ export default function RegistrationPage() {
                     <tbody>
                       {addedTests.map(test => (
                         <tr key={test.test_id ?? test.id}>
-                          <td><strong>{test.test_code}</strong></td>
+                          <td>
+                            <strong>{test.test_code}</strong>
+                            {test.type === 'panel' && (
+                              <span style={{
+                                marginLeft: '6px',
+                                backgroundColor: '#8b5cf6',
+                                color: 'white',
+                                padding: '1px 5px',
+                                borderRadius: '3px',
+                                fontSize: '0.65em',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                verticalAlign: 'middle'
+                              }}>
+                                Panel
+                              </span>
+                            )}
+                          </td>
                           <td>{test.test_name}</td>
                           <td style={{ textAlign: 'right' }}>{formatCurrency(test.price, currency)}</td>
                           <td>
@@ -891,22 +1015,9 @@ export default function RegistrationPage() {
               )}
             </div>
 
-            {/* 3. Payment Section */}
+            {/* 3. Payment Section (Referred By is in Contact & Consultant above) */}
             <div className={styles.paymentSection}>
-              <div className={styles.paymentGrid}>
-                <div className={styles.paymentCol}>
-                  <div className={styles.formGroup}>
-                    <label>Referred By</label>
-                    <input
-                      type="text"
-                      value={referredBy}
-                      onChange={(e) => setReferredBy(e.target.value)}
-                      className={styles.input}
-                      placeholder="Consultant Name"
-                    />
-                  </div>
-                </div>
-
+              <div className={`${styles.paymentGrid} ${styles.paymentGridSingle}`}>
                 <div className={styles.paymentColRight}>
                   <div className={styles.summaryRow}>
                     <span>Total Amount</span>

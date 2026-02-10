@@ -6,7 +6,7 @@ import type { Order, Patient, SystemSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import styles from './PrintReceiptPage.module.css';
 import { formatDobDisplay } from '../../utils/dateFormat';
-import { loadLastReceiptFormat, saveLastReceiptFormat, loadThermalCopies, saveThermalCopies } from '../../utils/printPreferences';
+import { loadLastReceiptFormat, saveLastReceiptFormat, loadThermalCopies, saveThermalCopies, loadScaleToFit, saveScaleToFit } from '../../utils/printPreferences';
 
 const ReceiptContent = ({
     order,
@@ -42,28 +42,36 @@ const ReceiptContent = ({
                 )}
 
                 <div className={styles.receiptTitle}>
-                    CASH RECEIPT {copyLabel && `(${copyLabel})`}
+                    CASH RECEIPT {copyLabel ? `— ${copyLabel}` : ''}
+                </div>
+                <div className={styles.receiptMeta}>
+                    Printed: {new Date().toLocaleString()}
                 </div>
             </div>
 
             {/* Patient & Order Info */}
-            <div className={styles.patientInfoGrid}>
-                <div className={styles.infoRow}>
-                    <span className={styles.label}>MRN:</span>
-                    <span className={styles.value}>{patient.patient_id}</span>
-                </div>
-                <div className={styles.infoRow}>
-                    <span className={styles.label}>Lab No:</span>
-                    <span className={styles.value}>{order.order_id}</span>
-                </div>
-                <div className={styles.infoRow}>
-                    <span className={styles.label}>Name:</span>
-                    <span className={styles.value}>{patient.full_name}</span>
-                </div>
-                <div className={styles.infoRow}>
-                    <span className={styles.label}>Date:</span>
-                    <span className={styles.value}>{new Date(order.created_at).toLocaleString()}</span>
-                </div>
+            <section className={styles.receiptSection} aria-label="Patient and order details">
+                <div className={styles.patientInfoGrid}>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>MRN:</span>
+                        <span className={styles.value}>{patient.registration_number || patient.patient_id}</span>
+                    </div>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Lab No:</span>
+                        <span className={styles.value}>{order.lab_number || order.order_id}</span>
+                    </div>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Name:</span>
+                        <span className={styles.value}>{patient.full_name}</span>
+                    </div>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Date:</span>
+                        <span className={styles.value}>{new Date(order.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Reporting time:</span>
+                        <span className={styles.value}>{(order as Order & { reporting_time?: string }).reporting_time || 'As per schedule'}</span>
+                    </div>
                 <div className={styles.infoRow}>
                     <span className={styles.label}>Age/Sex:</span>
                     <span className={styles.value}>
@@ -85,9 +93,11 @@ const ReceiptContent = ({
                         <span className={styles.value}>{order.referred_by}</span>
                     </div>
                 )}
-            </div>
+                </div>
+            </section>
 
             {/* Test Items */}
+            <section className={styles.receiptSection} aria-label="Tests and services">
             <table className={styles.testsTable}>
                 <thead>
                     <tr>
@@ -108,8 +118,10 @@ const ReceiptContent = ({
                     ))}
                 </tbody>
             </table>
+            </section>
 
-            {/* Financials */}
+            {/* Financials — Totals, Discount, Net, Paid, Due */}
+            <section className={styles.receiptSection} aria-label="Payment summary">
             <div className={styles.financialSection}>
                 <div className={styles.financialGrid}>
                     <div className={styles.finRow}>
@@ -117,12 +129,14 @@ const ReceiptContent = ({
                         <span className={styles.finValue}>{formatCurrency(order.total_amount, currency)}</span>
                     </div>
 
-                    {parseFloat(order.discount) > 0 && (
-                        <div className={styles.finRow}>
-                            <span className={styles.finLabel}>Discount:</span>
-                            <span className={styles.finValue}>-{formatCurrency(order.discount, currency)}</span>
-                        </div>
-                    )}
+                    <div className={styles.finRow}>
+                        <span className={styles.finLabel}>Discount amount:</span>
+                        <span className={styles.finValue}>
+                            {parseFloat(order.discount) > 0
+                                ? `-${formatCurrency(order.discount, currency)}${parseFloat(order.discount_percent) > 0 ? ` (${order.discount_percent}%)` : ''}`
+                                : formatCurrency('0', currency)}
+                        </span>
+                    </div>
 
                     <div className={styles.finRow}>
                         <span className={styles.finLabel}>Net Payable:</span>
@@ -140,6 +154,7 @@ const ReceiptContent = ({
                     </div>
                 </div>
             </div>
+            </section>
 
             {/* Footer */}
             <div className={styles.footer}>
@@ -160,6 +175,7 @@ export default function PrintReceiptPage() {
     const { orderId } = useParams<{ orderId: string }>();
     const [printMode, setPrintMode] = useState<'A4' | 'Thermal'>(() => loadLastReceiptFormat());
     const [thermalCopies, setThermalCopies] = useState<number>(() => loadThermalCopies());
+    const [scaleToFit, setScaleToFit] = useState<boolean>(() => loadScaleToFit());
 
     // Fetch Order
     const { data: order, isLoading: loadingOrder, error: orderError } = useQuery({
@@ -232,6 +248,11 @@ export default function PrintReceiptPage() {
         saveThermalCopies(num);
     };
 
+    const handleScaleToFitChange = (checked: boolean) => {
+        setScaleToFit(checked);
+        saveScaleToFit(checked);
+    };
+
     if (loadingOrder || loadingPatient || loadingSettings) {
         return <div className="p-8 text-center">Loading receipt data...</div>;
     }
@@ -251,7 +272,7 @@ export default function PrintReceiptPage() {
                     className={`${styles.controlButton} ${printMode === 'A4' ? styles.activeButton : ''}`}
                     onClick={() => changePrintMode('A4')}
                 >
-                    A4 (Dual Copy)
+                    A4
                 </button>
                 <button
                     className={`${styles.controlButton} ${printMode === 'Thermal' ? styles.activeButton : ''}`}
@@ -276,13 +297,24 @@ export default function PrintReceiptPage() {
                     </div>
                 )}
 
+                <div className={styles.copiesInput}>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={scaleToFit}
+                            onChange={(e) => handleScaleToFitChange(e.target.checked)}
+                        />
+                        Scale to Fit (Auto-shrink)
+                    </label>
+                </div>
+
                 <button className={styles.printButton} onClick={handlePrint}>
                     🖨 Print Receipt
                 </button>
             </div>
 
             {/* Print View Area */}
-            <div className={styles.printArea}>
+            <div className={styles.printArea} style={scaleToFit ? { transform: 'scale(0.85)', transformOrigin: 'top left', width: '115%' } : {}}>
                 {printMode === 'A4' ? (
                     <div className={styles.a4Container}>
                         <div className={styles.a4Top}>
@@ -304,7 +336,7 @@ export default function PrintReceiptPage() {
                                 order={order}
                                 patient={patient.data}
                                 settings={settingsData}
-                                copyLabel="Lab/Office Copy"
+                                copyLabel="Office Copy"
                             />
                         </div>
                     </div>
@@ -317,7 +349,7 @@ export default function PrintReceiptPage() {
                                     patient={patient.data}
                                     settings={settingsData}
                                     isThermal={true}
-                                    copyLabel={thermalCopies > 1 ? `Copy ${idx + 1}` : undefined}
+                                    copyLabel={idx === 0 ? "Patient Copy" : (idx === 1 ? "Office Copy" : `Copy ${idx + 1}`)}
                                 />
                                 {idx < (thermalCopies || 1) - 1 && <div className={styles.thermalDivider} />}
                             </div>
@@ -330,6 +362,20 @@ export default function PrintReceiptPage() {
             <style>{`
         @media print {
           .noDisplayPrint { display: none !important; }
+          body { 
+             -webkit-print-color-adjust: exact; 
+             print-color-adjust: exact; 
+          }
+          ${scaleToFit ? `
+            @page {
+               size: auto;
+               margin: 5mm;
+            }
+            body {
+               transform: scale(0.95);
+               transform-origin: top center;
+            }
+          ` : ''}
         }
       `}</style>
         </div>

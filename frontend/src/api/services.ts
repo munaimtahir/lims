@@ -593,9 +593,16 @@ export const printTemplateApi = {
     const response = await api.get<PrintTemplate[]>('/core/print-templates/');
     return response.data;
   },
+  create: async (data: Partial<PrintTemplate>) => {
+    const response = await api.post<PrintTemplate>('/core/print-templates/', data);
+    return response.data;
+  },
   update: async (id: number, data: Partial<PrintTemplate>) => {
     const response = await api.patch<PrintTemplate>(`/core/print-templates/${id}/`, data);
     return response.data;
+  },
+  delete: async (id: number) => {
+    await api.delete(`/core/print-templates/${id}/`);
   },
 };
 

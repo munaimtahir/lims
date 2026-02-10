@@ -1,5 +1,6 @@
 const PRINT_FORMAT_KEY = 'lims:receipt:format';
 const THERMAL_COPIES_KEY = 'lims:receipt:thermalCopies';
+const SCALE_TO_FIT_KEY = 'lims:receipt:scaleToFit';
 
 export type ReceiptFormat = 'A4' | 'Thermal';
 
@@ -25,4 +26,14 @@ export function saveThermalCopies(copies: number) {
   localStorage.setItem(THERMAL_COPIES_KEY, String(Math.max(1, Math.floor(copies))));
 }
 
-export { PRINT_FORMAT_KEY, THERMAL_COPIES_KEY };
+export function loadScaleToFit(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(SCALE_TO_FIT_KEY) === 'true';
+}
+
+export function saveScaleToFit(enabled: boolean) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(SCALE_TO_FIT_KEY, String(enabled));
+}
+
+export { PRINT_FORMAT_KEY, THERMAL_COPIES_KEY, SCALE_TO_FIT_KEY };

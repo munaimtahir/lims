@@ -324,7 +324,7 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
     existingResultsData,
     isLoadingResults,
     isError,
-
+    error,
     saveMutation,
     verifyMutation,
     handleKeyDown,
@@ -439,7 +439,11 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
       <div className={styles.container}>
         <div className={styles.errorContainer}>
           <p>Error loading results.</p>
-          <button className={styles.backButton} onClick={onBack}>Back</button>
+          <div style={{ fontSize: '0.8em', color: '#666', marginTop: '10px' }}>
+            {error?.message || (isDetailsError ? 'Failed to load order details' : 'Unknown error')}
+          </div>
+          <button className={styles.backButton} onClick={onBack}>Back to Worklist</button>
+          <button className={styles.retryButton} onClick={handleRetry} style={{ marginLeft: '10px' }}>Try Again</button>
         </div>
       </div>
     );
@@ -505,30 +509,47 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
         )}
       </div>
 
-      {rejectedResults.length > 0 && (
-        <div className={styles.rejectionNotice}>
-          <strong>Returned for correction</strong>
-          <ul>
-            {rejectedResults.map((result) => (
-              <li key={result.id}>{result.remarks}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className={styles.stickyActionBar} style={{ top: '0', position: 'sticky', zIndex: 10, background: 'white', padding: '10px 0', borderBottom: '1px solid #e2e8f0', marginBottom: '16px' }}>
+        {!allVerified && (
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => saveMutation.mutate(resultItems)}
+              disabled={saveMutation.isPending || verifyMutation.isPending}
+              className={styles.saveButton}
+            >
+              {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
+            </button>
+            <button
+              onClick={handleSaveAndVerify}
+              disabled={verifyDisabled}
+              className={`${styles.verifyMainButton} ${styles.saveButton}`}
+            >
+              {verifyMutation.isPending ? 'Verifying...' : 'Verify'}
+            </button>
+          </div>
+        )}
+        {allVerified && (
+          <div style={{ padding: '8px', background: '#dcfce7', color: '#166534', borderRadius: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+            All results verified
+          </div>
+        )}
+      </div>
+
+      {
+        rejectedResults.length > 0 && (
+          <div className={styles.rejectionNotice}>
+            <strong>Returned for correction</strong>
+            <ul>
+              {rejectedResults.map((result) => (
+                <li key={result.id}>{result.remarks}</li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
 
       <div className={styles.form}>
-        <div className={styles.stickyActionBar}>
-          {!allVerified && (
-            <>
-              <button onClick={() => saveMutation.mutate(resultItems)} disabled={saveMutation.isPending} className={styles.saveButton}>
-                {saveMutation.isPending ? 'Saving...' : 'Draft'}
-              </button>
-              <button onClick={handleSaveAndVerify} disabled={verifyDisabled} className={`${styles.verifyMainButton} ${styles.saveButton}`}>
-                {verifyMutation.isPending ? 'Verifying...' : 'Verify Draft'}
-              </button>
-            </>
-          )}
-        </div>
+        {/* Actions moved to top */}
 
         <div className={styles.tableContainer}>
           <table className={styles.resultTable}>
@@ -571,7 +592,7 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
           </table>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

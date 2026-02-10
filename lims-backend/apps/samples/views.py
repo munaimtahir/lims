@@ -57,7 +57,7 @@ class SampleViewSet(viewsets.ModelViewSet):
         Perform the update and trigger side effects like creating test results.
         """
         instance = serializer.save()
-        if instance.status == SampleStatus.COLLECTED:
+        if instance.status in [SampleStatus.COLLECTED, SampleStatus.RECEIVED]:
             from apps.results.services.expected_results import ensure_test_results
 
             ensure_test_results(instance.order_item)

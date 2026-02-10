@@ -11,8 +11,8 @@ from rest_framework.response import Response
 from apps.core.export_utils import export_to_csv, export_to_excel
 from apps.laboratory.models import ReferenceRange, TestParameter
 from apps.orders.models import Order, OrderItem
-from apps.reports.models import Report, ReportStatus
-from apps.reports.utils import generate_pdf_report
+# from apps.reports.models import Report, ReportStatus
+# from apps.reports.utils import generate_pdf_report
 
 from .filters import TestResultFilter
 from .models import TestResult
@@ -27,7 +27,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
     """
     ViewSet for handling CRUD operations for Test Results.
 
-    Provides actions for verifying and rejecting results.
+    Provides actions for verifying and finalizing results.
     """
 
     queryset = TestResult.objects.all()
@@ -111,9 +111,6 @@ class TestResultViewSet(viewsets.ModelViewSet):
         """
         Get worklist of pending results for entry (for lab technicians).
 
-        Returns order items that have samples collected but no results entered yet,
-        or results that are pending entry.
-
         Returns:
             Response: A paginated list of order items needing result entry.
         """
@@ -133,9 +130,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
             .distinct()
         )
 
-        # Also include order items with pending results (DRAFT or REJECTED)
+        # Also include order items with pending results (DRAFT)
         pending_results = (
-            self.queryset.filter(status__in=["DRAFT", "REJECTED"])
+            self.queryset.filter(status="DRAFT")
             .values_list("order_item_id", flat=True)
             .distinct()
         )
@@ -205,15 +202,6 @@ class TestResultViewSet(viewsets.ModelViewSet):
     def _get_order_item_from_request(self, request):
         """
         Extract and validate order_item_id from request, fetch OrderItem instance.
-
-        Args:
-            request: DRF request object
-
-        Returns:
-            OrderItem: The fetched order item with related data
-
-        Raises:
-            ValidationError: If order_item_id is missing or invalid, or if patient is missing
         """
         order_item_id = request.query_params.get("order_item_id") or request.data.get(
             "order_item_id"
@@ -304,13 +292,10 @@ class TestResultViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def verification_queue(self, request):
         """
-        Get queue of results pending verification (for pathologists).
-
-        Returns:
-            Response: A paginated list of results pending verification.
+        Get queue of results pending verification.
         """
         pending_results = (
-            self.queryset.filter(status="ENTERED")
+            self.queryset.filter(status="DRAFT")
             .select_related(
                 "order_item",
                 "order_item__order",
@@ -333,22 +318,6 @@ class TestResultViewSet(viewsets.ModelViewSet):
     def bulk_entry(self, request):
         """
         Bulk create or update test results.
-
-        Expected payload:
-        {
-            "results": [
-                {
-                    "order_item": 1,
-                    "test_parameter": 1,
-                    "result_value": "5.2",
-                    "remarks": ""
-                },
-                ...
-            ]
-        }
-
-        Returns:
-            Response: Created/updated results.
         """
         results_data = request.data.get("results", [])
         if not results_data:
@@ -377,7 +346,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 continue
 
             try:
-                # Check if result already exists
+                # Check if result already exists (or get for update)
                 result, created = TestResult.objects.get_or_create(
                     order_item_id=order_item_id,
                     test_parameter_id=test_parameter_id,
@@ -386,18 +355,53 @@ class TestResultViewSet(viewsets.ModelViewSet):
                         "remarks": result_data.get("remarks", ""),
                         "entered_by": request.user,
                         "entered_at": timezone.now(),
-                        "status": "ENTERED",  # Set to ENTERED status on creation
+                        "status": "DRAFT",
                     },
                 )
 
+                new_status = result.status 
+
                 if not created:
-                    # Update existing result
+                    # Enforce editing rules
+                    if not result.can_edit(request.user):
+                        errors.append(
+                            {
+                                "data": result_data,
+                                "error": "Finalized results cannot be edited.",
+                            }
+                        )
+                        continue
+                    
+                    # Logic for VERIFIED results:
+                    # - If VERIFIED, modifying it implies re-verification or privilege override.
+                    # - Must have can_verify_results permission to edit a verified result without resetting it (which is banned).
+                    # - And since we can't reset to DRAFT ("Any -> DRAFT ❌"), user MUST be a verifier.
+                    if result.status == "VERIFIED":
+                         if not request.user.has_perm("results.can_verify_results"):
+                              errors.append(
+                                  {
+                                      "data": result_data,
+                                      "error": "You do not have permission to edit verified results."
+                                  }
+                              )
+                              continue
+                         # Result remains VERIFIED if edited by verifier
+                         new_status = "VERIFIED"
+                         result.verified_by = request.user
+                         result.verified_at = timezone.now()
+                    else:
+                        # DRAFT results stay DRAFT
+                        new_status = "DRAFT"
+
                     result.result_value = result_value
                     result.remarks = result_data.get("remarks", "")
                     result.entered_by = request.user
                     result.entered_at = timezone.now()
-                    result.status = "ENTERED"  # Set to ENTERED status when updating
+                    result.status = new_status
                     result.save()
+                
+                # If created, it's DRAFT (managed by defaults), but update fields if needed
+                # (Existing logic assumes created with defaults is enough, but defaults used result_value)
 
                 created_results.append(self.get_serializer(result).data)
             except Exception as e:
@@ -421,101 +425,51 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
     def _check_and_update_status(self, order_item):
         """
-        Check if all results for an order item are verified, and if so, update status.
-        Then check if all items for the order are verified, and if so, publish report.
+        Check if all results for an order item are verified using strict logic.
         """
-        # 1. Check OrderItem status
-        # Get all expected parameters count
-        # This is expensive if calculated every time. Better to rely on ensure_test_results having run.
-        # We assume ensure_test_results ran.
-
         all_results = order_item.results.all()
         if not all_results.exists():
             return
 
-        # Check if all existing results are VERIFIED
-        # We allow ignoring some optional parameters if business logic allows, but for now strict:
-        if all_results.filter(status="VERIFIED").count() == all_results.count():
+        # Check if all existing results are VERIFIED or FINAL
+        # We only auto-verify the OrderItem if all results are processed.
+        verified_count = all_results.filter(status__in=["VERIFIED", "FINAL"]).count()
+        if verified_count == all_results.count():
             # All results for this item are verified.
             if order_item.status != "VERIFIED":
                 order_item.status = "VERIFIED"
                 order_item.save(update_fields=["status"])
-
-        # 2. Check Order status
-        order = order_item.order
-        all_items = order.items.all()
-
-        if all_items.filter(status="VERIFIED").count() == all_items.count():
-            # All items are verified. Ready to publish.
-
-            # Transition Order to VERIFIED if not already (or skipping from IN_PROCESS)
-            if order.status != "VERIFIED":
-                if order.can_transition_to("VERIFIED"):
-                    order.transition_to("VERIFIED")
-
-            # Generate Report
-            try:
-                # Check if report already exists
-                existing_report = Report.objects.filter(
-                    order=order, status=ReportStatus.FINAL
-                ).first()
-
-                if not existing_report:
-                    pdf_content = generate_pdf_report(order.id)
-
-                    report = Report(order=order)
-                    report.generated_by = self.request.user if self.request else None
-
-                    filename = f"Report_{order.order_id}_{order.id}.pdf"
-                    report.report_file.save(filename, ContentFile(pdf_content))
-                    report.status = ReportStatus.FINAL
-                    report.is_final = True
-                    report.save()
-
-                    # Transition Order to PUBLISHED
-                    if order.can_transition_to("PUBLISHED"):
-                        order.transition_to("PUBLISHED")
-            except Exception as e:
-                # Log error but don't fail the verification request
-                print(f"Failed to auto-publish report for order {order.id}: {e}")
+        
+        # We removed auto-finalization and auto-report generation 
+        # to strictly follow "VERIFIED -> FINAL requires permission".
 
     @action(detail=True, methods=["post"])
     def verify(self, request, pk=None):
         """
-        Verify a test result.
-
-        This action can only be performed by authorized users.
-        It prevents re-verification of an already verified result.
+        Verify a test result (DRAFT -> VERIFIED).
         """
         result = self.get_object()
 
-        # 1. Permission Check
-        if not (request.user.is_pathologist or request.user.is_admin):
+        # Permission Check
+        if not request.user.has_perm("results.can_verify_results"):
             return Response(
                 {"error": "You do not have permission to verify results."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # 2. State Machine Enforcement
-        if result.status == "VERIFIED":
-            return Response(
-                {"error": "This result has already been verified."},
+        # Transition Check
+        if not result.can_transition_to("VERIFIED", request.user):
+             return Response(
+                {"error": "Invalid transition to VERIFIED. Result must be DRAFT."},
                 status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Handle digital signature if provided
-        digital_signature = request.data.get("digital_signature")
-        if digital_signature:
-            # Store signature (implementation depends on signature storage method)
-            # For now, we'll add it to the remarks or create a separate model
-            pass
+             )
 
         result.verified_by = request.user
         result.verified_at = timezone.now()
         result.status = "VERIFIED"
         result.save()
 
-        # Trigger cascade update
+        # Update OrderItem status
         self._check_and_update_status(result.order_item)
 
         serializer = self.get_serializer(result)
@@ -524,8 +478,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["post"], url_path="bulk-verify")
     def bulk_verify(self, request):
         """
-        Verify a list of test results in a single atomic transaction.
-        Expects a list of result IDs in the request data.
+        Verify a list of test results.
         """
         result_ids = request.data.get("result_ids", [])
         if not result_ids:
@@ -534,155 +487,89 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if not (request.user.is_pathologist or request.user.is_admin):
-            return Response(
+        if not request.user.has_perm("results.can_verify_results"):
+             return Response(
                 {"error": "You do not have permission to verify results."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        results = TestResult.objects.filter(id__in=result_ids)
         errors = []
-        results_to_verify = TestResult.objects.select_related("test_parameter").filter(
-            id__in=result_ids
-        )
-
-        if results_to_verify.count() != len(result_ids):
-            return Response(
-                {"error": "One or more result IDs were not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        for r in results_to_verify:
-            if r.status == "VERIFIED":
-                errors.append(
-                    f"Result for '{r.test_parameter.effective_parameter_name}' is already verified."
-                )
-            if not r.result_value or not r.result_value.strip():
-                errors.append(
-                    f"Result for '{r.test_parameter.effective_parameter_name}' is missing a value."
-                )
+        
+        with transaction.atomic():
+            for result in results:
+                if not result.can_transition_to("VERIFIED", request.user):
+                     errors.append(f"Result {result.id}: Cannot transition to VERIFIED from {result.status}")
+                     continue
+                
+                result.status = "VERIFIED"
+                result.verified_by = request.user
+                result.verified_at = timezone.now()
+                result.save()
+                self._check_and_update_status(result.order_item)
 
         if errors:
-            return Response(
-                {"error": "Verification failed for some results.", "details": errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        with transaction.atomic():
-            updated_count = results_to_verify.update(
-                status="VERIFIED",
-                verified_by=request.user,
-                verified_at=timezone.now(),
-            )
-
-            order_items = OrderItem.objects.filter(
-                results__id__in=result_ids
-            ).distinct()
-            for item in order_items:
-                self._check_and_update_status(item)
-
-        return Response(
-            {
-                "status": f"{updated_count} results verified successfully.",
-                "verified_ids": result_ids,
-            },
-            status=status.HTTP_200_OK,
-        )
+             return Response(
+                 {"message": "Some results could not be verified.", "errors": errors}, 
+                 status=status.HTTP_400_BAD_REQUEST # Or 207
+             )
+        
+        return Response({"status": "Results verified successfully"})
 
     @action(detail=True, methods=["post"])
-    def reject(self, request, pk=None):
+    def finalize(self, request, pk=None):
         """
-        Reject a test result.
-
-        This action can only be performed by pathologists and admins.
-
-        Args:
-            request (Request): The request object.
-            pk (int, optional): The primary key of the test result. Defaults to None.
-
-        Returns:
-            Response: A response object with a status message.
+        Finalize a test result (VERIFIED -> FINAL).
         """
         result = self.get_object()
 
-        # Check permission
-        if not request.user.is_pathologist and not request.user.is_admin:
+        # Permission Check ('verify' permission covers verification AND finalization per spec)
+        if not request.user.has_perm("results.can_verify_results"):
             return Response(
-                {"error": "Only pathologists can reject results"},
+                {"error": "You do not have permission to finalize results."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        rejection_reason = request.data.get("reason", "")
-        if rejection_reason:
-            result.remarks = f"Rejected: {rejection_reason}. {result.remarks or ''}"
+        # Transition Check
+        if not result.can_transition_to("FINAL", request.user):
+             return Response(
+                {"error": "Invalid transition to FINAL. Result must be VERIFIED first."},
+                status=status.HTTP_400_BAD_REQUEST,
+             )
 
-        result.status = "REJECTED"
-        result.verified_by = request.user  # Track who rejected
-        result.verified_at = timezone.now()
+        result.status = "FINAL"
+        result.published_at = timezone.now()
         result.save()
 
-        return Response({"status": "result rejected"})
+        serializer = self.get_serializer(result)
+        return Response(serializer.data)
 
-    @action(detail=False, methods=["post"], url_path="bulk-reject")
-    def bulk_reject(self, request):
+    @action(detail=False, methods=["post"], url_path="bulk-finalize")
+    def bulk_finalize(self, request):
         """
-        Reject a list of test results in a single transaction.
-
-        Expects a list of result IDs and a reason in the request data.
+        Finalize a list of test results.
         """
         result_ids = request.data.get("result_ids", [])
-        reason = request.data.get("reason", "")
-
         if not result_ids:
-            return Response(
-                {"error": "result_ids list is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+             return Response({"error": "result_ids is required"}, status=400)
 
-        if not (request.user.is_pathologist or request.user.is_admin):
-            return Response(
-                {"error": "Only pathologists can reject results"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        if not request.user.has_perm("results.can_verify_results"):
+             return Response({"error": "Permission denied"}, status=403)
 
-        results_to_reject = TestResult.objects.select_related("test_parameter").filter(
-            id__in=result_ids
-        )
-
-        if results_to_reject.count() != len(result_ids):
-            return Response(
-                {"error": "One or more result IDs were not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
+        results = TestResult.objects.filter(id__in=result_ids)
         errors = []
-        for result in results_to_reject:
-            if result.status in ["VERIFIED", "PUBLISHED"]:
-                errors.append(
-                    f"Result for '{result.test_parameter.effective_parameter_name}' is already verified."
-                )
+        
+        with transaction.atomic():
+            for result in results:
+                if not result.can_transition_to("FINAL", request.user):
+                     errors.append(f"Result {result.id}: Cannot transition to FINAL from {result.status}")
+                     continue
+                
+                result.status = "FINAL"
+                result.published_at = timezone.now()
+                result.save()
 
         if errors:
-            return Response(
-                {"error": "Rejection failed for some results.", "details": errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+             return Response({"message": "Errors occurred", "errors": errors}, status=400)
 
-        reason_text = reason.strip()
-
-        with transaction.atomic():
-            for result in results_to_reject:
-                if reason_text:
-                    existing = result.remarks or ""
-                    result.remarks = f"Rejected: {reason_text}. {existing}".strip()
-                result.status = "REJECTED"
-                result.verified_by = request.user
-                result.verified_at = timezone.now()
-                result.save(update_fields=["remarks", "status", "verified_by", "verified_at"])
-
-        return Response(
-            {
-                "status": f"{results_to_reject.count()} results rejected successfully.",
-                "rejected_ids": result_ids,
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response({"status": "Results finalized"})

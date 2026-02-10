@@ -26,6 +26,8 @@ export default function SystemSettingsPage() {
   const [templateForm, setTemplateForm] = useState<PrintTemplate | null>(null);
 
   // Replaced duplicate state with just one source of truth where possible, but keeping barcodeToggle for UI binding
+  const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
+  const [newTemplateData, setNewTemplateData] = useState<{ name: string; type: 'REPORT' | 'RECEIPT' }>({ name: '', type: 'REPORT' });
   const [userSearch, setUserSearch] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [userNotice, setUserNotice] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -43,6 +45,13 @@ export default function SystemSettingsPage() {
 
   // Report Preview State
   const [previewKey, setPreviewKey] = useState(0);
+
+  // Template Builder: section selection and undo/redo
+  type TemplateSection = 'basic' | 'paper' | 'display' | 'disclaimer' | 'signatories';
+  const [selectedTemplateSection, setSelectedTemplateSection] = useState<TemplateSection>('basic');
+  const [templateHistory, setTemplateHistory] = useState<PrintTemplate[]>([]);
+  const [templateHistoryIndex, setTemplateHistoryIndex] = useState(-1);
+  const HISTORY_MAX = 30;
 
   const roleOptions: UserRole[] = [
     'Admin',
@@ -271,9 +280,88 @@ export default function SystemSettingsPage() {
     },
   });
 
+  const createTemplateMutation = useMutation({
+    mutationFn: (data: { name: string; type: 'REPORT' | 'RECEIPT' }) => {
+      // Generate unique key based on name and timestamp to ensure uniqueness
+      const templateKey = `${data.type.toLowerCase()}_${data.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+      // Define default config as per backend expectations
+      const defaultConfig = {
+        paper_size: 'A4',
+        margins: { top: 1.0, right: 1.0, bottom: 1.0, left: 1.0 },
+        font_scale: 1.0,
+        show_logo: true,
+        show_header_image: true,
+        show_footer_image: true,
+        show_disclaimer: true,
+        show_signatures: true,
+        show_qr: false,
+        show_barcode: false
+      };
+
+      return printTemplateApi.create({
+        name: data.name,
+        type: data.type,
+        template_key: templateKey,
+        is_active: false,
+        config: defaultConfig as unknown as PrintTemplate['config'], // cast to avoid strict type issues
+        signatories: []
+      } as Partial<PrintTemplate>);
+    },
+    onSuccess: (newTemplate) => {
+      queryClient.invalidateQueries({ queryKey: ['print-templates'] });
+      setIsCreatingTemplate(false);
+      setNewTemplateData({ name: '', type: 'REPORT' });
+      alert('Template created successfully');
+      // Select the new template
+      if (newTemplate && newTemplate.id) {
+        setSelectedTemplateId(newTemplate.id);
+      }
+    },
+    onError: (error: unknown) => {
+      alert(`Error creating template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    },
+  });
+
+  const deleteTemplateMutation = useMutation({
+    mutationFn: (id: number) => printTemplateApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['print-templates'] });
+      setSelectedTemplateId(null);
+      setTemplateForm(null);
+      alert('Template deleted successfully');
+    },
+    onError: (error: unknown) => {
+      alert(`Error deleting template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    },
+  });
+
+  const pushTemplateHistory = (next: PrintTemplate) => {
+    setTemplateHistory((prev) => {
+      const trimmed = prev.slice(0, templateHistoryIndex + 1);
+      const nextArr = [...trimmed, JSON.parse(JSON.stringify(next))];
+      return nextArr.slice(-HISTORY_MAX);
+    });
+    setTemplateHistoryIndex((prev) => Math.min(prev + 1, HISTORY_MAX - 1));
+  };
+
+  const canUndo = templateForm && templateHistoryIndex > 0;
+  const canRedo = templateForm && templateHistoryIndex < templateHistory.length - 1 && templateHistory.length > 0;
+  const handleTemplateUndo = () => {
+    if (!canUndo || !templateHistory[templateHistoryIndex - 1]) return;
+    setTemplateForm(JSON.parse(JSON.stringify(templateHistory[templateHistoryIndex - 1])));
+    setTemplateHistoryIndex((i) => i - 1);
+  };
+  const handleTemplateRedo = () => {
+    if (!canRedo || !templateHistory[templateHistoryIndex + 1]) return;
+    setTemplateForm(JSON.parse(JSON.stringify(templateHistory[templateHistoryIndex + 1])));
+    setTemplateHistoryIndex((i) => i + 1);
+  };
+
   const updateTemplateField = (field: keyof PrintTemplate, value: string | boolean) => {
     if (!templateForm) return;
-    setTemplateForm({ ...templateForm, [field]: value });
+    const next = { ...templateForm, [field]: value };
+    pushTemplateHistory(templateForm);
+    setTemplateForm(next);
   };
 
   const handleBarcodeToggle = (value: boolean) => {
@@ -283,24 +371,28 @@ export default function SystemSettingsPage() {
 
   const updateTemplateConfig = (field: keyof PrintTemplateConfig, value: string | number | boolean) => {
     if (!templateForm) return;
+    pushTemplateHistory(templateForm);
     const config = { ...templateForm.config, [field]: value };
     setTemplateForm({ ...templateForm, config });
   };
 
   const updateMargin = (field: keyof PrintTemplateConfig['margins'], value: number) => {
     if (!templateForm) return;
+    pushTemplateHistory(templateForm);
     const margins = { ...templateForm.config.margins, [field]: value };
     setTemplateForm({ ...templateForm, config: { ...templateForm.config, margins } });
   };
 
   const addSignatory = () => {
     if (!templateForm) return;
+    pushTemplateHistory(templateForm);
     const signatories = [...(templateForm.signatories || []), { name: '', title: '' }];
     setTemplateForm({ ...templateForm, signatories });
   };
 
   const updateSignatory = (idx: number, field: keyof PrintSignatory, value: string) => {
     if (!templateForm) return;
+    pushTemplateHistory(templateForm);
     const signatories = [...(templateForm.signatories || [])];
     signatories[idx] = { ...signatories[idx], [field]: value };
     setTemplateForm({ ...templateForm, signatories });
@@ -308,14 +400,20 @@ export default function SystemSettingsPage() {
 
   const removeSignatory = (idx: number) => {
     if (!templateForm) return;
+    pushTemplateHistory(templateForm);
     const signatories = [...(templateForm.signatories || [])];
     signatories.splice(idx, 1);
     setTemplateForm({ ...templateForm, signatories });
   };
 
-  const handleTemplateSave = () => {
+  const handleTemplateSaveDraft = () => {
     if (!templateForm) return;
-    updateTemplateMutation.mutate(templateForm);
+    updateTemplateMutation.mutate({ ...templateForm, is_active: templateForm.is_active });
+  };
+
+  const handleTemplatePublish = () => {
+    if (!templateForm) return;
+    updateTemplateMutation.mutate({ ...templateForm, is_active: true });
   };
 
   const showUserNotice = (type: 'success' | 'error', message: string) => {
@@ -1241,21 +1339,75 @@ export default function SystemSettingsPage() {
               </p>
 
               <div className={styles.formGroup}>
-                <label>Template</label>
-                {templates.length > 0 ? (
-                  <select
-                    className={styles.select}
-                    value={selectedTemplateId || ''}
-                    onChange={(e) => setSelectedTemplateId(Number(e.target.value))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ margin: 0 }}>Template</label>
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    onClick={() => { setIsCreatingTemplate(true); setNewTemplateData({ name: '', type: 'REPORT' }); }}
+                    style={{ fontSize: '12px', padding: '4px 8px' }}
                   >
-                    {templates.map((template) => (
-                      <option key={template.id} value={template.id}>
-                        {template.type} — {template.name}
-                      </option>
-                    ))}
-                  </select>
+                    + Create New
+                  </button>
+                </div>
+
+                {isCreatingTemplate ? (
+                  <div className={styles.card} style={{ padding: '15px', border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: '4px', marginBottom: '15px' }}>
+                    <h4 style={{ marginTop: 0, marginBottom: '10px' }}>Create New Template</h4>
+                    <div className={styles.formGroup}>
+                      <label>Name</label>
+                      <input
+                        className={styles.input}
+                        value={newTemplateData.name}
+                        onChange={e => setNewTemplateData({ ...newTemplateData, name: e.target.value })}
+                        placeholder="e.g. CBC Report V2"
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Type</label>
+                      <select
+                        className={styles.select}
+                        value={newTemplateData.type}
+                        onChange={e => setNewTemplateData({ ...newTemplateData, type: e.target.value as 'REPORT' | 'RECEIPT' })}
+                      >
+                        <option value="REPORT">Report</option>
+                        <option value="RECEIPT">Receipt</option>
+                      </select>
+                    </div>
+                    <div className={styles.formActions} style={{ justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}>
+                      <button
+                        type="button"
+                        className={styles.submitButton}
+                        disabled={!newTemplateData.name || createTemplateMutation.isPending}
+                        onClick={() => createTemplateMutation.mutate(newTemplateData)}
+                      >
+                        {createTemplateMutation.isPending ? 'Creating...' : 'Create'}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.secondaryButton}
+                        onClick={() => setIsCreatingTemplate(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  <div className={styles.notice}>No templates found. Please contact support to seed default templates.</div>
+                  templates.length > 0 ? (
+                    <select
+                      className={styles.select}
+                      value={selectedTemplateId || ''}
+                      onChange={(e) => setSelectedTemplateId(Number(e.target.value))}
+                    >
+                      {templates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.type} — {template.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className={styles.notice}>No templates found. Create one to get started.</div>
+                  )
                 )}
               </div>
 
@@ -1446,6 +1598,15 @@ export default function SystemSettingsPage() {
                   </div>
 
                   <div className={styles.formActions}>
+                    <button
+                      type="button"
+                      className={styles.secondaryButton}
+                      onClick={() => { if (confirm('Are you sure you want to delete this template? This cannot be undone.')) deleteTemplateMutation.mutate(templateForm.id); }}
+                      disabled={deleteTemplateMutation.isPending}
+                      style={{ marginRight: 'auto', backgroundColor: '#fee2e2', color: '#b91c1c', border: '1px solid #fecaca' }}
+                    >
+                      {deleteTemplateMutation.isPending ? 'Deleting...' : 'Delete Template'}
+                    </button>
                     <button type="button" className={styles.submitButton} onClick={handleTemplateSave}>
                       Save Template
                     </button>

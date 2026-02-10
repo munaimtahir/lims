@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { reportApi } from '../../api/services';
 import type { Report } from '../../types';
@@ -6,6 +6,7 @@ import styles from './ReportsPage.module.css';
 
 export default function ReportsPage() {
     const [retryCount, setRetryCount] = useState(0);
+    const [showTimeoutError, setShowTimeoutError] = useState(false);
 
     const {
         data: reportsData,
@@ -20,13 +21,43 @@ export default function ReportsPage() {
         retryDelay: 1000,
     });
 
+    // Timeout detection
+    useEffect(() => {
+        let timer: number;
+        if (isLoading) {
+            setShowTimeoutError(false);
+            timer = window.setTimeout(() => setShowTimeoutError(true), 15000); // 15s timeout
+        } else {
+            setShowTimeoutError(false);
+        }
+        return () => clearTimeout(timer);
+    }, [isLoading, retryCount]);
+
     const handleRetry = () => {
         setRetryCount(prev => prev + 1);
-        refetch();
+        setShowTimeoutError(false);
+        // data will be refetched because retryCount changes queryKey
     };
 
-    // Loading state
+    // Loading state with timeout check
     if (isLoading) {
+        if (showTimeoutError) {
+            return (
+                <div className={styles.container}>
+                    <div className={styles.errorContainer}>
+                        <div className={styles.errorIcon}>⚠️</div>
+                        <h2>Loading Timeout</h2>
+                        <p className={styles.errorMessage}>The reports are taking too long to load.</p>
+                        <div className={styles.errorActions}>
+                            <button className={styles.retryButton} onClick={handleRetry}>
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className={styles.container}>
                 <div className={styles.loadingContainer}>
@@ -52,15 +83,14 @@ export default function ReportsPage() {
                             Retry
                         </button>
                     </div>
-                    {retryCount > 0 && (
-                        <p className={styles.retryInfo}>Retry attempt: {retryCount}</p>
-                    )}
                 </div>
             </div>
         );
     }
 
-    const reports = reportsData?.results || [];
+    const reportResults = reportsData?.results;
+    // Safeguard against undefined results
+    const reports = Array.isArray(reportResults) ? reportResults : [];
 
     return (
         <div className={styles.container}>
@@ -72,15 +102,19 @@ export default function ReportsPage() {
             {reports.length === 0 ? (
                 <div className={styles.emptyState}>
                     <p>📄 No reports generated yet</p>
+                    {/* Add a manual refresh here just in case */}
+                    <button className={styles.retryButton} onClick={() => refetch()} style={{ marginTop: '10px', fontSize: '0.9em' }}>
+                        Refresh List
+                    </button>
                 </div>
             ) : (
                 <div className={styles.reportsList}>
                     {reports.map((report: Report) => (
-                        <div key={report.id} className={styles.reportCard}>
+                        <div key={report.id || Math.random()} className={styles.reportCard}>
                             <div className={styles.reportHeader}>
                                 <div className={styles.reportInfo}>
                                     <h3>Report #{report.id}</h3>
-                                    <span className={styles.orderId}>Order: {report.order_id_display || report.order}</span>
+                                    <span className={styles.orderId}>Order: {report.order_id_display || report.order || 'N/A'}</span>
                                 </div>
                                 <span className={`${styles.statusBadge} ${report.is_final ? styles.final : styles.draft}`}>
                                     {report.is_final ? 'Final' : 'Draft'}
@@ -91,7 +125,7 @@ export default function ReportsPage() {
                                 <div className={styles.detailRow}>
                                     <span className={styles.label}>Generated:</span>
                                     <span className={styles.value}>
-                                        {new Date(report.generated_at).toLocaleString()}
+                                        {report.generated_at ? new Date(report.generated_at).toLocaleString() : 'Date Unknown'}
                                     </span>
                                 </div>
                                 {report.generated_by_name && (
@@ -109,7 +143,7 @@ export default function ReportsPage() {
                             </div>
 
                             <div className={styles.reportActions}>
-                                {report.report_file && (
+                                {report.report_file ? (
                                     <a
                                         href={report.report_file}
                                         target="_blank"
@@ -118,6 +152,8 @@ export default function ReportsPage() {
                                     >
                                         📥 Download
                                     </a>
+                                ) : (
+                                    <span className={styles.noFile}>No File</span>
                                 )}
                             </div>
                         </div>

@@ -46,13 +46,11 @@ class TestResult(models.Model):
     # Auto-calculated flag
     flag = models.CharField(max_length=20, choices=FLAG_CHOICES, default="")
 
-    # Verification Status - matches legacy workflow
+    # Verification Status
     VERIFICATION_STATUS = [
         ("DRAFT", "Draft"),
-        ("ENTERED", "Entered"),
         ("VERIFIED", "Verified"),
-        ("PUBLISHED", "Published"),
-        ("REJECTED", "Rejected"),
+        ("FINAL", "Final"),
     ]
     status = models.CharField(
         max_length=20, choices=VERIFICATION_STATUS, default="DRAFT"
@@ -81,6 +79,9 @@ class TestResult(models.Model):
     class Meta:
         unique_together = ("order_item", "test_parameter")
         ordering = ["test_parameter__display_order"]
+        permissions = [
+            ("can_verify_results", "Can verify and finalize laboratory results"),
+        ]
 
     def __str__(self):
         """
@@ -137,3 +138,39 @@ class TestResult(models.Model):
             range_info["critical_low"],
             range_info["critical_high"],
         )
+
+    def can_edit(self, user):
+        """
+        Check if the result can be edited by the given user.
+        """
+        if self.status == "FINAL":
+            return False
+        return True
+
+    def can_transition_to(self, new_status, user):
+        """
+        Check if the result can transition to the new status.
+        """
+        if self.status == "FINAL":
+            # Hard lock: FINAL cannot transition to anything
+            return False
+
+        if new_status == "DRAFT":
+            # Any -> DRAFT is not allowed
+            return False
+
+        if new_status == "VERIFIED":
+            # Only DRAFT -> VERIFIED allowed
+            # Re-verification (VERIFIED -> VERIFIED) is allowed in practice if editing,
+            # but strictly looking at transitions:
+            if self.status not in ["DRAFT", "VERIFIED"]:
+                return False
+            return user.has_perm("results.can_verify_results")
+
+        if new_status == "FINAL":
+            # Only VERIFIED -> FINAL allowed
+            if self.status != "VERIFIED":
+                return False
+            return user.has_perm("results.can_verify_results")
+
+        return False
