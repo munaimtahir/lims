@@ -188,6 +188,17 @@ class PrintTemplateSerializer(serializers.ModelSerializer):
             "show_signatures",
             "show_qr",
             "show_barcode",
+            "show_patient_dob",
+            "repeat_patient_id_on_pages",
+            "show_specimen_details",
+            "show_ordering_provider",
+            "show_verified_by_line",
+            "show_method_info",
+            "show_decision_limits",
+            "show_critical_annotations",
+            "show_qc_statement",
+            "show_confidentiality_statement",
+            "show_revision_banner",
         ]:
             if key in value and not isinstance(value[key], bool):
                 raise serializers.ValidationError(f"config.{key} must be true or false")

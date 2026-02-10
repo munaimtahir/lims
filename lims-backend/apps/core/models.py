@@ -24,6 +24,18 @@ def default_print_template_config():
         "show_signatures": True,
         "show_qr": False,
         "show_barcode": False,
+        # Report compliance toggles
+        "show_patient_dob": False,
+        "repeat_patient_id_on_pages": False,
+        "show_specimen_details": False,
+        "show_ordering_provider": False,
+        "show_verified_by_line": False,
+        "show_method_info": False,
+        "show_decision_limits": False,
+        "show_critical_annotations": False,
+        "show_qc_statement": False,
+        "show_confidentiality_statement": False,
+        "show_revision_banner": False,
     }
 
 

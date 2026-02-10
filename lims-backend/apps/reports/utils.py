@@ -30,6 +30,7 @@ from apps.core.models import (
 from apps.core.pdf_utils import add_report_image
 from apps.laboratory.ranges import pick_reference_range
 from apps.orders.models import Order
+from apps.reports.models import Report
 
 
 def _merge_template_config(config):
@@ -85,6 +86,15 @@ def fmt_age_gender(patient):
     if gender != "—":
         parts.append(gender)
     return " / ".join(parts) if parts else "—"
+
+
+def fmt_date(value):
+    if not value:
+        return "—"
+    try:
+        return value.strftime("%d/%m/%Y")
+    except Exception:
+        return "—"
 
 
 class PanelTable(Table):
@@ -430,6 +440,11 @@ def generate_pdf_report(
     template_config = _merge_template_config(template.config if template else None)
     font_scale = float(template_config.get("font_scale", 1.0) or 1.0)
     margins = template_config.get("margins", {})
+    def cfg(key, default=False):
+        try:
+            return bool(template_config.get(key, default))
+        except Exception:
+            return default
 
     def _margin_value(key, default):
         try:
