@@ -79,6 +79,29 @@ class Sample(models.Model):
         """Return a string representation of the sample."""
         return f"{self.barcode} - {self.sample_type}"
 
+    def clean(self):
+        # Enforce terminal and forbidden transitions at model level
+        if self.pk:
+            previous = Sample.objects.get(pk=self.pk)
+            if previous.status == SampleStatus.RECEIVED:
+                raise ValidationError("Received samples are immutable.")
+            allowed = {
+                SampleStatus.PENDING: {SampleStatus.COLLECTED, SampleStatus.POSTPONED},
+                SampleStatus.POSTPONED: {SampleStatus.COLLECTED},
+                SampleStatus.COLLECTED: {SampleStatus.RECEIVED},
+            }
+            if self.status == previous.status:
+                return
+            if self.status not in allowed.get(previous.status, set()):
+                raise ValidationError(
+                    f"Invalid transition from {previous.status} to {self.status}."
+                )
+
+    def delete(self, *args, **kwargs):
+        if self.status in [SampleStatus.COLLECTED, SampleStatus.RECEIVED]:
+            raise ValidationError("Collected/received samples cannot be deleted.")
+        return super().delete(*args, **kwargs)
+
     def save(self, *args, **kwargs):
         """
         Override the save method to generate a barcode if it doesn't exist.

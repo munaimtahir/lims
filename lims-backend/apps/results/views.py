@@ -329,83 +329,67 @@ class TestResultViewSet(viewsets.ModelViewSet):
         created_results = []
         errors = []
 
-        for result_data in results_data:
-            order_item_id = result_data.get("order_item")
-            test_parameter_id = result_data.get("test_parameter")
-            result_value = result_data.get("result_value", "")
-            if result_value is None or str(result_value).strip() == "":
-                result_value = "*"
+        with transaction.atomic():
+            for result_data in results_data:
+                order_item_id = result_data.get("order_item")
+                test_parameter_id = result_data.get("test_parameter")
+                result_value = result_data.get("result_value", "")
+                if result_value is None or str(result_value).strip() == "":
+                    result_value = "*"
 
-            if not order_item_id or not test_parameter_id:
-                errors.append(
-                    {
-                        "data": result_data,
-                        "error": "Missing required fields: order_item, test_parameter",
-                    }
-                )
-                continue
+                if not order_item_id or not test_parameter_id:
+                    errors.append(
+                        {
+                            "data": result_data,
+                            "error": "Missing required fields: order_item, test_parameter",
+                        }
+                    )
+                    continue
 
-            try:
-                # Check if result already exists (or get for update)
-                result, created = TestResult.objects.get_or_create(
-                    order_item_id=order_item_id,
-                    test_parameter_id=test_parameter_id,
-                    defaults={
-                        "result_value": result_value,
-                        "remarks": result_data.get("remarks", ""),
-                        "entered_by": request.user,
-                        "entered_at": timezone.now(),
-                        "status": "DRAFT",
-                    },
-                )
-
-                new_status = result.status 
-
-                if not created:
-                    # Enforce editing rules
-                    if not result.can_edit(request.user):
-                        errors.append(
-                            {
-                                "data": result_data,
-                                "error": "Finalized results cannot be edited.",
-                            }
+                try:
+                    try:
+                        result = (
+                            TestResult.objects.select_for_update()
+                            .get(
+                                order_item_id=order_item_id,
+                                test_parameter_id=test_parameter_id,
+                            )
                         )
-                        continue
-                    
-                    # Logic for VERIFIED results:
-                    # - If VERIFIED, modifying it implies re-verification or privilege override.
-                    # - Must have can_verify_results permission to edit a verified result without resetting it (which is banned).
-                    # - And since we can't reset to DRAFT ("Any -> DRAFT ❌"), user MUST be a verifier.
-                    if result.status == "VERIFIED":
-                         if not request.user.has_perm("results.can_verify_results"):
-                              errors.append(
-                                  {
-                                      "data": result_data,
-                                      "error": "You do not have permission to edit verified results."
-                                  }
-                              )
-                              continue
-                         # Result remains VERIFIED if edited by verifier
-                         new_status = "VERIFIED"
-                         result.verified_by = request.user
-                         result.verified_at = timezone.now()
+                        created = False
+                    except TestResult.DoesNotExist:
+                        result = None
+                        created = True
+
+                    if created:
+                        result = TestResult.objects.create(
+                            order_item_id=order_item_id,
+                            test_parameter_id=test_parameter_id,
+                            result_value=result_value,
+                            remarks=result_data.get("remarks", ""),
+                            entered_by=request.user,
+                            entered_at=timezone.now(),
+                            status="DRAFT",
+                        )
                     else:
-                        # DRAFT results stay DRAFT
-                        new_status = "DRAFT"
+                        if not result.can_edit(request.user):
+                            errors.append(
+                                {
+                                    "data": result_data,
+                                    "error": "Result cannot be edited after verification/finalization.",
+                                }
+                            )
+                            continue
 
-                    result.result_value = result_value
-                    result.remarks = result_data.get("remarks", "")
-                    result.entered_by = request.user
-                    result.entered_at = timezone.now()
-                    result.status = new_status
-                    result.save()
-                
-                # If created, it's DRAFT (managed by defaults), but update fields if needed
-                # (Existing logic assumes created with defaults is enough, but defaults used result_value)
+                        result.result_value = result_value
+                        result.remarks = result_data.get("remarks", "")
+                        result.entered_by = request.user
+                        result.entered_at = timezone.now()
+                        result.status = "DRAFT"
+                        result.save()
 
-                created_results.append(self.get_serializer(result).data)
-            except Exception as e:
-                errors.append({"data": result_data, "error": str(e)})
+                    created_results.append(self.get_serializer(result).data)
+                except Exception as e:
+                    errors.append({"data": result_data, "error": str(e)})
 
         response_data = {
             "created": len(created_results),
@@ -448,7 +432,12 @@ class TestResultViewSet(viewsets.ModelViewSet):
         """
         Verify a test result (DRAFT -> VERIFIED).
         """
-        result = self.get_object()
+        with transaction.atomic():
+            result = (
+                TestResult.objects.select_for_update()
+                .select_related("order_item")
+                .get(pk=pk)
+            )
 
         # Permission Check
         if not request.user.has_perm("results.can_verify_results"):
@@ -458,6 +447,16 @@ class TestResultViewSet(viewsets.ModelViewSet):
             )
 
         # Transition Check
+        if result.status in ["VERIFIED", "FINAL"]:
+            return Response(
+                {"error": "Result already verified/final."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        if not result.result_value or str(result.result_value).strip() in {"", "*"}:
+            return Response(
+                {"error": "Result value required before verification."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if not result.can_transition_to("VERIFIED", request.user):
              return Response(
                 {"error": "Invalid transition to VERIFIED. Result must be DRAFT."},
@@ -493,11 +492,22 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        results = TestResult.objects.filter(id__in=result_ids)
         errors = []
-        
+        success = 0
+
         with transaction.atomic():
+            results = (
+                TestResult.objects.select_for_update()
+                .filter(id__in=result_ids)
+                .select_related("order_item")
+            )
             for result in results:
+                if result.status in ["VERIFIED", "FINAL"]:
+                    errors.append(f"Result {result.id}: already verified/final")
+                    continue
+                if not result.result_value or str(result.result_value).strip() in {"", "*"}:
+                    errors.append(f"Result {result.id}: value required before verification")
+                    continue
                 if not result.can_transition_to("VERIFIED", request.user):
                      errors.append(f"Result {result.id}: Cannot transition to VERIFIED from {result.status}")
                      continue
@@ -507,21 +517,23 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 result.verified_at = timezone.now()
                 result.save()
                 self._check_and_update_status(result.order_item)
+                success += 1
 
         if errors:
              return Response(
-                 {"message": "Some results could not be verified.", "errors": errors}, 
+                 {"message": "Some results could not be verified.", "errors": errors, "processed": success}, 
                  status=status.HTTP_400_BAD_REQUEST # Or 207
              )
         
-        return Response({"status": "Results verified successfully"})
+        return Response({"status": "Results verified successfully", "processed": success})
 
     @action(detail=True, methods=["post"])
     def finalize(self, request, pk=None):
         """
         Finalize a test result (VERIFIED -> FINAL).
         """
-        result = self.get_object()
+        with transaction.atomic():
+            result = TestResult.objects.select_for_update().get(pk=pk)
 
         # Permission Check ('verify' permission covers verification AND finalization per spec)
         if not request.user.has_perm("results.can_verify_results"):
@@ -531,6 +543,16 @@ class TestResultViewSet(viewsets.ModelViewSet):
             )
 
         # Transition Check
+        if result.status == "FINAL":
+             return Response(
+                {"error": "Result already final."},
+                status=status.HTTP_409_CONFLICT,
+             )
+        if not result.result_value or str(result.result_value).strip() in {"", "*"}:
+            return Response(
+                {"error": "Result value required before finalization."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if not result.can_transition_to("FINAL", request.user):
              return Response(
                 {"error": "Invalid transition to FINAL. Result must be VERIFIED first."},
@@ -556,11 +578,15 @@ class TestResultViewSet(viewsets.ModelViewSet):
         if not request.user.has_perm("results.can_verify_results"):
              return Response({"error": "Permission denied"}, status=403)
 
-        results = TestResult.objects.filter(id__in=result_ids)
         errors = []
+        success = 0
         
         with transaction.atomic():
+            results = TestResult.objects.select_for_update().filter(id__in=result_ids)
             for result in results:
+                if not result.result_value or str(result.result_value).strip() in {"", "*"}:
+                    errors.append(f"Result {result.id}: value required before finalization")
+                    continue
                 if not result.can_transition_to("FINAL", request.user):
                      errors.append(f"Result {result.id}: Cannot transition to FINAL from {result.status}")
                      continue
@@ -568,8 +594,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 result.status = "FINAL"
                 result.published_at = timezone.now()
                 result.save()
+                success += 1
 
         if errors:
-             return Response({"message": "Errors occurred", "errors": errors}, status=400)
+             return Response({"message": "Errors occurred", "errors": errors, "processed": success}, status=400)
 
-        return Response({"status": "Results finalized"})
+        return Response({"status": "Results finalized", "processed": success})

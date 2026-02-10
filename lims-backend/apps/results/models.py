@@ -93,14 +93,26 @@ class TestResult(models.Model):
         return f"{self.test_parameter.effective_parameter_name}: {self.result_value}"
 
     def save(self, *args, **kwargs):
-        """
-        Override the save method to validate the result before saving.
-
-        Args:
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
-        """
+        """Validate and guard state before saving."""
         self.validate_result()
+
+        if self.pk:
+            # Enforce immutability after FINAL
+            previous = TestResult.objects.get(pk=self.pk)
+            if previous.status == "FINAL":
+                raise ValidationError("Final results are immutable.")
+
+            # Prevent status regressions
+            allowed = {
+                "DRAFT": {"DRAFT", "VERIFIED"},
+                "VERIFIED": {"VERIFIED", "FINAL"},
+                "FINAL": set(),
+            }
+            if self.status not in allowed.get(previous.status, set()):
+                raise ValidationError(
+                    f"Invalid status transition from {previous.status} to {self.status}."
+                )
+
         super().save(*args, **kwargs)
 
     def validate_result(self):
@@ -140,37 +152,20 @@ class TestResult(models.Model):
         )
 
     def can_edit(self, user):
-        """
-        Check if the result can be edited by the given user.
-        """
-        if self.status == "FINAL":
-            return False
-        return True
+        """Editing is only allowed while in DRAFT."""
+        return self.status == "DRAFT"
 
     def can_transition_to(self, new_status, user):
         """
         Check if the result can transition to the new status.
         """
         if self.status == "FINAL":
-            # Hard lock: FINAL cannot transition to anything
-            return False
-
-        if new_status == "DRAFT":
-            # Any -> DRAFT is not allowed
             return False
 
         if new_status == "VERIFIED":
-            # Only DRAFT -> VERIFIED allowed
-            # Re-verification (VERIFIED -> VERIFIED) is allowed in practice if editing,
-            # but strictly looking at transitions:
-            if self.status not in ["DRAFT", "VERIFIED"]:
-                return False
-            return user.has_perm("results.can_verify_results")
+            return self.status == "DRAFT" and user.has_perm("results.can_verify_results")
 
         if new_status == "FINAL":
-            # Only VERIFIED -> FINAL allowed
-            if self.status != "VERIFIED":
-                return False
-            return user.has_perm("results.can_verify_results")
+            return self.status == "VERIFIED" and user.has_perm("results.can_verify_results")
 
         return False

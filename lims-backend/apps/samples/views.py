@@ -61,3 +61,9 @@ class SampleViewSet(viewsets.ModelViewSet):
             from apps.results.services.expected_results import ensure_test_results
 
             ensure_test_results(instance.order_item)
+
+    def perform_destroy(self, instance):
+        # Guard deletes after collection/receipt
+        if instance.status in [SampleStatus.COLLECTED, SampleStatus.RECEIVED]:
+            raise ValidationError("Collected/received samples cannot be deleted.")
+        return super().perform_destroy(instance)

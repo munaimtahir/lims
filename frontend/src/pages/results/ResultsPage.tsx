@@ -454,7 +454,8 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
   const orderInfo = orderDetails?.order;
   const patientInfo = orderInfo?.patient;
   const testInfo = orderDetails?.test_name || orderDetails?.panel_name;
-  const allVerified = resultItems.every((r: TestResult) => r.status === 'verified');
+  const allVerified = resultItems.every((r: TestResult) => ['verified', 'final'].includes((r.status || '').toLowerCase()));
+  const anyLocked = resultItems.some((r: TestResult) => ['verified', 'final'].includes((r.status || '').toLowerCase()));
   const rejectedResults = resultItems.filter((r: TestResult) => r.status?.toLowerCase() === 'rejected');
   const verifyDisabled = !canVerify || saveMutation.isPending || verifyMutation.isPending;
 
@@ -514,15 +515,17 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
             <button
               onClick={() => saveMutation.mutate(resultItems)}
-              disabled={saveMutation.isPending || verifyMutation.isPending}
+              disabled={saveMutation.isPending || verifyMutation.isPending || anyLocked}
               className={styles.saveButton}
+              title={anyLocked ? 'Editing disabled after verification/finalization' : undefined}
             >
               {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
             </button>
             <button
               onClick={handleSaveAndVerify}
-              disabled={verifyDisabled}
+              disabled={verifyDisabled || anyLocked}
               className={`${styles.verifyMainButton} ${styles.saveButton}`}
+              title={anyLocked ? 'Already verified/finalized' : undefined}
             >
               {verifyMutation.isPending ? 'Verifying...' : 'Verify'}
             </button>
@@ -574,7 +577,8 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
                       onChange={(e) => setResults(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
                       onKeyDown={(e) => handleKeyDown(e, result, index, resultItems.length)}
                       className={styles.resultInput}
-                      disabled={result.status === 'verified'}
+                      disabled={['verified', 'final'].includes((result.status || '').toLowerCase())}
+                      title={['verified', 'final'].includes((result.status || '').toLowerCase()) ? 'Locked after verification/finalization' : undefined}
                     />
                   </td>
                   <td>{result.unit}</td>
@@ -583,6 +587,8 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
                       className={styles.remarksInput}
                       value={remarks[result.test_parameter] || ''}
                       onChange={(e) => setRemarks(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
+                      disabled={['verified', 'final'].includes((result.status || '').toLowerCase())}
+                      title={['verified', 'final'].includes((result.status || '').toLowerCase()) ? 'Locked after verification/finalization' : undefined}
                     />
                   </td>
                   <td>{result.reference_range}</td>

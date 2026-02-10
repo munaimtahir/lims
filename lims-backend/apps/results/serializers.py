@@ -92,6 +92,28 @@ class TestResultSerializer(serializers.ModelSerializer):
             "verified_at",
         ]
 
+    def validate(self, attrs):
+        """Enforce status transitions and data completeness before verify/final."""
+        instance = self.instance
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+
+        new_status = attrs.get("status") or (instance.status if instance else "DRAFT")
+        result_value = attrs.get("result_value") or (instance.result_value if instance else "")
+
+        if instance:
+            if new_status != instance.status:
+                if not instance.can_transition_to(new_status, user):
+                    raise serializers.ValidationError("Invalid status transition.")
+
+        if new_status in ["VERIFIED", "FINAL"]:
+            if not result_value or str(result_value).strip() in {"", "*"}:
+                raise serializers.ValidationError(
+                    "Result value is required before verification/finalization."
+                )
+
+        return attrs
+
     def create(self, validated_data):
         """
         Create a new test result and set the `entered_by` field to the current user.
@@ -119,8 +141,9 @@ class TestResultSerializer(serializers.ModelSerializer):
         """
         Update a test result, but prevent editing of verified results.
         """
-        if instance.status in ["VERIFIED", "PUBLISHED"]:
-            raise serializers.ValidationError(
-                "Cannot edit a result that has been verified or published."
-            )
+        new_status = validated_data.get("status", instance.status)
+        if instance.status == "FINAL":
+            raise serializers.ValidationError("Cannot edit a final result.")
+        if instance.status == "VERIFIED" and new_status == "VERIFIED":
+            raise serializers.ValidationError("Cannot edit a verified result.")
         return super().update(instance, validated_data)

@@ -150,6 +150,18 @@ class Report(models.Model):
         if not self.report_number:
             self.report_number = self.generate_report_number()
 
+        if self.pk:
+            previous = Report.objects.get(pk=self.pk)
+            if previous.status in [ReportStatus.FINAL, ReportStatus.AMENDED]:
+                if self.status != previous.status:
+                    from django.core.exceptions import ValidationError
+
+                    raise ValidationError("Final/Amended reports cannot change status.")
+                if self.report_file != previous.report_file:
+                    from django.core.exceptions import ValidationError
+
+                    raise ValidationError("Final report file is immutable.")
+
         # Sync is_final with status for backward compatibility
         if self.status == ReportStatus.FINAL:
             self.is_final = True

@@ -80,7 +80,40 @@ class SampleSerializer(serializers.ModelSerializer):
         Returns:
             Sample: The updated sample instance.
         """
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
         new_status = validated_data.get("status")
+
+        # Idempotent handling: marking collected/received twice is a no-op
+        if new_status == instance.status:
+            return instance
+
+        # Validate transition path
+        if new_status:
+            allowed_map = {
+                SampleStatus.PENDING: {SampleStatus.COLLECTED, SampleStatus.POSTPONED},
+                SampleStatus.POSTPONED: {SampleStatus.COLLECTED},
+                SampleStatus.COLLECTED: {SampleStatus.RECEIVED},
+                SampleStatus.RECEIVED: set(),
+            }
+            if new_status not in allowed_map.get(instance.status, set()):
+                raise ValidationError(
+                    f"Invalid transition from {instance.status} to {new_status}."
+                )
+
+        # Guard collected/received mutations: allow COLLECTED -> RECEIVED for lab techs, else Admin/Manager
+        if instance.status == SampleStatus.COLLECTED and new_status == SampleStatus.RECEIVED:
+            if not (
+                getattr(user, "is_admin", False)
+                or getattr(user, "is_manager", False)
+                or getattr(user, "is_lab_technician", False)
+            ):
+                raise ValidationError("Only lab technician/manager/admin may mark as received.")
+        elif instance.status in [SampleStatus.COLLECTED, SampleStatus.RECEIVED]:
+            if not (getattr(user, "is_admin", False) or getattr(user, "is_manager", False)):
+                raise ValidationError(
+                    "Collected/received samples can only be changed by Admin or Manager."
+                )
         if new_status:
             if (
                 new_status == SampleStatus.COLLECTED

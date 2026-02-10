@@ -68,6 +68,11 @@ class ReportViewSet(viewsets.ModelViewSet):
             FileResponse: The PDF file response.
         """
         report = self.get_object()
+        if report.status not in [ReportStatus.FINAL, ReportStatus.AMENDED]:
+            return Response(
+                {"error": "Report is not final or amended; download blocked."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         if not report.report_file:
             return Response(
                 {"error": "Report file not found"}, status=status.HTTP_404_NOT_FOUND
@@ -347,7 +352,14 @@ class ReportViewSet(viewsets.ModelViewSet):
             existing_report = Report.objects.filter(
                 order=order, status=ReportStatus.FINAL
             ).first()
-            if existing_report and not request.data.get("regenerate", False):
+            if existing_report:
+                if request.data.get("regenerate", False):
+                    return Response(
+                        {
+                            "error": "Final report already exists; regeneration is blocked to prevent overwrite."
+                        },
+                        status=status.HTTP_409_CONFLICT,
+                    )
                 return Response(
                     {
                         "message": "Report already exists",

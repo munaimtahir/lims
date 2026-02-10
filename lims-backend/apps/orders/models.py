@@ -144,6 +144,21 @@ class Order(models.Model):
         if not self.order_id:
             self.order_id = self.generate_order_id()
 
+        # Prevent mutation of immutable lab identity fields after creation
+        if self.pk:
+            try:
+                old = Order.objects.get(pk=self.pk)
+                if old.lab_number and self.lab_number and old.lab_number != self.lab_number:
+                    raise ValidationError("Lab number is immutable after creation.")
+                if old.lab_date and self.lab_date and old.lab_date != self.lab_date:
+                    raise ValidationError("Lab date is immutable after creation.")
+                if old.daily_serial and self.daily_serial and old.daily_serial != self.daily_serial:
+                    raise ValidationError("Daily serial is immutable after creation.")
+                if old.status in ["PUBLISHED", "CANCELLED"]:
+                    raise ValidationError("Published or cancelled orders cannot be modified.")
+            except Order.DoesNotExist:
+                pass
+
         # V2 Lab Numbering
         if not self.lab_number:
             if not self.collection_center:
