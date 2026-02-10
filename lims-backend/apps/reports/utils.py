@@ -224,6 +224,7 @@ def build_panel_block(
     rows,
     styles,
     available_width,
+    opts,
 ):
     """Return flowables for a single panel with safe page-break handling."""
 
@@ -251,16 +252,33 @@ def build_panel_block(
 
     for row in rows:
         result_text, emphasize = _format_result_value(row["result"], row["range_info"])
+
+        critical_note = ""
+        if opts.get("show_critical_annotations") and safe_text(getattr(row["result"], "flag", "")) == "C":
+            critical_note = "CRITICAL – "
+            emphasize = True
+
         result_para = Paragraph(
-            f"<b>{result_text}</b>" if emphasize else result_text,
+            f"{'<b>' if emphasize else ''}{critical_note}{result_text}{'</b>' if emphasize else ''}",
             styles["cell_value"],
         )
+
+        test_lines = [row["test"]]
+        if opts.get("show_specimen_details") and row.get("specimen"):
+            test_lines.append(f"<font size=8 color='#6b7280'>{row['specimen']}</font>")
+        if opts.get("show_method_info") and row.get("method"):
+            test_lines.append(f"<font size=8 color='#6b7280'>Method: {row['method']}</font>")
+
+        ref_lines = [row["ref_range"]]
+        if opts.get("show_decision_limits") and row.get("decision_limit"):
+            ref_lines.append(f"<font size=8 color='#6b7280'>{row['decision_limit']}</font>")
+
         table_data.append(
             [
-                Paragraph(row["test"], styles["cell_text"]),
+                Paragraph("<br/>".join(test_lines), styles["cell_text"]),
                 result_para,
                 Paragraph(row["unit"], styles["cell_muted"]),
-                Paragraph(row["ref_range"], styles["cell_muted"]),
+                Paragraph("<br/>".join(ref_lines), styles["cell_muted"]),
             ]
         )
 
@@ -296,7 +314,7 @@ def build_panel_block(
     return [CondPageBreak(min_height_hint), panel_table]
 
 
-def build_results_flowables(items, patient, styles, available_width):
+def build_results_flowables(items, patient, styles, available_width, opts):
     grouped = {}
     for item in items:
         if item.panel:
@@ -320,6 +338,34 @@ def build_results_flowables(items, patient, styles, available_width):
                     or getattr(param, "name", None)
                 )
                 range_info = pick_reference_range(param, patient)
+                specimen_info = ""
+                try:
+                    sample = item.samples.first()
+                    if sample:
+                        collected = fmt_dt(getattr(sample, "collected_at", None)) or fmt_dt(getattr(sample, "received_at", None))
+                        specimen_info = f"{safe_text(getattr(sample, 'sample_type', 'Specimen'))} · {collected}"
+                except Exception:
+                    specimen_info = ""
+
+                method_info = ""
+                try:
+                    method_info = safe_text(getattr(param.parameter, "external_code_value", None))
+                except Exception:
+                    method_info = "—"
+                if method_info == "—":
+                    method_info = ""
+
+                decision_limit = ""
+                crit_low = range_info.get("critical_low")
+                crit_high = range_info.get("critical_high")
+                if crit_low is not None or crit_high is not None:
+                    parts = []
+                    if crit_low is not None:
+                        parts.append(f"Critical low: {crit_low}")
+                    if crit_high is not None:
+                        parts.append(f"Critical high: {crit_high}")
+                    decision_limit = " · ".join(parts)
+
                 rows.append(
                     {
                         "test": test_label,
@@ -327,6 +373,9 @@ def build_results_flowables(items, patient, styles, available_width):
                         "unit": safe_text(getattr(param, "unit", None)),
                         "ref_range": safe_text(range_info.get("display")),
                         "range_info": range_info,
+                        "specimen": specimen_info,
+                        "method": method_info,
+                        "decision_limit": decision_limit,
                     }
                 )
         if not rows:
@@ -337,10 +386,13 @@ def build_results_flowables(items, patient, styles, available_width):
                     "unit": "—",
                     "ref_range": "—",
                     "range_info": {"ref_min": None, "ref_max": None},
+                    "specimen": "",
+                    "method": "",
+                    "decision_limit": "",
                 }
             )
 
-        flowables.extend(build_panel_block(panel_name, rows, styles, available_width))
+        flowables.extend(build_panel_block(panel_name, rows, styles, available_width, opts))
         flowables.append(Spacer(1, 0.1 * inch))
 
     return flowables
@@ -643,13 +695,24 @@ def generate_pdf_report(
             report_title = f"{safe_text(item.panel.panel_name)} Report"
     story.append(Paragraph(f"<b>{safe_text(report_title)}</b>", title_style))
 
+    # Optional revision banner
+    if cfg("show_revision_banner", False):
+        try:
+            prior_reports = Report.objects.filter(order=order).count()
+        except Exception:
+            prior_reports = 0
+        if prior_reports > 0:
+            rev_text = f"Revised report v{prior_reports + 1} · generated {fmt_dt(timezone.now())}"
+            story.append(Paragraph(f"<font size=9 color='#6b7280'>{rev_text}</font>", lab_info_style))
+
     # Demographics block (compact grid)
     patient = getattr(order, "patient", None)
     visit_ref = safe_text(order.order_id or order.id)
     mrn = safe_text(getattr(patient, "mrn", None) or getattr(patient, "patient_id", None))
     patient_name = safe_text(patient.get_full_name() if patient else None)
+    dob_text = fmt_date(getattr(patient, "date_of_birth", None))
     mobile = safe_text(getattr(patient, "phone", None))
-    consultant = safe_text(getattr(getattr(order, "ordered_by", None), "full_name", None))
+    consultant = safe_text(getattr(getattr(order, "ordered_by", None), "full_name", None)) if cfg("show_ordering_provider", True) else "—"
     booking_dt = fmt_dt(getattr(order, "created_at", None))
 
     all_results = []
@@ -674,6 +737,11 @@ def generate_pdf_report(
         or getattr(patient, "default_referred_by", None)
     )
 
+    repeat_id_line = ""
+    if cfg("repeat_patient_id_on_pages", False):
+        repeat_parts = [part for part in [patient_name, f"MR: {mrn}" if mrn else None, f"DOB: {dob_text}" if cfg("show_patient_dob", False) else None, f"Ref: {visit_ref}"] if part]
+        repeat_id_line = " · ".join(repeat_parts)
+
     patient_block = build_patient_identity_table(
         {
             "ref_no": visit_ref,
@@ -682,7 +750,8 @@ def generate_pdf_report(
             "booking_dt": booking_dt,
             "sample": sample_collected,
             "name": patient_name,
-            "age_gender": fmt_age_gender(patient),
+            "age_gender": fmt_age_gender(patient)
+            + (f" | DOB: {dob_text}" if cfg("show_patient_dob", False) else ""),
             "consultant": consultant,
             "reporting_dt": reporting_dt,
             "ref_by": ref_by,
@@ -694,6 +763,12 @@ def generate_pdf_report(
     story.append(patient_block)
     story.append(Spacer(1, 0.12 * inch))
 
+    if cfg("show_verified_by_line", True):
+        verified_users = [r.verified_by for r in all_results if getattr(r, "verified_by", None)]
+        verified_name = safe_text(verified_users[-1].get_full_name() if verified_users and hasattr(verified_users[-1], "get_full_name") else (verified_users[-1].full_name if verified_users else None))
+        verified_line = f"Verified by: {verified_name} at {reporting_dt}" if verified_name != "—" else f"Reported at {reporting_dt}"
+        story.append(Paragraph(f"<font size=9 color='#6b7280'>{verified_line}</font>", lab_info_style))
+
     # Results block
     story.append(Paragraph("<b>Results</b>", section_style))
     flowable_styles = {
@@ -703,7 +778,20 @@ def generate_pdf_report(
         "cell_muted": cell_muted_style,
         "cell_value": cell_value_style,
     }
-    story.extend(build_results_flowables(items, patient, flowable_styles, available_width))
+    story.extend(
+        build_results_flowables(
+            items,
+            patient,
+            flowable_styles,
+            available_width,
+            {
+                "show_specimen_details": cfg("show_specimen_details", False),
+                "show_method_info": cfg("show_method_info", False),
+                "show_decision_limits": cfg("show_decision_limits", False),
+                "show_critical_annotations": cfg("show_critical_annotations", False),
+            },
+        )
+    )
 
     # Impression (optional)
     interpretation = safe_text(
@@ -721,6 +809,12 @@ def generate_pdf_report(
         "in correlation with clinical and radiologic findings."
     )
     story.append(Paragraph(disclaimer_text, body_text_style))
+    if cfg("show_qc_statement", False):
+        qc_text = "Released under ISO 15189-aligned quality system; internal QC acceptable at time of release."
+        story.append(Paragraph(qc_text, body_text_style))
+    if cfg("show_confidentiality_statement", False):
+        conf_text = "Confidential medical record. Do not disclose without patient consent or legal authorization."
+        story.append(Paragraph(conf_text, body_text_style))
     story.append(Spacer(1, 0.2 * inch))
     story.append(Paragraph("<b>Authorized Signatories</b>", section_style))
     signatory_lines = [
@@ -749,6 +843,11 @@ def generate_pdf_report(
             flow_width, flow_height = flowable.wrap(available_width, page_size[1])
             cursor_y -= flow_height
             flowable.drawOn(canvas_obj, left_margin, cursor_y)
+        if repeat_id_line:
+            canvas_obj.setFont("Helvetica", 8 * font_scale)
+            canvas_obj.setFillColor(colors.HexColor("#6b7280"))
+            canvas_obj.drawString(left_margin, cursor_y - 8, repeat_id_line)
+            canvas_obj.setFillColor(colors.black)
         canvas_obj.restoreState()
 
     # Build PDF with repeated header + page numbers

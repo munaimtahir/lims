@@ -6,6 +6,7 @@
 - Abnormal results now bold with directional arrows (↑/↓) when outside reference range or flagged.
 - Page-break safety: panel header + first row kept together; continued pages repeat header with "(continued)" label; rows are not split.
 - Impression remains conditional; locked footer, signatories, and page numbering preserved.
+- Compliance toggles added to PrintTemplate config and UI (Settings → Print Templates → Compliance & Flags): patient DOB, repeat IDs per page, specimen details, ordering/verified lines, method/decision limits, critical annotations, QC/confidentiality statements, and revision banner.
 
 ## Evidence
 - Reduced patient block height; results start higher on page 1.

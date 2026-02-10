@@ -47,7 +47,7 @@ export default function SystemSettingsPage() {
   const [previewKey, setPreviewKey] = useState(0);
 
   // Template Builder: section selection and undo/redo
-  type TemplateSection = 'basic' | 'paper' | 'display' | 'disclaimer' | 'signatories';
+  type TemplateSection = 'basic' | 'paper' | 'display' | 'compliance' | 'disclaimer' | 'signatories';
   const [selectedTemplateSection, setSelectedTemplateSection] = useState<TemplateSection>('basic');
   const [templateHistory, setTemplateHistory] = useState<PrintTemplate[]>([]);
   const [templateHistoryIndex, setTemplateHistoryIndex] = useState(-1);
@@ -1429,7 +1429,7 @@ export default function SystemSettingsPage() {
 
                   <div className={styles.templateThreePane}>
                     <nav className={styles.templateSectionList} aria-label="Template sections">
-                      {(['basic', 'paper', 'display', 'disclaimer', 'signatories'] as const).map((section) => (
+                      {(['basic', 'paper', 'display', 'compliance', 'disclaimer', 'signatories'] as const).map((section) => (
                         <button
                           key={section}
                           type="button"
@@ -1439,6 +1439,7 @@ export default function SystemSettingsPage() {
                           {section === 'basic' && 'Basic info'}
                           {section === 'paper' && 'Paper & margins'}
                           {section === 'display' && 'Display options'}
+                          {section === 'compliance' && 'Compliance & flags'}
                           {section === 'disclaimer' && 'Disclaimer'}
                           {section === 'signatories' && 'Signatories'}
                         </button>
@@ -1453,6 +1454,7 @@ export default function SystemSettingsPage() {
                         <p>Font scale: {templateForm.config.font_scale}</p>
                         <p>Logo: {templateForm.config.show_logo ? 'Yes' : 'No'} · Header image: {templateForm.config.show_header_image ? 'Yes' : 'No'} · Footer: {templateForm.config.show_footer_image ? 'Yes' : 'No'}</p>
                         <p>Disclaimer: {templateForm.config.show_disclaimer ? 'Yes' : 'No'} · Signatures: {templateForm.config.show_signatures ? 'Yes' : 'No'}</p>
+                        <p>Compliance: IDs on pages {templateForm.config.repeat_patient_id_on_pages ? 'Yes' : 'No'} · Specimen details {templateForm.config.show_specimen_details ? 'Yes' : 'No'} · Critical flags {templateForm.config.show_critical_annotations ? 'Yes' : 'No'}</p>
                         <p>Active: {templateForm.is_active ? 'Yes' : 'No'}</p>
                       </div>
                     </div>
@@ -1543,6 +1545,64 @@ export default function SystemSettingsPage() {
                             <input type="checkbox" checked={templateForm.config.show_signatures} onChange={(e) => updateTemplateConfig('show_signatures', e.target.checked)} />
                             Show signatures
                           </label>
+                        </div>
+                      )}
+
+                      {selectedTemplateSection === 'compliance' && (
+                        <div className={styles.formGroup}>
+                          <p className={styles.templateHelp}>Enable/disable international-reporting fields.</p>
+                          <div className={styles.formRow}>
+                            <label className={styles.checkboxLabel} title="Add DOB to patient identity and header repeat">
+                              <input type="checkbox" checked={templateForm.config.show_patient_dob ?? false} onChange={(e) => updateTemplateConfig('show_patient_dob', e.target.checked)} />
+                              Show patient DOB with Age/Gender
+                            </label>
+                            <label className={styles.checkboxLabel} title="Repeat patient IDs in header of every page">
+                              <input type="checkbox" checked={templateForm.config.repeat_patient_id_on_pages ?? false} onChange={(e) => updateTemplateConfig('repeat_patient_id_on_pages', e.target.checked)} />
+                              Repeat patient IDs on every page
+                            </label>
+                          </div>
+                          <div className={styles.formRow}>
+                            <label className={styles.checkboxLabel} title="Show specimen type and collection time under each test">
+                              <input type="checkbox" checked={templateForm.config.show_specimen_details ?? false} onChange={(e) => updateTemplateConfig('show_specimen_details', e.target.checked)} />
+                              Show specimen details per result
+                            </label>
+                            <label className={styles.checkboxLabel} title="Show ordering provider line in patient block">
+                              <input type="checkbox" checked={templateForm.config.show_ordering_provider ?? true} onChange={(e) => updateTemplateConfig('show_ordering_provider', e.target.checked)} />
+                              Show ordering provider
+                            </label>
+                            <label className={styles.checkboxLabel} title="Show verified by line under demographics">
+                              <input type="checkbox" checked={templateForm.config.show_verified_by_line ?? true} onChange={(e) => updateTemplateConfig('show_verified_by_line', e.target.checked)} />
+                              Show verified-by line
+                            </label>
+                          </div>
+                          <div className={styles.formRow}>
+                            <label className={styles.checkboxLabel} title="Show method info (when available)">
+                              <input type="checkbox" checked={templateForm.config.show_method_info ?? false} onChange={(e) => updateTemplateConfig('show_method_info', e.target.checked)} />
+                              Show method info
+                            </label>
+                            <label className={styles.checkboxLabel} title="Show decision limits / critical limits">
+                              <input type="checkbox" checked={templateForm.config.show_decision_limits ?? false} onChange={(e) => updateTemplateConfig('show_decision_limits', e.target.checked)} />
+                              Show decision limits
+                            </label>
+                            <label className={styles.checkboxLabel} title="Highlight critical values">
+                              <input type="checkbox" checked={templateForm.config.show_critical_annotations ?? false} onChange={(e) => updateTemplateConfig('show_critical_annotations', e.target.checked)} />
+                              Show critical annotations
+                            </label>
+                          </div>
+                          <div className={styles.formRow}>
+                            <label className={styles.checkboxLabel} title="Show QC/quality statement in footer">
+                              <input type="checkbox" checked={templateForm.config.show_qc_statement ?? false} onChange={(e) => updateTemplateConfig('show_qc_statement', e.target.checked)} />
+                              Show QC statement
+                            </label>
+                            <label className={styles.checkboxLabel} title="Show confidentiality notice in footer">
+                              <input type="checkbox" checked={templateForm.config.show_confidentiality_statement ?? false} onChange={(e) => updateTemplateConfig('show_confidentiality_statement', e.target.checked)} />
+                              Show confidentiality notice
+                            </label>
+                            <label className={styles.checkboxLabel} title="Show banner when this is a revised report">
+                              <input type="checkbox" checked={templateForm.config.show_revision_banner ?? false} onChange={(e) => updateTemplateConfig('show_revision_banner', e.target.checked)} />
+                              Show revision banner
+                            </label>
+                          </div>
                         </div>
                       )}
 

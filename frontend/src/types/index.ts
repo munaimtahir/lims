@@ -445,6 +445,17 @@ export interface PrintTemplateConfig {
   show_signatures: boolean;
   show_qr?: boolean;
   show_barcode?: boolean;
+  show_patient_dob?: boolean;
+  repeat_patient_id_on_pages?: boolean;
+  show_specimen_details?: boolean;
+  show_ordering_provider?: boolean;
+  show_verified_by_line?: boolean;
+  show_method_info?: boolean;
+  show_decision_limits?: boolean;
+  show_critical_annotations?: boolean;
+  show_qc_statement?: boolean;
+  show_confidentiality_statement?: boolean;
+  show_revision_banner?: boolean;
 }
 
 export interface PrintSignatory {

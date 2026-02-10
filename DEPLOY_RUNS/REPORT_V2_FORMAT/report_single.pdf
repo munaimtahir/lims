@@ -37,7 +37,7 @@ endobj
 endobj
 7 0 obj
 <<
-/Author (\(anonymous\)) /CreationDate (D:20260210191611-05'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260210191611-05'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
+/Author (\(anonymous\)) /CreationDate (D:20260211012504-05'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260211012504-05'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
   /Subject (\(unspecified\)) /Title (\(anonymous\)) /Trapped /False
 >>
 endobj
@@ -48,7 +48,7 @@ endobj
 endobj
 9 0 obj
 <<
-/Length 5930
+/Length 6084
 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
@@ -182,7 +182,7 @@ q
 1 0 0 1 85.22961 24.49 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 07:16 PM) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (11/02/2026 01:25 AM) Tj T* ET
 Q
 Q
 q
@@ -196,7 +196,7 @@ q
 1 0 0 1 310.8674 24.49 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 07:16 PM) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (11/02/2026 01:25 AM) Tj T* ET
 Q
 Q
 q
@@ -210,7 +210,7 @@ q
 1 0 0 1 85.22961 4.33 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 05:16 PM) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 11:25 PM) Tj T* ET
 Q
 Q
 q
@@ -244,17 +244,24 @@ q
 1 0 0 1 78 563.6498 cm
 Q
 q
-1 0 0 1 78 539.6498 cm
+1 0 0 1 78 550.6498 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 4 Tm /F1 9 Tf 13 TL (Verified by: Dr Path Ologist at 11/02/2026 01:25 AM) Tj T* ET
+Q
+Q
+q
+1 0 0 1 78 526.6498 cm
 q
 .121569 .160784 .215686 rg
 BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Results) Tj T* ET
 Q
 Q
 q
-1 0 0 1 78 535.6498 cm
+1 0 0 1 78 522.6498 cm
 Q
 q
-1 0 0 1 72 476.1498 cm
+1 0 0 1 72 463.1498 cm
 q
 .898039 .905882 .921569 rg
 n 0 39.5 451.2756 -20 re f*
@@ -347,30 +354,30 @@ Q
 Q
 Q
 q
-1 0 0 1 78 468.9498 cm
+1 0 0 1 78 455.9498 cm
 Q
 q
-1 0 0 1 78 450.9498 cm
+1 0 0 1 78 437.9498 cm
 Q
 q
-1 0 0 1 78 427.9498 cm
+1 0 0 1 78 414.9498 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 14 Tm /F1 9 Tf 11.5 TL (Electronically verified. Laboratory results should be interpreted by a physician in correlation with clinical and) Tj T* (radiologic findings.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 78 413.5498 cm
+1 0 0 1 78 400.5498 cm
 Q
 q
-1 0 0 1 78 389.5498 cm
+1 0 0 1 78 376.5498 cm
 q
 .121569 .160784 .215686 rg
 BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Authorized Signatories) Tj T* ET
 Q
 Q
 q
-1 0 0 1 72 348.5498 cm
+1 0 0 1 72 335.5498 cm
 q
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
@@ -414,7 +421,7 @@ xref
 trailer
 <<
 /ID 
-[<5e86aea1d7519f6f5d9f3775c15cd2dd><5e86aea1d7519f6f5d9f3775c15cd2dd>]
+[<5f64954105bea9ab69723b73119a0956><5f64954105bea9ab69723b73119a0956>]
 % ReportLab generated PDF document -- digest (http://www.reportlab.com)
 
 /Info 7 0 R
@@ -422,5 +429,5 @@ trailer
 /Size 10
 >>
 startxref
-7056
+7210
 %%EOF

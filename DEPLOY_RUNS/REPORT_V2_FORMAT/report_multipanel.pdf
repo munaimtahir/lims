@@ -52,7 +52,7 @@ endobj
 endobj
 9 0 obj
 <<
-/Author (\(anonymous\)) /CreationDate (D:20260210191611-05'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260210191611-05'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
+/Author (\(anonymous\)) /CreationDate (D:20260211012504-05'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260211012504-05'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
   /Subject (\(unspecified\)) /Title (\(anonymous\)) /Trapped /False
 >>
 endobj
@@ -63,7 +63,7 @@ endobj
 endobj
 11 0 obj
 <<
-/Length 15069
+/Length 14659
 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
@@ -197,7 +197,7 @@ q
 1 0 0 1 85.22961 24.49 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 07:16 PM) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (11/02/2026 01:25 AM) Tj T* ET
 Q
 Q
 q
@@ -211,7 +211,7 @@ q
 1 0 0 1 310.8674 24.49 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 07:15 PM) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (11/02/2026 01:24 AM) Tj T* ET
 Q
 Q
 q
@@ -225,7 +225,7 @@ q
 1 0 0 1 85.22961 4.33 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 04:16 PM) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 10:25 PM) Tj T* ET
 Q
 Q
 q
@@ -259,24 +259,31 @@ q
 1 0 0 1 78 563.6498 cm
 Q
 q
-1 0 0 1 78 539.6498 cm
+1 0 0 1 78 550.6498 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 4 Tm /F1 9 Tf 13 TL (Verified by: Dr Path Ologist at 11/02/2026 01:24 AM) Tj T* ET
+Q
+Q
+q
+1 0 0 1 78 526.6498 cm
 q
 .121569 .160784 .215686 rg
 BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Results) Tj T* ET
 Q
 Q
 q
-1 0 0 1 78 535.6498 cm
+1 0 0 1 78 522.6498 cm
 Q
 q
-1 0 0 1 72 86.14976 cm
+1 0 0 1 72 92.64976 cm
 q
 .898039 .905882 .921569 rg
-n 0 429.5 451.2756 -20 re f*
+n 0 410 451.2756 -20 re f*
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
-1 0 0 1 4 433.5 cm
+1 0 0 1 4 414 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (COMPREHENSIVE METABOLIC PANEL \(continued\)) Tj T* ET
@@ -284,28 +291,28 @@ Q
 Q
 .066667 .094118 .152941 rg
 q
-1 0 0 1 4 413.5 cm
+1 0 0 1 4 394 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Test/Parameter) Tj T* ET
 Q
 Q
 q
-1 0 0 1 193.5357 413.5 cm
+1 0 0 1 193.5357 394 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Result) Tj T* ET
 Q
 Q
 q
-1 0 0 1 274.7654 413.5 cm
+1 0 0 1 274.7654 394 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Unit) Tj T* ET
 Q
 Q
 q
-1 0 0 1 328.9184 413.5 cm
+1 0 0 1 328.9184 394 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Reference Range) Tj T* ET
@@ -313,45 +320,17 @@ Q
 Q
 0 0 0 rg
 q
-1 0 0 1 4 394 cm
+1 0 0 1 4 374.5 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 1) Tj T* ET
 Q
 Q
 q
-1 0 0 1 193.5357 394 cm
-q
-.066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (6) Tj T* ET
-Q
-Q
-q
-1 0 0 1 274.7654 394 cm
-q
-.294118 .333333 .388235 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (mg/dL) Tj T* ET
-Q
-Q
-q
-1 0 0 1 328.9184 394 cm
-q
-.294118 .333333 .388235 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (5.00 - 15.00) Tj T* ET
-Q
-Q
-q
-1 0 0 1 4 374.5 cm
-q
-.066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 2) Tj T* ET
-Q
-Q
-q
 1 0 0 1 193.5357 374.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (7) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (6) Tj T* ET
 Q
 Q
 q
@@ -372,14 +351,14 @@ q
 1 0 0 1 4 355 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 3) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 2) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 355 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (8) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (7) Tj T* ET
 Q
 Q
 q
@@ -400,14 +379,14 @@ q
 1 0 0 1 4 335.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 4) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 3) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 335.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (9) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (8) Tj T* ET
 Q
 Q
 q
@@ -428,14 +407,14 @@ q
 1 0 0 1 4 316 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 5) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 4) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 316 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (10) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (9) Tj T* ET
 Q
 Q
 q
@@ -456,14 +435,14 @@ q
 1 0 0 1 4 296.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 6) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 5) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 296.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (11) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (10) Tj T* ET
 Q
 Q
 q
@@ -484,14 +463,14 @@ q
 1 0 0 1 4 277 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 7) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 6) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 277 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (20 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (11) Tj T* ET
 Q
 Q
 q
@@ -512,14 +491,14 @@ q
 1 0 0 1 4 257.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 8) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 7) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 257.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (13) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (20 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
 Q
 Q
 q
@@ -540,14 +519,14 @@ q
 1 0 0 1 4 238 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 9) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 8) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 238 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (14) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (13) Tj T* ET
 Q
 Q
 q
@@ -568,14 +547,14 @@ q
 1 0 0 1 4 218.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 10) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 9) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 218.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (15) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (14) Tj T* ET
 Q
 Q
 q
@@ -596,14 +575,14 @@ q
 1 0 0 1 4 199 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 11) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 10) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 199 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (16 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (15) Tj T* ET
 Q
 Q
 q
@@ -624,14 +603,14 @@ q
 1 0 0 1 4 179.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 12) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 11) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 179.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (17 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
+BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (16 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
 Q
 Q
 q
@@ -652,14 +631,14 @@ q
 1 0 0 1 4 160 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 13) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 12) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 160 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (18 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
+BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (17 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
 Q
 Q
 q
@@ -680,14 +659,14 @@ q
 1 0 0 1 4 140.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 14) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 13) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 140.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (20 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
+BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (18 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
 Q
 Q
 q
@@ -708,14 +687,14 @@ q
 1 0 0 1 4 121 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 15) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 14) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 121 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (5) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (20 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
 Q
 Q
 q
@@ -736,14 +715,14 @@ q
 1 0 0 1 4 101.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 16) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 15) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 101.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (6) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (5) Tj T* ET
 Q
 Q
 q
@@ -764,14 +743,14 @@ q
 1 0 0 1 4 82 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 17) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 16) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 82 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (7) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (6) Tj T* ET
 Q
 Q
 q
@@ -792,14 +771,14 @@ q
 1 0 0 1 4 62.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 18) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 17) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 62.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (8) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (7) Tj T* ET
 Q
 Q
 q
@@ -820,14 +799,14 @@ q
 1 0 0 1 4 43 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 19) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 18) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 43 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (9) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (8) Tj T* ET
 Q
 Q
 q
@@ -848,14 +827,14 @@ q
 1 0 0 1 4 23.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 20) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 19) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 23.5 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (10) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (9) Tj T* ET
 Q
 Q
 q
@@ -876,14 +855,14 @@ q
 1 0 0 1 4 4 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 21) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 20) Tj T* ET
 Q
 Q
 q
 1 0 0 1 193.5357 4 cm
 q
 .066667 .094118 .152941 rg
-BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (20 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (10) Tj T* ET
 Q
 Q
 q
@@ -905,16 +884,15 @@ q
 1 j
 .819608 .835294 .858824 RG
 .5 w
-n 0 429.5 m 451.2756 429.5 l S
+n 0 410 m 451.2756 410 l S
 1 1 1 RG
-n 451.2756 429.5 m 451.2756 449.5 l S
+n 451.2756 410 m 451.2756 430 l S
 .898039 .905882 .921569 RG
 .35 w
-n 0 429.5 m 451.2756 429.5 l S
-n 0 0 m 0 429.5 l S
-n 451.2756 0 m 451.2756 429.5 l S
+n 0 410 m 451.2756 410 l S
+n 0 0 m 0 410 l S
+n 451.2756 0 m 451.2756 410 l S
 n 0 0 m 451.2756 0 l S
-n 0 409.5 m 451.2756 409.5 l S
 n 0 390 m 451.2756 390 l S
 n 0 370.5 m 451.2756 370.5 l S
 n 0 351 m 451.2756 351 l S
@@ -935,9 +913,9 @@ n 0 78 m 451.2756 78 l S
 n 0 58.5 m 451.2756 58.5 l S
 n 0 39 m 451.2756 39 l S
 n 0 19.5 m 451.2756 19.5 l S
-n 189.5357 0 m 189.5357 429.5 l S
-n 270.7654 0 m 270.7654 429.5 l S
-n 324.9184 0 m 324.9184 429.5 l S
+n 189.5357 0 m 189.5357 410 l S
+n 270.7654 0 m 270.7654 410 l S
+n 324.9184 0 m 324.9184 410 l S
 Q
 Q
 Q
@@ -950,7 +928,7 @@ endstream
 endobj
 12 0 obj
 <<
-/Length 9571
+/Length 10155
 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
@@ -976,14 +954,14 @@ q
 Q
 Q
 q
-1 0 0 1 72 392.0898 cm
+1 0 0 1 72 372.5898 cm
 q
 .898039 .905882 .921569 rg
-n 0 293 451.2756 -20 re f*
+n 0 312.5 451.2756 -20 re f*
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
-1 0 0 1 4 297 cm
+1 0 0 1 4 316.5 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (COMPREHENSIVE METABOLIC PANEL \(continued\)) Tj T* ET
@@ -991,34 +969,62 @@ Q
 Q
 .066667 .094118 .152941 rg
 q
-1 0 0 1 4 277 cm
+1 0 0 1 4 296.5 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Test/Parameter) Tj T* ET
 Q
 Q
 q
-1 0 0 1 193.5357 277 cm
+1 0 0 1 193.5357 296.5 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Result) Tj T* ET
 Q
 Q
 q
-1 0 0 1 274.7654 277 cm
+1 0 0 1 274.7654 296.5 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Unit) Tj T* ET
 Q
 Q
 q
-1 0 0 1 328.9184 277 cm
+1 0 0 1 328.9184 296.5 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Reference Range) Tj T* ET
 Q
 Q
 0 0 0 rg
+q
+1 0 0 1 4 277 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Analyte 21) Tj T* ET
+Q
+Q
+q
+1 0 0 1 193.5357 277 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F2 9 Tf 11.5 TL (20 ) Tj /F4 9 Tf 11.5 TL (\255) Tj /F2 9 Tf 11.5 TL T* ET
+Q
+Q
+q
+1 0 0 1 274.7654 277 cm
+q
+.294118 .333333 .388235 rg
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (mg/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 328.9184 277 cm
+q
+.294118 .333333 .388235 rg
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (5.00 - 15.00) Tj T* ET
+Q
+Q
 q
 1 0 0 1 4 257.5 cm
 q
@@ -1416,21 +1422,22 @@ q
 1 j
 .819608 .835294 .858824 RG
 .5 w
-n 0 293 m 451.2756 293 l S
+n 0 312.5 m 451.2756 312.5 l S
 1 1 1 RG
-n 451.2756 293 m 451.2756 313 l S
+n 451.2756 312.5 m 451.2756 332.5 l S
 .898039 .905882 .921569 RG
 .35 w
-n 0 293 m 451.2756 293 l S
-n 0 273 m 0 293 l S
-n 0 0 m 0 273 l S
-n 451.2756 273 m 451.2756 293 l S
-n 451.2756 0 m 451.2756 273 l S
+n 0 312.5 m 451.2756 312.5 l S
+n 0 292.5 m 0 312.5 l S
+n 0 0 m 0 292.5 l S
+n 451.2756 292.5 m 451.2756 312.5 l S
+n 451.2756 0 m 451.2756 292.5 l S
 n 0 0 m 451.2756 0 l S
+n 0 292.5 m 451.2756 292.5 l S
+n 189.5357 292.5 m 189.5357 312.5 l S
+n 270.7654 292.5 m 270.7654 312.5 l S
+n 324.9184 292.5 m 324.9184 312.5 l S
 n 0 273 m 451.2756 273 l S
-n 189.5357 273 m 189.5357 293 l S
-n 270.7654 273 m 270.7654 293 l S
-n 324.9184 273 m 324.9184 293 l S
 n 0 253.5 m 451.2756 253.5 l S
 n 0 234 m 451.2756 234 l S
 n 0 214.5 m 451.2756 214.5 l S
@@ -1444,37 +1451,37 @@ n 0 78 m 451.2756 78 l S
 n 0 58.5 m 451.2756 58.5 l S
 n 0 39 m 451.2756 39 l S
 n 0 19.5 m 451.2756 19.5 l S
-n 189.5357 0 m 189.5357 273 l S
-n 270.7654 0 m 270.7654 273 l S
-n 324.9184 0 m 324.9184 273 l S
+n 189.5357 0 m 189.5357 292.5 l S
+n 270.7654 0 m 270.7654 292.5 l S
+n 324.9184 0 m 324.9184 292.5 l S
 Q
 Q
 Q
 q
-1 0 0 1 78 384.8898 cm
+1 0 0 1 78 365.3898 cm
 Q
 q
-1 0 0 1 78 366.8898 cm
+1 0 0 1 78 347.3898 cm
 Q
 q
-1 0 0 1 78 343.8898 cm
+1 0 0 1 78 324.3898 cm
 q
 .066667 .094118 .152941 rg
 BT 1 0 0 1 0 14 Tm /F1 9 Tf 11.5 TL (Electronically verified. Laboratory results should be interpreted by a physician in correlation with clinical and) Tj T* (radiologic findings.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 78 329.4898 cm
+1 0 0 1 78 309.9898 cm
 Q
 q
-1 0 0 1 78 305.4898 cm
+1 0 0 1 78 285.9898 cm
 q
 .121569 .160784 .215686 rg
 BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Authorized Signatories) Tj T* ET
 Q
 Q
 q
-1 0 0 1 72 264.4898 cm
+1 0 0 1 72 244.9898 cm
 q
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
@@ -1517,11 +1524,11 @@ xref
 0000001028 00000 n 
 0000001311 00000 n 
 0000001377 00000 n 
-0000016499 00000 n 
+0000016089 00000 n 
 trailer
 <<
 /ID 
-[<0c315fa1cb938e6920a2392011066417><0c315fa1cb938e6920a2392011066417>]
+[<349d5c7ec22721683220e148613e0fcf><349d5c7ec22721683220e148613e0fcf>]
 % ReportLab generated PDF document -- digest (http://www.reportlab.com)
 
 /Info 9 0 R
@@ -1529,5 +1536,5 @@ trailer
 /Size 13
 >>
 startxref
-26122
+26297
 %%EOF
