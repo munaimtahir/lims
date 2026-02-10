@@ -559,7 +559,116 @@
   font-size: 12px;
 }
 
+/* Template Builder: 3-pane layout */
+.templateToolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.templateThreePane {
+  display: grid;
+  grid-template-columns: 180px 1fr 280px;
+  gap: 16px;
+  min-height: 320px;
+  align-items: start;
+}
+
+.templateSectionList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-right: 1px solid #e5e7eb;
+}
+
+.templateSectionBtn {
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: #f9fafb;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  transition: background 0.15s;
+}
+
+.templateSectionBtn:hover {
+  background: #f3f4f6;
+}
+
+.templateSectionActive {
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+.templatePreview {
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  min-height: 200px;
+}
+
+.templatePreviewTitle {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.templatePreviewCard {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.templatePreviewCard p {
+  margin: 0 0 6px 0;
+}
+
+.templateEditor {
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  min-height: 200px;
+}
+
+.templateEditorTitle {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.templateHelp {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+}
+
 @media (max-width: 1024px) {
+  .templateThreePane {
+    grid-template-columns: 1fr;
+  }
+
+  .templateSectionList {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 12px;
+  }
+
   .userGrid {
     grid-template-columns: 1fr;
   }

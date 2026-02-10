@@ -206,10 +206,14 @@ export default function SystemSettingsPage() {
       return;
     }
 
-    // Sync form with selected template if form is stale
+    // Sync form with selected template if form is stale; init undo history
     const template = templates.find((t) => t.id === selectedTemplateId);
     if (template && (!templateForm || templateForm.id !== template.id)) {
-      setTemplateForm({ ...template });
+      const nextForm = { ...template };
+      setTemplateForm(nextForm);
+      setTemplateHistory([JSON.parse(JSON.stringify(nextForm))]);
+      setTemplateHistoryIndex(0);
+      setSelectedTemplateSection('basic');
     }
   }, [templates, selectedTemplateId, templateForm]);
 
@@ -344,8 +348,8 @@ export default function SystemSettingsPage() {
     setTemplateHistoryIndex((prev) => Math.min(prev + 1, HISTORY_MAX - 1));
   };
 
-  const canUndo = templateForm && templateHistoryIndex > 0;
-  const canRedo = templateForm && templateHistoryIndex < templateHistory.length - 1 && templateHistory.length > 0;
+  const canUndo = templateForm && templateHistory.length > 0 && templateHistoryIndex > 0;
+  const canRedo = templateForm && templateHistory.length > 0 && templateHistoryIndex < templateHistory.length - 1;
   const handleTemplateUndo = () => {
     if (!canUndo || !templateHistory[templateHistoryIndex - 1]) return;
     setTemplateForm(JSON.parse(JSON.stringify(templateHistory[templateHistoryIndex - 1])));
@@ -360,8 +364,8 @@ export default function SystemSettingsPage() {
   const updateTemplateField = (field: keyof PrintTemplate, value: string | boolean) => {
     if (!templateForm) return;
     const next = { ...templateForm, [field]: value };
-    pushTemplateHistory(templateForm);
     setTemplateForm(next);
+    pushTemplateHistory(next);
   };
 
   const handleBarcodeToggle = (value: boolean) => {
@@ -371,39 +375,44 @@ export default function SystemSettingsPage() {
 
   const updateTemplateConfig = (field: keyof PrintTemplateConfig, value: string | number | boolean) => {
     if (!templateForm) return;
-    pushTemplateHistory(templateForm);
     const config = { ...templateForm.config, [field]: value };
-    setTemplateForm({ ...templateForm, config });
+    const next = { ...templateForm, config };
+    setTemplateForm(next);
+    pushTemplateHistory(next);
   };
 
   const updateMargin = (field: keyof PrintTemplateConfig['margins'], value: number) => {
     if (!templateForm) return;
-    pushTemplateHistory(templateForm);
     const margins = { ...templateForm.config.margins, [field]: value };
-    setTemplateForm({ ...templateForm, config: { ...templateForm.config, margins } });
+    const next = { ...templateForm, config: { ...templateForm.config, margins } };
+    setTemplateForm(next);
+    pushTemplateHistory(next);
   };
 
   const addSignatory = () => {
     if (!templateForm) return;
-    pushTemplateHistory(templateForm);
     const signatories = [...(templateForm.signatories || []), { name: '', title: '' }];
-    setTemplateForm({ ...templateForm, signatories });
+    const next = { ...templateForm, signatories };
+    setTemplateForm(next);
+    pushTemplateHistory(next);
   };
 
   const updateSignatory = (idx: number, field: keyof PrintSignatory, value: string) => {
     if (!templateForm) return;
-    pushTemplateHistory(templateForm);
     const signatories = [...(templateForm.signatories || [])];
     signatories[idx] = { ...signatories[idx], [field]: value };
-    setTemplateForm({ ...templateForm, signatories });
+    const next = { ...templateForm, signatories };
+    setTemplateForm(next);
+    pushTemplateHistory(next);
   };
 
   const removeSignatory = (idx: number) => {
     if (!templateForm) return;
-    pushTemplateHistory(templateForm);
     const signatories = [...(templateForm.signatories || [])];
     signatories.splice(idx, 1);
-    setTemplateForm({ ...templateForm, signatories });
+    const next = { ...templateForm, signatories };
+    setTemplateForm(next);
+    pushTemplateHistory(next);
   };
 
   const handleTemplateSaveDraft = () => {
@@ -1335,7 +1344,7 @@ export default function SystemSettingsPage() {
             <div className={styles.tabContent}>
               <h2>Print Templates</h2>
               <p className={styles.description}>
-                Configure report and receipt layouts. Margins are in inches.
+                Configure report and receipt layouts. Edit one section at a time; preview updates as you change settings.
               </p>
 
               <div className={styles.formGroup}>
@@ -1413,188 +1422,152 @@ export default function SystemSettingsPage() {
 
               {templateForm && (
                 <>
-                  <div className={styles.formGroup}>
-                    <label>Name</label>
-                    <input
-                      className={styles.input}
-                      type="text"
-                      value={templateForm.name}
-                      onChange={(e) => updateTemplateField('name', e.target.value)}
-                    />
+                  <div className={styles.templateToolbar}>
+                    <button type="button" className={styles.secondaryButton} onClick={handleTemplateUndo} disabled={!canUndo} title="Undo last change">Undo</button>
+                    <button type="button" className={styles.secondaryButton} onClick={handleTemplateRedo} disabled={!canRedo} title="Redo">Redo</button>
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label>Description</label>
-                    <textarea
-                      className={styles.textarea}
-                      value={templateForm.description || ''}
-                      onChange={(e) => updateTemplateField('description', e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Paper Size</label>
-                    <select
-                      className={styles.select}
-                      value={templateForm.config.paper_size}
-                      onChange={(e) => updateTemplateConfig('paper_size', e.target.value)}
-                    >
-                      <option value="A4">A4</option>
-                      <option value="Letter">Letter</option>
-                    </select>
-                  </div>
-
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>Margin Top</label>
-                      <input
-                        className={styles.input}
-                        type="number"
-                        step="0.1"
-                        value={templateForm.config.margins.top}
-                        onChange={(e) => updateMargin('top', Number(e.target.value))}
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Margin Right</label>
-                      <input
-                        className={styles.input}
-                        type="number"
-                        step="0.1"
-                        value={templateForm.config.margins.right}
-                        onChange={(e) => updateMargin('right', Number(e.target.value))}
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Margin Bottom</label>
-                      <input
-                        className={styles.input}
-                        type="number"
-                        step="0.1"
-                        value={templateForm.config.margins.bottom}
-                        onChange={(e) => updateMargin('bottom', Number(e.target.value))}
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Margin Left</label>
-                      <input
-                        className={styles.input}
-                        type="number"
-                        step="0.1"
-                        value={templateForm.config.margins.left}
-                        onChange={(e) => updateMargin('left', Number(e.target.value))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Font Scale</label>
-                    <input
-                      className={styles.input}
-                      type="number"
-                      step="0.1"
-                      min="0.5"
-                      max="2"
-                      value={templateForm.config.font_scale}
-                      onChange={(e) => updateTemplateConfig('font_scale', Number(e.target.value))}
-                    />
-                  </div>
-
-                  <div className={styles.formRow}>
-                    <label className={styles.checkboxLabel}>
-                      <input
-                        type="checkbox"
-                        checked={templateForm.config.show_logo}
-                        onChange={(e) => updateTemplateConfig('show_logo', e.target.checked)}
-                      />
-                      Show Logo
-                    </label>
-                    <label className={styles.checkboxLabel}>
-                      <input
-                        type="checkbox"
-                        checked={templateForm.config.show_header_image}
-                        onChange={(e) => updateTemplateConfig('show_header_image', e.target.checked)}
-                      />
-                      Show Header Image
-                    </label>
-                    <label className={styles.checkboxLabel}>
-                      <input
-                        type="checkbox"
-                        checked={templateForm.config.show_footer_image}
-                        onChange={(e) => updateTemplateConfig('show_footer_image', e.target.checked)}
-                      />
-                      Show Footer Image
-                    </label>
-                  </div>
-
-                  <div className={styles.formRow}>
-                    <label className={styles.checkboxLabel}>
-                      <input
-                        type="checkbox"
-                        checked={templateForm.config.show_disclaimer}
-                        onChange={(e) => updateTemplateConfig('show_disclaimer', e.target.checked)}
-                      />
-                      Show Disclaimer
-                    </label>
-                    <label className={styles.checkboxLabel}>
-                      <input
-                        type="checkbox"
-                        checked={templateForm.config.show_signatures}
-                        onChange={(e) => updateTemplateConfig('show_signatures', e.target.checked)}
-                      />
-                      Show Signatures
-                    </label>
-                    <label className={styles.checkboxLabel}>
-                      <input
-                        type="checkbox"
-                        checked={templateForm.is_active}
-                        onChange={(e) => updateTemplateField('is_active', e.target.checked)}
-                      />
-                      Set Active
-                    </label>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Disclaimer Text</label>
-                    <textarea
-                      className={styles.textarea}
-                      rows={3}
-                      value={templateForm.disclaimer_text || ''}
-                      onChange={(e) => updateTemplateField('disclaimer_text', e.target.value)}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Signatories</label>
-                    {templateForm.signatories?.map((signatory, idx) => (
-                      <div key={idx} className={styles.signatoryRow}>
-                        <input
-                          className={styles.input}
-                          placeholder="Name"
-                          value={signatory.name}
-                          onChange={(e) => updateSignatory(idx, 'name', e.target.value)}
-                        />
-                        <input
-                          className={styles.input}
-                          placeholder="Title"
-                          value={signatory.title}
-                          onChange={(e) => updateSignatory(idx, 'title', e.target.value)}
-                        />
-                        <input
-                          className={styles.input}
-                          placeholder="Reg No"
-                          value={signatory.reg_no || ''}
-                          onChange={(e) => updateSignatory(idx, 'reg_no', e.target.value)}
-                        />
-                        <button type="button" className={styles.removeButton} onClick={() => removeSignatory(idx)}>
-                          Remove
+                  <div className={styles.templateThreePane}>
+                    <nav className={styles.templateSectionList} aria-label="Template sections">
+                      {(['basic', 'paper', 'display', 'disclaimer', 'signatories'] as const).map((section) => (
+                        <button
+                          key={section}
+                          type="button"
+                          className={selectedTemplateSection === section ? styles.templateSectionActive : styles.templateSectionBtn}
+                          onClick={() => setSelectedTemplateSection(section)}
+                        >
+                          {section === 'basic' && 'Basic info'}
+                          {section === 'paper' && 'Paper & margins'}
+                          {section === 'display' && 'Display options'}
+                          {section === 'disclaimer' && 'Disclaimer'}
+                          {section === 'signatories' && 'Signatories'}
                         </button>
+                      ))}
+                    </nav>
+
+                    <div className={styles.templatePreview} aria-label="Live preview">
+                      <h3 className={styles.templatePreviewTitle}>Preview</h3>
+                      <div className={styles.templatePreviewCard}>
+                        <p><strong>{templateForm.name}</strong> ({templateForm.type})</p>
+                        <p>Paper: {templateForm.config.paper_size} · Margins: {templateForm.config.margins.top}&quot; top, {templateForm.config.margins.bottom}&quot; bottom</p>
+                        <p>Font scale: {templateForm.config.font_scale}</p>
+                        <p>Logo: {templateForm.config.show_logo ? 'Yes' : 'No'} · Header image: {templateForm.config.show_header_image ? 'Yes' : 'No'} · Footer: {templateForm.config.show_footer_image ? 'Yes' : 'No'}</p>
+                        <p>Disclaimer: {templateForm.config.show_disclaimer ? 'Yes' : 'No'} · Signatures: {templateForm.config.show_signatures ? 'Yes' : 'No'}</p>
+                        <p>Active: {templateForm.is_active ? 'Yes' : 'No'}</p>
                       </div>
-                    ))}
-                    <button type="button" className={styles.secondaryButton} onClick={addSignatory}>
-                      + Add Signatory
-                    </button>
+                    </div>
+
+                    <div className={styles.templateEditor} role="form" aria-label="Edit selected section">
+                      <h3 className={styles.templateEditorTitle}>
+                        {selectedTemplateSection === 'basic' && 'Basic info'}
+                        {selectedTemplateSection === 'paper' && 'Paper & margins'}
+                        {selectedTemplateSection === 'display' && 'Display options'}
+                        {selectedTemplateSection === 'disclaimer' && 'Disclaimer'}
+                        {selectedTemplateSection === 'signatories' && 'Signatories'}
+                      </h3>
+
+                      {selectedTemplateSection === 'basic' && (
+                        <>
+                          <div className={styles.formGroup}>
+                            <label title="Display name for this template">Template name</label>
+                            <input className={styles.input} type="text" value={templateForm.name} onChange={(e) => updateTemplateField('name', e.target.value)} />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label title="Optional description">Description</label>
+                            <textarea className={styles.textarea} value={templateForm.description || ''} onChange={(e) => updateTemplateField('description', e.target.value)} rows={3} />
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label title="Use this template for printed reports">Set as active template</label>
+                            <label className={styles.checkboxLabel}>
+                              <input type="checkbox" checked={templateForm.is_active} onChange={(e) => updateTemplateField('is_active', e.target.checked)} />
+                              Active
+                            </label>
+                          </div>
+                        </>
+                      )}
+
+                      {selectedTemplateSection === 'paper' && (
+                        <>
+                          <div className={styles.formGroup}>
+                            <label title="Page size for printing">Paper size</label>
+                            <select className={styles.select} value={templateForm.config.paper_size} onChange={(e) => updateTemplateConfig('paper_size', e.target.value)}>
+                              <option value="A4">A4</option>
+                              <option value="Letter">Letter</option>
+                            </select>
+                          </div>
+                          <div className={styles.formGroup}>
+                            <label title="Text size multiplier">Font scale</label>
+                            <input className={styles.input} type="number" step="0.1" min="0.5" max="2" value={templateForm.config.font_scale} onChange={(e) => updateTemplateConfig('font_scale', Number(e.target.value))} />
+                          </div>
+                          <p className={styles.templateHelp}>Margins in inches</p>
+                          <div className={styles.formRow}>
+                            <div className={styles.formGroup}>
+                              <label>Top</label>
+                              <input className={styles.input} type="number" step="0.1" value={templateForm.config.margins.top} onChange={(e) => updateMargin('top', Number(e.target.value))} />
+                            </div>
+                            <div className={styles.formGroup}>
+                              <label>Right</label>
+                              <input className={styles.input} type="number" step="0.1" value={templateForm.config.margins.right} onChange={(e) => updateMargin('right', Number(e.target.value))} />
+                            </div>
+                            <div className={styles.formGroup}>
+                              <label>Bottom</label>
+                              <input className={styles.input} type="number" step="0.1" value={templateForm.config.margins.bottom} onChange={(e) => updateMargin('bottom', Number(e.target.value))} />
+                            </div>
+                            <div className={styles.formGroup}>
+                              <label>Left</label>
+                              <input className={styles.input} type="number" step="0.1" value={templateForm.config.margins.left} onChange={(e) => updateMargin('left', Number(e.target.value))} />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {selectedTemplateSection === 'display' && (
+                        <div className={styles.formRow}>
+                          <label className={styles.checkboxLabel} title="Show lab logo on report">
+                            <input type="checkbox" checked={templateForm.config.show_logo} onChange={(e) => updateTemplateConfig('show_logo', e.target.checked)} />
+                            Show logo
+                          </label>
+                          <label className={styles.checkboxLabel} title="Show header image">
+                            <input type="checkbox" checked={templateForm.config.show_header_image} onChange={(e) => updateTemplateConfig('show_header_image', e.target.checked)} />
+                            Show header image
+                          </label>
+                          <label className={styles.checkboxLabel} title="Show footer image">
+                            <input type="checkbox" checked={templateForm.config.show_footer_image} onChange={(e) => updateTemplateConfig('show_footer_image', e.target.checked)} />
+                            Show footer image
+                          </label>
+                          <label className={styles.checkboxLabel} title="Show disclaimer text">
+                            <input type="checkbox" checked={templateForm.config.show_disclaimer} onChange={(e) => updateTemplateConfig('show_disclaimer', e.target.checked)} />
+                            Show disclaimer
+                          </label>
+                          <label className={styles.checkboxLabel} title="Show signature block">
+                            <input type="checkbox" checked={templateForm.config.show_signatures} onChange={(e) => updateTemplateConfig('show_signatures', e.target.checked)} />
+                            Show signatures
+                          </label>
+                        </div>
+                      )}
+
+                      {selectedTemplateSection === 'disclaimer' && (
+                        <div className={styles.formGroup}>
+                          <label title="Text shown as disclaimer on the report">Disclaimer text</label>
+                          <textarea className={styles.textarea} rows={3} value={templateForm.disclaimer_text || ''} onChange={(e) => updateTemplateField('disclaimer_text', e.target.value)} />
+                        </div>
+                      )}
+
+                      {selectedTemplateSection === 'signatories' && (
+                        <div className={styles.formGroup}>
+                          <label>Signatories (names and titles)</label>
+                          {templateForm.signatories?.map((signatory, idx) => (
+                            <div key={idx} className={styles.signatoryRow}>
+                              <input className={styles.input} placeholder="Name" value={signatory.name} onChange={(e) => updateSignatory(idx, 'name', e.target.value)} />
+                              <input className={styles.input} placeholder="Title" value={signatory.title} onChange={(e) => updateSignatory(idx, 'title', e.target.value)} />
+                              <input className={styles.input} placeholder="Reg No" value={signatory.reg_no || ''} onChange={(e) => updateSignatory(idx, 'reg_no', e.target.value)} />
+                              <button type="button" className={styles.removeButton} onClick={() => removeSignatory(idx)}>Remove</button>
+                            </div>
+                          ))}
+                          <button type="button" className={styles.secondaryButton} onClick={addSignatory}>+ Add signatory</button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className={styles.formActions}>
@@ -1605,10 +1578,13 @@ export default function SystemSettingsPage() {
                       disabled={deleteTemplateMutation.isPending}
                       style={{ marginRight: 'auto', backgroundColor: '#fee2e2', color: '#b91c1c', border: '1px solid #fecaca' }}
                     >
-                      {deleteTemplateMutation.isPending ? 'Deleting...' : 'Delete Template'}
+                      {deleteTemplateMutation.isPending ? 'Deleting...' : 'Delete template'}
                     </button>
-                    <button type="button" className={styles.submitButton} onClick={handleTemplateSave}>
-                      Save Template
+                    <button type="button" className={styles.secondaryButton} onClick={handleTemplateSaveDraft} disabled={updateTemplateMutation.isPending}>
+                      Save draft
+                    </button>
+                    <button type="button" className={styles.submitButton} onClick={handleTemplatePublish} disabled={updateTemplateMutation.isPending}>
+                      Publish
                     </button>
                   </div>
                 </>
