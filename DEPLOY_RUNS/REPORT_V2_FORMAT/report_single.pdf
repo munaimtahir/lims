@@ -1,0 +1,426 @@
+%PDF-1.4
+%“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
+1 0 obj
+<<
+/F1 2 0 R /F2 3 0 R /F3 4 0 R
+>>
+endobj
+2 0 obj
+<<
+/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+>>
+endobj
+3 0 obj
+<<
+/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+>>
+endobj
+4 0 obj
+<<
+/BaseFont /Helvetica-BoldOblique /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font
+>>
+endobj
+5 0 obj
+<<
+/Contents 9 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 8 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+6 0 obj
+<<
+/PageMode /UseNone /Pages 8 0 R /Type /Catalog
+>>
+endobj
+7 0 obj
+<<
+/Author (\(anonymous\)) /CreationDate (D:20260210191611-05'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260210191611-05'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
+  /Subject (\(unspecified\)) /Title (\(anonymous\)) /Trapped /False
+>>
+endobj
+8 0 obj
+<<
+/Count 1 /Kids [ 5 0 R ] /Type /Pages
+>>
+endobj
+9 0 obj
+<<
+/Length 5930
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+q
+1 0 0 1 72 721.8898 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 35 Tm  T* ET
+q
+1 0 0 1 90 6 cm
+q
+BT 1 0 0 1 0 29 Tm 13 TL /F2 10 Tf 0 0 0 rg (Laboratory) Tj /F1 10 Tf  T* (Circular Road, Jaranwala) Tj  T* (Phone: 041-4312286) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 72 711.0898 cm
+Q
+Q
+q
+1 0 0 1 78 685.0898 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4 Tm /F2 16 Tf 20 TL 104.9738 0 Td (Complete Blood Count Report) Tj T* -104.9738 0 Td ET
+Q
+Q
+q
+1 0 0 1 72 572.2898 cm
+q
+.972549 .980392 .988235 rg
+n 0 100.8 451.2756 -100.8 re f*
+.066667 .094118 .152941 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 4 85.47 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 2 Tm /F1 8.5 Tf 10.5 TL (Ref No) Tj T* ET
+Q
+Q
+q
+1 0 0 1 85.22961 84.97 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (ORD-20260210-0001) Tj T* ET
+Q
+Q
+q
+1 0 0 1 229.6378 85.47 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 2 Tm /F1 8.5 Tf 10.5 TL (Patient Name) Tj T* ET
+Q
+Q
+q
+1 0 0 1 310.8674 84.97 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (John Doe) Tj T* ET
+Q
+Q
+q
+1 0 0 1 4 65.31 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 2 Tm /F1 8.5 Tf 10.5 TL (MR No) Tj T* ET
+Q
+Q
+q
+1 0 0 1 85.22961 64.81 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (2602-00-0001) Tj T* ET
+Q
+Q
+q
+1 0 0 1 229.6378 65.31 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 2 Tm /F1 8.5 Tf 10.5 TL (Age / Gender) Tj T* ET
+Q
+Q
+q
+1 0 0 1 310.8674 64.81 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (35 / Male) Tj T* ET
+Q
+Q
+q
+1 0 0 1 4 45.15 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 2 Tm /F1 8.5 Tf 10.5 TL (Mobile) Tj T* ET
+Q
+Q
+q
+1 0 0 1 85.22961 44.65 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (03001234567) Tj T* ET
+Q
+Q
+q
+1 0 0 1 229.6378 45.15 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 2 Tm /F1 8.5 Tf 10.5 TL (Consultant) Tj T* ET
+Q
+Q
+q
+1 0 0 1 310.8674 44.65 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (Admin User) Tj T* ET
+Q
+Q
+q
+1 0 0 1 4 19.74 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 12.5 Tm /F1 8.5 Tf 10.5 TL (Booking) Tj T* (Date/Time) Tj T* ET
+Q
+Q
+q
+1 0 0 1 85.22961 24.49 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 07:16 PM) Tj T* ET
+Q
+Q
+q
+1 0 0 1 229.6378 19.74 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 12.5 Tm /F1 8.5 Tf 10.5 TL (Reporting) Tj T* (Date/Time) Tj T* ET
+Q
+Q
+q
+1 0 0 1 310.8674 24.49 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 07:16 PM) Tj T* ET
+Q
+Q
+q
+1 0 0 1 4 4.83 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 2 Tm /F1 8.5 Tf 10.5 TL (Sample) Tj T* ET
+Q
+Q
+q
+1 0 0 1 85.22961 4.33 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (10/02/2026 05:16 PM) Tj T* ET
+Q
+Q
+q
+1 0 0 1 229.6378 4.83 cm
+q
+.419608 .447059 .501961 rg
+BT 1 0 0 1 0 2 Tm /F1 8.5 Tf 10.5 TL (Ref By) Tj T* ET
+Q
+Q
+q
+1 0 0 1 310.8674 4.33 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F2 9.5 Tf 11.5 TL (\227) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.898039 .905882 .921569 RG
+.25 w
+n 0 80.64 m 451.2756 80.64 l S
+n 0 60.48 m 451.2756 60.48 l S
+n 0 40.32 m 451.2756 40.32 l S
+n 0 20.16 m 451.2756 20.16 l S
+n 0 0 m 451.2756 0 l S
+Q
+Q
+Q
+q
+1 0 0 1 78 563.6498 cm
+Q
+q
+1 0 0 1 78 539.6498 cm
+q
+.121569 .160784 .215686 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Results) Tj T* ET
+Q
+Q
+q
+1 0 0 1 78 535.6498 cm
+Q
+q
+1 0 0 1 72 476.1498 cm
+q
+.898039 .905882 .921569 rg
+n 0 39.5 451.2756 -20 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 4 43.5 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (COMPLETE BLOOD COUNT) Tj T* ET
+Q
+Q
+.066667 .094118 .152941 rg
+q
+1 0 0 1 4 23.5 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Test/Parameter) Tj T* ET
+Q
+Q
+q
+1 0 0 1 193.5357 23.5 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Result) Tj T* ET
+Q
+Q
+q
+1 0 0 1 274.7654 23.5 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Unit) Tj T* ET
+Q
+Q
+q
+1 0 0 1 328.9184 23.5 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F2 9.5 Tf 12 TL (Reference Range) Tj T* ET
+Q
+Q
+0 0 0 rg
+q
+1 0 0 1 4 4 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Hemoglobin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 193.5357 4 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (13.2) Tj T* ET
+Q
+Q
+q
+1 0 0 1 274.7654 4 cm
+q
+.294118 .333333 .388235 rg
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (g/dL) Tj T* ET
+Q
+Q
+q
+1 0 0 1 328.9184 4 cm
+q
+.294118 .333333 .388235 rg
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (12.00 - 16.00) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.819608 .835294 .858824 RG
+.5 w
+n 0 39.5 m 451.2756 39.5 l S
+1 1 1 RG
+n 451.2756 39.5 m 451.2756 59.5 l S
+.898039 .905882 .921569 RG
+.35 w
+n 0 39.5 m 451.2756 39.5 l S
+n 0 0 m 451.2756 0 l S
+n 0 0 m 0 39.5 l S
+n 451.2756 0 m 451.2756 39.5 l S
+n 0 19.5 m 451.2756 19.5 l S
+n 189.5357 0 m 189.5357 39.5 l S
+n 270.7654 0 m 270.7654 39.5 l S
+n 324.9184 0 m 324.9184 39.5 l S
+Q
+Q
+Q
+q
+1 0 0 1 78 468.9498 cm
+Q
+q
+1 0 0 1 78 450.9498 cm
+Q
+q
+1 0 0 1 78 427.9498 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 14 Tm /F1 9 Tf 11.5 TL (Electronically verified. Laboratory results should be interpreted by a physician in correlation with clinical and) Tj T* (radiologic findings.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 78 413.5498 cm
+Q
+q
+1 0 0 1 78 389.5498 cm
+q
+.121569 .160784 .215686 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Authorized Signatories) Tj T* ET
+Q
+Q
+q
+1 0 0 1 72 348.5498 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 22.5 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Dr. Mubashir Ahmad - MBBS, M.Phil \(Biochemistry\), Consultant Pathologist) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 4 cm
+q
+.066667 .094118 .152941 rg
+BT 1 0 0 1 0 2.5 Tm /F1 9 Tf 11.5 TL (Dr. Muhammad Munaim Tahir - MBBS, M.Phil \(Hematology\), In-Charge Pathologist) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+BT /F1 9 Tf 10.8 TL ET
+.501961 .501961 .501961 rg
+BT 1 0 0 1 477.2406 43.2 Tm (Page 1 of 1) Tj T* ET
+0 0 0 rg
+ 
+endstream
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000073 00000 n 
+0000000124 00000 n 
+0000000231 00000 n 
+0000000343 00000 n 
+0000000462 00000 n 
+0000000665 00000 n 
+0000000733 00000 n 
+0000001016 00000 n 
+0000001075 00000 n 
+trailer
+<<
+/ID 
+[<5e86aea1d7519f6f5d9f3775c15cd2dd><5e86aea1d7519f6f5d9f3775c15cd2dd>]
+% ReportLab generated PDF document -- digest (http://www.reportlab.com)
+
+/Info 7 0 R
+/Root 6 0 R
+/Size 10
+>>
+startxref
+7056
+%%EOF
