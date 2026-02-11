@@ -4,7 +4,9 @@ import { laboratoryApi, orderApi, patientApi } from '../../api/services';
 import type { Order, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
 import { calculateAgeFromDob, calculateDobFromAge } from '../../utils/ageDob';
 import { formatDateDDMMYY, formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
+import { useAuth } from '../../contexts/AuthContext';
 import { useBranding } from '../../contexts/BrandingContext';
+
 import { formatCurrency } from '../../utils/currency';
 import styles from './PatientsPage.module.css';
 
@@ -129,39 +131,57 @@ export default function PatientsPage() {
         <div className={styles.detailCard}>
           {selectedPatient ? (
             <>
-              <div className={styles.detailHeader}>
-                <h2>{selectedPatient.full_name}</h2>
-                <span className={styles.badge}>{selectedPatient.patient_id}</span>
-              </div>
-              <div className={styles.detailGrid}>
-                <div>
-                  <span className={styles.detailLabel}>Mobile</span>
-                  <span className={styles.detailValue}>{selectedPatient.phone}</span>
+              <div className={styles.profileHeader}>
+                <div className={styles.profileAvatar}>
+                  {selectedPatient.full_name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .substring(0, 2)
+                    .toUpperCase()}
                 </div>
-                <div>
-                  <span className={styles.detailLabel}>Gender</span>
-                  <span className={styles.detailValue}>{selectedPatient.gender}</span>
-                </div>
-                <div>
-                  <span className={styles.detailLabel}>DOB</span>
-                  <span className={styles.detailValue}>{formatDobDisplay(selectedPatient.date_of_birth) || 'N/A'}</span>
-                </div>
-                <div>
-                  <span className={styles.detailLabel}>Age</span>
-                  <span className={styles.detailValue}>{selectedPatient.age ?? 'N/A'} years</span>
-                </div>
-                {selectedPatient.father_husband_name && (
-                  <div>
-                    <span className={styles.detailLabel}>Father/Husband</span>
-                    <span className={styles.detailValue}>{selectedPatient.father_husband_name}</span>
+                <div className={styles.profileInfo}>
+                  <h2>
+                    {selectedPatient.full_name}
+                    <span className={styles.profileBadge}>
+                      MRN: {selectedPatient.registration_number || selectedPatient.patient_id}
+                    </span>
+                  </h2>
+                  <div className={styles.profileMeta}>
+                    <span className={styles.metaItem}>
+                      {selectedPatient.gender} • {selectedPatient.age} years
+                    </span>
+                    <span className={styles.metaItem}>📱 {selectedPatient.phone}</span>
+                    {selectedPatient.date_of_birth && (
+                      <span className={styles.metaItem}>
+                        🎂 {formatDobDisplay(selectedPatient.date_of_birth)}
+                      </span>
+                    )}
+                    {selectedPatient.cnic && (
+                      <span className={styles.metaItem}>
+                        🆔 {selectedPatient.cnic}
+                      </span>
+                    )}
                   </div>
-                )}
-                {selectedPatient.cnic && (
-                  <div>
-                    <span className={styles.detailLabel}>CNIC</span>
-                    <span className={styles.detailValue}>{selectedPatient.cnic}</span>
+                  <div className={styles.quickActions}>
+                    <button
+                      onClick={() => setIsOrderModalOpen(true)}
+                      className={`${styles.actionButton} ${styles.actionButtonPrimary}`}
+                    >
+                      + New Order
+                    </button>
+                    <button
+                      className={styles.actionButton}
+                      onClick={() => {
+                        /* Edit logic would go here, reusing modal maybe? */
+                        setIsModalOpen(true);
+                        /* Ideally we'd prefill the modal, but keeping it simple for now */
+                      }}
+                    >
+                      ✏️ Edit Profile
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
 
               <div className={styles.sectionHeader}>
@@ -174,6 +194,7 @@ export default function PatientsPage() {
                   <thead>
                     <tr>
                       <th>Order ID</th>
+                      <th>Branch</th>
                       <th>Status</th>
                       <th>Amount</th>
                       <th>Date</th>
@@ -184,6 +205,9 @@ export default function PatientsPage() {
                     {orders.map((order) => (
                       <tr key={order.id}>
                         <td>{order.order_id}</td>
+                        <td style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                          {order.collection_branch_name || '-'}
+                        </td>
                         <td>{order.status.replace('_', ' ')}</td>
                         <td>{formatCurrency(order.net_amount, currency)}</td>
                         <td>{formatDateDDMMYY(order.created_at)}</td>
@@ -253,12 +277,12 @@ interface PatientFormModalProps {
 
 function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFormModalProps) {
   const [formError, setFormError] = useState<string | null>(null);
-    const [formData, setFormData] = useState({
-      full_name: '',
-      phone: '',
-      gender: 'Male' as 'Male' | 'Female' | 'Other',
-      date_of_birth: '',
-      age_years: '',
+  const [formData, setFormData] = useState({
+    full_name: '',
+    phone: '',
+    gender: 'Male' as 'Male' | 'Female' | 'Other',
+    date_of_birth: '',
+    age_years: '',
     age_months: '',
     age_days: '',
     father_husband_name: '',
@@ -464,6 +488,7 @@ function PatientFormModal({ onClose, onSubmit, isSubmitting, error }: PatientFor
 }
 
 function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; onClose: () => void; onSuccess: () => void }) {
+  const { currentBranch } = useAuth();
   const { branding } = useBranding();
   const currency = branding?.currency || 'PKR';
   const [selectedTests, setSelectedTests] = useState<number[]>([]);
@@ -523,6 +548,7 @@ function CreateOrderModal({ patient, onClose, onSuccess }: { patient: Patient; o
       panel_ids: selectedPanels,
       discount: discount || '0',
       referred_by: referredBy || undefined,
+      collection_branch: currentBranch?.id,
     });
   };
 

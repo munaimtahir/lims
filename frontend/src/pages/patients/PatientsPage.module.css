@@ -400,3 +400,106 @@
   font-size: 0.875rem;
   margin-bottom: 16px;
 }
+
+/* Profile Header Styles */
+.profileHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+}
+
+.profileAvatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.profileInfo {
+  flex: 1;
+}
+
+.profileInfo h2 {
+  margin: 0 0 6px 0;
+  font-size: 1.5rem;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profileMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: #64748b;
+  font-size: 0.875rem;
+  align-items: center;
+}
+
+.profileBadge {
+  background: #eff6ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  color: #1e40af;
+  font-weight: 600;
+  font-size: 0.8rem;
+  border: 1px solid #dbeafe;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quickActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.actionButton {
+  padding: 8px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.actionButtonPrimary {
+  background: #0f172a;
+  color: white;
+  border-color: #0f172a;
+}
+
+.actionButtonPrimary:hover {
+  background: #1e293b;
+  border-color: #1e293b;
+  color: white;
+}

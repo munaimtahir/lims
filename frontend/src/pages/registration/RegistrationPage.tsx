@@ -3,7 +3,9 @@ import type { KeyboardEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { patientApi, laboratoryApi, orderApi } from '../../api/services';
 import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 import { useBranding } from '../../contexts/BrandingContext';
+
 import { formatCurrency } from '../../utils/currency';
 import { formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
 import styles from './RegistrationPage.module.css';
@@ -93,6 +95,7 @@ const ReceiptModal = ({
 };
 
 export default function RegistrationPage() {
+  const { currentBranch } = useAuth();
   const { branding } = useBranding();
   const currency = branding?.currency || 'PKR';
 
@@ -589,7 +592,9 @@ export default function RegistrationPage() {
       discount: discountAmount,
       discount_percent: discountPercent,
       paid_amount: paidAmount,
+      paid_amount: paidAmount,
       referred_by: referredBy,
+      collection_branch: currentBranch?.id,
     };
 
     createOrderMutation.mutate(orderData);
@@ -671,6 +676,7 @@ export default function RegistrationPage() {
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h2 className={styles.sectionTitle}>
+              <span className={styles.stepBadge}>1</span>
               {selectedPatient ? 'Edit Patient Details' : 'Patient Information'}
             </h2>
             {selectedPatient && (
@@ -910,6 +916,7 @@ export default function RegistrationPage() {
         >
           <div className={styles.cardHeader}>
             <h2 className={styles.sectionTitle}>
+              <span className={styles.stepBadge}>2</span>
               Service Registration
             </h2>
           </div>

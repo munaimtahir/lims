@@ -87,8 +87,11 @@ class OrderListSerializer(serializers.ModelSerializer):
             "item_count",
             "lab_number",
             "collection_center",
+            "collection_branch_name",
         ]
         read_only_fields = fields
+
+    collection_branch_name = serializers.CharField(source="collection_branch.name", read_only=True)
 
     def get_item_count(self, obj):
         """Return the number of items in the order."""

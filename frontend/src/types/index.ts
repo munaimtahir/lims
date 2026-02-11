@@ -211,6 +211,7 @@ export interface Order {
   net_amount: string;
   is_paid: boolean;
   items: OrderItem[];
+  collection_branch_name?: string;
 }
 
 export interface OrderCreateRequest {
@@ -222,6 +223,7 @@ export interface OrderCreateRequest {
   paid_amount?: string;
   notes?: string;
   referred_by?: string;
+  collection_branch?: number;
 }
 
 export interface OrderCreateResponse extends Order {

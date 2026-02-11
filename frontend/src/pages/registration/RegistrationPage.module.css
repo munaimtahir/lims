@@ -132,6 +132,20 @@
   align-items: center;
 }
 
+.stepBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0f172a;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-right: 12px;
+}
+
 .sectionStatus {
   background: #ecfdf3;
   color: #166534;
