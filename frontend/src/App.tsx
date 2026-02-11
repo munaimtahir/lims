@@ -18,10 +18,19 @@ import { VerificationQueuePage } from './pages/review';
 import { ReportsPage } from './pages/reports';
 import { PaymentsPage } from './pages/payments';
 import { AuditLogsPage } from './pages/audit';
+
 import ReferenceRangesPage from './pages/reference-ranges';
 import SystemSettingsPage from './pages/settings';
 import RegistrationPage from './pages/registration';
+import {
+  AnalyticsOverviewPage,
+  AnalyticsPatientsPage,
+  AnalyticsTestsPage,
+  AnalyticsReferralsPage,
+  AnalyticsFinancePage
+} from './pages/analytics';
 import './App.css';
+
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -79,10 +88,19 @@ function App() {
                 <Route path="payments" element={<PaymentsPage />} />
                 <Route path="audit" element={<AuditLogsPage />} />
 
+
+                {/* Analytics */}
+                <Route path="analytics" element={<AnalyticsOverviewPage />} />
+                <Route path="analytics/patients" element={<AnalyticsPatientsPage />} />
+                <Route path="analytics/tests" element={<AnalyticsTestsPage />} />
+                <Route path="analytics/referrals" element={<AnalyticsReferralsPage />} />
+                <Route path="analytics/finance" element={<AnalyticsFinancePage />} />
+
                 {/* Settings pages */}
                 <Route path="reference-ranges" element={<ReferenceRangesPage />} />
                 <Route path="settings" element={<SystemSettingsPage />} />
               </Route>
+
 
               {/* Default redirect */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />

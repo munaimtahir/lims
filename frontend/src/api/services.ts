@@ -616,9 +616,45 @@ export const printTemplateApi = {
 /**
  * Worklist API service
  */
+
 export const worklistApi = {
   listPatients: async (params?: Record<string, unknown>) => {
     const response = await api.get<PaginatedResponse<WorklistPatient>>('/worklist/patients/', { params });
     return response.data;
   },
 };
+
+/**
+ * Analytics & Reports API service
+ */
+export const analyticsApi = {
+  overview: async (params?: Record<string, unknown>) => {
+    const response = await api.get('/reports/overview/', { params });
+    return response.data;
+  },
+  patients: async (params?: Record<string, unknown>) => {
+    const response = await api.get('/reports/patients/', { params });
+    return response.data;
+  },
+  tests: async (params?: Record<string, unknown>) => {
+    const response = await api.get('/reports/tests/', { params });
+    return response.data;
+  },
+  referrals: async (params?: Record<string, unknown>) => {
+    const response = await api.get('/reports/referrals/', { params });
+    return response.data;
+  },
+  finance: async (params?: Record<string, unknown>) => {
+    const response = await api.get('/reports/finance/', { params });
+    return response.data;
+  },
+  exportReport: async (reportKey: string, format: 'csv' | 'xlsx', params?: Record<string, unknown>) => {
+    const response = await api.post(
+      '/reports/export/',
+      { report_key: reportKey, format, params },
+      { responseType: 'blob' }
+    );
+    return response.data;
+  },
+};
+

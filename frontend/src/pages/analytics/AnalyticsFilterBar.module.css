@@ -1,0 +1,113 @@
+.filterBar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    border: 1px solid #e2e8f0;
+}
+
+.fieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.input {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+    min-width: 140px;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.toggleLabel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #334155;
+    user-select: none;
+    padding-top: 18px;
+    /* Align with inputs */
+}
+
+.checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.actionParams {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.applyButton {
+    padding: 10px 20px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.applyButton:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.exportButton {
+    padding: 10px 16px;
+    background: white;
+    color: #3b82f6;
+    border: 1px solid #3b82f6;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+}
+
+.exportButton:hover {
+    background: #eff6ff;
+}
+
+/* Glassmorphism accent if needed */
+.glass {
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.8);
+}

@@ -230,4 +230,35 @@ class Report(models.Model):
             template_name=self.template_name,
         )
 
+
         return amended_report
+
+
+class ReportExportLog(models.Model):
+    """
+    Log of all report exports for audit purposes.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="report_exports",
+    )
+    report_key = models.CharField(max_length=50, help_text="Type of report (e.g., overview, finance)")
+    filters_json = models.JSONField(default=dict, help_text="Filters applied to the report")
+    file_format = models.CharField(max_length=10, choices=[("csv", "CSV"), ("xlsx", "Excel")])
+    generated_at = models.DateTimeField(auto_now_add=True)
+    row_count = models.IntegerField(default=0)
+    file_path = models.CharField(max_length=255, blank=True, null=True, help_text="Path to stored file if any")
+
+    class Meta:
+        ordering = ["-generated_at"]
+        indexes = [
+            models.Index(fields=["report_key", "generated_at"]),
+            models.Index(fields=["user"]),
+        ]
+
+    def __str__(self):
+        return f"{self.report_key} exported by {self.user} at {self.generated_at}"
+

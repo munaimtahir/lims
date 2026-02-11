@@ -38,11 +38,20 @@ export default function DashboardLayout() {
           { to: '/dashboard/patients-worklist', label: 'Worklist' },
           { to: '/dashboard/samples', label: 'Samples' },
         ]);
+
         addSection('Results', [
           { to: '/dashboard/results', label: 'Result Entry' },
           { to: '/dashboard/verification', label: 'Verification' },
-          { to: '/dashboard/reports', label: 'Reports' },
+          { to: '/dashboard/reports', label: 'My Reports' },
         ]);
+        addSection('Analytics', [
+          { to: '/dashboard/analytics', label: 'Overview' },
+          { to: '/dashboard/analytics/patients', label: 'Patients' },
+          { to: '/dashboard/analytics/tests', label: 'Tests' },
+          { to: '/dashboard/analytics/referrals', label: 'Referrals' },
+          { to: '/dashboard/analytics/finance', label: 'Finance' },
+        ]);
+
         addSection('Administration', [
           { to: '/dashboard/settings?tab=ui', label: 'UI Update' },
           { to: '/dashboard/settings?tab=users', label: 'User Management' },
@@ -81,9 +90,17 @@ export default function DashboardLayout() {
           { to: '/dashboard/reports', label: 'Reports' },
         ]);
         break;
+
       case 'Manager':
+        addSection('Analytics', [
+          { to: '/dashboard/analytics', label: 'Overview' },
+          { to: '/dashboard/analytics/patients', label: 'Patients' },
+          { to: '/dashboard/analytics/tests', label: 'Tests' },
+          { to: '/dashboard/analytics/referrals', label: 'Referrals' },
+          { to: '/dashboard/analytics/finance', label: 'Finance' },
+        ]);
         addSection('Results', [
-          { to: '/dashboard/reports', label: 'Reports' },
+          { to: '/dashboard/reports', label: 'My Reports' },
         ]);
         addSection('Administration', [
           { to: '/dashboard/settings?tab=users', label: 'User Management' },
@@ -96,6 +113,7 @@ export default function DashboardLayout() {
         ]);
         break;
     }
+
 
     // Filter out restricted sections based on branch capability
     if (currentBranch?.capability_mode === 'COLLECT_ONLY') {
