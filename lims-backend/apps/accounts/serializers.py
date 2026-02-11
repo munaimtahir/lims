@@ -5,7 +5,27 @@ Serializers for User authentication and management.
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
-from .models import User
+from apps.core.models import Branch
+from .models import User, UserBranchMembership
+
+
+
+class BranchSerializer(serializers.ModelSerializer):
+    """Serializer for Branch details."""
+    
+    class Meta:
+        model = Branch
+        fields = ["id", "code", "name", "capability_mode", "is_hq", "is_active"]
+
+
+class UserBranchMembershipSerializer(serializers.ModelSerializer):
+    """Serializer for User-Branch membership."""
+    
+    branch = BranchSerializer(read_only=True)
+    
+    class Meta:
+        model = UserBranchMembership
+        fields = ["branch", "role", "is_active"]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -14,6 +34,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     Serializes all essential user fields for display.
     """
+    
+    branch_memberships = UserBranchMembershipSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
@@ -26,6 +48,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
             "date_joined",
             "last_login",
+            "branch_memberships",
         ]
         read_only_fields = ["id", "date_joined", "last_login"]
 

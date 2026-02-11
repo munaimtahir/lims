@@ -688,7 +688,7 @@ export default function RegistrationPage() {
                 <h3 className={styles.sectionLabel}>Patient Identity</h3>
                 {selectedPatient && (
                   <div className={styles.formGroup}>
-                    <label>Registration #</label>
+                    <label>MRN</label>
                     <input
                       type="text"
                       readOnly
@@ -808,8 +808,8 @@ export default function RegistrationPage() {
                     />
                     {showSuggestions && patientSuggestions.length > 0 && (
                       <div className={styles.suggestions}>
-                        <div className={styles.suggestionHeader}>
-                          Found {patientSuggestions.length} existing patient{patientSuggestions.length > 1 ? 's' : ''} with this number
+                        <div className={styles.suggestionHeader} style={{ color: '#d97706', background: '#fffbeb', borderBottom: '1px solid #fcd34d' }}>
+                          ⚠️ Possible Match: Found {patientSuggestions.length} existing patient{patientSuggestions.length > 1 ? 's' : ''}
                         </div>
                         {patientSuggestions.map((patient, index) => (
                           <div

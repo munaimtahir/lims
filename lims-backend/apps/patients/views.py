@@ -195,6 +195,73 @@ class PatientViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"])
+    def search(self, request):
+        """
+        Global patient search with refined matching.
+        """
+        q = request.query_params.get("q", "").strip()
+        if not q:
+             return Response({"success": True, "data": []})
+
+        # Base filter
+        qs = Patient.objects.filter(tenant=user_tenant(request.user))
+        
+        # Build complex query
+        from django.db.models import Q
+        
+        # Determine if query looks like a phone number (digits only, > 7 chars)
+        import re
+        is_phone = re.match(r'^[0-9+]{8,}$', q)
+        
+        if is_phone:
+             # If it looks like a phone number, prioritize phone search
+             qs = qs.filter(Q(phone__icontains=q) | Q(whatsapp_number__icontains=q))
+        else:
+             # General search
+             qs = qs.filter(
+                 Q(mrn__icontains=q) |
+                 Q(registration_number__icontains=q) |
+                 Q(patient_id__icontains=q) |
+                 Q(full_name__icontains=q) |
+                 Q(phone__icontains=q) |
+                 Q(cnic__icontains=q) |
+                 Q(national_id__icontains=q)
+             )
+
+        # distinct() is important if joins were involved, but here we are filtering on flat fields mostly.
+        # However, if we joined orders it would be needed.
+        
+        patients = qs.distinct().order_by("-created_at")[:20]
+        
+        results = []
+        for p in patients:
+             # For last visit info, we need to look at orders
+             
+             last_order = p.orders.order_by("-created_at").first()
+             
+             last_branch_code = None
+             if last_order:
+                 # Check if order has collection_branch
+                 if hasattr(last_order, 'collection_branch') and last_order.collection_branch:
+                     last_branch_code = last_order.collection_branch.code
+                 elif hasattr(last_order, 'branch') and last_order.branch:
+                     last_branch_code = last_order.branch.code
+
+             results.append({
+                 "id": p.id,
+                 "mrn": p.mrn or p.registration_number or p.patient_id,
+                 "name": p.get_full_name(),
+                 "dob": p.date_of_birth,
+                 "age": p.age,
+                 "gender": p.gender,
+                 "mobile": p.phone,
+                 "last_visit_branch_code": last_branch_code,
+                 "last_visit_date": p.last_visit,
+             })
+        
+        return Response({"success": True, "data": results})
+
+    @action(detail=False, methods=["get"])
     def lookup(self, request):
         """
         Lookup patients by mobile number for quick registration search.

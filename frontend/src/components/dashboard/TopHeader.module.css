@@ -1,0 +1,181 @@
+.header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 64px;
+    width: calc(100% - 264px);
+    /* Subtract sidebar width */
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 40;
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.branchChip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.branchChip:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+.branchChipActive {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+
+.branchCode {
+    font-family: monospace;
+    font-weight: 700;
+    background: #cbd5e1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #1e293b;
+    font-size: 0.75rem;
+}
+
+.branchMenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 240px;
+    z-index: 50;
+    padding: 4px;
+}
+
+.branchMenuItem {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #475569;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.branchMenuItem:hover {
+    background: #f1f5f9;
+}
+
+.searchContainer {
+    position: relative;
+    width: 320px;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    width: 16px;
+    height: 16px;
+}
+
+.searchResults {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 60;
+}
+
+.searchResultItem {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.searchResultItem:last-child {
+    border-bottom: none;
+}
+
+.searchResultItem:hover,
+.searchResultItem.active {
+    background: #f8fafc;
+}
+
+.patientName {
+    font-weight: 600;
+    color: #0f172a;
+    display: flex;
+    justify-content: space-between;
+}
+
+.mrn {
+    font-family: monospace;
+    background: #e2e8f0;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.patientDetails {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 4px;
+    display: flex;
+    gap: 12px;
+}
+
+.mobileWarning {
+    color: #ea580c;
+    font-weight: 500;
+}

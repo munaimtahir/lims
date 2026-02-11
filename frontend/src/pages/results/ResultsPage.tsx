@@ -603,6 +603,44 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
 };
 
 export default function ResultsPage() {
+  const { currentBranch } = useAuth();
+
+  if (currentBranch?.capability_mode === 'COLLECT_ONLY') {
+    return (
+      <div style={{
+        padding: '40px',
+        textAlign: 'center',
+        maxWidth: '600px',
+        margin: '40px auto',
+        background: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+      }}>
+        <h1 style={{ color: '#ea580c', marginBottom: '16px' }}>Access Restricted</h1>
+        <p style={{ color: '#64748b', fontSize: '1.1rem' }}>
+          This branch <strong>({currentBranch.name})</strong> is designated as <strong>Collection Only</strong>.
+        </p>
+        <p style={{ color: '#64748b', marginTop: '12px' }}>
+          Results entry and verification must be performed at a Processing Branch (HQ).
+        </p>
+        <button
+          onClick={() => window.location.href = '/dashboard'}
+          style={{
+            marginTop: '24px',
+            padding: '10px 20px',
+            background: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer'
+          }}
+        >
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
+
   const [searchParams, setSearchParams] = useSearchParams();
   const orderItemIdStr = searchParams.get('orderItemId') || searchParams.get('orderItem');
   const orderItemId = orderItemIdStr ? Number(orderItemIdStr) : null;

@@ -1,10 +1,12 @@
 import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBranding } from '../../contexts/BrandingContext';
+import { TopHeader } from './TopHeader';
 import styles from './DashboardLayout.module.css';
 
+
 export default function DashboardLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, currentBranch } = useAuth();
   const { branding } = useBranding();
   const navigate = useNavigate();
 
@@ -95,6 +97,11 @@ export default function DashboardLayout() {
         break;
     }
 
+    // Filter out restricted sections based on branch capability
+    if (currentBranch?.capability_mode === 'COLLECT_ONLY') {
+      return items.filter(item => item.label !== 'Results');
+    }
+
     return items;
   };
 
@@ -157,6 +164,7 @@ export default function DashboardLayout() {
       </nav>
 
       <main className={styles.main} data-testid="app-ready">
+        <TopHeader />
         <Outlet />
       </main>
     </div>

@@ -10,6 +10,22 @@ export interface User {
   is_active: boolean;
   date_joined: string;
   last_login: string | null;
+  branch_memberships: UserBranchMembership[];
+}
+
+export interface Branch {
+  id: number;
+  code: string;
+  name: string;
+  capability_mode: 'COLLECT_ONLY' | 'COLLECT_AND_PROCESS' | 'HQ_PROCESSING';
+  is_hq: boolean;
+  is_active: boolean;
+}
+
+export interface UserBranchMembership {
+  branch: Branch;
+  role: 'MEMBER' | 'SUPERVISOR' | 'ADMIN';
+  is_active: boolean;
 }
 
 export type UserRole =
@@ -42,6 +58,8 @@ export interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  currentBranch: Branch | null;
+  setCurrentBranch: (branch: Branch) => void;
 }
 
 /**

@@ -63,6 +63,13 @@ export const patientApi = {
     return response.data;
   },
 
+  globalSearch: async (query: string) => {
+    const response = await api.get<{ success: boolean, data: any[] }>('/patients/search/', {
+      params: { q: query },
+    });
+    return response.data;
+  },
+
   lookup: async (mobile: string) => {
     const response = await api.get<ApiResponse<PatientLookupResult[]>>('/patients/lookup/', {
       params: { mobile },
