@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, type KeyboardEvent } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { resultApi, orderApi } from '../../api/services/index';
+import apiClient from '../../api/client';
 import { useAuth } from '../../contexts';
 import type { TestResult } from '../../types';
 import styles from './ResultsPage.module.css';
@@ -33,6 +34,16 @@ interface WorklistOrderItem {
   patient_name?: string;
   patient_age?: number;
   patient_gender?: string;
+}
+
+interface AuditEvent {
+  id: number;
+  created_at?: string;
+  actor_name?: string;
+  action: string;
+  before?: Record<string, unknown> | null;
+  after?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
@@ -175,6 +186,7 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
           </div>
         )}
       </div>
+
     </div>
   );
 };
@@ -183,8 +195,11 @@ const useResultEntry = (orderItemId: number) => {
   const queryClient = useQueryClient();
   const [results, setResults] = useState<Record<number, string>>({});
   const [remarks, setRemarks] = useState<Record<number, string>>({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
+  const lastSavedSnapshotRef = useRef<string>('');
+  const draftStorageKey = `lims:results:draft:${orderItemId}`;
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ type, message });
@@ -215,11 +230,52 @@ const useResultEntry = (orderItemId: number) => {
         initialResults[r.test_parameter] = value;
         initialRemarks[r.test_parameter] = r.remarks || '';
       });
-      setResults(initialResults);
-      setRemarks(initialRemarks);
+      const storedRaw = localStorage.getItem(draftStorageKey);
+      if (storedRaw) {
+        try {
+          const parsed = JSON.parse(storedRaw) as { results?: Record<number, string>; remarks?: Record<number, string> };
+          setResults(parsed.results || initialResults);
+          setRemarks(parsed.remarks || initialRemarks);
+          showToast('success', 'Recovered draft from local autosave.');
+        } catch {
+          setResults(initialResults);
+          setRemarks(initialRemarks);
+        }
+      } else {
+        setResults(initialResults);
+        setRemarks(initialRemarks);
+      }
+      lastSavedSnapshotRef.current = JSON.stringify({ results: initialResults, remarks: initialRemarks });
       initializedRef.current = true;
     }
-  }, [existingResultsData]);
+  }, [existingResultsData, draftStorageKey]);
+
+  useEffect(() => {
+    if (!initializedRef.current) return;
+    const snapshot = JSON.stringify({ results, remarks });
+    setHasUnsavedChanges(snapshot !== lastSavedSnapshotRef.current);
+  }, [results, remarks]);
+
+  useEffect(() => {
+    if (!initializedRef.current) return;
+    const intervalId = window.setInterval(() => {
+      const snapshot = JSON.stringify({ results, remarks });
+      if (snapshot !== lastSavedSnapshotRef.current) {
+        localStorage.setItem(draftStorageKey, snapshot);
+      }
+    }, 10000);
+    return () => window.clearInterval(intervalId);
+  }, [results, remarks, draftStorageKey]);
+
+  useEffect(() => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   const saveMutation = useMutation({
     mutationFn: async (resultsToSave: TestResult[]) => {
@@ -238,6 +294,9 @@ const useResultEntry = (orderItemId: number) => {
     },
     onSuccess: () => {
       showToast('success', 'Results saved.');
+      lastSavedSnapshotRef.current = JSON.stringify({ results, remarks });
+      setHasUnsavedChanges(false);
+      localStorage.removeItem(draftStorageKey);
       queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
       queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
     },
@@ -306,6 +365,7 @@ const useResultEntry = (orderItemId: number) => {
     saveMutation,
     verifyMutation,
     handleKeyDown,
+    hasUnsavedChanges,
     toast,
     showToast,
   };
@@ -328,12 +388,15 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
     saveMutation,
     verifyMutation,
     handleKeyDown,
+    hasUnsavedChanges,
     toast,
     showToast,
   } = useResultEntry(orderItemId);
 
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [, setRetryCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<'entry' | 'audit'>('entry');
+  const [expandedAuditId, setExpandedAuditId] = useState<number | null>(null);
   const canVerify = user?.role === 'Admin' || user?.role === 'Pathologist';
 
   const { data: orderItemDetails, isLoading: isLoadingDetails, isError: isDetailsError, refetch: refetchDetails } = useQuery({
@@ -359,6 +422,33 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
     const allItems = worklistData.data.results as WorklistOrderItem[];
     return allItems.filter(item => item.order?.patient?.id === patientId && item.id !== orderItemId);
   }, [worklistData, patientId, orderItemId]);
+
+  const { data: auditData, isLoading: isAuditLoading } = useQuery({
+    queryKey: ['result-audit', orderItemId],
+    queryFn: async () => {
+      const response = await apiClient.get<{ results: AuditEvent[] }>(
+        '/audit/',
+        { params: { entity_type: 'result', page_size: 100 } }
+      );
+      return response.data.results || [];
+    },
+    enabled: activeTab === 'audit',
+  });
+
+  const resultAuditEvents = useMemo(() => {
+    const rows = Array.isArray(auditData) ? auditData : [];
+    return rows.filter((row) => Number(row?.metadata?.order_item_id) === orderItemId);
+  }, [auditData, orderItemId]);
+
+  const guardNavigation = (action: () => void) => {
+    if (
+      hasUnsavedChanges &&
+      !window.confirm('You have unsaved changes. Leave this page and discard draft?')
+    ) {
+      return;
+    }
+    action();
+  };
 
   // Timeout detection
   useEffect(() => {
@@ -417,7 +507,7 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
         <div className={styles.errorContainer}>
           <h2>Loading Timeout</h2>
           <button className={styles.retryButton} onClick={handleRetry}>Retry</button>
-          <button className={styles.backButton} onClick={onBack}>Back</button>
+          <button className={styles.backButton} onClick={() => guardNavigation(onBack)}>Back</button>
         </div>
       </div>
     );
@@ -466,7 +556,7 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
           {toast.message}
         </div>
       )}
-      <button className={styles.backButton} onClick={onBack}>
+      <button className={styles.backButton} onClick={() => guardNavigation(onBack)}>
         &larr; Back to Worklist
       </button>
 
@@ -479,7 +569,7 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
           {siblingItems.map(item => (
             <button
               key={item.id}
-              onClick={() => onChangeItem(item.id)}
+              onClick={() => guardNavigation(() => onChangeItem(item.id))}
               style={{
                 padding: '8px 16px',
                 background: '#f1f5f9',
@@ -510,6 +600,32 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
         )}
       </div>
 
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+        <button
+          type="button"
+          className={styles.saveButton}
+          style={{ opacity: activeTab === 'entry' ? 1 : 0.7 }}
+          onClick={() => setActiveTab('entry')}
+        >
+          Entry
+        </button>
+        <button
+          type="button"
+          className={styles.verifyMainButton}
+          style={{ opacity: activeTab === 'audit' ? 1 : 0.7 }}
+          onClick={() => setActiveTab('audit')}
+        >
+          Audit
+        </button>
+        {hasUnsavedChanges && (
+          <span style={{ alignSelf: 'center', color: '#b45309', fontWeight: 600 }}>
+            Unsaved changes
+          </span>
+        )}
+      </div>
+
+      {activeTab === 'entry' ? (
+      <>
       <div className={styles.stickyActionBar} style={{ top: '0', position: 'sticky', zIndex: 10, background: 'white', padding: '10px 0', borderBottom: '1px solid #e2e8f0', marginBottom: '16px' }}>
         {!allVerified && (
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
@@ -598,6 +714,51 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
           </table>
         </div>
       </div>
+      </>
+      ) : (
+        <div className={styles.form}>
+          {isAuditLoading ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.spinner}></div>
+              <p>Loading audit events...</p>
+            </div>
+          ) : resultAuditEvents.length === 0 ? (
+            <div className={styles.message}>No audit events found for this result entry.</div>
+          ) : (
+            <div style={{ display: 'grid', gap: '10px' }}>
+              {resultAuditEvents.map((event) => (
+                <div key={event.id} className={styles.accordionItem} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <strong>{event.action}</strong>
+                      <div style={{ fontSize: 12, color: '#475569' }}>
+                        {event.actor_name || 'System'} • {new Date(event.created_at || '').toLocaleString()}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.backButton}
+                      onClick={() => setExpandedAuditId(expandedAuditId === event.id ? null : event.id)}
+                    >
+                      {expandedAuditId === event.id ? 'Hide Delta' : 'Show Delta'}
+                    </button>
+                  </div>
+                  {expandedAuditId === event.id && (
+                    <div style={{ marginTop: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                      <pre style={{ margin: 0, background: '#f8fafc', padding: 10, borderRadius: 6, overflowX: 'auto' }}>
+                        {JSON.stringify(event.before || {}, null, 2)}
+                      </pre>
+                      <pre style={{ margin: 0, background: '#f0fdf4', padding: 10, borderRadius: 6, overflowX: 'auto' }}>
+                        {JSON.stringify(event.after || {}, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div >
   );
 };

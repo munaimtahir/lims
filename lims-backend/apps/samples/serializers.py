@@ -103,7 +103,7 @@ class SampleSerializer(serializers.ModelSerializer):
                     f"Invalid transition from {instance.status} to {new_status}."
                 )
 
-        # Guard collected/received mutations: allow COLLECTED -> RECEIVED for lab techs, else Admin/Manager
+        # Guard collected/received mutations: only COLLECTED -> RECEIVED transition is allowed
         if instance.status == SampleStatus.COLLECTED and new_status == SampleStatus.RECEIVED:
             if not (
                 getattr(user, "is_admin", False)
@@ -112,10 +112,7 @@ class SampleSerializer(serializers.ModelSerializer):
             ):
                 raise ValidationError("Only lab technician/manager/admin may mark as received.")
         elif instance.status in [SampleStatus.COLLECTED, SampleStatus.RECEIVED]:
-            if not (getattr(user, "is_admin", False) or getattr(user, "is_manager", False)):
-                raise ValidationError(
-                    "Collected/received samples can only be changed by Admin or Manager."
-                )
+            raise ValidationError("Edits are blocked after COLLECTED/RECEIVED.")
         if new_status:
             if (
                 new_status == SampleStatus.COLLECTED

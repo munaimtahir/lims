@@ -1,0 +1,7 @@
+2455:seed_time_s 2.27
+2456:path /api/v1/patients/ status 200 avg_ms 88.12 max_ms 379.11
+2457:path /api/v1/worklist/patients/ status 200 avg_ms 25.89 max_ms 33.96
+2458:path /api/v1/samples/pending_collections/ status 200 avg_ms 6.56 max_ms 16.37
+2459:path /api/v1/results/worklist/ status 200 avg_ms 13.97 max_ms 33.13
+2460:concurrency_batch_ms 134.21
+2461:concurrency_calls 10

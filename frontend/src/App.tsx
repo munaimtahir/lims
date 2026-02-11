@@ -18,6 +18,7 @@ import { VerificationQueuePage } from './pages/review';
 import { ReportsPage } from './pages/reports';
 import { PaymentsPage } from './pages/payments';
 import { AuditLogsPage } from './pages/audit';
+import { BackupsPage } from './pages/backups';
 
 import ReferenceRangesPage from './pages/reference-ranges';
 import SystemSettingsPage from './pages/settings';
@@ -88,6 +89,14 @@ function App() {
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="payments" element={<PaymentsPage />} />
                 <Route path="audit" element={<AuditLogsPage />} />
+                <Route
+                  path="backups"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Pathologist']}>
+                      <BackupsPage />
+                    </ProtectedRoute>
+                  }
+                />
 
 
                 {/* Analytics */}

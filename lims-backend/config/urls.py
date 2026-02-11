@@ -36,6 +36,7 @@ urlpatterns = [
     path("api/v1/audit/", include("apps.audit.urls")),
     path("api/v1/dashboard/", include("apps.dashboard.urls")),
     path("api/v1/core/", include("apps.core.urls")),
+    path("api/v1/backups/", include("apps.backups.urls")),
     path(
         "api/v1/worklist/patients/",
         WorklistPatientsView.as_view(),

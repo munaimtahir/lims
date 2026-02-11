@@ -1,5 +1,6 @@
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -8,6 +9,7 @@ from apps.core.authz import filter_queryset_for_branches, is_tenant_admin, user_
 
 from .models import Sample, SampleStatus
 from .serializers import SampleSerializer
+from .services import reject_sample, transition_sample_state
 
 
 class SampleViewSet(viewsets.ModelViewSet):
@@ -33,7 +35,7 @@ class SampleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         tenant = user_tenant(self.request.user)
-        qs = qs.filter(tenant=tenant)
+        qs = qs.filter(Q(tenant=tenant) | Q(tenant__isnull=True))
         if not is_tenant_admin(self.request.user):
             qs = filter_queryset_for_branches(qs, "collected_at_branch", self.request.user)
         return qs.select_related("order_item__order__collection_branch")
@@ -67,7 +69,14 @@ class SampleViewSet(viewsets.ModelViewSet):
         """
         Perform the update and trigger side effects like creating test results.
         """
-        instance = serializer.save()
+        instance = serializer.instance
+        requested_status = serializer.validated_data.get("status")
+        if requested_status:
+            instance = transition_sample_state(
+                instance, requested_status, self.request.user, source="api"
+            )
+        else:
+            instance = serializer.save()
         if instance.status in [SampleStatus.COLLECTED, SampleStatus.RECEIVED]:
             from apps.results.services.expected_results import ensure_test_results
 
@@ -78,3 +87,16 @@ class SampleViewSet(viewsets.ModelViewSet):
         if instance.status in [SampleStatus.COLLECTED, SampleStatus.RECEIVED]:
             raise ValidationError("Collected/received samples cannot be deleted.")
         return super().perform_destroy(instance)
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        sample = self.get_object()
+        reason = request.data.get("reason")
+        try:
+            sample = reject_sample(sample, reason, request.user, source="api")
+            return Response(self.get_serializer(sample).data, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
+            )

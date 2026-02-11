@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { reportApi } from '../../api/services';
+import apiClient from '../../api/client';
 import type { Report } from '../../types';
 import styles from './ReportsPage.module.css';
 
 export default function ReportsPage() {
     const [retryCount, setRetryCount] = useState(0);
     const [showTimeoutError, setShowTimeoutError] = useState(false);
+    const [activeTab, setActiveTab] = useState<'reports' | 'audit'>('reports');
+    const [auditReportId, setAuditReportId] = useState<number | null>(null);
 
     const {
         data: reportsData,
@@ -92,14 +95,52 @@ export default function ReportsPage() {
     // Safeguard against undefined results
     const reports = Array.isArray(reportResults) ? reportResults : [];
 
+    const { data: auditEvents, isLoading: isAuditLoading } = useQuery({
+        queryKey: ['report-audit', auditReportId],
+        queryFn: async () => {
+            if (!auditReportId) return [];
+            const response = await apiClient.get<{ results: Array<{ id: number; created_at?: string; actor_name?: string; action: string; before?: unknown; after?: unknown; }> }>('/audit/', {
+                params: { entity_type: 'report', entity_id: auditReportId }
+            });
+            return response.data.results || [];
+        },
+        enabled: activeTab === 'audit' && !!auditReportId,
+    });
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
                 <h1>Reports</h1>
                 <p className={styles.subtitle}>Generated laboratory reports</p>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                    <button className={styles.retryButton} onClick={() => setActiveTab('reports')}>Reports</button>
+                    <button className={styles.retryButton} onClick={() => setActiveTab('audit')}>Audit</button>
+                </div>
             </div>
 
-            {reports.length === 0 ? (
+            {activeTab === 'audit' ? (
+                <div className={styles.reportsList}>
+                    {!auditReportId && <p>Select a report to view audit.</p>}
+                    {isAuditLoading ? <p>Loading audit...</p> : (
+                        (auditEvents || []).map((event) => (
+                            <div key={event.id} className={styles.reportCard}>
+                                <div className={styles.reportHeader}>
+                                    <div className={styles.reportInfo}>
+                                        <h3>{event.action}</h3>
+                                        <span className={styles.orderId}>
+                                            {(event.actor_name || 'System')} • {event.created_at ? new Date(event.created_at).toLocaleString() : ''}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className={styles.reportDetails}>
+                                    <pre className={styles.noFile}>{JSON.stringify(event.before || {}, null, 2)}</pre>
+                                    <pre className={styles.noFile}>{JSON.stringify(event.after || {}, null, 2)}</pre>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            ) : reports.length === 0 ? (
                 <div className={styles.emptyState}>
                     <p>📄 No reports generated yet</p>
                     {/* Add a manual refresh here just in case */}
@@ -155,6 +196,15 @@ export default function ReportsPage() {
                                 ) : (
                                     <span className={styles.noFile}>No File</span>
                                 )}
+                                <button
+                                    className={styles.downloadButton}
+                                    onClick={() => {
+                                        setAuditReportId(report.id || null);
+                                        setActiveTab('audit');
+                                    }}
+                                >
+                                    Audit
+                                </button>
                             </div>
                         </div>
                     ))}

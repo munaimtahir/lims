@@ -10,6 +10,7 @@ from apps.orders.models import Order
 
 from .models import Report, ReportStatus
 from .serializers import ReportSerializer
+from .services import transition_report_state
 from .utils import generate_pdf_report
 
 
@@ -32,6 +33,15 @@ class ReportViewSet(viewsets.ModelViewSet):
         "order__patient__last_name",
     ]
     ordering_fields = ["generated_at"]
+
+    def destroy(self, request, *args, **kwargs):
+        report = self.get_object()
+        if report.status in [ReportStatus.FINAL, ReportStatus.AMENDED]:
+            return Response(
+                {"detail": "FINAL/AMENDED reports cannot be deleted."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=["get"])
     def list_reports(self, request):
@@ -68,14 +78,14 @@ class ReportViewSet(viewsets.ModelViewSet):
             FileResponse: The PDF file response.
         """
         report = self.get_object()
-        if report.status not in [ReportStatus.FINAL, ReportStatus.AMENDED]:
+        if (report.status or "").upper() not in [ReportStatus.FINAL, ReportStatus.AMENDED]:
             return Response(
-                {"error": "Report is not final or amended; download blocked."},
+                {"detail": "Report is not final or amended; download blocked."},
                 status=status.HTTP_403_FORBIDDEN,
             )
         if not report.report_file:
             return Response(
-                {"error": "Report file not found"}, status=status.HTTP_404_NOT_FOUND
+                {"detail": "Report file not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
         return FileResponse(
@@ -152,38 +162,27 @@ class ReportViewSet(viewsets.ModelViewSet):
 
         if not reason:
             return Response(
-                {"error": "Amendment reason is required"},
+                {"detail": "Amendment reason is required."},
                 status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Check permissions (only pathologists/admins can create amendments)
-        if not (request.user.is_pathologist or request.user.is_admin):
-            return Response(
-                {"error": "Only pathologists can create report amendments"},
-                status=status.HTTP_403_FORBIDDEN,
             )
 
         # Generate new PDF for amended report
         try:
-            pdf_content = generate_pdf_report(
-                report.order.id,
+            amended_report = transition_report_state(
+                report,
+                ReportStatus.AMENDED,
+                request.user,
+                source="api",
+                reason=reason,
                 lab_name=request.data.get("lab_name", "Laboratory"),
                 lab_address=request.data.get("lab_address", ""),
                 lab_phone=request.data.get("lab_phone", ""),
                 lab_email=request.data.get("lab_email", ""),
             )
 
-            # Create amended report
-            amended_report = report.create_amendment(reason, request.user)
-
-            # Save PDF file
-            filename = f"Report_Amended_{amended_report.report_number}.pdf"
-            amended_report.report_file.save(filename, ContentFile(pdf_content))
-            amended_report.save()
-
             return Response(
                 {
-                    "status": "Report amended successfully",
+                    "detail": "Report amended successfully.",
                     "original_report": self.get_serializer(report).data,
                     "amended_report": self.get_serializer(amended_report).data,
                 },
@@ -191,8 +190,8 @@ class ReportViewSet(viewsets.ModelViewSet):
             )
         except Exception as e:
             return Response(
-                {"error": f"Failed to create amendment: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {"detail": f"Failed to create amendment: {str(e)}"},
+                status=getattr(e, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),
             )
 
     @action(detail=False, methods=["get"])
@@ -210,7 +209,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         patient_id = request.query_params.get("patient_id")
         if not patient_id:
             return Response(
-                {"error": "patient_id is required"},
+                {"detail": "patient_id is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -244,7 +243,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         report_id = request.query_params.get("report_id")
         if not report_id:
             return Response(
-                {"error": "report_id is required"},
+                {"detail": "report_id is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -252,7 +251,7 @@ class ReportViewSet(viewsets.ModelViewSet):
             original_report = Report.objects.get(id=report_id)
         except Report.DoesNotExist:
             return Response(
-                {"error": "Report not found"},
+                {"detail": "Report not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -288,14 +287,14 @@ class ReportViewSet(viewsets.ModelViewSet):
 
         if not signature_file:
             return Response(
-                {"error": "Signature file is required"},
+                {"detail": "Signature file is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         if signature_type == "pathologist":
             if not (request.user.is_pathologist or request.user.is_admin):
                 return Response(
-                    {"error": "Only pathologists can upload pathologist signatures"},
+                    {"detail": "Only pathologists can upload pathologist signatures."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
             report.pathologist_signature = signature_file
@@ -304,15 +303,13 @@ class ReportViewSet(viewsets.ModelViewSet):
         elif signature_type == "technician":
             if not (request.user.is_lab_technician or request.user.is_admin):
                 return Response(
-                    {"error": "Only lab technicians can upload technician signatures"},
+                    {"detail": "Only lab technicians can upload technician signatures."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
             report.technician_signature = signature_file
         else:
             return Response(
-                {
-                    "error": 'Invalid signature_type. Must be "pathologist" or "technician"'
-                },
+                {"detail": 'Invalid signature_type. Must be "pathologist" or "technician".'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -333,7 +330,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         order_id = request.data.get("order_id")
         if not order_id:
             return Response(
-                {"error": "order_id is required"}, status=status.HTTP_400_BAD_REQUEST
+                {"detail": "order_id is required."}, status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -345,7 +342,7 @@ class ReportViewSet(viewsets.ModelViewSet):
                     order = Order.objects.get(order_id=order_id)
                 except Order.DoesNotExist:
                     return Response(
-                        {"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND
+                        {"detail": "Order not found."}, status=status.HTTP_404_NOT_FOUND
                     )
 
             # Check if report already exists
@@ -356,13 +353,13 @@ class ReportViewSet(viewsets.ModelViewSet):
                 if request.data.get("regenerate", False):
                     return Response(
                         {
-                            "error": "Final report already exists; regeneration is blocked to prevent overwrite."
+                            "detail": "Final report already exists; regeneration is blocked to prevent overwrite."
                         },
                         status=status.HTTP_409_CONFLICT,
                     )
                 return Response(
                     {
-                        "message": "Report already exists",
+                        "detail": "Report already exists.",
                         "report": ReportSerializer(existing_report).data,
                     },
                     status=status.HTTP_200_OK,
@@ -388,13 +385,13 @@ class ReportViewSet(viewsets.ModelViewSet):
 
             filename = f"Report_{order.order_id}_{order.id}.pdf"
             report.report_file.save(filename, ContentFile(pdf_content))
-            report.status = (
-                ReportStatus.FINAL
-                if request.data.get("is_final", True)
-                else ReportStatus.DRAFT
-            )
+            report.status = ReportStatus.DRAFT
             report.template_name = request.data.get("template_name", "default")
             report.save()
+            if request.data.get("is_final", True):
+                report = transition_report_state(
+                    report, ReportStatus.FINAL, request.user, source="api"
+                )
 
             return Response(
                 ReportSerializer(report).data, status=status.HTTP_201_CREATED
@@ -402,5 +399,6 @@ class ReportViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"detail": str(e)},
+                status=getattr(e, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),
             )

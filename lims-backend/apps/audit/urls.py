@@ -10,5 +10,6 @@ router = DefaultRouter()
 router.register(r"logs", AuditLogViewSet, basename="auditlog")
 
 urlpatterns = [
+    path("", AuditLogViewSet.as_view({"get": "list"}), name="auditlog-list-root"),
     path("", include(router.urls)),
 ]

@@ -5,6 +5,7 @@ Django settings for LIMS project.
 from datetime import timedelta
 from pathlib import Path
 
+from celery.schedules import crontab
 from decouple import config
 
 # Build paths inside the project
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     "apps.billing",
     "apps.audit",
     "apps.dashboard",
+    "apps.backups",
 ]
 
 MIDDLEWARE = [
@@ -180,6 +182,23 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULE = {
+    "scheduled-backup-daily-2am": {
+        "task": "apps.backups.tasks.run_scheduled_backups_task",
+        "schedule": crontab(hour=2, minute=0),
+    }
+}
+
+# Backup settings
+BACKUP_ROOT = config("BACKUP_ROOT", default="/backups/lims")
+BACKUP_APP_NAME = config("BACKUP_APP_NAME", default="lims")
+BACKUP_RETENTION_DAILY = config("BACKUP_RETENTION_DAILY", default=7, cast=int)
+BACKUP_RETENTION_WEEKLY = config("BACKUP_RETENTION_WEEKLY", default=4, cast=int)
+BACKUP_RETENTION_MONTHLY = config("BACKUP_RETENTION_MONTHLY", default=6, cast=int)
+BACKUP_OFFSITE_PROVIDER = config("BACKUP_OFFSITE_PROVIDER", default="none")
+BACKUP_S3_BUCKET = config("S3_BUCKET", default="")
+BACKUP_S3_ENDPOINT_URL = config("S3_ENDPOINT_URL", default="")
+BACKUP_S3_REGION = config("AWS_DEFAULT_REGION", default="us-east-1")
 
 # API Documentation
 SPECTACULAR_SETTINGS = {

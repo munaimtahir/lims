@@ -1,6 +1,5 @@
-"""
-Audit trail models for LIMS compliance and logging.
-"""
+"""Audit trail models for LIMS compliance and logging."""
+
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -37,6 +36,7 @@ class AuditLog(models.Model):
         ("REJECT", "Reject"),
     ]
 
+    # Legacy fields (kept for backwards compatibility)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -66,6 +66,26 @@ class AuditLog(models.Model):
     user_agent = models.TextField(null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
 
+    # Phase 2 canonical fields
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, null=True, blank=True)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="audit_events",
+    )
+    entity_type = models.CharField(max_length=100, db_index=True, blank=True, default="")
+    entity_id = models.CharField(max_length=255, blank=True, default="")
+    before = models.JSONField(null=True, blank=True)
+    after = models.JSONField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    source = models.CharField(
+        max_length=20,
+        choices=[("api", "API"), ("admin", "Admin"), ("system", "System")],
+        default="api",
+    )
+
     class Meta:
         db_table = "audit_logs"
         verbose_name = "Audit Log"
@@ -86,3 +106,37 @@ class AuditLog(models.Model):
         """
         user_name = self.user.full_name if self.user else "System"
         return f"{user_name} - {self.action} on {self.table_name} at {self.timestamp}"
+
+    def save(self, *args, **kwargs):
+        # Keep legacy + canonical fields synchronized.
+        if not self.actor and self.user:
+            self.actor = self.user
+        if not self.user and self.actor:
+            self.user = self.actor
+
+        if not self.entity_type and self.table_name:
+            self.entity_type = self.table_name
+        if not self.table_name and self.entity_type:
+            self.table_name = self.entity_type
+
+        if not self.entity_id and self.object_id:
+            self.entity_id = self.object_id
+        if not self.object_id and self.entity_id:
+            self.object_id = self.entity_id
+
+        if self.before is None and self.old_value is not None:
+            self.before = self.old_value
+        if self.old_value is None and self.before is not None:
+            self.old_value = self.before
+
+        if self.after is None and self.new_value is not None:
+            self.after = self.new_value
+        if self.new_value is None and self.after is not None:
+            self.new_value = self.after
+
+        if not self.created_at and self.timestamp:
+            self.created_at = self.timestamp
+        if not self.timestamp and self.created_at:
+            self.timestamp = self.created_at
+
+        super().save(*args, **kwargs)

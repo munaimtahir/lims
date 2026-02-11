@@ -88,6 +88,10 @@ Desktop.ini
 logs/
 backups/
 data/
+!lims-backend/apps/backups/
+!lims-backend/apps/backups/**
+!frontend/src/pages/backups/
+!frontend/src/pages/backups/**
 
 # Celery
 celerybeat-schedule

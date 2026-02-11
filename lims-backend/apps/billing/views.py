@@ -18,8 +18,9 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
-from rest_framework import filters, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from apps.core.models import (
     PrintTemplate,
@@ -30,6 +31,7 @@ from apps.core.pdf_utils import add_report_image
 
 from .models import Payment
 from .serializers import PaymentSerializer
+from .services import admin_override_receipt, transition_receipt_state
 
 
 def _merge_template_config(config):
@@ -57,6 +59,44 @@ class PaymentViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ["order", "payment_method", "payment_date"]
     ordering_fields = ["payment_date", "amount"]
+
+    def perform_create(self, serializer):
+        payment = serializer.save()
+        transition_receipt_state(payment, self.request.user, source="api")
+
+    def update(self, request, *args, **kwargs):
+        return Response(
+            {"detail": "Recorded receipts are immutable. Use the admin override endpoint."},
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        return Response(
+            {"detail": "Recorded receipts cannot be deleted."},
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    @action(detail=True, methods=["post"], url_path="override")
+    def override_receipt(self, request, pk=None):
+        payment = self.get_object()
+        reason = request.data.get("reason")
+        updates = {
+            "transaction_id": request.data.get("transaction_id"),
+            "notes": request.data.get("notes"),
+        }
+        try:
+            updated = admin_override_receipt(
+                payment, request.user, updates=updates, reason=reason, source="api"
+            )
+            return Response(self.get_serializer(updated).data)
+        except Exception as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
+            )
 
     @action(detail=True, methods=["get"])
     def receipt(self, request, pk=None):

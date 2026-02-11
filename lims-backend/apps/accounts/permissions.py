@@ -189,6 +189,21 @@ class IsManagerOrAdmin(permissions.BasePermission):
         )
 
 
+class IsAuditReader(permissions.BasePermission):
+    """Allow Admin, Manager, or Pathologist to read audit events."""
+
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (
+                request.user.is_admin
+                or request.user.is_manager
+                or request.user.is_pathologist
+            )
+        )
+
+
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
     Custom permission to allow read-only access for authenticated users,

@@ -25,6 +25,8 @@ import type {
   PrintTemplate,
   CatalogImportSummary,
   CatalogAuditSummary,
+  BackupArtifact,
+  BackupSettings,
 } from '../types';
 
 /**
@@ -658,6 +660,52 @@ export const analyticsApi = {
   },
   exportLogs: async (params?: Record<string, unknown>) => {
     const response = await api.get('/reports/export-logs/', { params });
+    return response.data;
+  },
+};
+
+export const backupApi = {
+  list: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<BackupArtifact>>('/backups/', { params });
+    return response.data;
+  },
+  get: async (id: string) => {
+    const response = await api.get<BackupArtifact>(`/backups/${id}/`);
+    return response.data;
+  },
+  create: async (pushOffsite = false) => {
+    const response = await api.post<BackupArtifact>('/backups/', { push_offsite: pushOffsite });
+    return response.data;
+  },
+  download: async (id: string) => {
+    const response = await api.get(`/backups/${id}/download/`, { responseType: 'blob' });
+    return response.data as Blob;
+  },
+  restore: async (id: string, confirmation: string) => {
+    const response = await api.post(`/backups/${id}/restore/`, { confirmation });
+    return response.data;
+  },
+  importBackup: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post<BackupArtifact>('/backups/import/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+  push: async (id: string) => {
+    const response = await api.post<BackupArtifact>(`/backups/${id}/push/`);
+    return response.data;
+  },
+  remove: async (id: string) => {
+    await api.delete(`/backups/${id}/`);
+  },
+  settings: async () => {
+    const response = await api.get<BackupSettings>('/backups/settings/');
+    return response.data;
+  },
+  testOffsite: async () => {
+    const response = await api.post<{ ok: boolean; message: string }>('/backups/offsite-test/');
     return response.data;
   },
 };

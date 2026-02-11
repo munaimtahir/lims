@@ -1,6 +1,5 @@
-"""
-Utility functions for audit logging.
-"""
+"""Utility functions for audit logging."""
+
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.fields.files import FieldFile
 
@@ -68,17 +67,55 @@ def log_action(
 
     audit_log = AuditLog.objects.create(
         user=user,
+        actor=user,
         action=action,
         content_type=content_type,
         object_id=str(instance.pk),
+        entity_id=str(instance.pk),
         table_name=instance._meta.db_table,
+        entity_type=instance._meta.db_table,
         old_value=old_data,
+        before=old_data,
         new_value=new_data,
+        after=new_data,
         ip_address=get_client_ip(request),
         user_agent=get_user_agent(request),
         notes=notes,
+        metadata={"notes": notes} if notes else {},
+        source="api" if request is not None else "system",
     )
     return audit_log
+
+
+def emit_audit_event(
+    *,
+    actor,
+    entity_type,
+    entity_id,
+    action,
+    before=None,
+    after=None,
+    metadata=None,
+    source="api",
+):
+    """Create a canonical audit event and raise on failure."""
+    normalized_entity_id = str(entity_id) if entity_id is not None else ""
+    return AuditLog.objects.create(
+        actor=actor,
+        user=actor,
+        entity_type=entity_type,
+        table_name=entity_type,
+        entity_id=normalized_entity_id,
+        object_id=normalized_entity_id,
+        action=action,
+        before=before,
+        old_value=before,
+        after=after,
+        new_value=after,
+        metadata=metadata or {},
+        source=source,
+        notes=(metadata or {}).get("detail"),
+    )
 
 
 def log_create(user, instance, request=None, notes=None):

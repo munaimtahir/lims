@@ -62,6 +62,7 @@ export default function DashboardLayout() {
           { to: '/dashboard/tests?tab=parameters', label: 'Parameters' },
           { to: '/dashboard/tests?tab=ranges', label: 'Normal Ranges' },
           { to: '/dashboard/audit', label: 'Audit Logs' },
+          { to: '/dashboard/backups', label: 'Backups' },
         ]);
         break;
       case 'Receptionist':
@@ -90,6 +91,9 @@ export default function DashboardLayout() {
           { to: '/dashboard/verification', label: 'Verification' },
           { to: '/dashboard/reports', label: 'Reports' },
         ]);
+        addSection('Administration', [
+          { to: '/dashboard/backups', label: 'Backups' },
+        ]);
         break;
 
       case 'Manager':
@@ -112,6 +116,7 @@ export default function DashboardLayout() {
           { to: '/dashboard/tests?tab=parameters', label: 'Parameters' },
           { to: '/dashboard/tests?tab=ranges', label: 'Normal Ranges' },
           { to: '/dashboard/audit', label: 'Audit Logs' },
+          { to: '/dashboard/backups', label: 'Backups' },
         ]);
         break;
     }

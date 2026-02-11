@@ -15,6 +15,7 @@ from apps.core.authz import filter_queryset_for_branches, is_tenant_admin, user_
 from apps.core.export_utils import export_to_csv, export_to_excel
 from apps.patients.models import Patient
 from apps.reports.models import Report, ReportStatus
+from apps.orders.services import transition_visit_state
 
 from .filters import OrderFilter
 from .models import Order, OrderItem
@@ -42,6 +43,23 @@ class OrderViewSet(viewsets.ModelViewSet):
         "patient__full_name",
     ]
     ordering_fields = ["created_at", "total_amount", "net_amount"]
+
+    def destroy(self, request, *args, **kwargs):
+        order = self.get_object()
+        if order.status != "NEW":
+            return Response(
+                {"detail": "Only NEW orders can be deleted. Use explicit admin override."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        return super().destroy(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        target_status = serializer.validated_data.get("status")
+        if target_status and target_status != instance.status:
+            transition_visit_state(instance, target_status, self.request.user, source="api")
+            serializer.validated_data.pop("status", None)
+        serializer.save()
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -120,23 +138,25 @@ class OrderViewSet(viewsets.ModelViewSet):
             Response: A response object with a status message.
         """
         order = self.get_object()
-        # Check against mapped statuses if needed, or rely on model validation
-        if order.status == "PUBLISHED":  # Using PUBLISHED as completed state
+        try:
+            transition_visit_state(order, "CANCELLED", request.user, source="api")
+            return Response({"detail": "Order cancelled successfully."})
+        except Exception as e:
             return Response(
-                {"error": "Cannot cancel completed order"},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"detail": str(e)},
+                status=getattr(e, "status_code", status.HTTP_400_BAD_REQUEST),
             )
 
-        try:
-            # Use transition_to for proper validation and side effects
-            order.transition_to("CANCELLED", user=request.user)
-            return Response({"status": "order cancelled"})
-        except Exception as e:
-            # Fallback if transition fails
+    @action(detail=True, methods=["post"], url_path="admin-delete")
+    def admin_delete(self, request, pk=None):
+        order = self.get_object()
+        if not request.user.is_admin:
             return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"detail": "Only Admin can use override delete."},
+                status=status.HTTP_403_FORBIDDEN,
             )
+        order.delete()
+        return Response({"detail": "Order deleted via admin override."}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"], url_path="receipt.pdf")
     def receipt_pdf(self, request, pk=None):
@@ -145,7 +165,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         payment = order.payments.order_by("-payment_date").first()
         if not payment:
             return Response(
-                {"error": "Receipt not available for this order"},
+                {"detail": "Receipt not available for this order."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         return PaymentViewSet.as_view({"get": "receipt"})(
@@ -158,7 +178,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         order = self.get_object()
         if order.status != "PUBLISHED":
             return Response(
-                {"error": "Report is not published"},
+                {"detail": "Report is not published."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         report = (
@@ -170,7 +190,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         )
         if not report or not report.report_file:
             return Response(
-                {"error": "Report file not found"},
+                {"detail": "Report file not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         return FileResponse(

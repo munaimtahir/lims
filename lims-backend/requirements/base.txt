@@ -30,6 +30,7 @@ python-dateutil==2.8.2
 
 # HTTP client for smoke tests
 requests==2.31.0
+boto3==1.36.26
 
 # Excel Export
 openpyxl==3.1.2

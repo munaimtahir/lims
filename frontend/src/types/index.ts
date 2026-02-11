@@ -420,6 +420,40 @@ export interface SystemSettings {
   updated_by_name?: string;
 }
 
+export type BackupType = 'AUTO' | 'MANUAL' | 'IMPORTED';
+export type BackupStatus = 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED';
+export type BackupOffsiteStatus =
+  | 'NOT_CONFIGURED'
+  | 'PENDING'
+  | 'SUCCESS'
+  | 'FAILED';
+
+export interface BackupArtifact {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: number | null;
+  created_by_name?: string;
+  type: BackupType;
+  status: BackupStatus;
+  filename: string;
+  size_bytes: number;
+  checksum_sha256: string;
+  meta: Record<string, unknown>;
+  offsite_provider: string;
+  offsite_status: BackupOffsiteStatus;
+  logs: string;
+  error_message: string;
+}
+
+export interface BackupSettings {
+  retention_daily: number;
+  retention_weekly: number;
+  retention_monthly: number;
+  offsite_provider: string;
+  offsite_configured: boolean;
+}
+
 /**
  * Patient lookup types (for registration quick search)
  */

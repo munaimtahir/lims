@@ -1,16 +1,31 @@
-## Phase 2A — Guardrails & State Enforcement
+# PHASE 2A STATUS (Guardrails & State Enforcement)
 
-Enforced (server-side)
-- Orders: immutable `lab_number`; edits blocked after PUBLISHED/CANCELLED; state transitions validated per authoritative model.
-- Samples: transition graph enforced; double COLLECTED idempotent; REJECT/POSTPONE limited; deletion blocked after COLLECTED/RECEIVED; RECEIVED terminal.
-- Results: DRAFT→VERIFIED→FINAL only; verify/final require value; edits blocked after VERIFIED; FINAL immutable; double verify/final returns 409; select-for-update used for concurrency.
-- Reports: download allowed only FINAL/AMENDED; FINAL report file/status immutable; regeneration of FINAL blocked.
-- Transactions: critical transitions wrapped in DB transactions.
+## Scope Completed
+- Added centralized transition services:
+  - `lims-backend/apps/orders/services.py` (`transition_visit_state`)
+  - `lims-backend/apps/samples/services.py` (`transition_sample_state`, `reject_sample`)
+  - `lims-backend/apps/results/services/transitions.py` (`transition_result_state`)
+  - `lims-backend/apps/reports/services.py` (`transition_report_state`)
+  - `lims-backend/apps/billing/services.py` (`transition_receipt_state`, `admin_override_receipt`)
+- Wired transitions into API control points (orders/samples/results/reports/billing).
+- Added DB locking + transaction boundaries for critical transitions (`transaction.atomic`, `select_for_update`).
+- Enforced terminal/immutable behavior:
+  - Order terminal states (`PUBLISHED`, `CANCELLED`) blocked from transition.
+  - Sample `RECEIVED` terminal; double `COLLECTED` blocked.
+  - Result `FINAL` immutable; `DRAFT -> VERIFIED -> FINAL` enforced.
+  - Report `FINAL/AMENDED` immutable + delete blocked.
+  - Receipt immutable via blocked update/delete and explicit admin override action.
+- API response discipline applied on hardened endpoints:
+  - `400` invalid payload
+  - `403` permission
+  - `409` invalid state
+  - payload contains `detail`.
 
-Deferred / Not in scope
-- Receipt override path (admin-only) is not yet implemented beyond existing immutability; pending confirmation of override UX.
-- Frontend-only hardening beyond status lock tooltips is minimal by design for Phase 2A.
+## Validation Evidence
+- Targeted hardening tests passed:
+  - `DEPLOY_RUNS/PHASE_2_HARDENING/logs/phase2_hardening_pytest.txt`
+- Django integrity check passed:
+  - `DEPLOY_RUNS/PHASE_2_HARDENING/logs/django_check.txt`
 
-Tests added
-- `apps/results/tests/test_state_guards.py`
-- `apps/samples/tests/test_state_guards.py`
+## Notes
+- Legacy tests expecting pre-hardening behavior (idempotent collect, non-409 transition errors, older report regeneration semantics) may fail by design after hardening.
