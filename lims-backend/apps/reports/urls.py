@@ -16,7 +16,7 @@ urlpatterns = [
     path("referrals/", AnalyticsViewSet.as_view({"get": "referrals"}), name="analytics-referrals"),
     path("finance/", AnalyticsViewSet.as_view({"get": "finance"}), name="analytics-finance"),
     path("export/", AnalyticsViewSet.as_view({"post": "export_report"}), name="analytics-export"),
+    path("export-logs/", AnalyticsViewSet.as_view({"get": "export_logs"}), name="analytics-export-logs"),
 
     path("", include(router.urls)),
 ]
-

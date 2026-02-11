@@ -1,142 +1,156 @@
 import csv
 import io
-import json
 from datetime import datetime
 
-from django.http import HttpResponse, StreamingHttpResponse
-from django.utils import timezone
-from rest_framework import status, viewsets
+from django.http import HttpResponse
+from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.accounts.permissions import IsAdmin, IsManager
+from apps.accounts.permissions import IsManagerOrAdmin
+
 from .analytics import AnalyticsService
 from .models import ReportExportLog
 
-# Helper permission
-class IsManagerOrAdmin(IsAuthenticated):
-    def has_permission(self, request, view):
-        is_auth = super().has_permission(request, view)
-        if not is_auth:
-            return False
-        return request.user.is_admin or request.user.is_manager
 
 class AnalyticsViewSet(viewsets.ViewSet):
-    """
-    API ViewSet for Operational & Financial Analytics.
-    Read-only reports for Admins and Managers.
-    """
+    """Read-only operational & financial analytics for Admin/Manager roles."""
+
     permission_classes = [IsManagerOrAdmin]
+
+    def _fetch_report(self, report_key, params):
+        handlers = {
+            "overview": AnalyticsService.get_overview,
+            "patients": AnalyticsService.get_patients_report,
+            "tests": AnalyticsService.get_tests_report,
+            "referrals": AnalyticsService.get_referrals_report,
+            "finance": AnalyticsService.get_finance_report,
+        }
+        if report_key not in handlers:
+            return None
+        return handlers[report_key](params)
 
     @action(detail=False, methods=["get"])
     def overview(self, request):
-        data = AnalyticsService.get_overview(request.query_params)
-        return Response(data)
+        return Response(AnalyticsService.get_overview(request.query_params))
 
     @action(detail=False, methods=["get"])
     def patients(self, request):
-        data = AnalyticsService.get_patients_report(request.query_params)
-        return Response(data)
+        return Response(AnalyticsService.get_patients_report(request.query_params))
 
     @action(detail=False, methods=["get"])
     def tests(self, request):
-        data = AnalyticsService.get_tests_report(request.query_params)
-        return Response(data)
+        return Response(AnalyticsService.get_tests_report(request.query_params))
 
     @action(detail=False, methods=["get"])
     def referrals(self, request):
-        data = AnalyticsService.get_referrals_report(request.query_params)
-        return Response(data)
+        return Response(AnalyticsService.get_referrals_report(request.query_params))
 
     @action(detail=False, methods=["get"])
     def finance(self, request):
-        data = AnalyticsService.get_finance_report(request.query_params)
-        return Response(data)
+        return Response(AnalyticsService.get_finance_report(request.query_params))
 
     @action(detail=False, methods=["post"], url_path="export")
     def export_report(self, request):
         """
-        Export report to CSV/XLSX.
-        Payload: {
-            "report_key": "overview" | "patients" | "tests" | "referrals" | "finance",
-            "format": "csv" | "xlsx",
-            "params": { ...filters... }
-        }
+        Accepts payload: {report_key, format, filters}.
+        Backward-compatible with legacy "params" key.
         """
         report_key = request.data.get("report_key")
-        file_format = request.data.get("format", "csv")
-        params = request.data.get("params", {})
+        file_format = (request.data.get("format") or "csv").lower()
+        filters = request.data.get("filters")
+        if filters is None:
+            filters = request.data.get("params", {})
 
-        # Fetch data based on key
-        if report_key == "overview":
-            data = AnalyticsService.get_overview(params)
-            rows = [data["summary"]]  # Overview is just summary for now
-        elif report_key == "patients":
-            data = AnalyticsService.get_patients_report(params)
-            rows = data.get("rows", [])
-        elif report_key == "tests":
-            data = AnalyticsService.get_tests_report(params)
-            rows = data.get("rows", [])
-        elif report_key == "referrals":
-            data = AnalyticsService.get_referrals_report(params)
-            rows = data.get("rows", [])
-        elif report_key == "finance":
-            data = AnalyticsService.get_finance_report(params)
-            rows = data.get("collections_by_method", []) # partial export
-            # Finance might need more complex export structure (multiple sheets)
-            # For v1 CSV, maybe just the collections list or summary?
-            # Let's export summary + collections
-            if not rows:
-                rows = [data["summary"]]
-        else:
+        if file_format not in {"csv", "xlsx"}:
+            return Response({"error": "Invalid format"}, status=400)
+
+        data = self._fetch_report(report_key, filters)
+        if data is None:
             return Response({"error": "Invalid report_key"}, status=400)
 
-        # Log export
-        log = ReportExportLog.objects.create(
+        rows = data.get("rows")
+        if report_key == "overview":
+            export_rows = [data.get("summary", {})]
+        elif report_key == "referrals" and isinstance(rows, dict):
+            export_rows = rows.get("revenue") or rows.get("volume") or []
+        elif report_key == "finance":
+            export_rows = rows if isinstance(rows, list) else []
+        else:
+            export_rows = rows if isinstance(rows, list) else []
+
+        filename = f"{report_key}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{file_format}"
+        ReportExportLog.objects.create(
             user=request.user,
             report_key=report_key,
-            filters_json=params,
+            filters_json=filters or {},
             file_format=file_format,
-            row_count=len(rows)
+            row_count=len(export_rows),
+            file_path=filename,
         )
-
-        # Generate File
-        filename = f"{report_key}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{file_format}"
 
         if file_format == "csv":
             response = HttpResponse(
                 content_type="text/csv",
                 headers={"Content-Disposition": f'attachment; filename="{filename}"'},
             )
-            if rows:
-                writer = csv.DictWriter(response, fieldnames=rows[0].keys())
+            if export_rows:
+                writer = csv.DictWriter(response, fieldnames=export_rows[0].keys())
                 writer.writeheader()
-                writer.writerows(rows)
+                writer.writerows(export_rows)
             else:
                 writer = csv.writer(response)
                 writer.writerow(["No data found"])
-            
             return response
 
-        elif file_format == "xlsx":
-            import pandas as pd
-            
-            response = HttpResponse(
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-            )
-            
-            if rows:
-                df = pd.DataFrame(rows)
-            else:
-                df = pd.DataFrame([{"Message": "No data found"}])
+        import pandas as pd
 
-            with io.BytesIO() as b:
-                with pd.ExcelWriter(b, engine='openpyxl') as writer:
-                    df.to_excel(writer, index=False, sheet_name="Report")
-                response.write(b.getvalue())
-                
-            return response
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
 
-        return Response({"error": "Invalid format"}, status=400)
+        if export_rows:
+            df = pd.DataFrame(export_rows)
+        else:
+            df = pd.DataFrame([{"Message": "No data found"}])
+
+        with io.BytesIO() as out:
+            with pd.ExcelWriter(out, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, sheet_name="Report")
+            response.write(out.getvalue())
+
+        return response
+
+    @action(detail=False, methods=["get"], url_path="export-logs")
+    def export_logs(self, request):
+        limit = request.query_params.get("limit", "100")
+        try:
+            limit_value = max(1, min(500, int(limit)))
+        except ValueError:
+            limit_value = 100
+
+        logs_qs = ReportExportLog.objects.select_related("user").all()[:limit_value]
+        rows = [
+            {
+                "id": log.id,
+                "user": getattr(log.user, "username", None),
+                "report_key": log.report_key,
+                "filters_json": log.filters_json,
+                "format": log.file_format,
+                "generated_at": log.generated_at.isoformat(),
+                "row_count": log.row_count,
+                "file_path": log.file_path,
+            }
+            for log in logs_qs
+        ]
+
+        return Response(
+            {
+                "meta": {"limit": limit_value, "count": len(rows)},
+                "summary": {"total_exports": len(rows)},
+                "series": [],
+                "rows": rows,
+                "notes": [],
+            }
+        )

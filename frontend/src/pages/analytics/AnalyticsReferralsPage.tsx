@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { analyticsApi } from '../../api/services';
-import type { ReferralRow } from './types';
+import type { ReferralRows } from './types';
 import { AnalyticsFilterBar } from './AnalyticsFilterBar';
 import styles from './AnalyticsPage.module.css';
 
 export default function AnalyticsReferralsPage() {
     const [searchParams] = useSearchParams();
+    const [tab, setTab] = useState<'volume' | 'revenue'>('volume');
 
     const queryParams = {
         start_date: searchParams.get('start_date') || new Date().toISOString().split('T')[0],
@@ -39,14 +40,15 @@ export default function AnalyticsReferralsPage() {
     if (isLoading) return <div className={styles.pageContainer}>Loading...</div>;
     if (error) return <div className={styles.pageContainer}>Error loading report</div>;
 
-    const rows = (reportData?.rows || []) as ReferralRow[];
+    const rowsByTab = (reportData?.rows || { volume: [], revenue: [] }) as ReferralRows;
+    const rows = tab === 'volume' ? rowsByTab.volume : rowsByTab.revenue;
     const summary = reportData?.summary || {};
 
     return (
         <div className={styles.pageContainer}>
             <div className={styles.header}>
                 <h1>Referral Analytics</h1>
-                <p>Referral sources and contribution</p>
+                <p>Referral sources by volume and revenue</p>
             </div>
 
             <AnalyticsFilterBar onExport={handleExport} currentReportKey="referrals" />
@@ -56,6 +58,23 @@ export default function AnalyticsReferralsPage() {
                     <div className={styles.cardTitle}>Total Sources</div>
                     <div className={styles.cardValue}>{summary.total_referrers}</div>
                 </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                <button
+                    className={styles.applyButton}
+                    onClick={() => setTab('volume')}
+                    disabled={tab === 'volume'}
+                >
+                    Volume
+                </button>
+                <button
+                    className={styles.applyButton}
+                    onClick={() => setTab('revenue')}
+                    disabled={tab === 'revenue'}
+                >
+                    Revenue
+                </button>
             </div>
 
             <div className={styles.tableContainer}>

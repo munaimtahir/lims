@@ -46,6 +46,11 @@ export interface ReferralRow {
     revenue: number;
 }
 
+export interface ReferralRows {
+    volume: ReferralRow[];
+    revenue: ReferralRow[];
+}
+
 export interface FinanceSummary {
     gross_sales: number;
     discount: number;
@@ -56,4 +61,15 @@ export interface FinanceSummary {
 export interface CollectionRow {
     method: string;
     amount: number;
+}
+
+export interface ExportLogRow {
+    id: number;
+    user: string | null;
+    report_key: string;
+    filters_json: Record<string, unknown>;
+    format: 'csv' | 'xlsx';
+    generated_at: string;
+    row_count: number;
+    file_path: string | null;
 }

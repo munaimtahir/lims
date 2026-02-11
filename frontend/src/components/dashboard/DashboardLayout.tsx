@@ -44,12 +44,13 @@ export default function DashboardLayout() {
           { to: '/dashboard/verification', label: 'Verification' },
           { to: '/dashboard/reports', label: 'My Reports' },
         ]);
-        addSection('Analytics', [
+        addSection('Analytics & Reports', [
           { to: '/dashboard/analytics', label: 'Overview' },
           { to: '/dashboard/analytics/patients', label: 'Patients' },
           { to: '/dashboard/analytics/tests', label: 'Tests' },
           { to: '/dashboard/analytics/referrals', label: 'Referrals' },
           { to: '/dashboard/analytics/finance', label: 'Finance' },
+          { to: '/dashboard/analytics/export-logs', label: 'Export Logs' },
         ]);
 
         addSection('Administration', [
@@ -92,12 +93,13 @@ export default function DashboardLayout() {
         break;
 
       case 'Manager':
-        addSection('Analytics', [
+        addSection('Analytics & Reports', [
           { to: '/dashboard/analytics', label: 'Overview' },
           { to: '/dashboard/analytics/patients', label: 'Patients' },
           { to: '/dashboard/analytics/tests', label: 'Tests' },
           { to: '/dashboard/analytics/referrals', label: 'Referrals' },
           { to: '/dashboard/analytics/finance', label: 'Finance' },
+          { to: '/dashboard/analytics/export-logs', label: 'Export Logs' },
         ]);
         addSection('Results', [
           { to: '/dashboard/reports', label: 'My Reports' },

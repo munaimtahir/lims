@@ -39,7 +39,7 @@ export default function AnalyticsFinancePage() {
     if (isLoading) return <div className={styles.pageContainer}>Loading...</div>;
     if (error) return <div className={styles.pageContainer}>Error loading report</div>;
 
-    const rows = (reportData?.collections_by_method || []) as CollectionRow[];
+    const rows = (reportData?.rows || []) as CollectionRow[];
     const summary = reportData?.summary || {};
 
     return (

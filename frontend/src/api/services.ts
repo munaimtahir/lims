@@ -651,10 +651,13 @@ export const analyticsApi = {
   exportReport: async (reportKey: string, format: 'csv' | 'xlsx', params?: Record<string, unknown>) => {
     const response = await api.post(
       '/reports/export/',
-      { report_key: reportKey, format, params },
+      { report_key: reportKey, format, filters: params },
       { responseType: 'blob' }
     );
     return response.data;
   },
+  exportLogs: async (params?: Record<string, unknown>) => {
+    const response = await api.get('/reports/export-logs/', { params });
+    return response.data;
+  },
 };
-

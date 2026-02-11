@@ -44,6 +44,17 @@ export function AnalyticsFilterBar({ onExport, currentReportKey }: AnalyticsFilt
         onExport(format);
     };
 
+    const handleReset = () => {
+        const resetDate = new Date().toISOString().split('T')[0];
+        setStart(resetDate);
+        setEnd(resetDate);
+        setCancelled(false);
+        setSearchParams({
+            start_date: resetDate,
+            end_date: resetDate,
+        });
+    };
+
     return (
         <div className={`${styles.filterBar} ${styles.glass}`}>
             <div className={styles.fieldGroup}>
@@ -79,6 +90,9 @@ export function AnalyticsFilterBar({ onExport, currentReportKey }: AnalyticsFilt
             <div className={styles.actionParams}>
                 <button className={styles.applyButton} onClick={handleApply}>
                     Update Report
+                </button>
+                <button className={styles.applyButton} onClick={handleReset}>
+                    Reset
                 </button>
                 <div style={{ padding: '0 8px', borderLeft: '1px solid #e2e8f0', height: '32px' }}></div>
                 <button className={styles.exportButton} onClick={() => handleKeyExport('csv')}>

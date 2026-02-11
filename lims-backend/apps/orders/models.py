@@ -141,6 +141,7 @@ class Order(models.Model):
             models.Index(fields=["order_id"]),
             models.Index(fields=["status"]),
             models.Index(fields=["created_at"]),
+            models.Index(fields=["referred_by"]),
             models.Index(fields=["lab_number"]),
             models.Index(fields=["lab_date", "collection_center", "daily_serial"]),
         ]

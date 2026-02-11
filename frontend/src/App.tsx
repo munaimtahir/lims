@@ -27,7 +27,8 @@ import {
   AnalyticsPatientsPage,
   AnalyticsTestsPage,
   AnalyticsReferralsPage,
-  AnalyticsFinancePage
+  AnalyticsFinancePage,
+  AnalyticsExportLogsPage
 } from './pages/analytics';
 import './App.css';
 
@@ -95,6 +96,7 @@ function App() {
                 <Route path="analytics/tests" element={<AnalyticsTestsPage />} />
                 <Route path="analytics/referrals" element={<AnalyticsReferralsPage />} />
                 <Route path="analytics/finance" element={<AnalyticsFinancePage />} />
+                <Route path="analytics/export-logs" element={<AnalyticsExportLogsPage />} />
 
                 {/* Settings pages */}
                 <Route path="reference-ranges" element={<ReferenceRangesPage />} />
