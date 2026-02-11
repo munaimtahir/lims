@@ -121,6 +121,7 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "order_id",
+            "tenant",
             "patient",
             "patient_name",
             "ordered_by",
@@ -144,6 +145,8 @@ class OrderSerializer(serializers.ModelSerializer):
             "lab_date",
             "daily_serial",
             "collection_center",
+            "collection_branch",
+            "processing_branch",
         ]
         read_only_fields = [
             "order_id",
@@ -157,6 +160,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "due_amount",
             "is_paid",
             "ordered_by",
+            "tenant",
         ]
 
     def create(self, validated_data):
@@ -181,6 +185,16 @@ class OrderSerializer(serializers.ModelSerializer):
             validated_data["ordered_by"] = request.user
 
         with transaction.atomic():
+            # Tenant and branch defaults
+            if not validated_data.get("tenant") and hasattr(self, "context"):
+                req_user = getattr(self.context.get("request"), "user", None)
+                if req_user:
+                    validated_data["tenant"] = getattr(req_user, "tenant", None)
+
+            # Default processing branch to collection_branch
+            if not validated_data.get("processing_branch"):
+                validated_data["processing_branch"] = validated_data.get("collection_branch")
+
             order = Order.objects.create(**validated_data)
 
             # Add tests

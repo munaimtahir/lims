@@ -10,8 +10,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 
-from apps.core.models import CollectionCenter
-from apps.core.numbering import generate_registration_number
+from apps.core.models import CollectionCenter, Tenant
+from apps.core.numbering import generate_registration_number, generate_tenant_mrn
 from apps.core.validators import validate_registration_number
 
 
@@ -66,11 +66,10 @@ class Patient(models.Model):
     )
     mrn = models.CharField(
         max_length=20,
-        unique=True,
         null=True,
         blank=True,
         db_index=True,
-        help_text="Medical Record Number (auto-generated)",
+        help_text="Medical Record Number (auto-generated, unique per tenant)",
     )
 
     # New Numbering System Fields (V2)
@@ -153,6 +152,16 @@ class Patient(models.Model):
     # Address
     address = models.TextField(blank=True, null=True)
 
+    # Multi-tenant
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="patients",
+        help_text="Owning tenant (lab).",
+    )
+
     # Offline/sync fields
     is_offline_entry = models.BooleanField(
         default=False, help_text="True if originally created while offline"
@@ -195,6 +204,11 @@ class Patient(models.Model):
             models.Index(fields=["national_id"]),
             models.Index(fields=["created_at"]),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "mrn"], name="unique_patient_mrn_per_tenant"
+            )
+        ]
 
     def __str__(self):
         """
@@ -213,12 +227,10 @@ class Patient(models.Model):
             *args: Variable length argument list.
             **kwargs: Arbitrary keyword arguments.
         """
-        # V2 Numbering System
+        # V2 Numbering System (Branch-aware now uses tenant MRN)
         if not self.registration_number:
             # Ensure center exists - fallback to Head Office (00)
             if not self.registration_center:
-                # Try to get 00, if not exist, we have a problem in bootstrapping but we'll try to create it or fail
-                # But for safety, we should assume it exists or create it here to avoid error
                 center_00, _ = CollectionCenter.objects.get_or_create(
                     code="00", defaults={"name": "Head Office", "is_active": True}
                 )
@@ -227,15 +239,24 @@ class Patient(models.Model):
             if not self.registration_datetime:
                 self.registration_datetime = timezone.now()
 
-            # Generate the new number
+            # Generate the legacy center-based number for backward compatibility
             self.registration_number = generate_registration_number(
                 self.registration_center, self.registration_datetime
             )
 
-        # Legacy Compatibility: Set MRN and Patient ID to the same new number if they are empty
-        if not self.mrn:
-            self.mrn = self.registration_number
+        # Tenant MRN for new patients (preserve existing if set)
+        if not self.tenant:
+            # Best-effort: derive tenant from center if available
+            self.tenant = getattr(self.registration_center, "tenant", None)
 
+        if not self.mrn:
+            if self.tenant:
+                self.mrn = generate_tenant_mrn(self.tenant, self.registration_datetime)
+            else:
+                # Fallback to legacy registration_number if tenant missing
+                self.mrn = self.registration_number
+
+        # Keep patient_id aligned to MRN for compatibility
         if not self.patient_id:
             self.patient_id = self.mrn
 

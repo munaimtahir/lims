@@ -9,6 +9,13 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from apps.core.export_utils import export_to_csv, export_to_excel
+from apps.core.authz import (
+    filter_queryset_for_branches,
+    is_tenant_admin,
+    user_has_branch_access,
+    user_tenant,
+)
+from apps.core.models import BranchCapability
 from apps.laboratory.models import ReferenceRange, TestParameter
 from apps.orders.models import Order, OrderItem
 # from apps.reports.models import Report, ReportStatus
@@ -35,6 +42,16 @@ class TestResultViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = TestResultFilter
     ordering_fields = ["test_parameter__display_order", "entered_at"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        tenant = user_tenant(self.request.user)
+        qs = qs.filter(order_item__order__tenant=tenant)
+        if not is_tenant_admin(self.request.user):
+            qs = filter_queryset_for_branches(
+                qs, "order_item__order__collection_branch", self.request.user
+            )
+        return qs.select_related("order_item__order__collection_branch")
 
     @action(detail=False, methods=["get"])
     def export(self, request):
@@ -199,6 +216,16 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
         return Response(worklist_data)
 
+    def _assert_branch_permissions(self, order_item, user):
+        branch = (
+            getattr(order_item.order, "processing_branch", None)
+            or getattr(order_item.order, "collection_branch", None)
+        )
+        if branch and branch.capability_mode == BranchCapability.COLLECT_ONLY:
+            raise ValidationError("Result entry not allowed for collection-only branch.")
+        if branch and not user_has_branch_access(user, branch):
+            raise ValidationError("You do not have access to this branch.")
+
     def _get_order_item_from_request(self, request):
         """
         Extract and validate order_item_id from request, fetch OrderItem instance.
@@ -221,7 +248,12 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
             order_item = (
                 OrderItem.objects.select_related(
-                    "order", "order__patient", "test", "panel"
+                    "order",
+                    "order__patient",
+                    "order__collection_branch",
+                    "order__processing_branch",
+                    "test",
+                    "panel",
                 )
                 .prefetch_related(
                     "panel__tests",
@@ -247,6 +279,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
         if not order_item.order.patient:
             raise ValidationError({"error": "Order item has no associated patient"})
 
+        self._assert_branch_permissions(order_item, request.user)
         return order_item
 
     @action(detail=False, methods=["get"])

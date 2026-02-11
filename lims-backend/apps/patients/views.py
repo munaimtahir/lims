@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.export_utils import export_to_csv, export_to_excel
+from apps.core.authz import user_tenant
 
 from .filters import PatientFilter
 from .models import Patient
@@ -56,6 +57,9 @@ class PatientViewSet(viewsets.ModelViewSet):
         when accessing last_order_referred_by in PatientListSerializer.
         """
         queryset = super().get_queryset()
+        # Tenant scoping
+        tenant = user_tenant(self.request.user)
+        queryset = queryset.filter(tenant=tenant)
         if self.action == "list":
             # Prefetch only the latest order for each patient
             from django.db.models import Prefetch, Q
@@ -202,23 +206,31 @@ class PatientViewSet(viewsets.ModelViewSet):
             Response: List of matching patients with summary info.
         """
         mobile = request.query_params.get("mobile", "").strip()
+        mrn = request.query_params.get("mrn", "").strip()
+        name = request.query_params.get("name", "").strip()
+        cnic = request.query_params.get("cnic", "").strip()
 
-        if not mobile or len(mobile) < 3:
+        if not any([mobile, mrn, name, cnic]):
             return Response(
                 {
                     "success": True,
                     "data": [],
-                    "message": "Enter at least 3 digits to search",
+                    "message": "Provide mobile/mrn/name/cnic to search",
                 },
                 status=status.HTTP_200_OK,
             )
 
-        # Search for patients with matching mobile numbers
-        patients = Patient.objects.filter(phone__icontains=mobile).order_by(
-            "-created_at"
-        )[
-            :10
-        ]  # Limit to 10 results
+        qs = Patient.objects.filter(tenant=user_tenant(request.user))
+        if mobile:
+            qs = qs.filter(phone__icontains=mobile)
+        if mrn:
+            qs = qs.filter(mrn__icontains=mrn)
+        if name:
+            qs = qs.filter(full_name__icontains=name)
+        if cnic:
+            qs = qs.filter(cnic__icontains=cnic)
+
+        patients = qs.order_by("-created_at")[:20]
 
         results = []
         for patient in patients:
@@ -234,6 +246,11 @@ class PatientViewSet(viewsets.ModelViewSet):
                     "last_visit": patient.last_visit.isoformat()
                     if patient.last_visit
                     else None,
+                    "last_branch_code": (
+                        patient.orders.order_by("-created_at")
+                        .values_list("collection_branch__code", flat=True)
+                        .first()
+                    ),
                     "total_orders": patient.total_orders,
                 }
             )

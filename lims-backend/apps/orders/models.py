@@ -6,8 +6,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from apps.core.models import CollectionCenter
-from apps.core.numbering import generate_lab_number
+from apps.core.models import Branch, CollectionCenter, Tenant
+from apps.core.numbering import generate_branch_order_id, generate_lab_number
 from apps.core.validators import validate_lab_number
 from apps.laboratory.models import Test, TestPanel
 from apps.patients.models import Patient
@@ -53,7 +53,7 @@ class Order(models.Model):
     ]
 
     order_id = models.CharField(
-        max_length=20, unique=True, editable=False, db_index=True
+        max_length=30, editable=False, db_index=True
     )
     patient = models.ForeignKey(
         Patient, on_delete=models.CASCADE, related_name="orders"
@@ -91,6 +91,28 @@ class Order(models.Model):
         blank=True,
         related_name="orders",
     )
+    # Multi-branch
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="orders",
+    )
+    collection_branch = models.ForeignKey(
+        Branch,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="orders_collected",
+    )
+    processing_branch = models.ForeignKey(
+        Branch,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="orders_processing",
+    )
 
     # Financials
     total_amount = models.DecimalField(
@@ -122,6 +144,11 @@ class Order(models.Model):
             models.Index(fields=["lab_number"]),
             models.Index(fields=["lab_date", "collection_center", "daily_serial"]),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "order_id"], name="unique_order_id_per_tenant"
+            )
+        ]
 
     def __str__(self):
         """
@@ -141,8 +168,36 @@ class Order(models.Model):
             *args: Variable length argument list.
             **kwargs: Arbitrary keyword arguments.
         """
+        # Default tenant from patient or fallback
+        if not self.tenant:
+            self.tenant = getattr(self.patient, "tenant", None)
+        if not self.tenant:
+            from apps.core.models import get_default_tenant
+
+            self.tenant = get_default_tenant()
+
+        # Default branches
+        if not self.collection_branch:
+            from apps.core.models import Branch
+
+            hq_branch = (
+                Branch.objects.filter(tenant=self.tenant, code="00").first()
+                or Branch.objects.filter(code="00").first()
+            )
+            self.collection_branch = hq_branch
+        if not self.processing_branch:
+            self.processing_branch = self.collection_branch
+
         if not self.order_id:
-            self.order_id = self.generate_order_id()
+            # Branch-based order ID if branch available
+            if self.tenant and self.collection_branch:
+                self.order_id = generate_branch_order_id(
+                    tenant=self.tenant,
+                    branch=self.collection_branch,
+                    dt=self.created_at or timezone.now(),
+                )
+            else:
+                self.order_id = self.generate_order_id()
 
         # Prevent mutation of immutable lab identity fields after creation
         if self.pk:
@@ -159,20 +214,17 @@ class Order(models.Model):
             except Order.DoesNotExist:
                 pass
 
-        # V2 Lab Numbering
+        # V2 Lab Numbering (legacy) retained; branch fields separate
         if not self.lab_number:
             if not self.collection_center:
-                # Fallback to Head Office (00) if not set
                 center_00, _ = CollectionCenter.objects.get_or_create(
                     code="00", defaults={"name": "Head Office", "is_active": True}
                 )
                 self.collection_center = center_00
 
-            # Use created_at if available, else now
             generation_dt = self.created_at or timezone.now()
             self.lab_date = generation_dt.date()
 
-            # Generate number
             self.lab_number, self.daily_serial = generate_lab_number(
                 self.collection_center, generation_dt
             )

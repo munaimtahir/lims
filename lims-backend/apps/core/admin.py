@@ -2,12 +2,16 @@
 from django.contrib import admin
 
 from .models import (
+    Branch,
     CollectionCenter,
     LabDailyCounter,
     LabTerminal,
+    OrderIdSequence,
     PrintTemplate,
     RegistrationCounter,
     SystemSettings,
+    Tenant,
+    TenantMrnSequence,
 )
 
 
@@ -140,3 +144,33 @@ class PrintTemplateAdmin(admin.ModelAdmin):
     search_fields = ["template_key", "name", "description"]
     ordering = ["type", "name"]
     readonly_fields = ["created_at", "updated_at"]
+
+
+@admin.register(Tenant)
+class TenantAdmin(admin.ModelAdmin):
+    list_display = ["code", "name", "is_active", "updated_at"]
+    search_fields = ["code", "name"]
+    list_filter = ["is_active"]
+
+
+@admin.register(Branch)
+class BranchAdmin(admin.ModelAdmin):
+    list_display = ["tenant", "code", "name", "capability_mode", "is_hq", "is_active"]
+    list_filter = ["tenant", "capability_mode", "is_active", "is_hq"]
+    search_fields = ["code", "name", "tenant__code", "tenant__name"]
+    ordering = ["tenant__code", "code"]
+    readonly_fields = ["created_at", "updated_at"]
+
+
+@admin.register(OrderIdSequence)
+class OrderIdSequenceAdmin(admin.ModelAdmin):
+    list_display = ["tenant", "branch", "date", "last_seq", "updated_at"]
+    list_filter = ["tenant", "branch", "date"]
+    readonly_fields = ["updated_at"]
+
+
+@admin.register(TenantMrnSequence)
+class TenantMrnSequenceAdmin(admin.ModelAdmin):
+    list_display = ["tenant", "year_suffix", "last_seq", "updated_at"]
+    list_filter = ["tenant", "year_suffix"]
+    readonly_fields = ["updated_at"]

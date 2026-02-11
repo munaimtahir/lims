@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from apps.billing.models import Payment
 from apps.billing.views import PaymentViewSet
+from apps.core.authz import filter_queryset_for_branches, is_tenant_admin, user_tenant
 from apps.core.export_utils import export_to_csv, export_to_excel
 from apps.patients.models import Patient
 from apps.reports.models import Report, ReportStatus
@@ -41,6 +42,14 @@ class OrderViewSet(viewsets.ModelViewSet):
         "patient__full_name",
     ]
     ordering_fields = ["created_at", "total_amount", "net_amount"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        tenant = user_tenant(self.request.user)
+        qs = qs.filter(tenant=tenant)
+        if not is_tenant_admin(self.request.user):
+            qs = filter_queryset_for_branches(qs, "collection_branch", self.request.user)
+        return qs.select_related("patient", "collection_branch", "processing_branch")
 
     @action(detail=False, methods=["get"])
     def export(self, request):
@@ -183,14 +192,17 @@ class OrderItemViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ["order", "status"]
 
     def get_queryset(self):
-        return (
-            OrderItem.objects.select_related(
-                "order",
-                "order__patient",
-                "test",
-                "panel",
-            )
+        qs = OrderItem.objects.select_related(
+            "order",
+            "order__patient",
+            "test",
+            "panel",
         )
+        tenant = user_tenant(self.request.user)
+        qs = qs.filter(order__tenant=tenant)
+        if not is_tenant_admin(self.request.user):
+            qs = filter_queryset_for_branches(qs, "order__collection_branch", self.request.user)
+        return qs
 
 
 class WorklistPagination(PageNumberPagination):

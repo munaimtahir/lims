@@ -31,6 +31,7 @@ class SampleSerializer(serializers.ModelSerializer):
             "order_id",
             "patient_name",
             "sample_type",
+            "sample_id",
             "barcode",
             "status",
             "collected_at",
@@ -47,6 +48,7 @@ class SampleSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "barcode",
+            "sample_id",
             "collected_at",
             "collected_by",
             "received_at",

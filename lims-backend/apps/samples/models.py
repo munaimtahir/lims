@@ -1,7 +1,9 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+from apps.core.models import Branch, Tenant
 from apps.orders.models import Order, OrderItem
 
 
@@ -40,8 +42,36 @@ class Sample(models.Model):
     order_item = models.ForeignKey(
         OrderItem, on_delete=models.CASCADE, related_name="samples"
     )
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="samples",
+    )
+    collected_at_branch = models.ForeignKey(
+        Branch,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="samples_collected",
+    )
+    current_branch = models.ForeignKey(
+        Branch,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="samples_current",
+    )
     sample_type = models.CharField(max_length=50)
     barcode = models.CharField(max_length=50, unique=True, db_index=True)
+    sample_id = models.CharField(
+        max_length=80,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Tenant-wide unique sample identifier (order-scoped).",
+    )
     collected_at = models.DateTimeField(null=True, blank=True)
     collected_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -73,6 +103,11 @@ class Sample(models.Model):
         indexes = [
             models.Index(fields=["barcode"]),
             models.Index(fields=["status"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "sample_id"], name="unique_sample_per_tenant"
+            )
         ]
 
     def __str__(self):
@@ -108,6 +143,29 @@ class Sample(models.Model):
 
         The barcode is generated based on the current date and a sequential number.
         """
+        order = self.order_item.order if self.order_item else None
+
+        # Default tenant/branches from order if missing
+        if not self.tenant and order:
+            self.tenant = order.tenant
+        if not self.collected_at_branch and order:
+            self.collected_at_branch = order.collection_branch
+        if not self.current_branch:
+            self.current_branch = self.collected_at_branch
+
+        # Sample ID generation: {order_id}-S{n}
+        if not self.sample_id and order:
+            existing = (
+                Sample.objects.filter(order_item__order=order)
+                .exclude(pk=self.pk)
+                .count()
+            )
+            self.sample_id = f"{order.order_id}-S{existing + 1}"
+
+        # Keep barcode aligned to sample_id for compatibility
+        if not self.barcode and self.sample_id:
+            self.barcode = self.sample_id
+
         if not self.barcode:
             today = timezone.now().strftime("%Y%m%d")
             last_sample = (

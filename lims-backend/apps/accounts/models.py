@@ -6,6 +6,8 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 
+from apps.core.models import Branch
+
 from .managers import UserManager
 
 
@@ -42,6 +44,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="Receptionist")
+
+    # Multi-tenant / branch membership handled via UserBranchMembership
+    tenant = models.ForeignKey(
+        "core.Tenant",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="users",
+    )
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -139,3 +150,40 @@ class User(AbstractBaseUser, PermissionsMixin):
             bool: True if the user has the 'Manager' role, False otherwise.
         """
         return self.role == "Manager"
+
+
+class UserBranchRole(models.TextChoices):
+    MEMBER = "MEMBER", "Member"
+    SUPERVISOR = "SUPERVISOR", "Supervisor"
+    ADMIN = "ADMIN", "Admin"
+
+
+class UserBranchMembership(models.Model):
+    """Assign users to branches with an active flag and role."""
+
+    user = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE, related_name="branch_memberships"
+    )
+    branch = models.ForeignKey(
+        Branch, on_delete=models.CASCADE, related_name="user_memberships"
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=UserBranchRole.choices,
+        default=UserBranchRole.MEMBER,
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "accounts_user_branch_memberships"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "branch"], name="unique_user_branch_membership"
+            )
+        ]
+        ordering = ["user_id", "branch_id"]
+
+    def __str__(self):
+        return f"{self.user} @ {self.branch} ({self.role})"

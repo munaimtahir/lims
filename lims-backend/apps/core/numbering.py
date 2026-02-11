@@ -1,7 +1,15 @@
 from django.db import transaction
 from django.utils import timezone
 
-from apps.core.models import CollectionCenter, LabDailyCounter, RegistrationCounter
+from apps.core.models import (
+    Branch,
+    CollectionCenter,
+    LabDailyCounter,
+    OrderIdSequence,
+    RegistrationCounter,
+    Tenant,
+    TenantMrnSequence,
+)
 
 
 def generate_registration_number(center, dt=None):
@@ -40,6 +48,37 @@ def generate_registration_number(center, dt=None):
     # Formatting
     reg_number = f"{yymm}-{center.code}-{serial:04d}"
     return reg_number
+
+
+def generate_tenant_mrn(tenant: Tenant, dt=None):
+    """
+    Generate tenant-wide MRN.
+
+    Format: TENANTCODE-YY-###### (sequence resets annually per tenant).
+    """
+    if dt is None:
+        dt = timezone.now()
+
+    year_suffix = dt.strftime("%y")
+
+    with transaction.atomic():
+        seq, _ = TenantMrnSequence.objects.select_for_update().get_or_create(
+            tenant=tenant, year_suffix=year_suffix, defaults={"last_seq": 0}
+        )
+        seq.last_seq += 1
+        seq.save(update_fields=["last_seq", "updated_at"])
+        serial = seq.last_seq
+
+    return f"{tenant.code}-{year_suffix}-{serial:06d}"
+
+
+def generate_branch_order_id(tenant: Tenant, branch: Branch, dt=None):
+    """Generate Order ID: BC-YYMMDD-#### per (tenant, branch, date)."""
+    if dt is None:
+        dt = timezone.now()
+    date_part = dt.strftime("%y%m%d")
+    seq = OrderIdSequence.next_sequence(tenant=tenant, branch=branch, for_date=dt.date())
+    return f"{branch.code}-{date_part}-{seq:04d}"
 
 
 def generate_lab_number(center, dt=None):

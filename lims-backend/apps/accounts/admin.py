@@ -5,7 +5,7 @@ Django admin configuration for accounts app.
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User
+from .models import User, UserBranchMembership
 
 
 @admin.register(User)
@@ -19,6 +19,7 @@ class UserAdmin(BaseUserAdmin):
         "email",
         "full_name",
         "role",
+        "tenant",
         "is_active",
         "date_joined",
     ]
@@ -28,7 +29,7 @@ class UserAdmin(BaseUserAdmin):
 
     fieldsets = (
         (None, {"fields": ("username", "password")}),
-        ("Personal info", {"fields": ("full_name", "email")}),
+        ("Personal info", {"fields": ("full_name", "email", "tenant")}),
         (
             "Permissions",
             {
@@ -61,3 +62,11 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
     )
+
+
+@admin.register(UserBranchMembership)
+class UserBranchMembershipAdmin(admin.ModelAdmin):
+    list_display = ["user", "branch", "role", "is_active", "updated_at"]
+    list_filter = ["role", "is_active", "branch__tenant"]
+    search_fields = ["user__username", "user__full_name", "branch__name", "branch__code"]
+    autocomplete_fields = ["user", "branch"]

@@ -4,7 +4,8 @@ import os
 
 from django.conf import settings
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import models, transaction
+from django.utils import timezone
 
 
 def default_print_template_config():
@@ -352,3 +353,166 @@ class LabDailyCounter(models.Model):
         indexes = [
             models.Index(fields=["date", "center"]),
         ]
+
+
+class Tenant(models.Model):
+    """Tenant represents a logical lab organization sharing the same DB."""
+
+    code = models.CharField(
+        max_length=10,
+        unique=True,
+        help_text="Short stable tenant code used in IDs (e.g., LAB).",
+    )
+    name = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "core_tenants"
+        ordering = ["code"]
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
+def get_default_tenant():
+    """Return the default tenant, creating it if missing."""
+    tenant, _ = Tenant.objects.get_or_create(code="LAB", defaults={"name": "Default Lab"})
+    return tenant
+
+
+class BranchCapability(models.TextChoices):
+    COLLECT_ONLY = "COLLECT_ONLY", "Collection Only"
+    COLLECT_AND_PROCESS = "COLLECT_AND_PROCESS", "Collect & Process"
+    HQ_PROCESSING = "HQ_PROCESSING", "HQ / Processing"
+
+
+class Branch(models.Model):
+    """Branch / collection site tied to a tenant."""
+
+    tenant = models.ForeignKey(
+        Tenant, on_delete=models.PROTECT, related_name="branches", null=True, blank=True
+    )
+    code = models.CharField(
+        max_length=2,
+        validators=[RegexValidator(r"^\d{2}$", "Code must be 2 digits (00-99)")],
+        help_text="Numeric branch code (00-99).",
+    )
+    name = models.CharField(max_length=255)
+    address = models.TextField(blank=True, null=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
+    capability_mode = models.CharField(
+        max_length=32,
+        choices=BranchCapability.choices,
+        default=BranchCapability.COLLECT_ONLY,
+    )
+    is_hq = models.BooleanField(
+        default=False,
+        help_text="True when branch is HQ; enforced for code 00",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "core_branches"
+        verbose_name = "Branch"
+        verbose_name_plural = "Branches"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "code"], name="unique_branch_per_tenant"
+            )
+        ]
+        ordering = ["tenant_id", "code"]
+
+    def save(self, *args, **kwargs):
+        # Ensure HQ flag mirrors code; only code 00 may be HQ
+        self.is_hq = self.code == "00"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        tenant_code = self.tenant.code if self.tenant else "?"
+        return f"{tenant_code}:{self.code} - {self.name}"
+
+
+class TenantMrnSequence(models.Model):
+    """Atomic counter for tenant-wide MRN per year (YY)."""
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, related_name="mrn_sequences")
+    year_suffix = models.CharField(max_length=2, help_text="YY format")
+    last_seq = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "core_tenant_mrn_sequences"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "year_suffix"], name="unique_tenant_year_mrn_seq"
+            )
+        ]
+        indexes = [models.Index(fields=["tenant", "year_suffix"])]
+
+
+class OrderIdSequence(models.Model):
+    """Atomic counter for per-branch-per-day Order IDs."""
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, related_name="order_sequences")
+    branch = models.ForeignKey(Branch, on_delete=models.PROTECT, related_name="order_sequences")
+    date = models.DateField()
+    last_seq = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "core_order_id_sequences"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "branch", "date"],
+                name="unique_order_seq_per_branch_date",
+            )
+        ]
+        indexes = [models.Index(fields=["tenant", "branch", "date"])]
+
+    @classmethod
+    def next_sequence(cls, tenant, branch, for_date=None):
+        if for_date is None:
+            for_date = timezone.now().date()
+        with transaction.atomic():
+            seq, _ = cls.objects.select_for_update().get_or_create(
+                tenant=tenant, branch=branch, date=for_date, defaults={"last_seq": 0}
+            )
+            seq.last_seq += 1
+            seq.save(update_fields=["last_seq", "updated_at"])
+            return seq.last_seq
+
+
+class OrderIdSequence(models.Model):
+    """Atomic counter for per-branch-per-day Order IDs."""
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, related_name="order_sequences")
+    branch = models.ForeignKey(Branch, on_delete=models.PROTECT, related_name="order_sequences")
+    date = models.DateField()
+    last_seq = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "core_order_id_sequences"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "branch", "date"],
+                name="unique_order_seq_per_branch_date",
+            )
+        ]
+        indexes = [models.Index(fields=["tenant", "branch", "date"])]
+
+    @classmethod
+    def next_sequence(cls, tenant, branch, for_date=None):
+        if for_date is None:
+            for_date = timezone.now().date()
+        with transaction.atomic():
+            seq, _ = cls.objects.select_for_update().get_or_create(
+                tenant=tenant, branch=branch, date=for_date, defaults={"last_seq": 0}
+            )
+            seq.last_seq += 1
+            seq.save(update_fields=["last_seq", "updated_at"])
+            return seq.last_seq

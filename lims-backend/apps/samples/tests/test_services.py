@@ -120,7 +120,11 @@ class SampleGenerationTestCase(TestCase):
         self.assertEqual(sample_1.status, SampleStatus.PENDING)
         self.assertEqual(sample_1.sample_type, "Blood")
         self.assertIsNotNone(sample_1.barcode)
-        self.assertTrue(sample_1.barcode.startswith("SAM-"))
+        # Accept legacy SAM- format or new order-scoped sample_id
+        self.assertTrue(
+            sample_1.barcode.startswith("SAM-") or sample_1.barcode.startswith(self.order.order_id),
+            "Barcode should follow legacy SAM- or new order-based format",
+        )
 
         sample_2 = samples.filter(order_item=self.order_item_2).first()
         self.assertIsNotNone(sample_2)

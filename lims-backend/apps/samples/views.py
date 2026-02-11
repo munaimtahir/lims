@@ -1,7 +1,10 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+
+from apps.core.authz import filter_queryset_for_branches, is_tenant_admin, user_tenant
 
 from .models import Sample, SampleStatus
 from .serializers import SampleSerializer
@@ -26,6 +29,14 @@ class SampleViewSet(viewsets.ModelViewSet):
         "order_item__order__patient__first_name",
     ]
     ordering_fields = ["collected_at", "status"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        tenant = user_tenant(self.request.user)
+        qs = qs.filter(tenant=tenant)
+        if not is_tenant_admin(self.request.user):
+            qs = filter_queryset_for_branches(qs, "collected_at_branch", self.request.user)
+        return qs.select_related("order_item__order__collection_branch")
 
     @action(detail=False, methods=["get"])
     def pending_collections(self, request):

@@ -14,7 +14,7 @@ from django.contrib.auth.models import Group, Permission
 from apps.results.models import TestResult
 from apps.results.views import TestResultViewSet
 from apps.orders.models import Order, OrderItem
-from apps.laboratory.models import Test, TestParameter, Panel
+from apps.laboratory.models import Test, TestParameter
 from apps.patients.models import Patient
 
 User = get_user_model()
