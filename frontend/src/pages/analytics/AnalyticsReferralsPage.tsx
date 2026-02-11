@@ -51,7 +51,7 @@ export default function AnalyticsReferralsPage() {
                 <p>Referral sources by volume and revenue</p>
             </div>
 
-            <AnalyticsFilterBar onExport={handleExport} currentReportKey="referrals" />
+            <AnalyticsFilterBar onExport={handleExport}  />
 
             <div className={styles.grid} style={{ marginBottom: '24px' }}>
                 <div className={styles.card}>

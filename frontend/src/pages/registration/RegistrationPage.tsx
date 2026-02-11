@@ -592,7 +592,6 @@ export default function RegistrationPage() {
       discount: discountAmount,
       discount_percent: discountPercent,
       paid_amount: paidAmount,
-      paid_amount: paidAmount,
       referred_by: referredBy,
       collection_branch: currentBranch?.id,
     };

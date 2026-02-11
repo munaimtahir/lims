@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { analyticsApi } from '../../api/services';
@@ -49,7 +49,7 @@ export default function AnalyticsPatientsPage() {
                 <p>Patient activity and contribution analysis</p>
             </div>
 
-            <AnalyticsFilterBar onExport={handleExport} currentReportKey="patients" />
+            <AnalyticsFilterBar onExport={handleExport}  />
 
             {/* Summary Cards */}
             <div className={styles.grid} style={{ marginBottom: '24px' }}>

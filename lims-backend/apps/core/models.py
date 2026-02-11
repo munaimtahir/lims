@@ -486,33 +486,3 @@ class OrderIdSequence(models.Model):
             return seq.last_seq
 
 
-class OrderIdSequence(models.Model):
-    """Atomic counter for per-branch-per-day Order IDs."""
-
-    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, related_name="order_sequences")
-    branch = models.ForeignKey(Branch, on_delete=models.PROTECT, related_name="order_sequences")
-    date = models.DateField()
-    last_seq = models.IntegerField(default=0)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "core_order_id_sequences"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["tenant", "branch", "date"],
-                name="unique_order_seq_per_branch_date",
-            )
-        ]
-        indexes = [models.Index(fields=["tenant", "branch", "date"])]
-
-    @classmethod
-    def next_sequence(cls, tenant, branch, for_date=None):
-        if for_date is None:
-            for_date = timezone.now().date()
-        with transaction.atomic():
-            seq, _ = cls.objects.select_for_update().get_or_create(
-                tenant=tenant, branch=branch, date=for_date, defaults={"last_seq": 0}
-            )
-            seq.last_seq += 1
-            seq.save(update_fields=["last_seq", "updated_at"])
-            return seq.last_seq

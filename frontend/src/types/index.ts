@@ -59,7 +59,6 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   currentBranch: Branch | null;
-  setCurrentBranch: (branch: Branch) => void;
 }
 
 /**

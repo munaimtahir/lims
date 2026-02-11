@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { analyticsApi } from '../../api/services';
@@ -52,7 +52,7 @@ export default function AnalyticsOverviewPage() {
                 <p>Operational and financial snapshot for {queryParams.start_date} to {queryParams.end_date}</p>
             </div>
 
-            <AnalyticsFilterBar onExport={handleExport} currentReportKey="overview" />
+            <AnalyticsFilterBar onExport={handleExport}  />
 
             {summary && (
                 <div className={styles.grid}>

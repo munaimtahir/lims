@@ -4,10 +4,9 @@ import styles from './AnalyticsFilterBar.module.css';
 
 interface AnalyticsFilterBarProps {
     onExport: (format: 'csv' | 'xlsx') => void;
-    currentReportKey: string;
 }
 
-export function AnalyticsFilterBar({ onExport, currentReportKey }: AnalyticsFilterBarProps) {
+export function AnalyticsFilterBar({ onExport }: AnalyticsFilterBarProps) {
     const [searchParams, setSearchParams] = useSearchParams();
 
     // Default to 'today' if not present

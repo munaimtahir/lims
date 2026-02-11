@@ -6,9 +6,6 @@ interface AuthContextType extends AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
-  login: (credentials: LoginRequest) => Promise<void>;
-  logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
   setCurrentBranch: (branch: any) => void;
 }
 
@@ -17,7 +14,6 @@ const initialState: AuthState = {
   user: null,
   accessToken: null,
   refreshToken: null,
-  isAuthenticated: false,
   isAuthenticated: false,
   isLoading: true,
   currentBranch: null,
