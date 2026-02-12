@@ -1,5 +1,3 @@
-
-
 # Docker Compose configuration for LIMS application
 # Optimized for SSH-based deployment on remote servers
 #
@@ -69,12 +67,11 @@ services:
     build:
       context: ./lims-backend
       dockerfile: Dockerfile
-      
       # For production, use pull policy
       # pull: always
     container_name: lims_backend_prod
     restart: unless-stopped
-    
+
     volumes:
       - PROD_lims_static_files:/app/staticfiles
       - ./lims-backend/media:/app/media:rw
@@ -156,11 +153,11 @@ services:
     build:
       context: ./lims-backend
       dockerfile: Dockerfile
-      
+
     container_name: lims_celery_prod
     restart: unless-stopped
     command: celery -A config worker -l ${LOG_LEVEL:-INFO} --concurrency=4
-    
+
     volumes:
       - ./lims-backend/media:/app/media:rw
       - ./backups:/backups:rw
@@ -269,7 +266,7 @@ services:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1/}
     container_name: lims_frontend_prod
     restart: unless-stopped
-    
+
     environment:
       # Frontend Environment Variables
       REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL:-/api/v1/}
@@ -328,7 +325,6 @@ services:
 networks:
   lims-network:
     driver: bridge
-    name: lims_network
 
 # Docker Volumes
 volumes:
@@ -336,10 +332,14 @@ volumes:
     name: PROD_lims_pgdata
     driver: local
   PROD_lims_redis_data:
+    name: PROD_lims_redis_data
     driver: local
   PROD_lims_static_files:
+    name: PROD_lims_static_files
     driver: local
   PROD_lims_caddy_data:
+    name: PROD_lims_caddy_data
     driver: local
   PROD_lims_caddy_config:
+    name: PROD_lims_caddy_config
     driver: local
