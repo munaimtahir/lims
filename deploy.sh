@@ -22,10 +22,10 @@ success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 # Check Root
-if [ "$EUID" -ne 0 ]; then
-  error "Please run as root (sudo ./deploy.sh)"
-  exit 1
-fi
+# if [ "$EUID" -ne 0 ]; then
+#   error "Please run as root (sudo ./deploy.sh)"
+#   exit 1
+# fi
 
 # Check Environment
 if [ ! -f "$ENV_FILE" ]; then
