@@ -1,0 +1,48 @@
+# Development Compose for LIMS
+# Project: dev_lims
+# Data: DEV_lims_pgdata
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lims_db_dev
+    environment:
+      POSTGRES_DB: lims_db_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+    volumes:
+      - DEV_lims_pgdata:/var/lib/postgresql/data
+    networks:
+      - dev_lims_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lims_redis_dev
+    networks:
+      - dev_lims_network
+
+  backend:
+    build:
+      context: ./lims-backend
+      dockerfile: Dockerfile
+    container_name: lims_backend_dev
+    environment:
+      DEBUG: "True"
+      SECRET_KEY: dev_secret
+      DB_NAME: lims_db_dev
+      DB_USER: dev_user
+      DB_PASSWORD: dev_password
+      DB_HOST: db
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - db
+    networks:
+      - dev_lims_network
+
+networks:
+  dev_lims_network:
+    name: dev_lims_network
+
+volumes:
+  DEV_lims_pgdata:
+    name: DEV_lims_pgdata

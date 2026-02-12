@@ -1,0 +1,97 @@
+# Production Compose for LIMS
+# Project: prod_lims
+# Data: PROD_lims_pgdata
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lims_db_prod
+    restart: unless-stopped
+    volumes:
+      - PROD_lims_pgdata:/var/lib/postgresql/data
+      - ./backups:/var/lib/postgresql/backups:rw
+    environment:
+      POSTGRES_DB: ${DB_NAME:-lims_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prod_lims_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lims_redis_prod
+    restart: unless-stopped
+    volumes:
+      - PROD_lims_redis_data:/data
+    networks:
+      - prod_lims_network
+
+  backend:
+    build:
+      context: ./lims-backend
+      dockerfile: Dockerfile
+    container_name: lims_backend_prod
+    restart: unless-stopped
+    volumes:
+      - static_files:/app/staticfiles
+      - ./lims-backend/media:/app/media:rw
+      - ./backups:/backups:rw
+      - ./logs:/app/logs:rw
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      DB_NAME: ${DB_NAME:-lims_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: 5432
+      REDIS_URL: redis://redis:6379/0
+      # ... other envs from original ...
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - prod_lims_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lims_frontend_prod
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - prod_lims_network
+
+  proxy:
+    image: caddy:2-alpine
+    container_name: lims_proxy_prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8012:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - prod_lims_network
+
+networks:
+  prod_lims_network:
+    name: prod_lims_network
+
+volumes:
+  PROD_lims_pgdata:
+    name: PROD_lims_pgdata
+  PROD_lims_redis_data:
+    name: PROD_lims_redis_data
+  static_files:
+  caddy_data:
+  caddy_config:
