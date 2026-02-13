@@ -38,7 +38,7 @@ log "Environment: $ENV_FILE"
 
 # Stop Services
 log "Stopping all services..."
-docker compose --env-file "$ENV_FILE" down --remove-orphans || true
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" down --remove-orphans || true
 
 # Clean previous builds and irrelevant containers/images
 log "Cleaning build cache and dangling resources..."
@@ -47,37 +47,37 @@ docker image prune -f || true
 
 # Build Images
 log "Building Backend (No Cache)..."
-docker compose --env-file "$ENV_FILE" build --no-cache backend
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build --no-cache backend
 
 log "Building Celery (Using Backend Cache)..."
-docker compose --env-file "$ENV_FILE" build celery
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build celery
 
 log "Building Frontend (No Cache)..."
-docker compose --env-file "$ENV_FILE" build --no-cache frontend
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build --no-cache frontend
 
 # Start Services
 log "Starting Infrastructure (DB, Redis)..."
-docker compose --env-file "$ENV_FILE" up -d db redis
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d db redis
 log "Waiting 15s for DB..."
 sleep 15
 
 log "Starting Backend..."
-docker compose --env-file "$ENV_FILE" up -d backend
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d backend
 log "Waiting 15s for Backend..."
 sleep 15
 
 log "Starting Celery..."
-docker compose --env-file "$ENV_FILE" up -d celery
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d celery
 log "Waiting 5s for Celery..."
 sleep 5
 
 log "Starting Frontend & Proxy..."
-docker compose --env-file "$ENV_FILE" up -d frontend proxy
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d frontend proxy
 log "Waiting 10s..."
 sleep 10
 
 # Verification
 log "Looking for active containers..."
-docker compose --env-file "$ENV_FILE" ps
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" ps
 
 success "Deployment Complete! Check the application at your configured domain/port."

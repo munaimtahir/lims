@@ -9,7 +9,7 @@ export const authApi = {
    * Login with username/email and password
    */
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await api.post<LoginResponse>('/auth/login/', credentials);
+    const response = await api.post<LoginResponse>('auth/login/', credentials);
     return response.data;
   },
 
@@ -18,7 +18,7 @@ export const authApi = {
    */
   logout: async (refreshToken?: string): Promise<void> => {
     try {
-      await api.post('/auth/logout/', { refresh_token: refreshToken });
+      await api.post('auth/logout/', { refresh_token: refreshToken });
     } catch (error) {
       // Continue with logout even if API call fails
       console.error('Logout API error:', error);
@@ -29,7 +29,7 @@ export const authApi = {
    * Get current user profile
    */
   me: async (): Promise<ApiResponse<User>> => {
-    const response = await api.get<ApiResponse<User>>('/auth/me/');
+    const response = await api.get<ApiResponse<User>>('auth/me/');
     return response.data;
   },
 
@@ -42,7 +42,7 @@ export const authApi = {
     newPassword: string,
     newPasswordConfirm: string
   ): Promise<void> => {
-    await api.post(`/auth/users/${userId}/change_password/`, {
+    await api.post(`auth/users/${userId}/change_password/`, {
       old_password: oldPassword,
       new_password: newPassword,
       new_password_confirm: newPasswordConfirm,
