@@ -42,6 +42,18 @@ export default function ReportsPage() {
         // data will be refetched because retryCount changes queryKey
     };
 
+    const { data: auditEvents, isLoading: isAuditLoading } = useQuery({
+        queryKey: ['report-audit', auditReportId],
+        queryFn: async () => {
+            if (!auditReportId) return [];
+            const response = await apiClient.get<{ results: Array<{ id: number; created_at?: string; actor_name?: string; action: string; before?: unknown; after?: unknown; }> }>('/audit/', {
+                params: { entity_type: 'report', entity_id: auditReportId }
+            });
+            return response.data.results || [];
+        },
+        enabled: activeTab === 'audit' && !!auditReportId,
+    });
+
     // Loading state with timeout check
     if (isLoading) {
         if (showTimeoutError) {
@@ -94,18 +106,6 @@ export default function ReportsPage() {
     const reportResults = reportsData?.results;
     // Safeguard against undefined results
     const reports = Array.isArray(reportResults) ? reportResults : [];
-
-    const { data: auditEvents, isLoading: isAuditLoading } = useQuery({
-        queryKey: ['report-audit', auditReportId],
-        queryFn: async () => {
-            if (!auditReportId) return [];
-            const response = await apiClient.get<{ results: Array<{ id: number; created_at?: string; actor_name?: string; action: string; before?: unknown; after?: unknown; }> }>('/audit/', {
-                params: { entity_type: 'report', entity_id: auditReportId }
-            });
-            return response.data.results || [];
-        },
-        enabled: activeTab === 'audit' && !!auditReportId,
-    });
 
     return (
         <div className={styles.container}>
@@ -213,3 +213,4 @@ export default function ReportsPage() {
         </div>
     );
 }
+

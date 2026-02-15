@@ -33,6 +33,7 @@ export default function RegistrationPage() {
         consultant: '',
         category: '',
         mr_number: '',
+        // When enable_collection_centers is ON, this holds Branch id and is sent as `branch` in payload
         registration_center: currentBranch?.id || '',
     });
 
@@ -76,6 +77,25 @@ export default function RegistrationPage() {
             setFormData(prev => ({ ...prev, registration_center: currentBranch.id }));
         }
     }, [enableCollectionCenters, currentBranch]);
+
+    // --- MOBILE FORMAT: dash after 4th digit (0333-1234567) ---
+    const handlePhoneChange = (value: string) => {
+        const digits = value.replace(/\D/g, '');
+        const capped = digits.slice(0, 11);
+        const formatted = capped.length > 4
+            ? `${capped.slice(0, 4)}-${capped.slice(4)}`
+            : capped;
+        setFormData(prev => ({ ...prev, phone: formatted }));
+    };
+
+    // --- CNIC FORMAT: 12345-1234567-1 (dash after 5th and 12th digit) ---
+    const handleCnicChange = (value: string) => {
+        const digits = value.replace(/\D/g, '').slice(0, 13);
+        let formatted = digits.slice(0, 5);
+        if (digits.length > 5) formatted += '-' + digits.slice(5, 12);
+        if (digits.length > 12) formatted += '-' + digits.slice(12, 13);
+        setFormData(prev => ({ ...prev, cnic: formatted }));
+    };
 
     // --- AGE / DOB SYNC ---
     const handleDobChange = (value: string) => {
@@ -207,7 +227,9 @@ export default function RegistrationPage() {
 
             const firstField = Object.keys(newErrors)[0];
             if (firstField) {
-                const el = document.getElementById(`field-${firstField}`);
+                // Map backend key to form field id (registration_center is the branch dropdown)
+                const fieldId = firstField === 'registration_center' ? 'branch' : firstField;
+                const el = document.getElementById(`field-${fieldId}`);
                 if (el) el.focus();
             }
         }
@@ -227,6 +249,7 @@ export default function RegistrationPage() {
 
         const payload: Record<string, unknown> = {
             ...formData,
+            phone: formData.phone.replace(/\D/g, ''),
             full_name: formData.full_name.trim(),
             date_of_birth: normalizeDobInput(dobInput).iso,
             age_years: ageYears,
@@ -234,6 +257,8 @@ export default function RegistrationPage() {
             age_days: ageDays,
             default_referred_by: formData.referred_by || formData.consultant,
         };
+        // When enable_collection_centers is OFF, do not send branch or registration_center.
+        // When ON, send branch id only; backend resolves to CollectionCenter or uses default.
         if (!enableCollectionCenters) {
             delete payload.registration_center;
             delete payload.branch;
@@ -291,6 +316,9 @@ export default function RegistrationPage() {
             </header>
 
             {errors['global'] && <div className={styles.errorBanner}>{errors['global']}</div>}
+            {Object.keys(errors).filter(k => k !== 'global').length > 0 && (
+                <p className={styles.validationFailedHint}>Please fix the errors below.</p>
+            )}
 
             <div className={styles.formContainer}>
                 <section className={styles.section}>
@@ -304,7 +332,7 @@ export default function RegistrationPage() {
                                 type="text"
                                 placeholder="Search by mobile or enter new"
                                 value={formData.phone}
-                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                onChange={e => handlePhoneChange(e.target.value)}
                                 onKeyDown={handleMobileKeyDown}
                                 className={errors['phone'] ? styles.errorInput : ''}
                                 autoComplete="off"
@@ -375,7 +403,7 @@ export default function RegistrationPage() {
                                 value={ageInput}
                                 onChange={e => setAgeInput(e.target.value)}
                                 onBlur={handleAgeBlur}
-                                onKeyDown={e => handleKeyDown(e, 'field-dob')}
+                                onKeyDown={e => handleKeyDown(e, 'field-date_of_birth')}
                                 placeholder="Years, Months, Days"
                                 className={errors['age'] ? styles.errorInput : ''}
                             />
@@ -384,14 +412,16 @@ export default function RegistrationPage() {
                         <div className={styles.fieldGroup}>
                             <label>Date of Birth</label>
                             <input
-                                id="field-dob"
+                                id="field-date_of_birth"
                                 type="text"
-                                placeholder="DD/MM/YYYY"
+                                placeholder="DD/MM/YYYY or DDMMYYYY"
                                 value={dobInput}
                                 onChange={e => handleDobChange(e.target.value)}
                                 onKeyDown={e => handleKeyDown(e, 'field-father_husband_name')}
+                                className={errors['date_of_birth'] ? styles.errorInput : ''}
                                 autoComplete="off"
                             />
+                            {errors['date_of_birth'] && <span className={styles.errorMsg}>{errors['date_of_birth']}</span>}
                         </div>
                     </div>
 
@@ -414,7 +444,7 @@ export default function RegistrationPage() {
                                 id="field-cnic"
                                 type="text"
                                 value={formData.cnic}
-                                onChange={e => setFormData({ ...formData, cnic: e.target.value })}
+                                onChange={e => handleCnicChange(e.target.value)}
                                 onKeyDown={e => handleKeyDown(e, 'field-address')}
                                 placeholder="#####-#######-#"
                                 autoComplete="off"
@@ -440,18 +470,30 @@ export default function RegistrationPage() {
                         <div className={styles.row}>
                             <div className={styles.fieldGroup}>
                                 <label>Collection center (branch)</label>
-                                <select
-                                    id="field-branch"
-                                    value={formData.registration_center}
-                                    onChange={e => setFormData({ ...formData, registration_center: e.target.value })}
-                                    onKeyDown={e => handleKeyDown(e, 'field-submit')}
-                                >
-                                    {user?.branch_memberships?.map(m => (
-                                        <option key={m.branch.id} value={m.branch.id}>
-                                            {m.branch.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                {user?.branch_memberships?.length ? (
+                                    <>
+                                        <select
+                                            id="field-branch"
+                                            value={formData.registration_center}
+                                            onChange={e => setFormData({ ...formData, registration_center: e.target.value })}
+                                            onKeyDown={e => handleKeyDown(e, 'field-submit')}
+                                            className={errors['registration_center'] ? styles.errorInput : ''}
+                                        >
+                                            <option value="">Default center</option>
+                                            {user.branch_memberships.map(m => (
+                                                <option key={m.branch.id} value={m.branch.id}>
+                                                    {m.branch.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors['registration_center'] && <span className={styles.errorMsg}>{errors['registration_center']}</span>}
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className={styles.defaultCenterNote}>Using default center</p>
+                                        {errors['registration_center'] && <span className={styles.errorMsg}>{errors['registration_center']}</span>}
+                                    </>
+                                )}
                             </div>
                         </div>
                     )}

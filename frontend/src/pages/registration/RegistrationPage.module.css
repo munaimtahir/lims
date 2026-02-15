@@ -345,6 +345,19 @@ input:checked+.slider:before {
   content: "⚠️";
 }
 
+.validationFailedHint {
+  color: #c53030;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: -0.5rem 0 1rem 0;
+}
+
+.defaultCenterNote {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 0.5rem 0 0 0;
+}
+
 @keyframes rotate {
   from {
     transform: rotate(0deg);

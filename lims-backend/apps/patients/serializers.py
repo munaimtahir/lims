@@ -343,7 +343,10 @@ class PatientCreateSerializer(PatientValidationMixin, serializers.ModelSerialize
         return get_tenant_settings(tenant)
 
     def validate(self, attrs):
-        """Validate patient data and resolve registration_center from tenant settings and payload."""
+        """Validate patient data and resolve registration_center from tenant settings and payload.
+        When enable_collection_centers is ON, frontend sends branch id; we resolve to CollectionCenter
+        (or use tenant default). When OFF, neither branch nor registration_center is sent.
+        """
         attrs = self.validate_patient_data(attrs, instance=None)
         tenant_settings = self._get_tenant_settings()
         enable_cc = tenant_settings.enable_collection_centers if tenant_settings else False

@@ -28,13 +28,28 @@ export function formatDateDDMMYY(input?: string | Date | null): string {
 }
 
 /**
- * Parse user input (DD/MM/YY, DD-MM-YY, or ISO) into a Date.
+ * Parse user input (DD/MM/YY, DD-MM-YY, ISO, or continuous digits) into a Date.
  * The parser is deliberately day-first to avoid MM/DD acceptance.
+ * Continuous digits: 8 digits = DDMMYYYY, 6 digits = DDMMYY.
  */
 export function parseDobToDate(value?: string): Date | null {
   if (!value) return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
+
+  // Continuous digits: DDMMYYYY (8) or DDMMYY (6)
+  if (/^\d{8}$/.test(trimmed)) {
+    const day = Number(trimmed.slice(0, 2));
+    const month = Number(trimmed.slice(2, 4));
+    const year = Number(trimmed.slice(4, 8));
+    return buildSafeDate(year, month, day);
+  }
+  if (/^\d{6}$/.test(trimmed)) {
+    const day = Number(trimmed.slice(0, 2));
+    const month = Number(trimmed.slice(2, 4));
+    const year = normalizeTwoDigitYear(trimmed.slice(4, 6));
+    return buildSafeDate(year, month, day);
+  }
 
   // ISO input (YYYY-MM-DD)
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
