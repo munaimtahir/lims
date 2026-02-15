@@ -27,6 +27,7 @@ import type {
   CatalogAuditSummary,
   BackupArtifact,
   BackupSettings,
+  TenantSettings,
 } from '../types';
 
 /**
@@ -594,6 +595,21 @@ export const systemSettingsApi = {
     // Let's try PATCH with lab_logo: null.
     const response = await api.patch<ApiResponse<SystemSettings>>('core/settings/', { lab_logo: null });
     return response.data.data;
+  },
+};
+
+/**
+ * Tenant-scoped settings (branch/collection center feature flag and defaults).
+ * Used to decide whether to show collection center UI and what to send on patient create.
+ */
+export const tenantSettingsApi = {
+  get: async (): Promise<TenantSettings> => {
+    const response = await api.get<TenantSettings>('core/settings/tenant/');
+    return response.data;
+  },
+  patch: async (data: Partial<TenantSettings>): Promise<TenantSettings> => {
+    const response = await api.patch<TenantSettings>('core/settings/tenant/', data);
+    return response.data;
   },
 };
 

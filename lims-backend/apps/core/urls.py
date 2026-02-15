@@ -5,7 +5,12 @@ URL configuration for core app.
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import HealthCheckView, PrintTemplateViewSet, SystemSettingsViewSet
+from .views import (
+    HealthCheckView,
+    PrintTemplateViewSet,
+    SystemSettingsViewSet,
+    TenantSettingsView,
+)
 
 router = DefaultRouter()
 router.register("print-templates", PrintTemplateViewSet, basename="print-template")
@@ -37,6 +42,12 @@ urlpatterns = [
             {"post": "report_footer_image", "delete": "report_footer_image"}
         ),
         name="settings-report-footer-image",
+    ),
+    # Tenant-scoped settings (branch/collection center feature flag and defaults)
+    path(
+        "settings/tenant/",
+        TenantSettingsView.as_view(),
+        name="settings-tenant",
     ),
     # Health check endpoint
     path("health/", HealthCheckView.as_view(), name="health-check"),

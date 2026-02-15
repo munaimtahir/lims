@@ -8,7 +8,8 @@ It is idempotent - safe to run multiple times.
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from apps.accounts.models import User
+from apps.accounts.models import User, UserBranchMembership
+from apps.core.models import Branch, TenantSettings, get_default_tenant
 
 
 class Command(BaseCommand):
@@ -104,7 +105,17 @@ class Command(BaseCommand):
 
             # Always update password to ensure it's set correctly
             user.set_password(password)
+
+            # Assign default tenant and HQ branch so branch-scoped flows work
+            tenant = get_default_tenant()
+            if not user.tenant_id:
+                user.tenant = tenant
             user.save()
+            hq = Branch.objects.filter(tenant=tenant, code="00").first()
+            if hq and not user.branch_memberships.filter(branch=hq).exists():
+                UserBranchMembership.objects.get_or_create(
+                    user=user, branch=hq, defaults={"role": "MEMBER", "is_active": True}
+                )
 
             if created:
                 self.stdout.write(f"  Created user: {username} ({user_data['role']})")
@@ -118,6 +129,21 @@ class Command(BaseCommand):
                     "role": user_data["role"],
                 }
             )
+
+        # Ensure tenant settings exist with default_branch = HQ (for order defaults)
+        if tenant and hq:
+            TenantSettings.objects.get_or_create(
+                tenant=tenant,
+                defaults={
+                    "enable_collection_centers": False,
+                    "default_branch": hq,
+                    "default_collection_center": None,
+                },
+            )
+            ts = TenantSettings.objects.get(tenant=tenant)
+            if not ts.default_branch_id:
+                ts.default_branch = hq
+                ts.save(update_fields=["default_branch", "updated_at"])
 
         self.stdout.write(self.style.SUCCESS("\n" + "=" * 60))
         self.stdout.write(self.style.SUCCESS("DEMO USERS SUMMARY"))

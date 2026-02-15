@@ -10,10 +10,18 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import IsAdminOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 
-from .models import PrintTemplate, SystemSettings
-from .serializers import PrintTemplateSerializer, SystemSettingsSerializer
+from apps.core.authz import user_tenant
+from apps.accounts.permissions import IsAdminOrReadOnly
+from apps.core.services.settings import get_tenant_settings
+
+from .models import PrintTemplate, SystemSettings, TenantSettings
+from .serializers import (
+    PrintTemplateSerializer,
+    SystemSettingsSerializer,
+    TenantSettingsSerializer,
+)
 
 # Image upload configuration constants
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif"]
@@ -141,6 +149,58 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
     def current(self, request):
         """Get current system settings (alias for list)."""
         return self.list(request)
+
+
+class TenantSettingsView(APIView):
+    """
+    GET: Return tenant settings for the current user's tenant (create with defaults if missing).
+    PATCH: Update tenant settings (admin only).
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
+
+    def get(self, request):
+        tenant = user_tenant(request.user)
+        settings = get_tenant_settings(tenant)
+        if settings is None:
+            return Response(
+                {"detail": "No tenant assigned."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = TenantSettingsSerializer(settings)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        tenant = user_tenant(request.user)
+        settings_obj = get_tenant_settings(tenant)
+        if settings_obj is None:
+            return Response(
+                {"detail": "No tenant assigned."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = TenantSettingsSerializer(
+            settings_obj, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        before = {f: getattr(settings_obj, f, None) for f in ["sample_workflow_enabled", "enable_collection_centers"]}
+        serializer.save(updated_by=request.user)
+        settings_obj.refresh_from_db()
+        after = {f: getattr(settings_obj, f, None) for f in ["sample_workflow_enabled", "enable_collection_centers"]}
+        try:
+            from apps.audit.utils import emit_audit_event
+            emit_audit_event(
+                actor=request.user,
+                entity_type="tenant_settings",
+                entity_id=tenant.pk,
+                action="TENANT_SETTINGS_UPDATED",
+                before=before,
+                after=after,
+                metadata={"tenant_code": getattr(tenant, "code", None)},
+                source="api",
+            )
+        except Exception:
+            pass
+        return Response(serializer.data)
 
 
 class HealthCheckView(APIView):

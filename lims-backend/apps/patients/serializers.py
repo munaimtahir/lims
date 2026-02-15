@@ -7,6 +7,10 @@ from datetime import date, timedelta
 
 from rest_framework import serializers
 
+from apps.core.models import Branch, CollectionCenter
+from apps.core.authz import user_tenant
+from apps.core.services.settings import get_tenant_settings
+
 from .models import Patient
 
 
@@ -257,7 +261,16 @@ class PatientCreateSerializer(PatientValidationMixin, serializers.ModelSerialize
     Serializer for creating new patient records.
 
     This serializer includes only the fields required for creating a new patient.
+    Collection center is optional (feature flag). When OFF, registration_center
+    is ignored if invalid; when ON, center can be resolved from branch or default.
     """
+
+    branch = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        write_only=True,
+        help_text="Branch id (preferred when enable_collection_centers=True); maps to registration_center by code.",
+    )
 
     class Meta:
         model = Patient
@@ -279,6 +292,7 @@ class PatientCreateSerializer(PatientValidationMixin, serializers.ModelSerialize
             "default_referred_by",
             "address",
             "registration_center",
+            "branch",
         ]
 
     def validate_phone(self, value):
@@ -321,9 +335,75 @@ class PatientCreateSerializer(PatientValidationMixin, serializers.ModelSerialize
             raise serializers.ValidationError("Date of birth cannot be in the future.")
         return value
 
+    def _get_tenant_settings(self):
+        request = self.context.get("request")
+        if not request or not getattr(request, "user", None):
+            return None
+        tenant = user_tenant(request.user)
+        return get_tenant_settings(tenant)
+
     def validate(self, attrs):
-        """Validate patient data for required fields and DOB/age rules."""
-        return self.validate_patient_data(attrs, instance=None)
+        """Validate patient data and resolve registration_center from tenant settings and payload."""
+        attrs = self.validate_patient_data(attrs, instance=None)
+        tenant_settings = self._get_tenant_settings()
+        enable_cc = tenant_settings.enable_collection_centers if tenant_settings else False
+
+        # Resolve branch from write-only field (preferred when centers ON)
+        branch_id = attrs.pop("branch", None)
+        reg_center = attrs.get("registration_center")
+
+        if enable_cc:
+            # Collection centers ON: accept (1) valid CC pk, (2) branch id in branch field,
+            # (3) registration_center that is actually a Branch pk (compatibility bridge).
+            resolved_center = None
+            if reg_center is not None:
+                try:
+                    resolved_center = CollectionCenter.objects.get(pk=reg_center)
+                except (CollectionCenter.DoesNotExist, TypeError):
+                    branch = Branch.objects.filter(pk=reg_center).first()
+                    if branch:
+                        # Compatibility bridge: remove after UI migration, gated by enable_collection_centers.
+                        center, _ = CollectionCenter.objects.get_or_create(
+                            code=branch.code,
+                            defaults={"name": branch.name, "is_active": True},
+                        )
+                        resolved_center = center
+            if resolved_center is None and branch_id is not None:
+                branch = Branch.objects.filter(pk=branch_id).first()
+                if branch:
+                    center, _ = CollectionCenter.objects.get_or_create(
+                        code=branch.code,
+                        defaults={"name": branch.name, "is_active": True},
+                    )
+                    resolved_center = center
+            if resolved_center is None and tenant_settings and tenant_settings.default_collection_center_id:
+                resolved_center = tenant_settings.default_collection_center
+            if resolved_center is None:
+                raise serializers.ValidationError(
+                    {"registration_center": "Please select a collection center."}
+                )
+            attrs["registration_center"] = resolved_center
+        else:
+            # Collection centers OFF: do not require center; if payload has registration_center,
+            # accept only if it is a valid CollectionCenter pk; otherwise ignore (set None).
+            if reg_center is not None:
+                try:
+                    CollectionCenter.objects.get(pk=reg_center)
+                except (CollectionCenter.DoesNotExist, TypeError):
+                    # Invalid or Branch id sent as registration_center — ignore
+                    attrs["registration_center"] = None
+            # branch field is already popped; no need to set registration_center again
+
+        return attrs
+
+    def create(self, validated_data):
+        """Set tenant from request user so patient is visible in tenant-scoped list."""
+        request = self.context.get("request")
+        if request and getattr(request, "user", None):
+            from apps.core.authz import user_tenant
+
+            validated_data["tenant"] = user_tenant(request.user)
+        return super().create(validated_data)
 
 
 class PatientListSerializer(serializers.ModelSerializer):

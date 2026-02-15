@@ -338,14 +338,14 @@ def build_results_flowables(items, patient, styles, available_width, opts):
                     or getattr(param, "name", None)
                 )
                 range_info = pick_reference_range(param, patient)
-                specimen_info = ""
+                specimen_info = "N/A"
                 try:
                     sample = item.samples.first()
                     if sample:
                         collected = fmt_dt(getattr(sample, "collected_at", None)) or fmt_dt(getattr(sample, "received_at", None))
                         specimen_info = f"{safe_text(getattr(sample, 'sample_type', 'Specimen'))} · {collected}"
                 except Exception:
-                    specimen_info = ""
+                    specimen_info = "N/A"
 
                 method_info = ""
                 try:
@@ -730,7 +730,7 @@ def generate_pdf_report(
             sample_times.append(sample.collected_at)
         elif sample.received_at:
             sample_times.append(sample.received_at)
-    sample_collected = fmt_dt(min(sample_times) if sample_times else None)
+    sample_collected = fmt_dt(min(sample_times) if sample_times else None) if sample_times else "N/A"
 
     ref_by = safe_text(
         getattr(order, "referred_by", None)

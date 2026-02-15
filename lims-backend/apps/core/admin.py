@@ -12,6 +12,7 @@ from .models import (
     SystemSettings,
     Tenant,
     TenantMrnSequence,
+    TenantSettings,
 )
 
 
@@ -174,3 +175,19 @@ class TenantMrnSequenceAdmin(admin.ModelAdmin):
     list_display = ["tenant", "year_suffix", "last_seq", "updated_at"]
     list_filter = ["tenant", "year_suffix"]
     readonly_fields = ["updated_at"]
+
+
+@admin.register(TenantSettings)
+class TenantSettingsAdmin(admin.ModelAdmin):
+    list_display = [
+        "tenant",
+        "enable_collection_centers",
+        "sample_workflow_enabled",
+        "default_branch",
+        "default_collection_center",
+        "updated_at",
+        "updated_by",
+    ]
+    list_filter = ["enable_collection_centers", "sample_workflow_enabled", "tenant"]
+    raw_id_fields = ["default_branch", "default_collection_center"]
+    readonly_fields = ["created_at", "updated_at"]

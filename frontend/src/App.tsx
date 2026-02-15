@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import { BrandingProvider } from './contexts/BrandingContext';
-import { ProtectedRoute } from './components/auth';
+import { ProtectedRoute, SampleWorkflowGuard } from './components/auth';
 import { DashboardLayout } from './components/dashboard';
 import { LoginPage } from './pages/auth';
 import { PrintReceiptPage } from './pages/print';
@@ -82,8 +82,8 @@ function App() {
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="orders/create" element={<CreateOrderPage />} />
                 <Route path="tests" element={<TestCatalogPage />} />
-                <Route path="samples" element={<SamplesPage />} />
-                <Route path="collection" element={<CollectionWorklistPage />} />
+                <Route path="samples" element={<SampleWorkflowGuard><SamplesPage /></SampleWorkflowGuard>} />
+                <Route path="collection" element={<SampleWorkflowGuard><CollectionWorklistPage /></SampleWorkflowGuard>} />
                 <Route path="results" element={<ResultsPage />} />
                 <Route path="worklist" element={<ResultEntryWorklistPage />} />
                 <Route path="verification" element={<VerificationQueuePage />} />

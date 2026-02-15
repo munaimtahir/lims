@@ -1,6 +1,6 @@
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch, Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
@@ -16,6 +16,7 @@ from apps.core.authz import (
     user_tenant,
 )
 from apps.core.models import BranchCapability
+from apps.core.services.settings import get_tenant_settings
 from apps.laboratory.models import ReferenceRange, TestParameter
 from apps.orders.models import Order, OrderItem
 # from apps.reports.models import Report, ReportStatus
@@ -129,25 +130,43 @@ class TestResultViewSet(viewsets.ModelViewSet):
     def worklist(self, request):
         """
         Get worklist of pending results for entry (for lab technicians).
-
-        Returns:
-            Response: A paginated list of order items needing result entry.
+        When sample_workflow_enabled is False: paid orders are eligible immediately.
+        When sample_workflow_enabled is True: order items must have collected/received samples.
         """
-        # Get order items with collected samples but no results
-        from apps.samples.models import Sample, SampleStatus
+        tenant = user_tenant(request.user)
+        tenant_settings = get_tenant_settings(tenant)
+        sample_workflow_enabled = getattr(tenant_settings, "sample_workflow_enabled", True)
 
-        # Find order items that have collected samples but missing results
-        collected_samples = Sample.objects.filter(
-            status__in=[SampleStatus.COLLECTED, SampleStatus.RECEIVED]
-        ).values_list("order_item_id", flat=True)
-
-        # Get order items that need results
-        order_items_needing_results = (
-            OrderItem.objects.filter(id__in=collected_samples)
-            .exclude(results__isnull=False)
-            .select_related("order", "order__patient", "test", "panel")
-            .distinct()
-        )
+        if sample_workflow_enabled:
+            # Original logic: order items with collected/received samples
+            from apps.samples.models import Sample, SampleStatus
+            collected_samples = Sample.objects.filter(
+                status__in=[SampleStatus.COLLECTED, SampleStatus.RECEIVED]
+            ).values_list("order_item_id", flat=True)
+            order_items_needing_results = (
+                OrderItem.objects.filter(id__in=collected_samples)
+                .exclude(results__isnull=False)
+                .select_related("order", "order__patient", "test", "panel")
+                .distinct()
+            )
+        else:
+            # Sample workflow off: paid orders are eligible for result entry immediately
+            base = OrderItem.objects.filter(
+                order__tenant=tenant,
+                order__is_paid=True,
+                order__status__in=["NEW", "COLLECTED", "IN_PROCESS"],
+            ).exclude(order__status="CANCELLED")
+            if not is_tenant_admin(request.user):
+                base = filter_queryset_for_branches(
+                    base, "order__collection_branch", request.user
+                )
+            # Items that need result entry: no results yet or have DRAFT results
+            order_items_needing_results = (
+                base.annotate(rc=Count("results"))
+                .filter(Q(rc=0) | Q(results__status="DRAFT"))
+                .select_related("order", "order__patient", "test", "panel")
+                .distinct()
+            )
 
         # Also include order items with pending results (DRAFT)
         pending_results = (

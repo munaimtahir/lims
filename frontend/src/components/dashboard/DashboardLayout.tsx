@@ -1,32 +1,48 @@
-import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBranding } from '../../contexts/BrandingContext';
+import { tenantSettingsApi } from '../../api/services';
 import { TopHeader } from './TopHeader';
 import styles from './DashboardLayout.module.css';
 
+const SAMPLE_ROUTES = ['/dashboard/samples', '/dashboard/collection'];
 
 export default function DashboardLayout() {
   const { user, logout, currentBranch } = useAuth();
   const { branding } = useBranding();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { data: tenantSettings } = useQuery({
+    queryKey: ['tenant-settings'],
+    queryFn: () => tenantSettingsApi.get(),
+    staleTime: 1000 * 60 * 5,
+  });
+  const sampleWorkflowEnabled = tenantSettings?.sample_workflow_enabled ?? true;
+  const redirectMessage = location.state && 'message' in location.state ? (location.state as { message?: string }).message : null;
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
+  const hideSampleNav = (children: { to: string; label: string }[]) =>
+    sampleWorkflowEnabled ? children : children.filter(c => !SAMPLE_ROUTES.includes(c.to));
+
   type NavChild = { to: string; label: string };
   type NavItem = { label: string; to?: string; children?: NavChild[] };
 
-  // Get navigation items based on user role
+  // Get navigation items based on user role and tenant settings
   const getNavItems = () => {
     const items: NavItem[] = [];
 
     if (!user) return items;
 
     const addSection = (label: string, children: NavChild[]) => {
-      if (children.length) {
-        items.push({ label, children });
+      const filtered = hideSampleNav(children);
+      if (filtered.length) {
+        items.push({ label, children: filtered });
       }
     };
 
@@ -189,6 +205,11 @@ export default function DashboardLayout() {
       </nav>
 
       <main className={styles.main} data-testid="app-ready">
+        {redirectMessage && (
+          <div role="alert" className={styles.redirectMessage ?? undefined} style={{ padding: '8px 16px', background: '#fef3c7', color: '#92400e', marginBottom: 0 }}>
+            {redirectMessage}
+          </div>
+        )}
         <TopHeader />
         <Outlet />
       </main>

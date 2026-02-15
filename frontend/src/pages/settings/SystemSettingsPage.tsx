@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { systemSettingsApi, printTemplateApi, userApi } from '../../api/services';
+import { systemSettingsApi, printTemplateApi, userApi, tenantSettingsApi } from '../../api/services';
 import { normalizeListResponse, normalizeObjectResponse } from '../../utils/apiHelpers';
 import { isSampleBarcodeEnabled, setSampleBarcodeEnabled as setStoredBarcodeEnabled } from '../../utils/featureFlags';
 import type { SystemSettings, PrintTemplate, PrintSignatory, PrintTemplateConfig, User, UserRole } from '../../types';
@@ -10,10 +10,10 @@ import styles from './SystemSettingsPage.module.css';
 export default function SystemSettingsPage() {
   const queryClient = useQueryClient();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'ui' | 'lab' | 'reports' | 'email' | 'backup' | 'print' | 'users'>(() => {
+  const [activeTab, setActiveTab] = useState<'ui' | 'lab' | 'tenant' | 'reports' | 'email' | 'backup' | 'print' | 'users'>(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print' || tab === 'users') {
+    if (tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'tenant' || tab === 'email' || tab === 'backup' || tab === 'print' || tab === 'users') {
       return tab;
     }
     return 'lab';
@@ -71,6 +71,23 @@ export default function SystemSettingsPage() {
   const { data: templatesData } = useQuery({
     queryKey: ['print-templates'],
     queryFn: () => printTemplateApi.list(),
+  });
+
+  const { data: tenantSettingsData } = useQuery({
+    queryKey: ['tenant-settings'],
+    queryFn: () => tenantSettingsApi.get(),
+    enabled: activeTab === 'tenant',
+  });
+
+  const tenantSettingsMutation = useMutation({
+    mutationFn: (data: Parameters<typeof tenantSettingsApi.patch>[0]) => tenantSettingsApi.patch(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenant-settings'] });
+      alert('Tenant settings updated successfully');
+    },
+    onError: (error: unknown) => {
+      alert(`Error updating tenant settings: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    },
   });
 
   const updateMutation = useMutation({
@@ -220,7 +237,7 @@ export default function SystemSettingsPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if ((tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'email' || tab === 'backup' || tab === 'print' || tab === 'users') && activeTab !== tab) {
+    if ((tab === 'ui' || tab === 'reports' || tab === 'lab' || tab === 'tenant' || tab === 'email' || tab === 'backup' || tab === 'print' || tab === 'users') && activeTab !== tab) {
       setActiveTab(tab);
     }
   }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -612,6 +629,12 @@ export default function SystemSettingsPage() {
           onClick={() => setActiveTab('lab')}
         >
           Lab Information
+        </button>
+        <button
+          className={activeTab === 'tenant' ? styles.activeTab : styles.tab}
+          onClick={() => setActiveTab('tenant')}
+        >
+          Lab Workflow
         </button>
         <button
           className={activeTab === 'reports' ? styles.activeTab : styles.tab}
@@ -1032,6 +1055,36 @@ export default function SystemSettingsPage() {
                   />
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'tenant' && (
+            <div className={styles.tabContent}>
+              <h2>Lab Workflow</h2>
+              <p className={styles.description}>
+                Tenant-level options. Changes affect what workflows are available for this lab.
+              </p>
+              {tenantSettingsData && (
+                <div className={styles.formGroup}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={tenantSettingsData.sample_workflow_enabled ?? true}
+                      onChange={(e) => {
+                        tenantSettingsMutation.mutate({ sample_workflow_enabled: e.target.checked });
+                      }}
+                      disabled={tenantSettingsMutation.isPending}
+                    />
+                    <span>Enable sample workflow (collection/receiving)</span>
+                  </label>
+                  <p style={{ marginTop: 8, color: '#64748b', fontSize: '0.9rem' }}>
+                    When enabled, orders require sample collection and receiving before result entry. When disabled, paid orders go directly to result entry.
+                  </p>
+                </div>
+              )}
+              {activeTab === 'tenant' && !tenantSettingsData && !tenantSettingsMutation.isPending && (
+                <p>Loading tenant settings…</p>
+              )}
             </div>
           )}
 

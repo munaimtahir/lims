@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import OuterRef, Q, Subquery
 from django.http import FileResponse
 from django.utils import timezone
@@ -11,15 +12,26 @@ from rest_framework.views import APIView
 
 from apps.billing.models import Payment
 from apps.billing.views import PaymentViewSet
-from apps.core.authz import filter_queryset_for_branches, is_tenant_admin, user_tenant
+from apps.core.authz import (
+    filter_queryset_for_branches,
+    is_tenant_admin,
+    user_active_branches,
+    user_has_branch_access,
+    user_tenant,
+)
 from apps.core.export_utils import export_to_csv, export_to_excel
 from apps.patients.models import Patient
 from apps.reports.models import Report, ReportStatus
 from apps.orders.services import transition_visit_state
 
 from .filters import OrderFilter
-from .models import Order, OrderItem
-from .serializers import OrderItemSerializer, OrderSerializer
+from .models import Dispatch, DispatchItem, DispatchStatus, Order, OrderItem
+from .serializers import (
+    DispatchCreateSerializer,
+    DispatchSerializer,
+    OrderItemSerializer,
+    OrderSerializer,
+)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -369,3 +381,132 @@ class WorklistPatientsView(APIView):
             )
 
         return paginator.get_paginated_response(results)
+
+
+class DispatchViewSet(viewsets.ModelViewSet):
+    """
+    Create dispatch (branch → main lab), send (mark IN_TRANSIT), receive (mark RECEIVED, set samples).
+    Branch users can create/send only for their branch; main lab can receive.
+    """
+
+    permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "post", "head", "options"]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return DispatchCreateSerializer
+        return DispatchSerializer
+
+    def get_queryset(self):
+        qs = Dispatch.objects.all().select_related(
+            "from_branch", "to_branch", "tenant", "created_by", "received_by"
+        ).prefetch_related("items", "items__order")
+        tenant = user_tenant(self.request.user)
+        qs = qs.filter(tenant=tenant)
+        if not is_tenant_admin(self.request.user):
+            branches = user_active_branches(self.request.user)
+            branch_ids = list(branches.values_list("id", flat=True))
+            qs = qs.filter(
+                Q(from_branch_id__in=branch_ids) | Q(to_branch_id__in=branch_ids)
+            )
+        return qs.distinct()
+
+    def create(self, request, *args, **kwargs):
+        ser = DispatchCreateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        from_branch = ser.validated_data["from_branch"]
+        to_branch = ser.validated_data["to_branch"]
+        order_ids = ser.validated_data["order_ids"]
+        if not user_has_branch_access(request.user, from_branch):
+            return Response(
+                {"detail": "You can only create dispatches from your branch."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        tenant = user_tenant(request.user)
+        orders = Order.objects.filter(
+            id__in=order_ids,
+            tenant=tenant,
+            collection_branch=from_branch,
+            status="COLLECTED",
+        )
+        if orders.count() != len(order_ids):
+            return Response(
+                {"detail": "Some orders are not COLLECTED or not from this branch."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        with transaction.atomic():
+            dispatch = Dispatch.objects.create(
+                tenant=tenant,
+                from_branch=from_branch,
+                to_branch=to_branch,
+                created_by=request.user,
+                status=DispatchStatus.CREATED,
+            )
+            for order in orders:
+                DispatchItem.objects.get_or_create(dispatch=dispatch, order=order)
+        serializer = DispatchSerializer(dispatch)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = DispatchSerializer(instance)
+        return Response(serializer.data)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = DispatchSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def send(self, request, pk=None):
+        """Mark dispatch IN_TRANSIT (branch user)."""
+        dispatch = self.get_object()
+        if dispatch.status != DispatchStatus.CREATED:
+            return Response(
+                {"detail": f"Dispatch is {dispatch.status}, cannot send."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not user_has_branch_access(request.user, dispatch.from_branch):
+            return Response(
+                {"detail": "Only your branch can send this dispatch."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        dispatch.status = DispatchStatus.IN_TRANSIT
+        dispatch.sent_at = timezone.now()
+        dispatch.save(update_fields=["status", "sent_at"])
+        serializer = DispatchSerializer(dispatch)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def receive(self, request, pk=None):
+        """Mark dispatch RECEIVED and set all samples to RECEIVED (main lab user)."""
+        dispatch = self.get_object()
+        if dispatch.status != DispatchStatus.IN_TRANSIT:
+            return Response(
+                {"detail": f"Dispatch is {dispatch.status}, cannot receive."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not user_has_branch_access(request.user, dispatch.to_branch):
+            return Response(
+                {"detail": "Only the receiving branch can receive this dispatch."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        from apps.samples.models import Sample, SampleStatus
+
+        now = timezone.now()
+        order_ids = list(dispatch.items.values_list("order_id", flat=True))
+        samples = Sample.objects.filter(
+            order_item__order_id__in=order_ids,
+            status=SampleStatus.COLLECTED,
+        )
+        samples.update(
+            status=SampleStatus.RECEIVED,
+            received_at=now,
+            received_by=request.user,
+        )
+        dispatch.status = DispatchStatus.RECEIVED
+        dispatch.received_at = now
+        dispatch.received_by = request.user
+        dispatch.save(update_fields=["status", "received_at", "received_by"])
+        serializer = DispatchSerializer(dispatch)
+        return Response(serializer.data)

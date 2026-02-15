@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { patientApi, laboratoryApi } from '../../api/services';
+import { patientApi, laboratoryApi, tenantSettingsApi } from '../../api/services';
 import type { PatientLookupResult } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { normalizeDobInput, formatDobDisplay } from '../../utils/dateFormat';
@@ -60,17 +60,25 @@ export default function RegistrationPage() {
         queryFn: () => laboratoryApi.getCategories(),
     });
 
+    // Tenant settings: when enable_collection_centers is OFF, do not send registration_center/branch
+    const { data: tenantSettings } = useQuery({
+        queryKey: ['tenant-settings'],
+        queryFn: () => tenantSettingsApi.get(),
+        staleTime: 60_000,
+    });
+    const enableCollectionCenters = tenantSettings?.enable_collection_centers ?? false;
+
     // Focus First Name on Load
     useEffect(() => {
         firstNameRef.current?.focus();
     }, []);
 
-    // Update branch if it changes
+    // Update branch if it changes (only used when enable_collection_centers is true)
     useEffect(() => {
-        if (currentBranch) {
+        if (enableCollectionCenters && currentBranch) {
             setFormData(prev => ({ ...prev, registration_center: currentBranch.id }));
         }
-    }, [currentBranch]);
+    }, [enableCollectionCenters, currentBranch]);
 
     // --- AGE / DOB SYNC ---
     const handleDobChange = (value: string) => {
@@ -219,7 +227,7 @@ export default function RegistrationPage() {
             return;
         }
 
-        const payload = {
+        const payload: Record<string, unknown> = {
             ...formData,
             full_name: `${formData.first_name} ${formData.last_name || ''}`.trim(),
             date_of_birth: normalizeDobInput(dobInput).iso,
@@ -228,8 +236,19 @@ export default function RegistrationPage() {
             age_days: ageDays,
             default_referred_by: formData.referred_by || formData.consultant, // mapping
         };
+        // When collection centers OFF: do not send registration_center or branch (backend ignores invalid values)
+        if (!enableCollectionCenters) {
+            delete payload.registration_center;
+            delete payload.branch;
+        } else {
+            // When ON: send branch (Branch id); do NOT send Branch id as registration_center
+            if (formData.registration_center) {
+                payload.branch = Number(formData.registration_center);
+            }
+            delete payload.registration_center;
+        }
 
-        saveMutation.mutate(payload);
+        saveMutation.mutate(payload as any);
     };
 
     // --- KEYBOARD NAV ---
@@ -441,21 +460,23 @@ export default function RegistrationPage() {
                     <section className={styles.section}>
                         <h3 className={styles.sectionTitle}>3. Lab Administrative</h3>
                         <div className={styles.row}>
-                            <div className={styles.fieldGroup}>
-                                <label>Branch</label>
-                                <select
-                                    id="field-branch"
-                                    value={formData.registration_center}
-                                    onChange={e => setFormData({ ...formData, registration_center: e.target.value })}
-                                    onKeyDown={e => handleKeyDown(e, 'field-referred_by')}
-                                >
-                                    {user?.branch_memberships.map(m => (
-                                        <option key={m.branch.id} value={m.branch.id}>
-                                            {m.branch.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            {enableCollectionCenters && (
+                                <div className={styles.fieldGroup}>
+                                    <label>Collection center (branch)</label>
+                                    <select
+                                        id="field-branch"
+                                        value={formData.registration_center}
+                                        onChange={e => setFormData({ ...formData, registration_center: e.target.value })}
+                                        onKeyDown={e => handleKeyDown(e, 'field-referred_by')}
+                                    >
+                                        {user?.branch_memberships?.map(m => (
+                                            <option key={m.branch.id} value={m.branch.id}>
+                                                {m.branch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                             <div className={styles.fieldGroup}>
                                 <label>Referred By</label>
                                 <input

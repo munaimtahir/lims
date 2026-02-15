@@ -110,6 +110,26 @@ export interface PatientCreateRequest {
   father_husband_name?: string;
   default_referred_by?: string;
   address?: string;
+  /** CollectionCenter id; only when enable_collection_centers is true. Prefer `branch` when using branch dropdown. */
+  registration_center?: number | null;
+  /** Branch id; backend maps to registration_center by code when enable_collection_centers is true. */
+  branch?: number | null;
+}
+
+/** Tenant-scoped settings (branch/collection center and sample workflow feature flags). */
+export interface TenantSettings {
+  enable_collection_centers: boolean;
+  sample_workflow_enabled: boolean;
+  default_branch_id: number | null;
+  default_branch_code: string | null;
+  default_branch_name: string | null;
+  default_collection_center_id: number | null;
+  default_collection_center_code: string | null;
+  default_collection_center_name: string | null;
+  created_at?: string;
+  updated_at?: string;
+  updated_by_id?: number | null;
+  updated_by_name?: string | null;
 }
 
 /**

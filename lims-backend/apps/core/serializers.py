@@ -10,6 +10,7 @@ from .models import (
     PrintTemplate,
     RegistrationCounter,
     SystemSettings,
+    TenantSettings,
 )
 
 
@@ -121,6 +122,57 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
         if value < 0:
             raise serializers.ValidationError("Tax rate cannot be negative")
         return value
+
+
+class TenantSettingsSerializer(serializers.ModelSerializer):
+    """Serializer for tenant-scoped settings (branch/collection center and sample workflow flags)."""
+
+    class Meta:
+        model = TenantSettings
+        fields = [
+            "enable_collection_centers",
+            "sample_workflow_enabled",
+            "default_branch",
+            "default_collection_center",
+            "created_at",
+            "updated_at",
+            "updated_by",
+        ]
+        read_only_fields = ["created_at", "updated_at", "updated_by"]
+
+    def to_representation(self, instance):
+        """Expose ids and minimal branch/center info for frontend."""
+        data = super().to_representation(instance)
+        data["default_branch_id"] = instance.default_branch_id
+        data["default_collection_center_id"] = instance.default_collection_center_id
+        if instance.default_branch_id:
+            data["default_branch_code"] = getattr(
+                instance.default_branch, "code", None
+            )
+            data["default_branch_name"] = getattr(
+                instance.default_branch, "name", None
+            )
+        else:
+            data["default_branch_code"] = None
+            data["default_branch_name"] = None
+        if instance.default_collection_center_id:
+            data["default_collection_center_code"] = getattr(
+                instance.default_collection_center, "code", None
+            )
+            data["default_collection_center_name"] = getattr(
+                instance.default_collection_center, "name", None
+            )
+        else:
+            data["default_collection_center_code"] = None
+            data["default_collection_center_name"] = None
+        if getattr(instance, "updated_by_id", None) and instance.updated_by:
+            data["updated_by_id"] = instance.updated_by_id
+            fn = getattr(instance.updated_by, "get_full_name", None)
+            data["updated_by_name"] = fn() if callable(fn) else getattr(instance.updated_by, "full_name", None)
+        else:
+            data["updated_by_id"] = None
+            data["updated_by_name"] = None
+        return data
 
 
 class PrintTemplateSerializer(serializers.ModelSerializer):

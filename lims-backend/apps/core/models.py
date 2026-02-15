@@ -486,3 +486,58 @@ class OrderIdSequence(models.Model):
             return seq.last_seq
 
 
+class TenantSettings(models.Model):
+    """
+    Tenant-scoped settings for branch/collection center and sample workflow behavior.
+    Collection Center is optional (enable_collection_centers=False by default).
+    Sample workflow is optional (sample_workflow_enabled=True by default for backward compatibility).
+    """
+
+    tenant = models.OneToOneField(
+        Tenant,
+        on_delete=models.CASCADE,
+        related_name="settings",
+        primary_key=True,
+    )
+    enable_collection_centers = models.BooleanField(
+        default=False,
+        help_text="When True, registration/order flows may require or use collection center.",
+    )
+    sample_workflow_enabled = models.BooleanField(
+        default=True,
+        help_text="When True, sample collection/receiving is required before result entry. When False, orders go directly to result entry after receipt/payment.",
+    )
+    default_branch = models.ForeignKey(
+        Branch,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Default branch for order collection when user has no branch (e.g. HQ).",
+    )
+    default_collection_center = models.ForeignKey(
+        CollectionCenter,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Default collection center for patient registration when centers enabled.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="User who last updated these settings.",
+    )
+
+    class Meta:
+        db_table = "core_tenant_settings"
+        verbose_name = "Tenant settings"
+        verbose_name_plural = "Tenant settings"
+
+    def __str__(self):
+        return f"Settings for {self.tenant}"

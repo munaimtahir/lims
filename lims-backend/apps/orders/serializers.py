@@ -1,10 +1,13 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from apps.core.authz import user_active_branches, user_tenant
+from apps.core.models import Branch
+from apps.core.services.settings import get_tenant_settings
 from apps.laboratory.models import Test, TestPanel
 from apps.patients.models import Patient
 
-from .models import Order, OrderItem
+from .models import Dispatch, DispatchItem, Order, OrderItem
 
 
 class MinimalPatientSerializer(serializers.ModelSerializer):
@@ -188,11 +191,27 @@ class OrderSerializer(serializers.ModelSerializer):
             validated_data["ordered_by"] = request.user
 
         with transaction.atomic():
-            # Tenant and branch defaults
-            if not validated_data.get("tenant") and hasattr(self, "context"):
-                req_user = getattr(self.context.get("request"), "user", None)
-                if req_user:
-                    validated_data["tenant"] = getattr(req_user, "tenant", None)
+            request = self.context.get("request")
+            req_user = getattr(request, "user", None) if request else None
+
+            # Tenant: always set from user (server is source of truth)
+            if not validated_data.get("tenant") and req_user:
+                validated_data["tenant"] = user_tenant(req_user)
+
+            # collection_branch: user's first active branch, else tenant default_branch, else 400
+            if not validated_data.get("collection_branch") and req_user:
+                branches = user_active_branches(req_user)
+                first_branch = branches.first()
+                if not first_branch:
+                    tenant = validated_data.get("tenant") or user_tenant(req_user)
+                    tenant_settings = get_tenant_settings(tenant)
+                    if tenant_settings and tenant_settings.default_branch_id:
+                        first_branch = tenant_settings.default_branch
+                if not first_branch:
+                    raise serializers.ValidationError(
+                        {"collection_branch": "No branch assigned. Contact admin."}
+                    )
+                validated_data["collection_branch"] = first_branch
 
             # Default processing branch to collection_branch
             if not validated_data.get("processing_branch"):
@@ -250,3 +269,52 @@ class OrderSerializer(serializers.ModelSerializer):
                 )
 
         return order
+
+
+class DispatchItemSerializer(serializers.ModelSerializer):
+    order_id = serializers.IntegerField(source="order.id", read_only=True)
+    order_order_id = serializers.CharField(source="order.order_id", read_only=True)
+
+    class Meta:
+        model = DispatchItem
+        fields = ["id", "order", "order_id", "order_order_id", "created_at"]
+        read_only_fields = ["created_at"]
+
+
+class DispatchSerializer(serializers.ModelSerializer):
+    items = DispatchItemSerializer(many=True, read_only=True)
+    from_branch_name = serializers.CharField(source="from_branch.name", read_only=True)
+    to_branch_name = serializers.CharField(source="to_branch.name", read_only=True)
+
+    class Meta:
+        model = Dispatch
+        fields = [
+            "id",
+            "tenant",
+            "from_branch",
+            "to_branch",
+            "from_branch_name",
+            "to_branch_name",
+            "created_by",
+            "created_at",
+            "status",
+            "sent_at",
+            "received_at",
+            "received_by",
+            "items",
+        ]
+        read_only_fields = [
+            "created_at",
+            "status",
+            "sent_at",
+            "received_at",
+            "received_by",
+        ]
+
+
+class DispatchCreateSerializer(serializers.Serializer):
+    """Payload: from_branch, to_branch, order_ids (list of order ids)."""
+
+    from_branch = serializers.PrimaryKeyRelatedField(queryset=Branch.objects.all())
+    to_branch = serializers.PrimaryKeyRelatedField(queryset=Branch.objects.all())
+    order_ids = serializers.ListField(child=serializers.IntegerField(), min_length=1)

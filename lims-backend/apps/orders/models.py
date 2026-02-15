@@ -269,9 +269,9 @@ class Order(models.Model):
         Raises:
             ValidationError: If the transition is not allowed.
         """
-        # Define valid transitions
+        # Define valid transitions (NEW may go to IN_PROCESS when sample workflow is disabled)
         valid_transitions = {
-            "NEW": ["COLLECTED", "CANCELLED"],
+            "NEW": ["COLLECTED", "IN_PROCESS", "CANCELLED"],
             "COLLECTED": ["IN_PROCESS", "CANCELLED"],
             "IN_PROCESS": ["VERIFIED", "CANCELLED"],
             "VERIFIED": ["PUBLISHED", "CANCELLED"],
@@ -377,12 +377,13 @@ class Order(models.Model):
         self.paid_amount = total_paid
         self.save()
 
-        # If the order has just become paid, trigger sample generation
+        # If the order has just become paid, trigger sample generation only when sample workflow is enabled
         if not was_paid_before and self.is_paid:
-            from apps.samples.services import ensure_samples_for_paid_order
-
-            # Assuming the last user to update the order is the one to credit for creation
-            ensure_samples_for_paid_order(self, created_by=self.ordered_by)
+            from apps.core.services.settings import get_tenant_settings
+            tenant_settings = get_tenant_settings(self.tenant)
+            if tenant_settings and getattr(tenant_settings, "sample_workflow_enabled", True):
+                from apps.samples.services import ensure_samples_for_paid_order
+                ensure_samples_for_paid_order(self, created_by=self.ordered_by)
 
 
 class OrderItem(models.Model):
@@ -443,3 +444,85 @@ class OrderItem(models.Model):
             elif self.panel:
                 self.price = self.panel.price
         super().save(*args, **kwargs)
+
+
+class DispatchStatus(models.TextChoices):
+    CREATED = "CREATED", "Created"
+    IN_TRANSIT = "IN_TRANSIT", "In Transit"
+    RECEIVED = "RECEIVED", "Received"
+
+
+class Dispatch(models.Model):
+    """Minimal dispatch manifest: batch of orders sent from a branch to main lab."""
+
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="dispatches",
+    )
+    from_branch = models.ForeignKey(
+        Branch,
+        on_delete=models.PROTECT,
+        related_name="dispatches_sent",
+    )
+    to_branch = models.ForeignKey(
+        Branch,
+        on_delete=models.PROTECT,
+        related_name="dispatches_received",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="dispatches_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=DispatchStatus.choices,
+        default=DispatchStatus.CREATED,
+    )
+    sent_at = models.DateTimeField(null=True, blank=True)
+    received_at = models.DateTimeField(null=True, blank=True)
+    received_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dispatches_received",
+    )
+
+    class Meta:
+        db_table = "orders_dispatch"
+        ordering = ["-created_at"]
+        verbose_name = "Dispatch"
+        verbose_name_plural = "Dispatches"
+
+    def __str__(self):
+        return f"Dispatch {self.id} {self.from_branch} → {self.to_branch} ({self.status})"
+
+
+class DispatchItem(models.Model):
+    """Order included in a dispatch."""
+
+    dispatch = models.ForeignKey(
+        Dispatch,
+        on_delete=models.CASCADE,
+        related_name="items",
+    )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="dispatch_items",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "orders_dispatch_item"
+        unique_together = [["dispatch", "order"]]
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.order.order_id} in Dispatch {self.dispatch_id}"

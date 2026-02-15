@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from apps.core.authz import filter_queryset_for_branches, is_tenant_admin, user_tenant
+from apps.core.services.settings import require_sample_workflow_enabled
 
 from .models import Sample, SampleStatus
 from .serializers import SampleSerializer
@@ -15,6 +16,7 @@ from .services import reject_sample, transition_sample_state
 class SampleViewSet(viewsets.ModelViewSet):
     """
     ViewSet for handling CRUD operations for Samples.
+    When tenant setting sample_workflow_enabled is False, all sample endpoints return 403.
     """
 
     queryset = Sample.objects.all()
@@ -31,6 +33,14 @@ class SampleViewSet(viewsets.ModelViewSet):
         "order_item__order__patient__first_name",
     ]
     ordering_fields = ["collected_at", "status"]
+
+    def _check_sample_workflow_enabled(self):
+        """Enforce tenant setting: sample endpoints disabled when sample_workflow_enabled is False."""
+        require_sample_workflow_enabled(user_tenant(self.request.user))
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        self._check_sample_workflow_enabled()
 
     def get_queryset(self):
         qs = super().get_queryset()
