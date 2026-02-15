@@ -44,4 +44,9 @@ def filter_queryset_for_branches(qs: QuerySet, branch_field: str, user) -> Query
     if is_tenant_admin(user):
         return qs
     allowed = user_active_branches(user)
-    return qs.filter(**{f"{branch_field}__in": allowed})
+    # Include records with null branch (unassigned) so samples/orders without
+    # branch config remain visible when lab has no branches configured
+    from django.db.models import Q
+    return qs.filter(
+        Q(**{f"{branch_field}__in": allowed}) | Q(**{f"{branch_field}__isnull": True})
+    )

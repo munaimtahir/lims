@@ -205,44 +205,47 @@ logger.info(f"Production CORS_ALLOWED_ORIGINS configured: {CORS_ALLOWED_ORIGINS}
 # CRITICAL FOR HTTPS DEPLOYMENT
 # Django 4.0+ requires CSRF_TRUSTED_ORIGINS for HTTPS sites
 # Must include the protocol (https://) and domain
+# NOTE: CSRF_TRUSTED_ORIGINS is now configured in base.py using decouple
 
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
-    if origin.strip()
-]
-if not CSRF_TRUSTED_ORIGINS:
-    if IS_VERIFICATION_CONTEXT:
-        CSRF_TRUSTED_ORIGINS = ["http://localhost"]
-        logger.warning(
-            "VERIFICATION CONTEXT: CSRF_TRUSTED_ORIGINS not set, defaulting to http://localhost for tests/CI."
-        )
-    else:
-        raise ValueError(
-            "CRITICAL: CSRF_TRUSTED_ORIGINS environment variable must be set in production. "
-            "Provide fully-qualified origins with scheme, e.g., 'https://your-domain.com,https://api.your-domain.com'."
-        )
-
-wildcard_csrf_entries = [
-    origin for origin in CSRF_TRUSTED_ORIGINS if origin == "*" or origin.endswith("*")
-]
-if wildcard_csrf_entries:
-    raise ValueError(
-        f"CRITICAL: CSRF_TRUSTED_ORIGINS contains invalid entries: {wildcard_csrf_entries}. "
-        "Use explicit HTTPS origins; wildcards are not permitted."
-    )
-
-if not IS_VERIFICATION_CONTEXT:
-    non_https_csrf_entries = [
-        origin for origin in CSRF_TRUSTED_ORIGINS if not origin.startswith("https://")
-    ]
-    if non_https_csrf_entries:
-        raise ValueError(
-            f"CRITICAL: CSRF_TRUSTED_ORIGINS contains non-HTTPS entries: {non_https_csrf_entries}. "
-            "Use explicit HTTPS origins in production."
-        )
-
-logger.info(f"Production CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}")
+# CSRF_TRUSTED_ORIGINS = [
+#     origin.strip()
+#     for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+#     if origin.strip()
+# ]
+# print(f"DEBUG: Raw CSRF_TRUSTED_ORIGINS env var: {repr(os.environ.get('CSRF_TRUSTED_ORIGINS', ''))}")
+# print(f"DEBUG: Parsed CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
+# if not CSRF_TRUSTED_ORIGINS:
+#     if IS_VERIFICATION_CONTEXT:
+#         CSRF_TRUSTED_ORIGINS = ["http://localhost"]
+#         logger.warning(
+#             "VERIFICATION CONTEXT: CSRF_TRUSTED_ORIGINS not set, defaulting to http://localhost for tests/CI."
+#         )
+#     else:
+#         raise ValueError(
+#             "CRITICAL: CSRF_TRUSTED_ORIGINS environment variable must be set in production. "
+#             "Provide fully-qualified origins with scheme, e.g., 'https://your-domain.com,https://api.your-domain.com'."
+#         )
+# 
+# wildcard_csrf_entries = [
+#     origin for origin in CSRF_TRUSTED_ORIGINS if origin == "*" or origin.endswith("*")
+# ]
+# if wildcard_csrf_entries:
+#     raise ValueError(
+#         f"CRITICAL: CSRF_TRUSTED_ORIGINS contains invalid entries: {wildcard_csrf_entries}. "
+#         "Use explicit HTTPS origins; wildcards are not permitted."
+#     )
+# 
+# if not IS_VERIFICATION_CONTEXT:
+#     non_https_csrf_entries = [
+#         origin for origin in CSRF_TRUSTED_ORIGINS if not origin.startswith("https://")
+#     ]
+#     if non_https_csrf_entries:
+#         raise ValueError(
+#             f"CRITICAL: CSRF_TRUSTED_ORIGINS contains non-HTTPS entries: {non_https_csrf_entries}. "
+#             "Use explicit HTTPS origins in production."
+#         )
+# 
+# logger.info(f"Production CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}")
 
 
 # ============================================

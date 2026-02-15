@@ -106,7 +106,7 @@ def get_available_tests(token):
             tests = response.json()
             if isinstance(tests, dict) and "results" in tests:
                 tests = tests["results"]
-            test_ids = [t["id"] for t in tests[:2]] if len(tests) >= 2 else []
+            test_ids = [t.get("id") or t.get("test_id") for t in tests[:2]] if len(tests) >= 2 else []
             log_test("TEST-LIST", "PASS", f"Found {len(tests)} tests, using IDs: {test_ids}")
             return test_ids
         else:
@@ -390,13 +390,13 @@ def generate_report(token, order_id):
     """Generate report PDF."""
     try:
         response = requests.post(
-            f"{API_BASE}/reports/",
+            f"{API_BASE}/reports/generate/",
             headers={"Authorization": f"Bearer {token}"},
-            json={"order": order_id}
+            json={"order_id": order_id, "is_final": True}
         )
-        if response.status_code == 201:
+        if response.status_code in (200, 201):
             data = response.json()
-            report_id = data.get("id")
+            report_id = data.get("id") or (data.get("report") or {}).get("id")
             log_test("REPORT-GENERATE", "PASS", f"Report generated (ID: {report_id})")
             return report_id
         else:
@@ -455,7 +455,7 @@ def download_receipt(token, payment_id):
     """Download receipt PDF."""
     try:
         response = requests.get(
-            f"{API_BASE}/payments/{payment_id}/download_receipt/",
+            f"{API_BASE}/payments/{payment_id}/receipt/",
             headers={"Authorization": f"Bearer {token}"}
         )
         if response.status_code == 200:
@@ -542,10 +542,11 @@ def main():
     print("PHASE 2: ORDER CREATION (REGRESSION TEST FOR ISSUE #1)")
     print("=" * 80)
     
-    # Use hardcoded patient ID (patient fetching has issues due to response format)
-    patient_id = 12
-    mrn = "PAT-20260117-0007"
-    log_test("PATIENT-EXISTING", "PASS", f"Using existing patient (ID: {patient_id}, MRN: {mrn})")
+    # Create patient for smoke test
+    patient_id, mrn = create_patient(receptionist_token)
+    if not patient_id:
+        print("\n❌ CRITICAL: Patient creation failed. Cannot proceed.")
+        return False
     
     test_ids = get_available_tests(receptionist_token)
     if len(test_ids) < 2:
@@ -639,7 +640,7 @@ def main():
         print("\n❌ CRITICAL: Verification queue empty.")
         return False
     
-    if not verify_result(pathologist_token, result_id):
+    if not verify_result(admin_token, result_id):
         print("\n❌ CRITICAL: Result verification failed.")
         return False
     
