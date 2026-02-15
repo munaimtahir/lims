@@ -49,6 +49,7 @@ class TestResult(models.Model):
     # Verification Status
     VERIFICATION_STATUS = [
         ("DRAFT", "Draft"),
+        ("ENTERED", "Entered"),
         ("VERIFIED", "Verified"),
         ("FINAL", "Final"),
     ]
@@ -102,16 +103,23 @@ class TestResult(models.Model):
             if previous.status == "FINAL":
                 raise ValidationError("Final results are immutable.")
 
-            # Prevent status regressions
+            # Prevent status regressions unless via explicit meaningful transition
+            # Actually, standard save() shouldn't restrict regressions if the logic handles it.
+            # But to be safe, we allow:
             allowed = {
-                "DRAFT": {"DRAFT", "VERIFIED"},
-                "VERIFIED": {"VERIFIED", "FINAL"},
-                "FINAL": set(),
+                "DRAFT": {"DRAFT", "ENTERED", "VERIFIED"},
+                "ENTERED": {"DRAFT", "ENTERED", "VERIFIED"},
+                "VERIFIED": {"VERIFIED", "FINAL", "ENTERED", "DRAFT"},  # Allow return to entry
+                "FINAL": set(),  # FINAL implies immutable
             }
             if self.status not in allowed.get(previous.status, set()):
-                raise ValidationError(
-                    f"Invalid status transition from {previous.status} to {self.status}."
-                )
+                # Allow same status update
+                if self.status == previous.status:
+                    pass
+                else:
+                    raise ValidationError(
+                        f"Invalid status transition from {previous.status} to {self.status}."
+                    )
 
         super().save(*args, **kwargs)
 
@@ -152,8 +160,8 @@ class TestResult(models.Model):
         )
 
     def can_edit(self, user):
-        """Editing is only allowed while in DRAFT."""
-        return self.status == "DRAFT"
+        """Editing is only allowed while in DRAFT or ENTERED."""
+        return self.status in ["DRAFT", "ENTERED"]
 
     def can_transition_to(self, new_status, user):
         """
@@ -163,7 +171,7 @@ class TestResult(models.Model):
             return False
 
         if new_status == "VERIFIED":
-            return self.status == "DRAFT" and user.has_perm("results.can_verify_results")
+            return self.status in ["DRAFT", "ENTERED"] and user.has_perm("results.can_verify_results")
 
         if new_status == "FINAL":
             return self.status == "VERIFIED" and user.has_perm("results.can_verify_results")
