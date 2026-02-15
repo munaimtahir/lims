@@ -1,0 +1,23 @@
+HTTP/2 200 
+access-control-allow-credentials: true
+access-control-allow-headers: accept, authorization, content-type, user-agent, x-csrftoken, x-requested-with
+access-control-allow-methods: DELETE, GET, OPTIONS, PATCH, POST, PUT
+access-control-allow-origin: https://api.lims.alshifalab.pk
+access-control-max-age: 86400
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:13:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 0
+

@@ -1,0 +1,142 @@
+### docker version
+Client: Docker Engine - Community
+ Version:           29.2.1
+ API version:       1.53
+ Go version:        go1.25.6
+ Git commit:        a5c7197
+ Built:             Mon Feb  2 17:17:26 2026
+ OS/Arch:           linux/amd64
+ Context:           default
+
+Server: Docker Engine - Community
+ Engine:
+  Version:          29.2.1
+  API version:      1.53 (minimum version 1.44)
+  Go version:       go1.25.6
+  Git commit:       6bc6209
+  Built:            Mon Feb  2 17:17:26 2026
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v2.2.1
+  GitCommit:        dea7da592f5d1d2b7755e3a161be07f43fad8f75
+ runc:
+  Version:          1.3.4
+  GitCommit:        v1.3.4-0-gd6d73eb8
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+
+### docker info (trimmed)
+Client: Docker Engine - Community
+ Version:    29.2.1
+ Context:    default
+ Debug Mode: false
+ Plugins:
+  buildx: Docker Buildx (Docker Inc.)
+    Version:  v0.31.1
+    Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+  compose: Docker Compose (Docker Inc.)
+    Version:  v5.0.2
+    Path:     /usr/libexec/docker/cli-plugins/docker-compose
+  model: Docker Model Runner (Docker Inc.)
+    Version:  v1.0.12
+    Path:     /usr/libexec/docker/cli-plugins/docker-model
+
+Server:
+ Containers: 8
+  Running: 8
+  Paused: 0
+  Stopped: 0
+ Images: 8
+ Server Version: 29.2.1
+ Storage Driver: overlayfs
+  driver-type: io.containerd.snapshotter.v1
+ Logging Driver: json-file
+ Cgroup Driver: systemd
+ Cgroup Version: 2
+ Plugins:
+  Volume: local
+  Network: bridge host ipvlan macvlan null overlay
+  Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+ CDI spec directories:
+  /etc/cdi
+  /var/run/cdi
+ Swarm: inactive
+ Runtimes: io.containerd.runc.v2 runc
+ Default Runtime: runc
+ Init Binary: docker-init
+ containerd version: dea7da592f5d1d2b7755e3a161be07f43fad8f75
+ runc version: v1.3.4-0-gd6d73eb8
+ init version: de40ad0
+ Security Options:
+  apparmor
+  seccomp
+   Profile: builtin
+  cgroupns
+ Kernel Version: 6.14.0-1021-gcp
+ Operating System: Ubuntu 24.04.4 LTS
+ OSType: linux
+ Architecture: x86_64
+ CPUs: 4
+ Total Memory: 21.5GiB
+ Name: vps.us-central1-f.c.munaimfinance.internal
+ ID: a3397c38-e049-483a-ab32-af2e4ce74123
+ Docker Root Dir: /var/lib/docker
+ Debug Mode: false
+ Experimental: false
+ Insecure Registries:
+  127.0.0.0/8
+  ::1/128
+ Live Restore Enabled: false
+ Firewall Backend: iptables
+
+
+### containers (ps -a)
+CONTAINER ID                                                       IMAGE                          COMMAND                                                                                     CREATED          STATUS                    PORTS                                                NAMES
+9a5db015b83d5e973bda45d52c0742ff1b900f1f906885960d734203ca7eba22   lims-celery                    "celery -A config worker -l INFO --concurrency=4"                                           6 minutes ago    Up 6 minutes              8000/tcp                                             lims_celery
+a78a8dc863c6b6092828c2f9e4d8ae0c21ae9b8b64019cb3207af82130bc8664   lims-backend                   "/app/bootstrap_prod.sh gunicorn --bind 0.0.0.0:8000 --workers 4 config.wsgi:application"   6 minutes ago    Up 6 minutes (healthy)    8000/tcp                                             lims_backend
+7eee62ca3c01d5699684f5fe7be59a65570b46e05c1362efc6ff1764894c2914   caddy:2-alpine                 "caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"                               30 minutes ago   Up 30 minutes (healthy)   443/tcp, 2019/tcp, 443/udp, 127.0.0.1:8012->80/tcp   lims_proxy
+951278ef03b4deae5be97011b53011b2b1cb598f49988bf84dad08fc19025400   lims-frontend                  "/docker-entrypoint.sh nginx -g 'daemon off;'"                                              30 minutes ago   Up 30 minutes             80/tcp                                               lims_frontend
+b4a4d7d428a193b6a8c40127755d7a7eda453c625d7b2e998e6fdc892e755522   dashboard-dashboard_frontend   "/docker-entrypoint.sh nginx -g 'daemon off;'"                                              31 minutes ago   Up 31 minutes             127.0.0.1:8013->80/tcp                               dashboard_frontend
+38dc6704f9a367d32dd3e0e74b5fad31795df5e1ab3b55621c8e7063c0572a3b   dashboard-dashboard_backend    "uvicorn app.main:app --host 0.0.0.0 --port 8000"                                           31 minutes ago   Up 31 minutes             8000/tcp                                             dashboard_backend
+0404f8cb8cbb5d03131500f2e58ecb929626cf6e7a7e4fa4d02bd17cfaa83ac9   postgres:16-alpine             "docker-entrypoint.sh postgres"                                                             31 minutes ago   Up 31 minutes (healthy)   5432/tcp                                             lims_db
+55e7040bc6a4d1fe24af30bf2daafa884848abc8e51baf32fee6b65778fe27ff   redis:7-alpine                 "docker-entrypoint.sh redis-server --appendonly yes --requirepass "                         31 minutes ago   Up 31 minutes (healthy)   6379/tcp                                             lims_redis
+
+### containers (formatted)
+NAMES                STATUS                    PORTS                                                IMAGE
+lims_celery          Up 6 minutes              8000/tcp                                             lims-celery
+lims_backend         Up 6 minutes (healthy)    8000/tcp                                             lims-backend
+lims_proxy           Up 30 minutes (healthy)   443/tcp, 2019/tcp, 443/udp, 127.0.0.1:8012->80/tcp   caddy:2-alpine
+lims_frontend        Up 30 minutes             80/tcp                                               lims-frontend
+dashboard_frontend   Up 31 minutes             127.0.0.1:8013->80/tcp                               dashboard-dashboard_frontend
+dashboard_backend    Up 31 minutes             8000/tcp                                             dashboard-dashboard_backend
+lims_db              Up 31 minutes (healthy)   5432/tcp                                             postgres:16-alpine
+lims_redis           Up 31 minutes (healthy)   6379/tcp                                             redis:7-alpine
+
+### images
+REPOSITORY                     TAG         DIGEST                                                                    IMAGE ID       CREATED          SIZE
+lims-celery                    latest      sha256:81377a2c4141ea982d5dee7d4ff17fc1e3df568baa111507d36f1105260bfdfa   81377a2c4141   7 minutes ago    1.85GB
+lims-backend                   latest      sha256:6c3ca530fccb1337c5c9cca0e024f3e048a4d5266ed0efdf1937b3736d7402cf   6c3ca530fccb   9 minutes ago    1.85GB
+dashboard-dashboard_backend    latest      sha256:862c2f0e04360c0860858dda952416bfbd42485c0c705754334d55c995863370   862c2f0e0436   31 minutes ago   240MB
+dashboard-dashboard_frontend   latest      sha256:8bc033be69b46faf44247283fb9c8ee0efe6f3c2fa0a18c6fc06617d2b910315   8bc033be69b4   31 minutes ago   73.9MB
+lims-frontend                  latest      sha256:1696c3a992bf6e7be4d6168506d67ec5554958332f355c3d58a6722b573bf831   1696c3a992bf   31 minutes ago   93.5MB
+postgres                       16-alpine   sha256:97ff59a4e30e08d1c11bdcd9455e7832368c0572b576c9092cde2df4ae5552a3   97ff59a4e30e   2 days ago       395MB
+caddy                          2-alpine    sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d   4c6e91c6ed0e   3 days ago       83.2MB
+redis                          7-alpine    sha256:02f2cc4882f8bf87c79a220ac958f58c700bdec0dfb9b9ea61b62fb0e8f1bfcf   02f2cc4882f8   2 weeks ago      61.2MB
+
+### volumes
+DRIVER    VOLUME NAME
+local     lims_caddy_config
+local     lims_caddy_data
+local     lims_pgdata
+local     lims_redis_data
+local     lims_static_files
+
+### networks
+NETWORK ID     NAME                DRIVER    SCOPE
+0afc38fb011a   bridge              bridge    local
+a6a8c410d8f6   dashboard_default   bridge    local
+c1319ff4c7b0   host                host      local
+9185764880fa   lims_network        bridge    local
+fffa42f41109   none                null      local

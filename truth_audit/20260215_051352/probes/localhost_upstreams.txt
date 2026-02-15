@@ -1,0 +1,308 @@
+## http://127.0.0.1:13000/
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:13000/health
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:13000/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:13000/api/
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:13000/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:18000/
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:18000/health
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:18000/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:18000/api/
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:18000/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:18001/
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:18001/health
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:18001/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:18001/api/
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:18001/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:3025/
+curl: (7) Failed to connect to 127.0.0.1 port 3025 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:3025/health
+curl: (7) Failed to connect to 127.0.0.1 port 3025 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:3025/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 3025 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:3025/api/
+curl: (7) Failed to connect to 127.0.0.1 port 3025 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:3025/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 3025 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:8010/
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8010/health
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8010/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8010/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8010/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:8011/
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8011/health
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8011/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8011/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8011/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:8012/
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Content-Length: 460
+Content-Type: text/html
+Date: Sun, 15 Feb 2026 00:20:35 GMT
+Etag: "69910846-1cc"
+Last-Modified: Sat, 14 Feb 2026 23:41:58 GMT
+Referrer-Policy: strict-origin-when-cross-origin
+Server: nginx/1.29.5
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Via: 1.1 Caddy
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+
+
+## http://127.0.0.1:8012/health
+HTTP/1.1 200 OK
+Content-Type: text/plain; charset=utf-8
+Referrer-Policy: strict-origin-when-cross-origin
+Server: LIMS/1.0
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+Date: Sun, 15 Feb 2026 00:20:35 GMT
+Content-Length: 2
+
+
+## http://127.0.0.1:8012/healthz
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Content-Length: 460
+Content-Type: text/html
+Date: Sun, 15 Feb 2026 00:20:35 GMT
+Etag: "69910846-1cc"
+Last-Modified: Sat, 14 Feb 2026 23:41:58 GMT
+Referrer-Policy: strict-origin-when-cross-origin
+Server: nginx/1.29.5
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Via: 1.1 Caddy
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+
+
+## http://127.0.0.1:8012/api/
+HTTP/1.1 404 Not Found
+Content-Length: 4255
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Date: Sun, 15 Feb 2026 00:20:35 GMT
+Referrer-Policy: strict-origin-when-cross-origin
+Referrer-Policy: same-origin
+Server: gunicorn
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Vary: origin, Cookie
+Via: 1.1 Caddy
+X-Content-Type-Options: nosniff
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+
+
+## http://127.0.0.1:8012/api/v1/
+HTTP/1.1 404 Not Found
+Content-Length: 4264
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Date: Sun, 15 Feb 2026 00:20:35 GMT
+Referrer-Policy: strict-origin-when-cross-origin
+Referrer-Policy: same-origin
+Server: gunicorn
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Vary: origin, Cookie
+Via: 1.1 Caddy
+X-Content-Type-Options: nosniff
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+
+
+----
+
+## http://127.0.0.1:8014/
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8014/health
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8014/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8014/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8014/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:8015/
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8015/health
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8015/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8015/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8015/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:8016/
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8016/health
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8016/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8016/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8016/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:8025/
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8025/health
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8025/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8025/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8025/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:8080/
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8080/health
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8080/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8080/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8080/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:8081/
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8081/health
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8081/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8081/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8081/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## http://127.0.0.1:8082/
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8082/health
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8082/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8082/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+## http://127.0.0.1:8082/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+

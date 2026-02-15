@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13-alpine
+    container_name: consult_db_dev
+    volumes:
+      - DEV_consult_pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=consult_db
+      - POSTGRES_USER=consult_user
+      - POSTGRES_PASSWORD=consult_password
+    # Database port not exposed externally (internal only)
+    # ports:
+    #   - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U consult_user -d consult_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: consult_redis_dev
+    # Redis port not exposed externally (internal only)
+    # ports:
+    #   - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: consult_backend_dev
+    command: uvicorn config.asgi:application --host 0.0.0.0 --port 8000
+    # Backend port not exposed externally - nginx handles routing
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    environment:
+      - DEBUG=0
+      - SECRET_KEY=${SECRET_KEY:-062ea43b72adeb8c8b73e691994e25bc18e488406bd50cf4b329134b92ea6c63}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-api.consult.alshifalab.pk,consult.alshifalab.pk,localhost,127.0.0.1,backend}
+      - DATABASE=postgres
+      - DB_NAME=${DB_NAME:-consult_db}
+      - DB_USER=${DB_USER:-consult_user}
+      - DB_PASSWORD=${DB_PASSWORD:-consult_password}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://consult.alshifalab.pk,http://localhost:3000,http://localhost}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-https://consult.alshifalab.pk,https://api.consult.alshifalab.pk,http://localhost:3000,http://localhost}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=${VITE_API_URL:-https://api.consult.alshifalab.pk/api/v1}
+        - VITE_WS_URL=${VITE_WS_URL:-wss://api.consult.alshifalab.pk/ws}
+    container_name: consult_frontend_dev
+    # Frontend port not exposed externally - nginx handles routing
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+  # nginx-proxy service - routes frontend and backend, exposed on port 8011 for Caddy
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: consult_nginx_dev
+    ports:
+      - "127.0.0.1:8011:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+      - ./nginx/error-pages:/etc/nginx/error-pages:ro
+    depends_on:
+      - backend
+      - frontend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+volumes:
+  DEV_consult_pgdata:
+  static_volume:
+  media_volume:
+
+networks:
+  consult_network:
+    driver: bridge

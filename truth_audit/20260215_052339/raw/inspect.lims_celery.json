@@ -1,0 +1,292 @@
+[
+    {
+        "Id": "9a5db015b83d5e973bda45d52c0742ff1b900f1f906885960d734203ca7eba22",
+        "Created": "2026-02-15T00:07:33.134818541Z",
+        "Path": "celery",
+        "Args": [
+            "-A",
+            "config",
+            "worker",
+            "-l",
+            "INFO",
+            "--concurrency=4"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 22754,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-02-15T00:07:33.736336464Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:81377a2c4141ea982d5dee7d4ff17fc1e3df568baa111507d36f1105260bfdfa",
+        "ResolvConfPath": "/var/lib/docker/containers/9a5db015b83d5e973bda45d52c0742ff1b900f1f906885960d734203ca7eba22/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/9a5db015b83d5e973bda45d52c0742ff1b900f1f906885960d734203ca7eba22/hostname",
+        "HostsPath": "/var/lib/docker/containers/9a5db015b83d5e973bda45d52c0742ff1b900f1f906885960d734203ca7eba22/hosts",
+        "LogPath": "/var/lib/docker/containers/9a5db015b83d5e973bda45d52c0742ff1b900f1f906885960d734203ca7eba22/9a5db015b83d5e973bda45d52c0742ff1b900f1f906885960d734203ca7eba22-json.log",
+        "Name": "/lims_celery",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "/home/munaim/srv/apps/lims/logs:/app/logs:rw",
+                "/home/munaim/srv/apps/lims/lims-backend/media:/app/media:rw",
+                "/home/munaim/srv/apps/lims/backups:/backups:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {
+                    "max-file": "5",
+                    "max-size": "100m"
+                }
+            },
+            "NetworkMode": "lims_network",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "unless-stopped",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/lims/logs",
+                "Destination": "/app/logs",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/lims/lims-backend/media",
+                "Destination": "/app/media",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/lims/backups",
+                "Destination": "/backups",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+        "Config": {
+            "Hostname": "9a5db015b83d",
+            "Domainname": "",
+            "User": "appuser",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "ExposedPorts": {
+                "8000/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "AWS_ACCESS_KEY_ID=",
+                "CSRF_TRUSTED_ORIGINS=https://lims.alshifalab.pk,https://api.lims.alshifalab.pk",
+                "S3_ENDPOINT_URL=",
+                "CELERY_BROKER_URL=redis://redis:6379/0",
+                "CELERY_RESULT_BACKEND=redis://redis:6379/0",
+                "BACKUP_APP_NAME=lims",
+                "AWS_DEFAULT_REGION=us-east-1",
+                "DJANGO_SETTINGS_MODULE=config.settings.development",
+                "BACKUP_RETENTION_MONTHLY=6",
+                "REDIS_URL=redis://redis:6379/0",
+                "AWS_SECRET_ACCESS_KEY=",
+                "CELERY_ACCEPT_CONTENT=json",
+                "BACKUP_RETENTION_DAILY=7",
+                "DB_USER=postgres",
+                "S3_BUCKET=",
+                "DB_HOST=db",
+                "ALLOWED_HOSTS=lims.alshifalab.pk,api.lims.alshifalab.pk",
+                "BACKUP_RETENTION_WEEKLY=4",
+                "SECRET_KEY=21e2bbe0824f20be7cc367adf417cbf244de027ac01289ca6069d3008439e13d6a2c3165add9b361d3349f308a9389814cfd",
+                "DB_NAME=lims_db",
+                "CELERY_RESULT_SERIALIZER=json",
+                "BACKUP_OFFSITE_PROVIDER=none",
+                "CELERY_TASK_SERIALIZER=json",
+                "DB_PORT=5432",
+                "CORS_ALLOWED_ORIGINS=https://lims.alshifalab.pk,https://api.lims.alshifalab.pk",
+                "BACKUP_ROOT=/app/media/backups",
+                "DB_PASSWORD=test-db-password",
+                "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+                "PYTHON_VERSION=3.12.12",
+                "PYTHON_SHA256=fb85a13414b028c49ba18bbd523c2d055a30b56b18b92ce454ea2c51edc656c4",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "PYTHONUNBUFFERED=1"
+            ],
+            "Cmd": [
+                "celery",
+                "-A",
+                "config",
+                "worker",
+                "-l",
+                "INFO",
+                "--concurrency=4"
+            ],
+            "Image": "lims-celery",
+            "Volumes": null,
+            "WorkingDir": "/app",
+            "Entrypoint": null,
+            "Labels": {
+                "com.docker.compose.config-hash": "c078317512b5590820e77970e0ac4a8b12bd74f3a8fca8db23742ce348a61f38",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "db:service_healthy:false,redis:service_healthy:false",
+                "com.docker.compose.image": "sha256:81377a2c4141ea982d5dee7d4ff17fc1e3df568baa111507d36f1105260bfdfa",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "lims",
+                "com.docker.compose.project.config_files": "/home/munaim/srv/apps/lims/docker-compose.yml,/home/munaim/srv/apps/lims/docker-compose.override.yml",
+                "com.docker.compose.project.environment_file": "/home/munaim/srv/apps/lims/.env.production",
+                "com.docker.compose.project.working_dir": "/home/munaim/srv/apps/lims",
+                "com.docker.compose.service": "celery",
+                "com.docker.compose.version": "5.0.2"
+            }
+        },
+        "NetworkSettings": {
+            "SandboxID": "425cdfd386d62baec1eec20674466937108ee711f0a753ab5d01a337f85736e2",
+            "SandboxKey": "/var/run/docker/netns/425cdfd386d6",
+            "Ports": {
+                "8000/tcp": null
+            },
+            "Networks": {
+                "lims_network": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "lims_celery",
+                        "celery"
+                    ],
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "9185764880fa33175a24bbbc614904e8d6c1d0cf643e5a66d89d4dbb30d38825",
+                    "EndpointID": "d4ef2e2eb3f84103b5ad3231e15853e0615588c9cfaf53eae268cdf5af675426",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.5",
+                    "MacAddress": "9a:95:a1:c1:0c:fe",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "lims_celery",
+                        "celery",
+                        "9a5db015b83d"
+                    ]
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:2cd384a5a1dfb9def3204f12bc906422601a41c10b7b01359f09f8bb4605cacd",
+            "size": 2953,
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]

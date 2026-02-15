@@ -1,0 +1,228 @@
+# Docker Compose configuration for SIMS - Local Development
+# Optimized for local development and demonstrations on localhost
+#
+# Usage:
+#   docker-compose -f docker-compose.local.yml up -d
+#
+# This configuration uses port 8000 for Django (no nginx required)
+# For development, you can also run Django directly without Docker:
+#   python manage.py runserver
+#
+# SECURITY WARNING: This is for localhost development only!
+# Use .env.local or copy it to .env before running
+
+version: '3.9'
+
+services:
+  # PostgreSQL Database (optional - can use SQLite for localhost)
+  db:
+    image: postgres:15-alpine
+    container_name: sims_db_localhost
+    environment:
+      POSTGRES_DB: ${DB_NAME:-sims_db}
+      POSTGRES_USER: ${DB_USER:-sims_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-localhost_dev_password}
+    ports:
+      - "5432:5432"  # Expose PostgreSQL port for local access
+    volumes:
+      - postgres_data_localhost:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-sims_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sims_network_localhost
+    profiles:
+      - with-postgres  # Only start if explicitly requested
+
+  # Redis Cache & Message Broker (optional for localhost)
+  redis:
+    image: redis:7-alpine
+    container_name: sims_redis_localhost
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"  # Expose Redis port for local access
+    volumes:
+      - redis_data_localhost:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - sims_network_localhost
+    profiles:
+      - with-redis  # Only start if explicitly requested
+
+  # Django Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sims_web_localhost
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-localhost-dev-key}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      # Use SQLite by default, or PostgreSQL if DB_NAME is set
+      - DATABASE_URL=${DATABASE_URL:-}
+      - DB_NAME=${DB_NAME:-}
+      - DB_USER=${DB_USER:-}
+      - DB_PASSWORD=${DB_PASSWORD:-}
+      - DB_HOST=${DB_HOST:-}
+      - DB_PORT=${DB_PORT:-}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/1}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:8000,http://127.0.0.1:8000,http://localhost:3000,http://127.0.0.1:3000}
+      - EMAIL_BACKEND=${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
+    ports:
+      - "8000:8000"  # Django development server
+    volumes:
+      - .:/app  # Mount source code for development
+      - static_volume_localhost:/app/staticfiles
+      - media_volume_localhost:/app/media
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+      - db
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/healthz/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - sims_network_localhost
+
+  # Celery Worker (optional for localhost)
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sims_worker_localhost
+    command: celery -A sims_project worker -l info --concurrency=2
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-localhost-dev-key}
+      - DATABASE_URL=${DATABASE_URL:-}
+      - DB_NAME=${DB_NAME:-}
+      - DB_USER=${DB_USER:-}
+      - DB_PASSWORD=${DB_PASSWORD:-}
+      - DB_HOST=${DB_HOST:-}
+      - DB_PORT=${DB_PORT:-}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/1}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+    volumes:
+      - .:/app
+      - media_volume_localhost:/app/media
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+    networks:
+      - sims_network_localhost
+    profiles:
+      - with-celery
+
+  # Celery Beat (optional for localhost)
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sims_beat_localhost
+    command: celery -A sims_project beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-localhost-dev-key}
+      - DATABASE_URL=${DATABASE_URL:-}
+      - DB_NAME=${DB_NAME:-}
+      - DB_USER=${DB_USER:-}
+      - DB_PASSWORD=${DB_PASSWORD:-}
+      - DB_HOST=${DB_HOST:-}
+      - DB_PORT=${DB_PORT:-}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/1}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+    networks:
+      - sims_network_localhost
+    profiles:
+      - with-celery
+
+  # Next.js Frontend Application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    container_name: sims_frontend_localhost
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://web:8000}
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    ports:
+      - "3000:3000"  # Frontend server
+    depends_on:
+      - web
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - sims_network_localhost
+
+  # Nginx Reverse Proxy (optional for localhost - only if needed)
+  nginx:
+    image: nginx:alpine
+    container_name: sims_nginx_localhost
+    ports:
+      - "8001:8000"  # Alternative port to access via nginx
+    volumes:
+      - ./deployment/nginx.localhost.conf:/etc/nginx/nginx.conf:ro
+      - static_volume_localhost:/app/staticfiles:ro
+      - media_volume_localhost:/app/media:ro
+    depends_on:
+      - web
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8000/healthz/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - sims_network_localhost
+    profiles:
+      - with-nginx
+
+volumes:
+  postgres_data_localhost:
+  redis_data_localhost:
+  static_volume_localhost:
+  media_volume_localhost:
+
+networks:
+  sims_network_localhost:
+    driver: bridge
+

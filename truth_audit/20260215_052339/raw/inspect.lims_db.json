@@ -1,0 +1,313 @@
+[
+    {
+        "Id": "0404f8cb8cbb5d03131500f2e58ecb929626cf6e7a7e4fa4d02bd17cfaa83ac9",
+        "Created": "2026-02-14T23:42:05.856039376Z",
+        "Path": "docker-entrypoint.sh",
+        "Args": [
+            "postgres"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 33682,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-02-15T00:16:07.392998003Z",
+            "FinishedAt": "2026-02-15T00:16:07.305946554Z",
+            "Health": {
+                "Status": "healthy",
+                "FailingStreak": 0,
+                "Log": [
+                    {
+                        "Start": "2026-02-15T05:22:54.286366256+05:00",
+                        "End": "2026-02-15T05:22:54.329058514+05:00",
+                        "ExitCode": 0,
+                        "Output": "/var/run/postgresql:5432 - accepting connections\n"
+                    },
+                    {
+                        "Start": "2026-02-15T05:23:04.330689448+05:00",
+                        "End": "2026-02-15T05:23:04.373210833+05:00",
+                        "ExitCode": 0,
+                        "Output": "/var/run/postgresql:5432 - accepting connections\n"
+                    },
+                    {
+                        "Start": "2026-02-15T05:23:14.373900162+05:00",
+                        "End": "2026-02-15T05:23:14.414310975+05:00",
+                        "ExitCode": 0,
+                        "Output": "/var/run/postgresql:5432 - accepting connections\n"
+                    },
+                    {
+                        "Start": "2026-02-15T05:23:24.415560061+05:00",
+                        "End": "2026-02-15T05:23:24.456322233+05:00",
+                        "ExitCode": 0,
+                        "Output": "/var/run/postgresql:5432 - accepting connections\n"
+                    },
+                    {
+                        "Start": "2026-02-15T05:23:34.456961266+05:00",
+                        "End": "2026-02-15T05:23:34.50259409+05:00",
+                        "ExitCode": 0,
+                        "Output": "/var/run/postgresql:5432 - accepting connections\n"
+                    }
+                ]
+            }
+        },
+        "Image": "sha256:97ff59a4e30e08d1c11bdcd9455e7832368c0572b576c9092cde2df4ae5552a3",
+        "ResolvConfPath": "/var/lib/docker/containers/0404f8cb8cbb5d03131500f2e58ecb929626cf6e7a7e4fa4d02bd17cfaa83ac9/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/0404f8cb8cbb5d03131500f2e58ecb929626cf6e7a7e4fa4d02bd17cfaa83ac9/hostname",
+        "HostsPath": "/var/lib/docker/containers/0404f8cb8cbb5d03131500f2e58ecb929626cf6e7a7e4fa4d02bd17cfaa83ac9/hosts",
+        "LogPath": "/var/lib/docker/containers/0404f8cb8cbb5d03131500f2e58ecb929626cf6e7a7e4fa4d02bd17cfaa83ac9/0404f8cb8cbb5d03131500f2e58ecb929626cf6e7a7e4fa4d02bd17cfaa83ac9-json.log",
+        "Name": "/lims_db",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "lims_pgdata:/var/lib/postgresql/data:rw",
+                "/home/munaim/srv/apps/lims/backups:/var/lib/postgresql/backups:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {
+                    "max-file": "3",
+                    "max-size": "50m"
+                }
+            },
+            "NetworkMode": "lims_network",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "unless-stopped",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": "lims_pgdata",
+                "Source": "/var/lib/docker/volumes/lims_pgdata/_data",
+                "Destination": "/var/lib/postgresql/data",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/lims/backups",
+                "Destination": "/var/lib/postgresql/backups",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+        "Config": {
+            "Hostname": "0404f8cb8cbb",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "ExposedPorts": {
+                "5432/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "POSTGRES_DB=lims_db",
+                "POSTGRES_USER=postgres",
+                "POSTGRES_PASSWORD=test-db-password",
+                "POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=en_US.UTF-8",
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "GOSU_VERSION=1.19",
+                "LANG=en_US.utf8",
+                "PG_MAJOR=16",
+                "PG_VERSION=16.12",
+                "PG_SHA256=b253ee949303ef5df00e24002600da4fb37e5ccfafa78718c6ea6a936b4d97f1",
+                "DOCKER_PG_LLVM_DEPS=llvm19-dev \t\tclang19",
+                "PGDATA=/var/lib/postgresql/data"
+            ],
+            "Cmd": [
+                "postgres"
+            ],
+            "Healthcheck": {
+                "Test": [
+                    "CMD-SHELL",
+                    "pg_isready -U postgres"
+                ],
+                "Interval": 10000000000,
+                "Timeout": 5000000000,
+                "StartPeriod": 30000000000,
+                "Retries": 5
+            },
+            "Image": "postgres:16-alpine",
+            "Volumes": {
+                "/var/lib/postgresql/data": {}
+            },
+            "WorkingDir": "/",
+            "Entrypoint": [
+                "docker-entrypoint.sh"
+            ],
+            "Labels": {
+                "com.docker.compose.config-hash": "091ec954fa761bfb8ef7a252b682fe3a77f3676678074c97d8c40706eada49fc",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "",
+                "com.docker.compose.image": "sha256:97ff59a4e30e08d1c11bdcd9455e7832368c0572b576c9092cde2df4ae5552a3",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "lims",
+                "com.docker.compose.project.config_files": "/home/munaim/srv/apps/lims/docker-compose.yml,/home/munaim/srv/apps/lims/docker-compose.override.yml",
+                "com.docker.compose.project.environment_file": "/home/munaim/srv/apps/lims/.env.production",
+                "com.docker.compose.project.working_dir": "/home/munaim/srv/apps/lims",
+                "com.docker.compose.service": "db",
+                "com.docker.compose.version": "5.0.2"
+            },
+            "StopSignal": "SIGINT"
+        },
+        "NetworkSettings": {
+            "SandboxID": "bb231fc16e8f06778aa8b634fe5dab02a8f251e0a2ac9b309e5d4ba01f8d4560",
+            "SandboxKey": "/var/run/docker/netns/bb231fc16e8f",
+            "Ports": {
+                "5432/tcp": null
+            },
+            "Networks": {
+                "lims_network": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "lims_db",
+                        "db"
+                    ],
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "9185764880fa33175a24bbbc614904e8d6c1d0cf643e5a66d89d4dbb30d38825",
+                    "EndpointID": "f54802b09a88140f2c261afdfd3e61bba07393895a16a8a49834bf02514fbbac",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.2",
+                    "MacAddress": "ba:d7:f9:69:42:f3",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "lims_db",
+                        "db",
+                        "0404f8cb8cbb"
+                    ]
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:129fbfd388241accda7b15e38ada14b11c70698e01e5c8072265b0eaa03af010",
+            "size": 3054,
+            "annotations": {
+                "com.docker.official-images.bashbrew.arch": "amd64",
+                "org.opencontainers.image.base.digest": "sha256:59855d3dceb3ae53991193bd03301e082b2a7faa56a514b03527ae0ec2ce3a95",
+                "org.opencontainers.image.base.name": "alpine:3.23",
+                "org.opencontainers.image.created": "2026-02-12T21:04:46Z",
+                "org.opencontainers.image.revision": "bf13909eb3ce10ecf5b24ec40069ebd6091e2347",
+                "org.opencontainers.image.source": "https://github.com/docker-library/postgres.git#bf13909eb3ce10ecf5b24ec40069ebd6091e2347:16/alpine3.23",
+                "org.opencontainers.image.url": "https://hub.docker.com/_/postgres",
+                "org.opencontainers.image.version": "16.12-alpine3.23"
+            },
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]

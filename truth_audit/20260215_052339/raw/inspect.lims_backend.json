@@ -1,0 +1,362 @@
+[
+    {
+        "Id": "a78a8dc863c6b6092828c2f9e4d8ae0c21ae9b8b64019cb3207af82130bc8664",
+        "Created": "2026-02-15T00:07:04.942174502Z",
+        "Path": "/app/bootstrap_prod.sh",
+        "Args": [
+            "gunicorn",
+            "--bind",
+            "0.0.0.0:8000",
+            "--workers",
+            "4",
+            "config.wsgi:application"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 33443,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-02-15T00:16:06.883823552Z",
+            "FinishedAt": "2026-02-15T00:16:06.804575288Z",
+            "Health": {
+                "Status": "healthy",
+                "FailingStreak": 0,
+                "Log": [
+                    {
+                        "Start": "2026-02-15T05:21:22.002252871+05:00",
+                        "End": "2026-02-15T05:21:22.30418202+05:00",
+                        "ExitCode": 0,
+                        "Output": ""
+                    },
+                    {
+                        "Start": "2026-02-15T05:21:52.305607927+05:00",
+                        "End": "2026-02-15T05:21:52.602706601+05:00",
+                        "ExitCode": 0,
+                        "Output": ""
+                    },
+                    {
+                        "Start": "2026-02-15T05:22:22.603732202+05:00",
+                        "End": "2026-02-15T05:22:22.903268757+05:00",
+                        "ExitCode": 0,
+                        "Output": ""
+                    },
+                    {
+                        "Start": "2026-02-15T05:22:52.904313128+05:00",
+                        "End": "2026-02-15T05:22:53.203074374+05:00",
+                        "ExitCode": 0,
+                        "Output": ""
+                    },
+                    {
+                        "Start": "2026-02-15T05:23:23.203945046+05:00",
+                        "End": "2026-02-15T05:23:23.512595544+05:00",
+                        "ExitCode": 0,
+                        "Output": ""
+                    }
+                ]
+            }
+        },
+        "Image": "sha256:6c3ca530fccb1337c5c9cca0e024f3e048a4d5266ed0efdf1937b3736d7402cf",
+        "ResolvConfPath": "/var/lib/docker/containers/a78a8dc863c6b6092828c2f9e4d8ae0c21ae9b8b64019cb3207af82130bc8664/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/a78a8dc863c6b6092828c2f9e4d8ae0c21ae9b8b64019cb3207af82130bc8664/hostname",
+        "HostsPath": "/var/lib/docker/containers/a78a8dc863c6b6092828c2f9e4d8ae0c21ae9b8b64019cb3207af82130bc8664/hosts",
+        "LogPath": "/var/lib/docker/containers/a78a8dc863c6b6092828c2f9e4d8ae0c21ae9b8b64019cb3207af82130bc8664/a78a8dc863c6b6092828c2f9e4d8ae0c21ae9b8b64019cb3207af82130bc8664-json.log",
+        "Name": "/lims_backend",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "lims_static_files:/app/staticfiles:rw",
+                "/home/munaim/srv/apps/lims/lims-backend/media:/app/media:rw",
+                "/home/munaim/srv/apps/lims/backups:/backups:rw",
+                "/home/munaim/srv/apps/lims/logs:/app/logs:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {
+                    "max-file": "5",
+                    "max-size": "100m"
+                }
+            },
+            "NetworkMode": "lims_network",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "unless-stopped",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": "lims_static_files",
+                "Source": "/var/lib/docker/volumes/lims_static_files/_data",
+                "Destination": "/app/staticfiles",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/lims/lims-backend/media",
+                "Destination": "/app/media",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/lims/backups",
+                "Destination": "/backups",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/lims/logs",
+                "Destination": "/app/logs",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+        "Config": {
+            "Hostname": "a78a8dc863c6",
+            "Domainname": "",
+            "User": "appuser",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "ExposedPorts": {
+                "8000/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "DB_PASSWORD=test-db-password",
+                "S3_BUCKET=",
+                "CSRF_TRUSTED_ORIGINS=https://lims.alshifalab.pk,https://api.lims.alshifalab.pk",
+                "S3_ENDPOINT_URL=",
+                "EMAIL_USE_TLS=True",
+                "EMAIL_PORT=587",
+                "CORS_ALLOW_CREDENTIALS=True",
+                "ALLOWED_HOSTS=lims.alshifalab.pk,api.lims.alshifalab.pk",
+                "BACKUP_ROOT=/app/media/backups",
+                "SESSION_COOKIE_SECURE=True",
+                "REDIS_URL=redis://redis:6379/0",
+                "AWS_ACCESS_KEY_ID=",
+                "AWS_DEFAULT_REGION=us-east-1",
+                "DB_NAME=lims_db",
+                "AWS_SECRET_ACCESS_KEY=",
+                "DB_USER=postgres",
+                "EMAIL_HOST=smtp.gmail.com",
+                "LOG_LEVEL=INFO",
+                "DEBUG=False",
+                "EMAIL_HOST_PASSWORD=",
+                "CELERY_BROKER_URL=redis://redis:6379/0",
+                "CELERY_RESULT_BACKEND=redis://redis:6379/0",
+                "CSRF_COOKIE_SECURE=True",
+                "DB_ENGINE=django.db.backends.postgresql",
+                "BACKUP_RETENTION_MONTHLY=6",
+                "BACKUP_RETENTION_WEEKLY=4",
+                "BACKUP_APP_NAME=lims",
+                "BACKUP_RETENTION_DAILY=7",
+                "DB_HOST=db",
+                "EMAIL_HOST_USER=",
+                "DJANGO_SETTINGS_MODULE=config.settings.development",
+                "BACKUP_OFFSITE_PROVIDER=none",
+                "CORS_ALLOWED_ORIGINS=https://lims.alshifalab.pk,https://api.lims.alshifalab.pk",
+                "SECRET_KEY=21e2bbe0824f20be7cc367adf417cbf244de027ac01289ca6069d3008439e13d6a2c3165add9b361d3349f308a9389814cfd",
+                "SECURE_SSL_REDIRECT=True",
+                "SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https",
+                "DB_PORT=5432",
+                "EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend",
+                "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+                "PYTHON_VERSION=3.12.12",
+                "PYTHON_SHA256=fb85a13414b028c49ba18bbd523c2d055a30b56b18b92ce454ea2c51edc656c4",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "PYTHONUNBUFFERED=1"
+            ],
+            "Cmd": [
+                "/app/bootstrap_prod.sh",
+                "gunicorn",
+                "--bind",
+                "0.0.0.0:8000",
+                "--workers",
+                "4",
+                "config.wsgi:application"
+            ],
+            "Healthcheck": {
+                "Test": [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "from urllib.request import urlopen; urlopen('http://localhost:8000/api/v1/health/')"
+                ],
+                "Interval": 30000000000,
+                "Timeout": 10000000000,
+                "StartPeriod": 40000000000,
+                "Retries": 3
+            },
+            "Image": "lims-backend",
+            "Volumes": null,
+            "WorkingDir": "/app",
+            "Entrypoint": null,
+            "Labels": {
+                "com.docker.compose.config-hash": "55d2df12b0936fa8206b16e0a3daebfef252f8dd662d5bf4dfc7eed08024b05b",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "redis:service_healthy:false,db:service_healthy:false",
+                "com.docker.compose.image": "sha256:6c3ca530fccb1337c5c9cca0e024f3e048a4d5266ed0efdf1937b3736d7402cf",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "lims",
+                "com.docker.compose.project.config_files": "/home/munaim/srv/apps/lims/docker-compose.yml,/home/munaim/srv/apps/lims/docker-compose.override.yml",
+                "com.docker.compose.project.environment_file": "/home/munaim/srv/apps/lims/.env.production",
+                "com.docker.compose.project.working_dir": "/home/munaim/srv/apps/lims",
+                "com.docker.compose.service": "backend",
+                "com.docker.compose.version": "5.0.2"
+            }
+        },
+        "NetworkSettings": {
+            "SandboxID": "36f65030f746562c2e142cdd1d0dcbba9d64f1a2ce110e5c264487a254f353c4",
+            "SandboxKey": "/var/run/docker/netns/36f65030f746",
+            "Ports": {
+                "8000/tcp": null
+            },
+            "Networks": {
+                "lims_network": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "lims_backend",
+                        "backend"
+                    ],
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "9185764880fa33175a24bbbc614904e8d6c1d0cf643e5a66d89d4dbb30d38825",
+                    "EndpointID": "b21d0acd63ebda1f18dfec0dbf8c922bc4e9508a2809aefbbeeadfadc56a2b88",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.4",
+                    "MacAddress": "b2:02:5d:f3:4c:96",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "lims_backend",
+                        "backend",
+                        "a78a8dc863c6"
+                    ]
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:08f6b31594b81e3c78cfe8ff4005b82b9d3383b18691d4bb2a46b19e8d36ad95",
+            "size": 2953,
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]

@@ -1,0 +1,4153 @@
+## 127.0.0.1:13000/
+https://127.0.0.1:13000/
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/health
+https://127.0.0.1:13000/health
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/healthz
+https://127.0.0.1:13000/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/api
+https://127.0.0.1:13000/api
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/api/
+https://127.0.0.1:13000/api/
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/api/v1
+https://127.0.0.1:13000/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/api/v1/
+https://127.0.0.1:13000/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/api/auth
+https://127.0.0.1:13000/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/api/auth/
+https://127.0.0.1:13000/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/auth
+https://127.0.0.1:13000/auth
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/auth/
+https://127.0.0.1:13000/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/admin
+https://127.0.0.1:13000/admin
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/admin/
+https://127.0.0.1:13000/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/api/schema
+https://127.0.0.1:13000/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:13000/api/docs
+https://127.0.0.1:13000/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 13000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/
+https://127.0.0.1:18000/
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/health
+https://127.0.0.1:18000/health
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/healthz
+https://127.0.0.1:18000/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/api
+https://127.0.0.1:18000/api
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/api/
+https://127.0.0.1:18000/api/
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/api/v1
+https://127.0.0.1:18000/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/api/v1/
+https://127.0.0.1:18000/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/api/auth
+https://127.0.0.1:18000/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/api/auth/
+https://127.0.0.1:18000/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/auth
+https://127.0.0.1:18000/auth
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/auth/
+https://127.0.0.1:18000/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/admin
+https://127.0.0.1:18000/admin
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/admin/
+https://127.0.0.1:18000/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/api/schema
+https://127.0.0.1:18000/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18000/api/docs
+https://127.0.0.1:18000/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18000 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/
+https://127.0.0.1:18001/
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/health
+https://127.0.0.1:18001/health
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/healthz
+https://127.0.0.1:18001/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/api
+https://127.0.0.1:18001/api
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/api/
+https://127.0.0.1:18001/api/
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/api/v1
+https://127.0.0.1:18001/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/api/v1/
+https://127.0.0.1:18001/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/api/auth
+https://127.0.0.1:18001/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/api/auth/
+https://127.0.0.1:18001/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/auth
+https://127.0.0.1:18001/auth
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/auth/
+https://127.0.0.1:18001/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/admin
+https://127.0.0.1:18001/admin
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/admin/
+https://127.0.0.1:18001/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/api/schema
+https://127.0.0.1:18001/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:18001/api/docs
+https://127.0.0.1:18001/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 18001 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/
+https://127.0.0.1:8010/
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/health
+https://127.0.0.1:8010/health
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/healthz
+https://127.0.0.1:8010/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/api
+https://127.0.0.1:8010/api
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/api/
+https://127.0.0.1:8010/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/api/v1
+https://127.0.0.1:8010/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/api/v1/
+https://127.0.0.1:8010/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/api/auth
+https://127.0.0.1:8010/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/api/auth/
+https://127.0.0.1:8010/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/auth
+https://127.0.0.1:8010/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/auth/
+https://127.0.0.1:8010/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/admin
+https://127.0.0.1:8010/admin
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/admin/
+https://127.0.0.1:8010/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/api/schema
+https://127.0.0.1:8010/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8010/api/docs
+https://127.0.0.1:8010/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8010 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/
+https://127.0.0.1:8011/
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/health
+https://127.0.0.1:8011/health
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/healthz
+https://127.0.0.1:8011/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/api
+https://127.0.0.1:8011/api
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/api/
+https://127.0.0.1:8011/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/api/v1
+https://127.0.0.1:8011/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/api/v1/
+https://127.0.0.1:8011/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/api/auth
+https://127.0.0.1:8011/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/api/auth/
+https://127.0.0.1:8011/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/auth
+https://127.0.0.1:8011/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/auth/
+https://127.0.0.1:8011/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/admin
+https://127.0.0.1:8011/admin
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/admin/
+https://127.0.0.1:8011/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/api/schema
+https://127.0.0.1:8011/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8011/api/docs
+https://127.0.0.1:8011/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8011 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8012/
+https://127.0.0.1:8012/
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/health
+https://127.0.0.1:8012/health
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/healthz
+https://127.0.0.1:8012/healthz
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/api
+https://127.0.0.1:8012/api
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/api/
+https://127.0.0.1:8012/api/
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/api/v1
+https://127.0.0.1:8012/api/v1
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/api/v1/
+https://127.0.0.1:8012/api/v1/
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/api/auth
+https://127.0.0.1:8012/api/auth
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/api/auth/
+https://127.0.0.1:8012/api/auth/
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/auth
+https://127.0.0.1:8012/auth
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/auth/
+https://127.0.0.1:8012/auth/
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/admin
+https://127.0.0.1:8012/admin
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/admin/
+https://127.0.0.1:8012/admin/
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/api/schema
+https://127.0.0.1:8012/api/schema
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8012/api/docs
+https://127.0.0.1:8012/api/docs
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
+
+----
+
+## 127.0.0.1:8014/
+https://127.0.0.1:8014/
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/health
+https://127.0.0.1:8014/health
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/healthz
+https://127.0.0.1:8014/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/api
+https://127.0.0.1:8014/api
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/api/
+https://127.0.0.1:8014/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/api/v1
+https://127.0.0.1:8014/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/api/v1/
+https://127.0.0.1:8014/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/api/auth
+https://127.0.0.1:8014/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/api/auth/
+https://127.0.0.1:8014/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/auth
+https://127.0.0.1:8014/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/auth/
+https://127.0.0.1:8014/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/admin
+https://127.0.0.1:8014/admin
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/admin/
+https://127.0.0.1:8014/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/api/schema
+https://127.0.0.1:8014/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8014/api/docs
+https://127.0.0.1:8014/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8014 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/
+https://127.0.0.1:8015/
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/health
+https://127.0.0.1:8015/health
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/healthz
+https://127.0.0.1:8015/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/api
+https://127.0.0.1:8015/api
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/api/
+https://127.0.0.1:8015/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/api/v1
+https://127.0.0.1:8015/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/api/v1/
+https://127.0.0.1:8015/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/api/auth
+https://127.0.0.1:8015/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/api/auth/
+https://127.0.0.1:8015/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/auth
+https://127.0.0.1:8015/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/auth/
+https://127.0.0.1:8015/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/admin
+https://127.0.0.1:8015/admin
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/admin/
+https://127.0.0.1:8015/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/api/schema
+https://127.0.0.1:8015/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8015/api/docs
+https://127.0.0.1:8015/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8015 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/
+https://127.0.0.1:8016/
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/health
+https://127.0.0.1:8016/health
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/healthz
+https://127.0.0.1:8016/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/api
+https://127.0.0.1:8016/api
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/api/
+https://127.0.0.1:8016/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/api/v1
+https://127.0.0.1:8016/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/api/v1/
+https://127.0.0.1:8016/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/api/auth
+https://127.0.0.1:8016/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/api/auth/
+https://127.0.0.1:8016/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/auth
+https://127.0.0.1:8016/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/auth/
+https://127.0.0.1:8016/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/admin
+https://127.0.0.1:8016/admin
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/admin/
+https://127.0.0.1:8016/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/api/schema
+https://127.0.0.1:8016/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8016/api/docs
+https://127.0.0.1:8016/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8016 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/
+https://127.0.0.1:8025/
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/health
+https://127.0.0.1:8025/health
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/healthz
+https://127.0.0.1:8025/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/api
+https://127.0.0.1:8025/api
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/api/
+https://127.0.0.1:8025/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/api/v1
+https://127.0.0.1:8025/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/api/v1/
+https://127.0.0.1:8025/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/api/auth
+https://127.0.0.1:8025/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/api/auth/
+https://127.0.0.1:8025/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/auth
+https://127.0.0.1:8025/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/auth/
+https://127.0.0.1:8025/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/admin
+https://127.0.0.1:8025/admin
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/admin/
+https://127.0.0.1:8025/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/api/schema
+https://127.0.0.1:8025/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8025/api/docs
+https://127.0.0.1:8025/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8025 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/
+https://127.0.0.1:8080/
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/health
+https://127.0.0.1:8080/health
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/healthz
+https://127.0.0.1:8080/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/api
+https://127.0.0.1:8080/api
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/api/
+https://127.0.0.1:8080/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/api/v1
+https://127.0.0.1:8080/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/api/v1/
+https://127.0.0.1:8080/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/api/auth
+https://127.0.0.1:8080/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/api/auth/
+https://127.0.0.1:8080/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/auth
+https://127.0.0.1:8080/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/auth/
+https://127.0.0.1:8080/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/admin
+https://127.0.0.1:8080/admin
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/admin/
+https://127.0.0.1:8080/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/api/schema
+https://127.0.0.1:8080/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8080/api/docs
+https://127.0.0.1:8080/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/
+https://127.0.0.1:8081/
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/health
+https://127.0.0.1:8081/health
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/healthz
+https://127.0.0.1:8081/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/api
+https://127.0.0.1:8081/api
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/api/
+https://127.0.0.1:8081/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/api/v1
+https://127.0.0.1:8081/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/api/v1/
+https://127.0.0.1:8081/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/api/auth
+https://127.0.0.1:8081/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/api/auth/
+https://127.0.0.1:8081/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/auth
+https://127.0.0.1:8081/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/auth/
+https://127.0.0.1:8081/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/admin
+https://127.0.0.1:8081/admin
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/admin/
+https://127.0.0.1:8081/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/api/schema
+https://127.0.0.1:8081/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8081/api/docs
+https://127.0.0.1:8081/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8081 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/
+https://127.0.0.1:8082/
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/health
+https://127.0.0.1:8082/health
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/healthz
+https://127.0.0.1:8082/healthz
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/api
+https://127.0.0.1:8082/api
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/api/
+https://127.0.0.1:8082/api/
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/api/v1
+https://127.0.0.1:8082/api/v1
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/api/v1/
+https://127.0.0.1:8082/api/v1/
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/api/auth
+https://127.0.0.1:8082/api/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/api/auth/
+https://127.0.0.1:8082/api/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/auth
+https://127.0.0.1:8082/auth
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/auth/
+https://127.0.0.1:8082/auth/
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/admin
+https://127.0.0.1:8082/admin
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/admin/
+https://127.0.0.1:8082/admin/
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/api/schema
+https://127.0.0.1:8082/api/schema
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## 127.0.0.1:8082/api/docs
+https://127.0.0.1:8082/api/docs
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+curl: (7) Failed to connect to 127.0.0.1 port 8082 after 0 ms: Couldn't connect to server
+
+----
+
+## api.consult.alshifalab.pk/
+https://api.consult.alshifalab.pk/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/health
+https://api.consult.alshifalab.pk/health
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/healthz
+https://api.consult.alshifalab.pk/healthz
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/api
+https://api.consult.alshifalab.pk/api
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/api/
+https://api.consult.alshifalab.pk/api/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/api/v1
+https://api.consult.alshifalab.pk/api/v1
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/api/v1/
+https://api.consult.alshifalab.pk/api/v1/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/api/auth
+https://api.consult.alshifalab.pk/api/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/api/auth/
+https://api.consult.alshifalab.pk/api/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:42 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/auth
+https://api.consult.alshifalab.pk/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/auth/
+https://api.consult.alshifalab.pk/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/admin
+https://api.consult.alshifalab.pk/admin
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/admin/
+https://api.consult.alshifalab.pk/admin/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/api/schema
+https://api.consult.alshifalab.pk/api/schema
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+----
+
+## api.consult.alshifalab.pk/api/docs
+https://api.consult.alshifalab.pk/api/docs
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+----
+
+## api.lims.alshifalab.pk/
+https://api.lims.alshifalab.pk/
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Al Shifa LIMS</title>
+    <script type="module" crossorigin src="/assets/index-idgJAY5h.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CkY8uhoO.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+
+----
+
+## api.lims.alshifalab.pk/health
+https://api.lims.alshifalab.pk/health
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/plain; charset=utf-8
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: LIMS/1.0
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 2
+
+
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/plain; charset=utf-8
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: LIMS/1.0
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 2
+
+OK
+----
+
+## api.lims.alshifalab.pk/healthz
+https://api.lims.alshifalab.pk/healthz
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+content-type: application/json
+server: Caddy
+content-length: 36
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+content-type: application/json
+server: Caddy
+content-length: 36
+date: Sun, 15 Feb 2026 00:23:43 GMT
+
+{"status":"ok","service":"api.lims"}
+----
+
+## api.lims.alshifalab.pk/api
+https://api.lims.alshifalab.pk/api
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Al Shifa LIMS</title>
+    <script type="module" crossorigin src="/assets/index-idgJAY5h.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CkY8uhoO.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+
+----
+
+## api.lims.alshifalab.pk/api/
+https://api.lims.alshifalab.pk/api/
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 4269
+
+
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+vary: Accept-Encoding
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style type="text/css">
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font:small sans-serif; background:#eee; color:#000; }
+    body>div { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 span { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5em; margin: 10px 0 10px 0; }
+  </style>
+</head>
+<body>
+  <div id="summary">
+    <h1>Page not found <span>(404)</span></h1>
+    
+    <table class="meta">
+      <tr>
+        <th>Request Method:</th>
+        <td>GET</td>
+      </tr>
+      <tr>
+        <th>Request URL:</th>
+        <td>http://api.lims.alshifalab.pk/api/</td>
+      </tr>
+      
+    </table>
+  </div>
+
+----
+
+## api.lims.alshifalab.pk/api/v1
+https://api.lims.alshifalab.pk/api/v1
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 4275
+
+
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+vary: Accept-Encoding
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/v1</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style type="text/css">
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font:small sans-serif; background:#eee; color:#000; }
+    body>div { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 span { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5em; margin: 10px 0 10px 0; }
+  </style>
+</head>
+<body>
+  <div id="summary">
+    <h1>Page not found <span>(404)</span></h1>
+    
+    <table class="meta">
+      <tr>
+        <th>Request Method:</th>
+        <td>GET</td>
+      </tr>
+      <tr>
+        <th>Request URL:</th>
+        <td>http://api.lims.alshifalab.pk/api/v1</td>
+      </tr>
+      
+    </table>
+  </div>
+
+----
+
+## api.lims.alshifalab.pk/api/v1/
+https://api.lims.alshifalab.pk/api/v1/
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 4278
+
+
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+vary: Accept-Encoding
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/v1/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style type="text/css">
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font:small sans-serif; background:#eee; color:#000; }
+    body>div { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 span { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5em; margin: 10px 0 10px 0; }
+  </style>
+</head>
+<body>
+  <div id="summary">
+    <h1>Page not found <span>(404)</span></h1>
+    
+    <table class="meta">
+      <tr>
+        <th>Request Method:</th>
+        <td>GET</td>
+      </tr>
+      <tr>
+        <th>Request URL:</th>
+        <td>http://api.lims.alshifalab.pk/api/v1/</td>
+      </tr>
+      
+    </table>
+  </div>
+
+----
+
+## api.lims.alshifalab.pk/api/auth
+https://api.lims.alshifalab.pk/api/auth
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 4281
+
+
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+vary: Accept-Encoding
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/auth</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style type="text/css">
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font:small sans-serif; background:#eee; color:#000; }
+    body>div { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 span { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5em; margin: 10px 0 10px 0; }
+  </style>
+</head>
+<body>
+  <div id="summary">
+    <h1>Page not found <span>(404)</span></h1>
+    
+    <table class="meta">
+      <tr>
+        <th>Request Method:</th>
+        <td>GET</td>
+      </tr>
+      <tr>
+        <th>Request URL:</th>
+        <td>http://api.lims.alshifalab.pk/api/auth</td>
+      </tr>
+      
+    </table>
+  </div>
+
+----
+
+## api.lims.alshifalab.pk/api/auth/
+https://api.lims.alshifalab.pk/api/auth/
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 4284
+
+
+HTTP/2 404 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+vary: Accept-Encoding
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/auth/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style type="text/css">
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font:small sans-serif; background:#eee; color:#000; }
+    body>div { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 span { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5em; margin: 10px 0 10px 0; }
+  </style>
+</head>
+<body>
+  <div id="summary">
+    <h1>Page not found <span>(404)</span></h1>
+    
+    <table class="meta">
+      <tr>
+        <th>Request Method:</th>
+        <td>GET</td>
+      </tr>
+      <tr>
+        <th>Request URL:</th>
+        <td>http://api.lims.alshifalab.pk/api/auth/</td>
+      </tr>
+      
+    </table>
+  </div>
+
+----
+
+## api.lims.alshifalab.pk/auth
+https://api.lims.alshifalab.pk/auth
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Al Shifa LIMS</title>
+    <script type="module" crossorigin src="/assets/index-idgJAY5h.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CkY8uhoO.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+
+----
+
+## api.lims.alshifalab.pk/auth/
+https://api.lims.alshifalab.pk/auth/
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Al Shifa LIMS</title>
+    <script type="module" crossorigin src="/assets/index-idgJAY5h.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CkY8uhoO.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+
+----
+
+## api.lims.alshifalab.pk/admin
+https://api.lims.alshifalab.pk/admin
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+
+HTTP/2 200 
+accept-ranges: bytes
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html
+date: Sun, 15 Feb 2026 00:23:43 GMT
+etag: "69910846-1cc"
+last-modified: Sat, 14 Feb 2026 23:41:58 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx/1.29.5
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 460
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Al Shifa LIMS</title>
+    <script type="module" crossorigin src="/assets/index-idgJAY5h.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CkY8uhoO.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+
+----
+
+## api.lims.alshifalab.pk/admin/
+https://api.lims.alshifalab.pk/admin/
+HTTP/2 302 
+alt-svc: h3=":443"; ma=2592000
+cache-control: max-age=0, no-cache, no-store, must-revalidate, private
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+expires: Sun, 15 Feb 2026 00:23:43 GMT
+location: /admin/login/?next=/admin/
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 0
+
+
+HTTP/2 302 
+alt-svc: h3=":443"; ma=2592000
+cache-control: max-age=0, no-cache, no-store, must-revalidate, private
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+expires: Sun, 15 Feb 2026 00:23:43 GMT
+location: /admin/login/?next=/admin/
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 0
+
+
+----
+
+## api.lims.alshifalab.pk/api/schema
+https://api.lims.alshifalab.pk/api/schema
+HTTP/2 301 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:43 GMT
+location: /api/schema/
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+
+HTTP/2 301 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:44 GMT
+location: /api/schema/
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 0
+
+
+----
+
+## api.lims.alshifalab.pk/api/docs
+https://api.lims.alshifalab.pk/api/docs
+HTTP/2 301 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:44 GMT
+location: /api/docs/
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+
+HTTP/2 301 
+alt-svc: h3=":443"; ma=2592000
+content-type: text/html; charset=utf-8
+cross-origin-opener-policy: same-origin
+date: Sun, 15 Feb 2026 00:23:44 GMT
+location: /api/docs/
+referrer-policy: strict-origin-when-cross-origin
+referrer-policy: same-origin
+server: gunicorn
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: origin, Cookie
+via: 1.1 Caddy
+via: 1.1 Caddy
+x-content-type-options: nosniff
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+content-length: 0
+
+
+----
+
+## api.mediq.alshifalab.pk/
+https://api.mediq.alshifalab.pk/
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/health
+https://api.mediq.alshifalab.pk/health
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/healthz
+https://api.mediq.alshifalab.pk/healthz
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/api
+https://api.mediq.alshifalab.pk/api
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/api/
+https://api.mediq.alshifalab.pk/api/
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/api/v1
+https://api.mediq.alshifalab.pk/api/v1
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/api/v1/
+https://api.mediq.alshifalab.pk/api/v1/
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/api/auth
+https://api.mediq.alshifalab.pk/api/auth
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/api/auth/
+https://api.mediq.alshifalab.pk/api/auth/
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/auth
+https://api.mediq.alshifalab.pk/auth
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/auth/
+https://api.mediq.alshifalab.pk/auth/
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/admin
+https://api.mediq.alshifalab.pk/admin
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/admin/
+https://api.mediq.alshifalab.pk/admin/
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/api/schema
+https://api.mediq.alshifalab.pk/api/schema
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.mediq.alshifalab.pk/api/docs
+https://api.mediq.alshifalab.pk/api/docs
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+curl: (6) Could not resolve host: api.mediq.alshifalab.pk
+
+----
+
+## api.ops.alshifalab.pk/
+https://api.ops.alshifalab.pk/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/health
+https://api.ops.alshifalab.pk/health
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/healthz
+https://api.ops.alshifalab.pk/healthz
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/api
+https://api.ops.alshifalab.pk/api
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/api/
+https://api.ops.alshifalab.pk/api/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/api/v1
+https://api.ops.alshifalab.pk/api/v1
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/api/v1/
+https://api.ops.alshifalab.pk/api/v1/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/api/auth
+https://api.ops.alshifalab.pk/api/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:44 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/api/auth/
+https://api.ops.alshifalab.pk/api/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/auth
+https://api.ops.alshifalab.pk/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/auth/
+https://api.ops.alshifalab.pk/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/admin
+https://api.ops.alshifalab.pk/admin
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/admin/
+https://api.ops.alshifalab.pk/admin/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/api/schema
+https://api.ops.alshifalab.pk/api/schema
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.ops.alshifalab.pk/api/docs
+https://api.ops.alshifalab.pk/api/docs
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/
+https://api.pgsims.alshifalab.pk/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/health
+https://api.pgsims.alshifalab.pk/health
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/healthz
+https://api.pgsims.alshifalab.pk/healthz
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/api
+https://api.pgsims.alshifalab.pk/api
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/api/
+https://api.pgsims.alshifalab.pk/api/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/api/v1
+https://api.pgsims.alshifalab.pk/api/v1
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/api/v1/
+https://api.pgsims.alshifalab.pk/api/v1/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/api/auth
+https://api.pgsims.alshifalab.pk/api/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/api/auth/
+https://api.pgsims.alshifalab.pk/api/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/auth
+https://api.pgsims.alshifalab.pk/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/auth/
+https://api.pgsims.alshifalab.pk/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/admin
+https://api.pgsims.alshifalab.pk/admin
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/admin/
+https://api.pgsims.alshifalab.pk/admin/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/api/schema
+https://api.pgsims.alshifalab.pk/api/schema
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.alshifalab.pk/api/docs
+https://api.pgsims.alshifalab.pk/api/docs
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:45 GMT
+
+
+----
+
+## api.pgsims.pmc.edu.pk/
+https://api.pgsims.pmc.edu.pk/
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/health
+https://api.pgsims.pmc.edu.pk/health
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/healthz
+https://api.pgsims.pmc.edu.pk/healthz
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/api
+https://api.pgsims.pmc.edu.pk/api
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/api/
+https://api.pgsims.pmc.edu.pk/api/
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/api/v1
+https://api.pgsims.pmc.edu.pk/api/v1
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/api/v1/
+https://api.pgsims.pmc.edu.pk/api/v1/
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/api/auth
+https://api.pgsims.pmc.edu.pk/api/auth
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/api/auth/
+https://api.pgsims.pmc.edu.pk/api/auth/
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/auth
+https://api.pgsims.pmc.edu.pk/auth
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/auth/
+https://api.pgsims.pmc.edu.pk/auth/
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/admin
+https://api.pgsims.pmc.edu.pk/admin
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/admin/
+https://api.pgsims.pmc.edu.pk/admin/
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/api/schema
+https://api.pgsims.pmc.edu.pk/api/schema
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.pgsims.pmc.edu.pk/api/docs
+https://api.pgsims.pmc.edu.pk/api/docs
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+curl: (6) Could not resolve host: api.pgsims.pmc.edu.pk
+
+----
+
+## api.phc.alshifalab.pk/
+https://api.phc.alshifalab.pk/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/health
+https://api.phc.alshifalab.pk/health
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/healthz
+https://api.phc.alshifalab.pk/healthz
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+content-type: application/json
+server: Caddy
+content-length: 35
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+content-type: application/json
+server: Caddy
+content-length: 35
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+{"status":"ok","service":"api.phc"}
+----
+
+## api.phc.alshifalab.pk/api
+https://api.phc.alshifalab.pk/api
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/api/
+https://api.phc.alshifalab.pk/api/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/api/v1
+https://api.phc.alshifalab.pk/api/v1
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/api/v1/
+https://api.phc.alshifalab.pk/api/v1/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/api/auth
+https://api.phc.alshifalab.pk/api/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/api/auth/
+https://api.phc.alshifalab.pk/api/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/auth
+https://api.phc.alshifalab.pk/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/auth/
+https://api.phc.alshifalab.pk/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/admin
+https://api.phc.alshifalab.pk/admin
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/admin/
+https://api.phc.alshifalab.pk/admin/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/api/schema
+https://api.phc.alshifalab.pk/api/schema
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.phc.alshifalab.pk/api/docs
+https://api.phc.alshifalab.pk/api/docs
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/
+https://api.rims.alshifalab.pk/
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/health
+https://api.rims.alshifalab.pk/health
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/healthz
+https://api.rims.alshifalab.pk/healthz
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+content-type: application/json
+server: Caddy
+content-length: 36
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 200 
+alt-svc: h3=":443"; ma=2592000
+content-type: application/json
+server: Caddy
+content-length: 36
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+{"status":"ok","service":"api.rims"}
+----
+
+## api.rims.alshifalab.pk/api
+https://api.rims.alshifalab.pk/api
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/api/
+https://api.rims.alshifalab.pk/api/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:46 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/api/v1
+https://api.rims.alshifalab.pk/api/v1
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/api/v1/
+https://api.rims.alshifalab.pk/api/v1/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/api/auth
+https://api.rims.alshifalab.pk/api/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/api/auth/
+https://api.rims.alshifalab.pk/api/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/auth
+https://api.rims.alshifalab.pk/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/auth/
+https://api.rims.alshifalab.pk/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/admin
+https://api.rims.alshifalab.pk/admin
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/admin/
+https://api.rims.alshifalab.pk/admin/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/api/schema
+https://api.rims.alshifalab.pk/api/schema
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.rims.alshifalab.pk/api/docs
+https://api.rims.alshifalab.pk/api/docs
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/
+https://api.sims.alshifalab.pk/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/health
+https://api.sims.alshifalab.pk/health
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/healthz
+https://api.sims.alshifalab.pk/healthz
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/api
+https://api.sims.alshifalab.pk/api
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/api/
+https://api.sims.alshifalab.pk/api/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/api/v1
+https://api.sims.alshifalab.pk/api/v1
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/api/v1/
+https://api.sims.alshifalab.pk/api/v1/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/api/auth
+https://api.sims.alshifalab.pk/api/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/api/auth/
+https://api.sims.alshifalab.pk/api/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/auth
+https://api.sims.alshifalab.pk/auth
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/auth/
+https://api.sims.alshifalab.pk/auth/
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+HTTP/2 502 
+alt-svc: h3=":443"; ma=2592000
+server: Caddy
+content-length: 0
+date: Sun, 15 Feb 2026 00:23:47 GMT
+
+
+----
+
+## api.sims.alshifalab.pk/admin
+https://api.sims.alshifalab.pk/admin

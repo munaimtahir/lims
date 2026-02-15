@@ -1,0 +1,38 @@
+### Listening TCP
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                                                                                                                        
+LISTEN 0      4096       127.0.0.1:2019      0.0.0.0:*                                                                                                                                                  
+LISTEN 0      2048       127.0.0.1:8000      0.0.0.0:*    users:(("gunicorn",pid=1163,fd=5),("gunicorn",pid=1162,fd=5),("gunicorn",pid=1160,fd=5),("gunicorn",pid=1152,fd=5),("gunicorn",pid=1102,fd=5))
+LISTEN 0      4096       127.0.0.1:8012      0.0.0.0:*                                                                                                                                                  
+LISTEN 0      4096       127.0.0.1:8013      0.0.0.0:*                                                                                                                                                  
+LISTEN 0      200        127.0.0.1:5432      0.0.0.0:*                                                                                                                                                  
+LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*                                                                                                                                                  
+LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*                                                                                                                                                  
+LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*                                                                                                                                                  
+LISTEN 0      4096               *:80              *:*                                                                                                                                                  
+LISTEN 0      4096            [::]:22           [::]:*                                                                                                                                                  
+LISTEN 0      4096               *:443             *:*                                                                                                                                                  
+
+### Listening UDP
+State  Recv-Q Send-Q   Local Address:Port Peer Address:PortProcess
+UNCONN 0      0           127.0.0.54:53        0.0.0.0:*          
+UNCONN 0      0        127.0.0.53%lo:53        0.0.0.0:*          
+UNCONN 0      0      10.128.0.2%ens4:68        0.0.0.0:*          
+UNCONN 0      0            127.0.0.1:323       0.0.0.0:*          
+UNCONN 0      0                [::1]:323          [::]:*          
+UNCONN 0      0                    *:443             *:*          
+
+### UFW
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp (OpenSSH)           ALLOW IN    Anywhere                  
+80                         ALLOW IN    Anywhere                  
+443                        ALLOW IN    Anywhere                  
+22/tcp (OpenSSH (v6))      ALLOW IN    Anywhere (v6)             
+80 (v6)                    ALLOW IN    Anywhere (v6)             
+443 (v6)                   ALLOW IN    Anywhere (v6)             
+

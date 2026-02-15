@@ -1,0 +1,60 @@
+### Host & OS
+   Static hostname: (unset)
+Transient hostname: vps.us-central1-f.c.munaimfinance.internal
+         Icon name: computer-vm
+           Chassis: vm 🖴
+        Machine ID: e0562b8c75014921979cff8af6328c0f
+           Boot ID: 80c74a79ffcc420d9c355fcc951e6ca8
+    Virtualization: google
+  Operating System: Ubuntu 24.04.4 LTS
+            Kernel: Linux 6.14.0-1021-gcp
+      Architecture: x86-64
+   Hardware Vendor: Google
+    Hardware Model: Google Compute Engine
+  Firmware Version: Google
+     Firmware Date: Sat 2026-01-24
+      Firmware Age: 3w 1d
+
+### Uptime
+ 05:13:52 up 38 min,  2 users,  load average: 0.06, 0.44, 0.53
+
+### Time
+2026-02-15T05:13:52+05:00
+
+### Disk
+Filesystem     Type      Size  Used Avail Use% Mounted on
+/dev/root      ext4       77G   36G   41G  47% /
+tmpfs          tmpfs      11G  1.1M   11G   1% /dev/shm
+tmpfs          tmpfs     4.3G  1.7M  4.3G   1% /run
+tmpfs          tmpfs     5.0M     0  5.0M   0% /run/lock
+efivarfs       efivarfs  256K   32K  220K  13% /sys/firmware/efi/efivars
+/dev/sda16     ext4      881M   65M  755M   8% /boot
+/dev/sda15     vfat      105M  6.2M   99M   6% /boot/efi
+tmpfs          tmpfs     2.2G   24K  2.2G   1% /run/user/1004
+
+### Memory
+               total        used        free      shared  buff/cache   available
+Mem:            21Gi       1.9Gi       7.6Gi        35Mi        12Gi        19Gi
+Swap:             0B          0B          0B
+
+### Top processes (brief)
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root        1090 10.1  0.8 2839824 185360 ?      Ssl  04:35   3:52 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+1000       22754  0.7  0.4 336240 110000 ?       Ss   05:07   0:02 /usr/local/bin/python3.12 /usr/local/bin/celery -A config worker -l INFO --concurrency=4
+1000       22338  0.4  0.4 324900 98760 ?        Sl   05:07   0:01 /usr/local/bin/python3.12 /usr/local/bin/gunicorn --bind 0.0.0.0:8000 --workers 4 config.wsgi:application
+1000       22337  0.4  0.4 324900 98532 ?        Sl   05:07   0:01 /usr/local/bin/python3.12 /usr/local/bin/gunicorn --bind 0.0.0.0:8000 --workers 4 config.wsgi:application
+1000       22336  0.4  0.4 324900 98516 ?        Sl   05:07   0:01 /usr/local/bin/python3.12 /usr/local/bin/gunicorn --bind 0.0.0.0:8000 --workers 4 config.wsgi:application
+1000       22339  0.3  0.4 324884 98516 ?        Sl   05:07   0:01 /usr/local/bin/python3.12 /usr/local/bin/gunicorn --bind 0.0.0.0:8000 --workers 4 config.wsgi:application
+1000       22808  0.0  0.4 335080 90192 ?        S    05:07   0:00 /usr/local/bin/python3.12 /usr/local/bin/celery -A config worker -l INFO --concurrency=4
+1000       22809  0.0  0.4 335084 90192 ?        S    05:07   0:00 /usr/local/bin/python3.12 /usr/local/bin/celery -A config worker -l INFO --concurrency=4
+1000       22806  0.0  0.4 335072 90184 ?        S    05:07   0:00 /usr/local/bin/python3.12 /usr/local/bin/celery -A config worker -l INFO --concurrency=4
+1000       22807  0.0  0.4 335076 90176 ?        S    05:07   0:00 /usr/local/bin/python3.12 /usr/local/bin/celery -A config worker -l INFO --concurrency=4
+munaim     22463  3.1  0.3 141044 74644 pts/2    Sl+  05:07   0:11 /usr/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex/codex --yolo
+root         804  3.9  0.3 2378332 70104 ?       Ssl  04:35   1:31 /usr/bin/containerd
+root        5763  0.1  0.3 176476 68400 ?        Ssl  04:42   0:03 /usr/local/bin/python3.12 /usr/local/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+munaim      1162  0.0  0.2  94132 60164 ?        S    04:35   0:00 /home/munaim/srv/apps/lims/lims-backend/.venv/bin/python3 /home/munaim/srv/apps/lims/lims-backend/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 --timeout 120 --access-logfile /home/munaim/srv/apps/lims/logs/gunicorn-access.log --error-logfile /home/munaim/srv/apps/lims/logs/gunicorn-error.log config.wsgi:application
+munaim      1163  0.0  0.2  94132 60124 ?        S    04:35   0:00 /home/munaim/srv/apps/lims/lims-backend/.venv/bin/python3 /home/munaim/srv/apps/lims/lims-backend/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 --timeout 120 --access-logfile /home/munaim/srv/apps/lims/logs/gunicorn-access.log --error-logfile /home/munaim/srv/apps/lims/logs/gunicorn-error.log config.wsgi:application
+munaim      1152  0.0  0.2  94132 60108 ?        S    04:35   0:00 /home/munaim/srv/apps/lims/lims-backend/.venv/bin/python3 /home/munaim/srv/apps/lims/lims-backend/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 --timeout 120 --access-logfile /home/munaim/srv/apps/lims/logs/gunicorn-access.log --error-logfile /home/munaim/srv/apps/lims/logs/gunicorn-error.log config.wsgi:application
+munaim      1160  0.0  0.2  94132 60104 ?        S    04:35   0:00 /home/munaim/srv/apps/lims/lims-backend/.venv/bin/python3 /home/munaim/srv/apps/lims/lims-backend/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 --timeout 120 --access-logfile /home/munaim/srv/apps/lims/logs/gunicorn-access.log --error-logfile /home/munaim/srv/apps/lims/logs/gunicorn-error.log config.wsgi:application
+caddy        688  0.0  0.2 1271964 53228 ?       Ssl  04:35   0:02 /usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+root        6944  0.0  0.1 1271708 44888 ?       Ssl  04:43   0:00 caddy run --config /etc/caddy/Caddyfile --adapter caddyfile

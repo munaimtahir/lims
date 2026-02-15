@@ -1,0 +1,20 @@
+--- /home/munaim/srv/proxy/caddy/Caddyfile	2026-02-14 06:50:07.526521881 +0500
++++ /etc/caddy/Caddyfile	2026-02-15 05:17:50.346230735 +0500
+@@ -383,16 +383,8 @@
+ 	import std_log dashboard
+ 	import std_headers
+ 
+-	handle /api/* {
+-		reverse_proxy 127.0.0.1:18000 {
+-			import std_proxy
+-			header_up Host ops.alshifalab.pk
+-			header_up X-Remote-User {http.auth.user.id}
+-		}
+-	}
+-
+ 	handle {
+-		reverse_proxy 127.0.0.1:18001 {
++		reverse_proxy 127.0.0.1:8013 {
+ 			import std_proxy
+ 		}
+ 	}

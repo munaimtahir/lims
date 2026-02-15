@@ -1,0 +1,7 @@
+services:
+  backend:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+  celery:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development

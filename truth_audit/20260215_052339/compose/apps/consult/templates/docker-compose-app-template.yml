@@ -1,0 +1,106 @@
+# Template for adding a new app to docker-compose.yml
+# Copy this template and replace:
+#   - APP_NAME with your app name (e.g., app2, app3)
+#   - APP_PATH with your app path (e.g., /app2, /app3)
+#   - BACKEND_PORT with your backend port (default: 8000)
+#   - FRONTEND_PORT with your frontend port (default: 80)
+#   - Adjust resource limits as needed
+
+  # APP_NAME App - Backend Service
+  APP_NAME_backend:
+    build: ./APP_NAME/backend
+    expose:
+      - "BACKEND_PORT"
+    volumes:
+      - ./APP_NAME/backend:/app
+      - APP_NAME_static_volume:/app/staticfiles
+      - APP_NAME_media_volume:/app/media
+    environment:
+      - DEBUG=0
+      - SECRET_KEY=change_me_in_prod
+      - ALLOWED_HOSTS=localhost,127.0.0.1,APP_NAME_backend,172.104.53.127
+      - DATABASE=postgres
+      - DB_NAME=consult_db
+      - DB_USER=consult_user
+      - DB_PASSWORD=consult_password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CORS_ALLOWED_ORIGINS=http://172.104.53.127,http://localhost:3000,http://localhost
+      - CSRF_TRUSTED_ORIGINS=http://172.104.53.127,http://localhost:3000,http://localhost
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - consult_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:BACKEND_PORT/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # APP_NAME App - Frontend Service
+  APP_NAME_frontend:
+    build:
+      context: ./APP_NAME/frontend
+      args:
+        - VITE_API_URL=http://172.104.53.127APP_PATH/api
+    expose:
+      - "FRONTEND_PORT"
+    depends_on:
+      APP_NAME_backend:
+        condition: service_healthy
+    networks:
+      - consult_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:FRONTEND_PORT/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+# Also add these volumes to the volumes section:
+#   APP_NAME_static_volume:
+#     driver: local
+#   APP_NAME_media_volume:
+#     driver: local
+
+# Also add to nginx-proxy depends_on:
+#       APP_NAME_backend:
+#         condition: service_healthy
+#       APP_NAME_frontend:
+#         condition: service_healthy
+

@@ -1,0 +1,58 @@
+# Development Docker Compose Configuration
+# Redis is optional - system will work without it but background jobs will be disabled
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: fmu_db_dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fmu_platform}
+      POSTGRES_USER: ${POSTGRES_USER:-fmu_platform}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - DEV_fmu_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: fmu_redis_dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    # Redis is optional - comment out if not needed
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fmu_backend_dev
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - ./backend/staticfiles:/app/staticfiles
+      - ./backend/media:/app/media
+    ports:
+      - "127.0.0.1:8010:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: ${VITE_API_URL:-https://api.sims.alshifalab.pk}
+    container_name: fmu_frontend_dev
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped
+
+volumes:
+  DEV_fmu_pgdata:

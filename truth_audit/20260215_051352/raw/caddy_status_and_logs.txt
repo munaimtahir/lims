@@ -1,0 +1,228 @@
+### Caddy service status
+● caddy.service - Caddy
+     Loaded: loaded (/usr/lib/systemd/system/caddy.service; enabled; preset: enabled)
+    Drop-In: /etc/systemd/system/caddy.service.d
+             └─override.conf
+     Active: active (running) since Sun 2026-02-15 04:35:31 PKT; 38min ago
+       Docs: https://caddyserver.com/docs/
+   Main PID: 688 (caddy)
+      Tasks: 14 (limit: 26339)
+     Memory: 60.9M (peak: 61.8M)
+        CPU: 2.216s
+     CGroup: /system.slice/caddy.service
+             └─688 /usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+
+Feb 15 04:35:22 vps caddy[688]: JOURNAL_STREAM=9:5726
+Feb 15 04:35:22 vps caddy[688]: SYSTEMD_EXEC_PID=688
+Feb 15 04:35:22 vps caddy[688]: MEMORY_PRESSURE_WATCH=/sys/fs/cgroup/system.slice/caddy.service/memory.pressure
+Feb 15 04:35:22 vps caddy[688]: MEMORY_PRESSURE_WRITE=c29tZSAyMDAwMDAgMjAwMDAwMAA=
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.0152771,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.0369816,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 15 04:35:22 vps caddy[688]: {"level":"warn","ts":1771112122.037015,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":455}
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.045322,"msg":"redirected default logger","from":"stderr","to":"/home/munaim/srv/proxy/caddy/logs/error.log"}
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.1317675,"msg":"serving initial configuration"}
+Feb 15 04:35:31 vps systemd[1]: Started caddy.service - Caddy.
+
+### Caddy recent logs (last 200 lines)
+Feb 13 16:41:01 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 13 16:41:01 vps.us-central1-f.c.munaimfinance.internal caddy[454781]: {"level":"info","ts":1770982861.5264854,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 13 16:41:01 vps.us-central1-f.c.munaimfinance.internal caddy[454781]: {"level":"info","ts":1770982861.5401618,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 13 16:41:01 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 13 17:25:10 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 13 17:25:10 vps.us-central1-f.c.munaimfinance.internal caddy[570879]: {"level":"info","ts":1770985510.8392475,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 13 17:25:10 vps.us-central1-f.c.munaimfinance.internal caddy[570879]: {"level":"info","ts":1770985510.8558798,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 13 17:25:10 vps.us-central1-f.c.munaimfinance.internal caddy[570879]: {"level":"warn","ts":1770985510.855926,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":388}
+Feb 13 17:25:10 vps.us-central1-f.c.munaimfinance.internal caddy[570879]: Error: sending configuration to instance: caddy responded with error: HTTP 400: {"error":"loading config: loading new config: setting up custom log 'log18': opening log writer using \u0026logging.FileWriter{Filename:\"/var/log/caddy/mediq.log\", Mode:0x0, Roll:(*bool)(nil), RollSizeMB:0, RollCompress:(*bool)(nil), RollLocalTime:false, RollKeep:0, RollKeepDays:0}: open /var/log/caddy/mediq.log: permission denied"}
+Feb 13 17:25:10 vps.us-central1-f.c.munaimfinance.internal systemd[1]: caddy.service: Control process exited, code=exited, status=1/FAILURE
+Feb 13 17:26:40 vps.us-central1-f.c.munaimfinance.internal systemd[1]: caddy.service: Reload operation timed out. Killing reload process.
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal systemd[1]: caddy.service: Deactivated successfully.
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Stopped caddy.service - Caddy.
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal systemd[1]: caddy.service: Consumed 10.875s CPU time, 74.3M memory peak, 0B memory swap peak.
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Starting caddy.service - Caddy...
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: {"level":"info","ts":1770985633.2481313,"msg":"maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined"}
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: {"level":"info","ts":1770985633.2492034,"msg":"GOMEMLIMIT is updated","package":"github.com/KimMachineGun/automemlimit/memlimit","GOMEMLIMIT":20775451852,"previous":9223372036854775807}
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: caddy.HomeDir=/var/lib/caddy
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: caddy.AppDataDir=/var/lib/caddy/.local/share/caddy
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: caddy.AppConfigDir=/var/lib/caddy/.config/caddy
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: caddy.ConfigAutosavePath=/var/lib/caddy/.config/caddy/autosave.json
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: caddy.Version=v2.10.2 h1:g/gTYjGMD0dec+UgMw8SnfmJ3I9+M2TdvoRL/Ovu6U8=
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: runtime.GOOS=linux
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: runtime.GOARCH=amd64
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: runtime.Compiler=gc
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: runtime.NumCPU=4
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: runtime.GOMAXPROCS=4
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: runtime.Version=go1.25.0
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: os.Getwd=/
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: LANG=C.UTF-8
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: NOTIFY_SOCKET=/run/systemd/notify
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: USER=caddy
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: LOGNAME=caddy
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: HOME=/var/lib/caddy
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: INVOCATION_ID=8025e028615743a2acc6b71cfc06e165
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: JOURNAL_STREAM=9:2718121
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: SYSTEMD_EXEC_PID=576821
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: MEMORY_PRESSURE_WATCH=/sys/fs/cgroup/system.slice/caddy.service/memory.pressure
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: MEMORY_PRESSURE_WRITE=c29tZSAyMDAwMDAgMjAwMDAwMAA=
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: {"level":"info","ts":1770985633.2493584,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: {"level":"info","ts":1770985633.2656786,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: {"level":"warn","ts":1770985633.2657125,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":388}
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: {"level":"info","ts":1770985633.2706876,"msg":"redirected default logger","from":"stderr","to":"/home/munaim/srv/proxy/caddy/logs/error.log"}
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: {"level":"info","ts":1770985633.313658,"msg":"serving initial configuration"}
+Feb 13 17:27:13 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Started caddy.service - Caddy.
+Feb 13 17:28:10 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 13 17:28:10 vps.us-central1-f.c.munaimfinance.internal caddy[580392]: {"level":"info","ts":1770985690.9218457,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 13 17:28:10 vps.us-central1-f.c.munaimfinance.internal caddy[580392]: {"level":"info","ts":1770985690.9332004,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 13 17:28:10 vps.us-central1-f.c.munaimfinance.internal caddy[580392]: {"level":"warn","ts":1770985690.9332206,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":388}
+Feb 13 17:28:10 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 13 23:05:10 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: 1.771005910111947e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.pgsims.pmc.edu.pk.lock)
+Feb 13 23:05:10 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: 1.771005910111947e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_sims.pmc.edu.pk.lock)
+Feb 13 23:05:20 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: 1.771005920122087e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sos.alshifalab.pk.lock)
+Feb 13 23:05:35 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: 1.7710059351374018e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sims.pmc.edu.pk.lock)
+Feb 13 23:05:50 vps.us-central1-f.c.munaimfinance.internal caddy[576821]: 1.7710059501564784e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_pgsims.pmc.edu.pk.lock)
+Feb 14 00:00:01 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 14 00:00:01 vps.us-central1-f.c.munaimfinance.internal caddy[1290631]: {"level":"info","ts":1771009201.9925075,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 14 00:00:02 vps.us-central1-f.c.munaimfinance.internal caddy[1290631]: {"level":"info","ts":1771009202.0037835,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 14 00:00:02 vps.us-central1-f.c.munaimfinance.internal caddy[1290631]: {"level":"warn","ts":1771009202.003804,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":388}
+Feb 14 00:00:02 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 14 00:22:40 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Stopping caddy.service - Caddy...
+Feb 14 00:22:40 vps.us-central1-f.c.munaimfinance.internal systemd[1]: caddy.service: Deactivated successfully.
+Feb 14 00:22:40 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Stopped caddy.service - Caddy.
+Feb 14 00:22:40 vps.us-central1-f.c.munaimfinance.internal systemd[1]: caddy.service: Consumed 16.095s CPU time, 30.2M memory peak, 0B memory swap peak.
+-- Boot 4b8128e076b34f9fbe84d70e074d25be --
+Feb 14 00:23:03 vps systemd[1]: Starting caddy.service - Caddy...
+Feb 14 00:23:05 vps caddy[671]: {"level":"info","ts":1771010585.0287309,"msg":"maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined"}
+Feb 14 00:23:05 vps caddy[671]: {"level":"info","ts":1771010585.0289917,"msg":"GOMEMLIMIT is updated","package":"github.com/KimMachineGun/automemlimit/memlimit","GOMEMLIMIT":20775459225,"previous":9223372036854775807}
+Feb 14 00:23:05 vps caddy[671]: caddy.HomeDir=/var/lib/caddy
+Feb 14 00:23:05 vps caddy[671]: caddy.AppDataDir=/var/lib/caddy/.local/share/caddy
+Feb 14 00:23:05 vps caddy[671]: caddy.AppConfigDir=/var/lib/caddy/.config/caddy
+Feb 14 00:23:05 vps caddy[671]: caddy.ConfigAutosavePath=/var/lib/caddy/.config/caddy/autosave.json
+Feb 14 00:23:05 vps caddy[671]: caddy.Version=v2.10.2 h1:g/gTYjGMD0dec+UgMw8SnfmJ3I9+M2TdvoRL/Ovu6U8=
+Feb 14 00:23:05 vps caddy[671]: runtime.GOOS=linux
+Feb 14 00:23:05 vps caddy[671]: runtime.GOARCH=amd64
+Feb 14 00:23:05 vps caddy[671]: runtime.Compiler=gc
+Feb 14 00:23:05 vps caddy[671]: runtime.NumCPU=4
+Feb 14 00:23:05 vps caddy[671]: runtime.GOMAXPROCS=4
+Feb 14 00:23:05 vps caddy[671]: runtime.Version=go1.25.0
+Feb 14 00:23:05 vps caddy[671]: os.Getwd=/
+Feb 14 00:23:05 vps caddy[671]: LANG=C.UTF-8
+Feb 14 00:23:05 vps caddy[671]: PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin
+Feb 14 00:23:05 vps caddy[671]: NOTIFY_SOCKET=/run/systemd/notify
+Feb 14 00:23:05 vps caddy[671]: USER=caddy
+Feb 14 00:23:05 vps caddy[671]: LOGNAME=caddy
+Feb 14 00:23:05 vps caddy[671]: HOME=/var/lib/caddy
+Feb 14 00:23:05 vps caddy[671]: INVOCATION_ID=a56db18a3f5642308235447a7a1619b9
+Feb 14 00:23:05 vps caddy[671]: JOURNAL_STREAM=9:6612
+Feb 14 00:23:05 vps caddy[671]: SYSTEMD_EXEC_PID=671
+Feb 14 00:23:05 vps caddy[671]: MEMORY_PRESSURE_WATCH=/sys/fs/cgroup/system.slice/caddy.service/memory.pressure
+Feb 14 00:23:05 vps caddy[671]: MEMORY_PRESSURE_WRITE=c29tZSAyMDAwMDAgMjAwMDAwMAA=
+Feb 14 00:23:05 vps caddy[671]: {"level":"info","ts":1771010585.0308406,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 14 00:23:05 vps caddy[671]: {"level":"info","ts":1771010585.0519452,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 14 00:23:05 vps caddy[671]: {"level":"warn","ts":1771010585.0519726,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":388}
+Feb 14 00:23:05 vps caddy[671]: {"level":"info","ts":1771010585.0594468,"msg":"redirected default logger","from":"stderr","to":"/home/munaim/srv/proxy/caddy/logs/error.log"}
+Feb 14 00:23:05 vps caddy[671]: {"level":"info","ts":1771010585.1217694,"msg":"serving initial configuration"}
+Feb 14 00:23:17 vps systemd[1]: Started caddy.service - Caddy.
+Feb 14 02:03:52 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 14 02:03:52 vps.us-central1-f.c.munaimfinance.internal caddy[13695]: {"level":"info","ts":1771016632.6027403,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 14 02:03:52 vps.us-central1-f.c.munaimfinance.internal caddy[13695]: {"level":"info","ts":1771016632.6136758,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 14 02:03:52 vps.us-central1-f.c.munaimfinance.internal caddy[13695]: {"level":"warn","ts":1771016632.613698,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":388}
+Feb 14 02:03:52 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 14 02:12:23 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710171434781454e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.pgsims.pmc.edu.pk.lock)
+Feb 14 02:19:05 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710175454494596e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_sims.pmc.edu.pk.lock)
+Feb 14 02:19:05 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710175454876852e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_pgsims.pmc.edu.pk.lock)
+Feb 14 02:19:05 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710175454876964e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sos.alshifalab.pk.lock)
+Feb 14 02:56:23 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 14 02:56:23 vps.us-central1-f.c.munaimfinance.internal caddy[144473]: {"level":"info","ts":1771019783.1311245,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 14 02:56:23 vps.us-central1-f.c.munaimfinance.internal caddy[144473]: {"level":"info","ts":1771019783.1481872,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 14 02:56:23 vps.us-central1-f.c.munaimfinance.internal caddy[144473]: {"level":"warn","ts":1771019783.1482108,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":461}
+Feb 14 02:56:23 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 14 03:39:43 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710223831783936e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sims.pmc.edu.pk.lock)
+Feb 14 04:57:50 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710270708115144e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sos.alshifalab.pk.lock)
+Feb 14 04:58:05 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710270858256445e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_sims.pmc.edu.pk.lock)
+Feb 14 04:58:05 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710270858269675e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_pgsims.pmc.edu.pk.lock)
+Feb 14 04:58:50 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.771027130871959e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.pgsims.pmc.edu.pk.lock)
+Feb 14 04:59:00 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710271408823588e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sims.pmc.edu.pk.lock)
+Feb 14 06:18:16 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 14 06:18:17 vps.us-central1-f.c.munaimfinance.internal caddy[635551]: {"level":"info","ts":1771031897.0513554,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 14 06:18:17 vps.us-central1-f.c.munaimfinance.internal caddy[635551]: {"level":"info","ts":1771031897.0662773,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 14 06:18:17 vps.us-central1-f.c.munaimfinance.internal caddy[635551]: {"level":"warn","ts":1771031897.0663068,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":461}
+Feb 14 06:18:17 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 14 06:30:05 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 14 06:30:05 vps.us-central1-f.c.munaimfinance.internal caddy[666842]: {"level":"info","ts":1771032605.4246445,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 14 06:30:05 vps.us-central1-f.c.munaimfinance.internal caddy[666842]: {"level":"info","ts":1771032605.438335,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 14 06:30:05 vps.us-central1-f.c.munaimfinance.internal caddy[666842]: {"level":"warn","ts":1771032605.4383566,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":462}
+Feb 14 06:30:05 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 14 06:39:08 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 14 06:39:08 vps.us-central1-f.c.munaimfinance.internal caddy[689455]: {"level":"info","ts":1771033148.159293,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 14 06:39:08 vps.us-central1-f.c.munaimfinance.internal caddy[689455]: {"level":"info","ts":1771033148.17765,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 14 06:39:08 vps.us-central1-f.c.munaimfinance.internal caddy[689455]: {"level":"warn","ts":1771033148.177673,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":459}
+Feb 14 06:39:08 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 14 06:50:10 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 14 06:50:10 vps.us-central1-f.c.munaimfinance.internal caddy[716603]: {"level":"info","ts":1771033810.6736639,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 14 06:50:10 vps.us-central1-f.c.munaimfinance.internal caddy[716603]: {"level":"info","ts":1771033810.687263,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 14 06:50:10 vps.us-central1-f.c.munaimfinance.internal caddy[716603]: {"level":"warn","ts":1771033810.6872866,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":455}
+Feb 14 06:50:10 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 14 08:42:55 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710405757198489e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_sims.pmc.edu.pk.lock)
+Feb 14 08:49:05 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710409459692125e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_pgsims.pmc.edu.pk.lock)
+Feb 14 08:49:30 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710409709857633e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.mediq.alshifalab.pk.lock)
+Feb 14 08:49:45 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.771040985998182e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sims.pmc.edu.pk.lock)
+Feb 14 08:50:16 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710410160170655e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.pgsims.pmc.edu.pk.lock)
+Feb 14 09:54:48 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710448888446314e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sims.pmc.edu.pk.lock)
+Feb 14 09:55:18 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710449188676836e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sos.alshifalab.pk.lock)
+Feb 14 10:03:29 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710454092860572e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_sims.pmc.edu.pk.lock)
+Feb 14 10:03:34 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.771045414289574e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sims.pmc.edu.pk.lock)
+Feb 14 10:33:55 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710472359889145e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_sims.pmc.edu.pk.lock)
+Feb 14 10:47:46 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.771048066764363e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.pgsims.pmc.edu.pk.lock)
+Feb 14 10:47:56 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710480767719305e+09        error        Keeping lock file fresh: invalid character '}' after top-level value - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_pgsims.pmc.edu.pk.lock)
+Feb 14 10:47:56 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710480767719285e+09        error        Keeping lock file fresh: invalid character '}' after top-level value - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_pgsims.pmc.edu.pk.lock)
+Feb 14 10:49:16 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710481568253546e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.mediq.alshifalab.pk.lock)
+Feb 14 10:49:56 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710481968584611e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sos.alshifalab.pk.lock)
+Feb 15 00:00:02 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloading caddy.service - Caddy...
+Feb 15 00:00:02 vps.us-central1-f.c.munaimfinance.internal caddy[3210805]: {"level":"info","ts":1771095602.90768,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 15 00:00:02 vps.us-central1-f.c.munaimfinance.internal caddy[3210805]: {"level":"info","ts":1771095602.922967,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 15 00:00:02 vps.us-central1-f.c.munaimfinance.internal caddy[3210805]: {"level":"warn","ts":1771095602.923,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":455}
+Feb 15 00:00:02 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710956029420536e+09        info        [FileStorage:/var/lib/caddy/.local/share/caddy] Lock for 'issue_cert_pgsims.pmc.edu.pk' is stale (created: 2026-02-14 06:50:10.70596103 +0500 PKT, last update: 2026-02-14 10:47:51.7694055 +0500 PKT); removing then retrying: /var/lib/caddy/.local/share/caddy/locks/issue_cert_pgsims.pmc.edu.pk.lock
+Feb 15 00:00:02 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Reloaded caddy.service - Caddy.
+Feb 15 00:05:23 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710959231275597e+09        error        Keeping lock file fresh: invalid character '}' after top-level value - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.pgsims.pmc.edu.pk.lock)
+Feb 15 00:05:23 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710959231275816e+09        error        Keeping lock file fresh: invalid character '}' after top-level value - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.pgsims.pmc.edu.pk.lock)
+Feb 15 00:58:40 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710991209174325e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.mediq.alshifalab.pk.lock)
+Feb 15 00:58:45 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710991259223475e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_sims.pmc.edu.pk.lock)
+Feb 15 00:58:50 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.771099130926626e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sims.pmc.edu.pk.lock)
+Feb 15 00:59:05 vps.us-central1-f.c.munaimfinance.internal caddy[671]: 1.7710991459381804e+09        error        Keeping lock file fresh: unexpected end of JSON input - terminating lock maintenance (lockfile: /var/lib/caddy/.local/share/caddy/locks/issue_cert_api.sos.alshifalab.pk.lock)
+Feb 15 04:34:55 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Stopping caddy.service - Caddy...
+Feb 15 04:34:56 vps.us-central1-f.c.munaimfinance.internal systemd[1]: caddy.service: Deactivated successfully.
+Feb 15 04:34:56 vps.us-central1-f.c.munaimfinance.internal systemd[1]: Stopped caddy.service - Caddy.
+Feb 15 04:34:56 vps.us-central1-f.c.munaimfinance.internal systemd[1]: caddy.service: Consumed 1min 18.523s CPU time, 70.3M memory peak, 0B memory swap peak.
+-- Boot 80c74a79ffcc420d9c355fcc951e6ca8 --
+Feb 15 04:35:20 vps systemd[1]: Starting caddy.service - Caddy...
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.0126247,"msg":"maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined"}
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.0134966,"msg":"GOMEMLIMIT is updated","package":"github.com/KimMachineGun/automemlimit/memlimit","GOMEMLIMIT":20775455539,"previous":9223372036854775807}
+Feb 15 04:35:22 vps caddy[688]: caddy.HomeDir=/var/lib/caddy
+Feb 15 04:35:22 vps caddy[688]: caddy.AppDataDir=/var/lib/caddy/.local/share/caddy
+Feb 15 04:35:22 vps caddy[688]: caddy.AppConfigDir=/var/lib/caddy/.config/caddy
+Feb 15 04:35:22 vps caddy[688]: caddy.ConfigAutosavePath=/var/lib/caddy/.config/caddy/autosave.json
+Feb 15 04:35:22 vps caddy[688]: caddy.Version=v2.10.2 h1:g/gTYjGMD0dec+UgMw8SnfmJ3I9+M2TdvoRL/Ovu6U8=
+Feb 15 04:35:22 vps caddy[688]: runtime.GOOS=linux
+Feb 15 04:35:22 vps caddy[688]: runtime.GOARCH=amd64
+Feb 15 04:35:22 vps caddy[688]: runtime.Compiler=gc
+Feb 15 04:35:22 vps caddy[688]: runtime.NumCPU=4
+Feb 15 04:35:22 vps caddy[688]: runtime.GOMAXPROCS=4
+Feb 15 04:35:22 vps caddy[688]: runtime.Version=go1.25.0
+Feb 15 04:35:22 vps caddy[688]: os.Getwd=/
+Feb 15 04:35:22 vps caddy[688]: LANG=C.UTF-8
+Feb 15 04:35:22 vps caddy[688]: PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin
+Feb 15 04:35:22 vps caddy[688]: NOTIFY_SOCKET=/run/systemd/notify
+Feb 15 04:35:22 vps caddy[688]: USER=caddy
+Feb 15 04:35:22 vps caddy[688]: LOGNAME=caddy
+Feb 15 04:35:22 vps caddy[688]: HOME=/var/lib/caddy
+Feb 15 04:35:22 vps caddy[688]: INVOCATION_ID=f12340ca26ca407ebce2f7a23148a9ea
+Feb 15 04:35:22 vps caddy[688]: JOURNAL_STREAM=9:5726
+Feb 15 04:35:22 vps caddy[688]: SYSTEMD_EXEC_PID=688
+Feb 15 04:35:22 vps caddy[688]: MEMORY_PRESSURE_WATCH=/sys/fs/cgroup/system.slice/caddy.service/memory.pressure
+Feb 15 04:35:22 vps caddy[688]: MEMORY_PRESSURE_WRITE=c29tZSAyMDAwMDAgMjAwMDAwMAA=
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.0152771,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.0369816,"msg":"adapted config to JSON","adapter":"caddyfile"}
+Feb 15 04:35:22 vps caddy[688]: {"level":"warn","ts":1771112122.037015,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":455}
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.045322,"msg":"redirected default logger","from":"stderr","to":"/home/munaim/srv/proxy/caddy/logs/error.log"}
+Feb 15 04:35:22 vps caddy[688]: {"level":"info","ts":1771112122.1317675,"msg":"serving initial configuration"}
+Feb 15 04:35:31 vps systemd[1]: Started caddy.service - Caddy.

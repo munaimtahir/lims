@@ -1,0 +1,509 @@
+{
+	email munaim.tahir@gmail.com
+	log {
+		output file /home/munaim/srv/proxy/caddy/logs/error.log
+		format json
+	}
+}
+
+(std_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+(std_log) {
+	log {
+		output file /home/munaim/srv/proxy/caddy/logs/access.log
+		format json
+	}
+}
+
+(std_proxy) {
+	transport http {
+		read_timeout 30s
+		write_timeout 30s
+	}
+	header_up Host {host}
+	header_up X-Real-IP {remote_host}
+}
+
+(maintenance_503) {
+	header {
+		Retry-After "3600"
+		Content-Type "text/html; charset=utf-8"
+	}
+	respond "<!doctype html><html><head><title>Service Maintenance</title></head><body style=\"font-family:sans-serif;max-width:760px;margin:40px auto;line-height:1.5;\"><h1>Service not deployed</h1><p>This domain is currently offline or under maintenance. Please try again later.</p></body></html>" 503
+}
+
+# PORTAL
+portal.alshifalab.pk {
+	encode gzip zstd
+	import std_log portal
+	import std_headers
+
+	@api_root path /api /api/
+	handle @api_root {
+		redir /api/docs/ temporary
+	}
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:18000 {
+			import std_proxy
+			header_up Host ops.alshifalab.pk
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:18001 {
+			import std_proxy
+		}
+	}
+}
+
+# LIMS
+lims.alshifalab.pk {
+	encode gzip zstd
+	import std_log lims
+	import std_headers
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8012 {
+			import std_proxy
+		}
+	}
+
+	handle /admin/* {
+		reverse_proxy 127.0.0.1:8012 {
+			import std_proxy
+		}
+	}
+
+	handle /static/* {
+		reverse_proxy 127.0.0.1:8012 {
+			import std_proxy
+		}
+	}
+
+	handle /media/* {
+		reverse_proxy 127.0.0.1:8012 {
+			import std_proxy
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8012 {
+			import std_proxy
+		}
+	}
+}
+
+api.lims.alshifalab.pk {
+	encode gzip zstd
+	import std_log api_lims
+
+	handle /healthz {
+		header Content-Type "application/json"
+		respond "{\"status\":\"ok\",\"service\":\"api.lims\"}" 200
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8012 {
+			import std_proxy
+		}
+	}
+}
+
+# RIMS
+rims.alshifalab.pk {
+	encode gzip zstd
+	import std_log rims
+	import std_headers
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8015 {
+			import std_proxy
+		}
+	}
+
+	handle /admin/* {
+		reverse_proxy 127.0.0.1:8015 {
+			import std_proxy
+		}
+	}
+
+	handle /static/* {
+		reverse_proxy 127.0.0.1:8015 {
+			import std_proxy
+		}
+	}
+
+	handle /media/* {
+		reverse_proxy 127.0.0.1:8015 {
+			import std_proxy
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8081 {
+			import std_proxy
+		}
+	}
+}
+
+api.rims.alshifalab.pk {
+	encode gzip zstd
+	import std_log api_rims
+
+	@root_path path /
+
+	handle /healthz {
+		header Content-Type "application/json"
+		respond "{\"status\":\"ok\",\"service\":\"api.rims\"}" 200
+	}
+
+	handle @root_path {
+		redir /healthz temporary
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8015 {
+			import std_proxy
+		}
+	}
+}
+
+# PHC
+phc.alshifalab.pk {
+	encode gzip zstd
+	import std_log phc
+	import std_headers
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+
+	handle /admin/* {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+
+	handle /static/* {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+
+	handle /media/* {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+}
+
+api.phc.alshifalab.pk {
+	encode gzip zstd
+	import std_log api_phc
+
+	handle /healthz {
+		header Content-Type "application/json"
+		respond "{\"status\":\"ok\",\"service\":\"api.phc\"}" 200
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+}
+
+# OFFLINE / MAINTENANCE DOMAINS
+sims.alshifalab.pk, sims.pmc.edu.pk {
+	encode gzip zstd
+	import std_log sims
+	import std_headers
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8010 {
+			import std_proxy
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8080 {
+			import std_proxy
+		}
+	}
+}
+
+api.sims.alshifalab.pk, api.sims.pmc.edu.pk {
+	encode gzip zstd
+	import std_log api_sims
+
+	handle {
+		reverse_proxy 127.0.0.1:8010 {
+			import std_proxy
+		}
+	}
+}
+
+pgsims.alshifalab.pk, pgsims.pmc.edu.pk {
+	encode gzip zstd
+	import std_log pgsims
+	import std_headers
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8014 {
+			import std_proxy
+		}
+	}
+
+	handle /admin/* {
+		reverse_proxy 127.0.0.1:8014 {
+			import std_proxy
+		}
+	}
+
+	handle /static/* {
+		reverse_proxy 127.0.0.1:8014 {
+			import std_proxy
+		}
+	}
+
+	handle /media/* {
+		reverse_proxy 127.0.0.1:8014 {
+			import std_proxy
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8082 {
+			import std_proxy
+		}
+	}
+}
+
+api.pgsims.alshifalab.pk, api.pgsims.pmc.edu.pk {
+	encode gzip zstd
+	import std_log api_pgsims
+
+	handle {
+		reverse_proxy 127.0.0.1:8014 {
+			import std_proxy
+		}
+	}
+}
+
+consult.alshifalab.pk {
+	encode gzip zstd
+	import std_log consult
+	import std_headers
+
+	handle {
+		reverse_proxy 127.0.0.1:8011 {
+			import std_proxy
+		}
+	}
+}
+
+api.consult.alshifalab.pk {
+	encode gzip zstd
+	import std_log api_consult
+
+	handle {
+		reverse_proxy 127.0.0.1:8011 {
+			import std_proxy
+		}
+	}
+}
+
+sos.alshifalab.pk {
+	encode gzip zstd
+	import std_log sos
+	import std_headers
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+
+	handle /admin/* {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+
+	handle /static/* {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+
+	handle /media/* {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+}
+
+api.sos.alshifalab.pk {
+	encode gzip zstd
+	import std_log api_sos
+
+	handle {
+		reverse_proxy 127.0.0.1:8016 {
+			import std_proxy
+		}
+	}
+}
+
+# DASHBOARD + OBSERVABILITY
+dashboard.alshifalab.pk {
+	encode gzip zstd
+	import std_log dashboard
+	import std_headers
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:18000 {
+			import std_proxy
+			header_up Host ops.alshifalab.pk
+			header_up X-Remote-User {http.auth.user.id}
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:18001 {
+			import std_proxy
+		}
+	}
+}
+
+# NEW OPS DASHBOARD (REACT + DJANGO)
+ops.alshifalab.pk {
+	encode gzip zstd
+	import std_log ops
+	import std_headers
+
+	@api_root path /api /api/
+	handle @api_root {
+		redir /api/docs/ temporary
+	}
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:18000 {
+			import std_proxy
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:18001 {
+			import std_proxy
+		}
+	}
+}
+
+api.ops.alshifalab.pk {
+	encode gzip zstd
+	import std_log api_ops
+
+	handle {
+		reverse_proxy 127.0.0.1:18000 {
+			import std_proxy
+		}
+	}
+}
+
+grafana.alshifalab.pk {
+	encode gzip zstd
+	import std_log grafana
+	import std_headers
+
+	basic_auth {
+		admin $2a$14$L9eJKu97nRURr5z7ZQ3Ul.F30tLTI/dVmYdhVFLi6pN41bcN/p2X.
+	}
+
+	reverse_proxy 127.0.0.1:13000 {
+		import std_proxy
+	}
+}
+
+http://34.16.82.13 {
+	redir https://portal.alshifalab.pk{uri} permanent
+}
+
+mediq.alshifalab.pk {
+
+    encode gzip zstd
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    handle_path /api/* {
+        reverse_proxy 127.0.0.1:8025
+    }
+
+    handle_path /admin/* {
+        reverse_proxy 127.0.0.1:8025
+    }
+
+    handle_path /static/* {
+        reverse_proxy 127.0.0.1:8025
+    }
+
+    handle_path /media/* {
+        reverse_proxy 127.0.0.1:8025
+    }
+
+    handle_path /health {
+        reverse_proxy 127.0.0.1:8025
+    }
+
+    handle {
+        reverse_proxy 127.0.0.1:3025
+    }
+
+    log {
+        output file /var/log/caddy/mediq.log
+        format json
+    }
+}
+
+api.mediq.alshifalab.pk {
+	encode gzip zstd
+	import std_log api_mediq
+
+	handle /healthz {
+		header Content-Type "application/json"
+		respond "{\"status\":\"ok\",\"service\":\"api.mediq\"}" 200
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8025 {
+			import std_proxy
+		}
+	}
+}

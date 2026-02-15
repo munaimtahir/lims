@@ -461,9 +461,31 @@ export default function RegistrationPage() {
       }, 150);
     },
     onError: (err: unknown) => {
-      const error = err as { response?: { data?: { message?: string } } };
-      alert(`Error saving patient: ${error?.response?.data?.message || 'Unknown error'}`);
+      const axiosErr = err as any;
+      let message = 'Unknown error';
+      const respData = axiosErr?.response?.data;
+      if (respData) {
+        if (typeof respData === 'string') {
+          message = respData;
+        } else if (respData.message) {
+          message = respData.message;
+        } else if (respData.detail) {
+          message = respData.detail;
+        } else if (typeof respData === 'object') {
+          message = Object.entries(respData)
+            .map(([k, v]) => {
+              if (Array.isArray(v)) return `${k}: ${v.join(' ')}`;
+              if (typeof v === 'object') return `${k}: ${JSON.stringify(v)}`;
+              return `${k}: ${String(v)}`;
+            })
+            .join('; ');
+        }
+      } else if (axiosErr?.message) {
+        message = axiosErr.message;
+      }
+      alert(`Error saving patient: ${message}`);
     },
+
   });
 
   const createOrderMutation = useMutation({
@@ -478,9 +500,31 @@ export default function RegistrationPage() {
       resetForm();
     },
     onError: (err: unknown) => {
-      const error = err as { response?: { data?: { message?: string } } };
-      alert(`Error creating order: ${error?.response?.data?.message || 'Unknown error'}`);
+      const axiosErr = err as any;
+      let message = 'Unknown error';
+      const respData = axiosErr?.response?.data;
+      if (respData) {
+        if (typeof respData === 'string') {
+          message = respData;
+        } else if (respData.message) {
+          message = respData.message;
+        } else if (respData.detail) {
+          message = respData.detail;
+        } else if (typeof respData === 'object') {
+          message = Object.entries(respData)
+            .map(([k, v]) => {
+              if (Array.isArray(v)) return `${k}: ${v.join(' ')}`;
+              if (typeof v === 'object') return `${k}: ${JSON.stringify(v)}`;
+              return `${k}: ${String(v)}`;
+            })
+            .join('; ');
+        }
+      } else if (axiosErr?.message) {
+        message = axiosErr.message;
+      }
+      alert(`Error creating order: ${message}`);
     },
+
   });
 
   const resetForm = () => {

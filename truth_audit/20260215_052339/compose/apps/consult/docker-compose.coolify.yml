@@ -1,0 +1,139 @@
+# Docker Compose for Coolify Deployment
+# This version keeps Nginx reverse proxy for internal routing
+# Coolify's Traefik will route to the nginx-proxy service
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13-alpine
+    container_name: consult_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=consult_db
+      - POSTGRES_USER=consult_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-consult_password}
+    # Don't expose ports externally - Coolify handles networking
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U consult_user -d consult_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: consult_redis
+    # Don't expose ports externally
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: consult_backend
+    # Use entrypoint.sh which runs migrations, seeds demo data, and starts server
+    command: uvicorn config.asgi:application --host 0.0.0.0 --port 8000
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    environment:
+      - DEBUG=${DEBUG:-0}
+      - SECRET_KEY=${SECRET_KEY:-062ea43b72adeb8c8b73e691994e25bc18e488406bd50cf4b329134b92ea6c63}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings.production}
+      - DATABASE=${DATABASE:-postgres}
+      - DB_NAME=${DB_NAME:-consult_db}
+      - DB_USER=${DB_USER:-consult_user}
+      - DB_PASSWORD=${DB_PASSWORD:-consult_password}
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-5432}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+      - SECURE_SSL_REDIRECT=${SECURE_SSL_REDIRECT:-True}
+      - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-True}
+      - CSRF_COOKIE_SECURE=${CSRF_COOKIE_SECURE:-True}
+      - SECURE_HSTS_SECONDS=${SECURE_HSTS_SECONDS:-31536000}
+      - SITE_ID=${SITE_ID:-1}
+    expose:
+      - "8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+        - VITE_WS_URL=${VITE_WS_URL}
+    container_name: consult_frontend
+    expose:
+      - "80"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+  nginx-proxy:
+    build: ./nginx
+    container_name: consult_nginx
+    # Expose port 80 - Coolify's Traefik will route to this
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+    depends_on:
+      - backend
+      - frontend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - consult_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  consult_network:
+    driver: bridge
+

@@ -1,0 +1,281 @@
+[
+    {
+        "Id": "64bf96b3eeae4f3543f260b6c979a0bcc03db12fb2e372ed334712fe4eb60a72",
+        "Created": "2026-02-15T00:14:47.936260329Z",
+        "Path": "uvicorn",
+        "Args": [
+            "app.main:app",
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "8000"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 31318,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-02-15T00:14:48.038104246Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:bccd6efc226e4f045c51f751a9296f1fc41da1cb3557f4b688a2259b47c01006",
+        "ResolvConfPath": "/var/lib/docker/containers/64bf96b3eeae4f3543f260b6c979a0bcc03db12fb2e372ed334712fe4eb60a72/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/64bf96b3eeae4f3543f260b6c979a0bcc03db12fb2e372ed334712fe4eb60a72/hostname",
+        "HostsPath": "/var/lib/docker/containers/64bf96b3eeae4f3543f260b6c979a0bcc03db12fb2e372ed334712fe4eb60a72/hosts",
+        "LogPath": "/var/lib/docker/containers/64bf96b3eeae4f3543f260b6c979a0bcc03db12fb2e372ed334712fe4eb60a72/64bf96b3eeae4f3543f260b6c979a0bcc03db12fb2e372ed334712fe4eb60a72-json.log",
+        "Name": "/dashboard_backend",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "/var/run/docker.sock:/var/run/docker.sock:rw",
+                "/home/munaim/srv/apps/dashboard/.env:/app/.env:ro",
+                "/home/munaim/srv/apps/dashboard/manifest.yml:/app/manifest.yml:ro",
+                "/home/munaim/srv/apps/dashboard/data:/data:rw",
+                "/:/host:ro"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "dashboard_default",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "unless-stopped",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [
+                "host.docker.internal:host-gateway"
+            ],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/var/run/docker.sock",
+                "Destination": "/var/run/docker.sock",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/dashboard/.env",
+                "Destination": "/app/.env",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/dashboard/manifest.yml",
+                "Destination": "/app/manifest.yml",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/munaim/srv/apps/dashboard/data",
+                "Destination": "/data",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/",
+                "Destination": "/host",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rslave"
+            }
+        ],
+        "Config": {
+            "Hostname": "64bf96b3eeae",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "ExposedPorts": {
+                "8000/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "JWT_SECRET=3db3fa49cd152f87feb2cd6bf75b68bce481f86c1ff60ec4a41a2b5cb4b91791",
+                "REQUEST_TIMEOUT_SECONDS=3",
+                "ADMIN_PASSWORD=ChangeMe-Ahm4EhvNd2NjVkjWoPntp2zQ",
+                "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+                "PYTHON_VERSION=3.12.12",
+                "PYTHON_SHA256=fb85a13414b028c49ba18bbd523c2d055a30b56b18b92ce454ea2c51edc656c4",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "PYTHONUNBUFFERED=1"
+            ],
+            "Cmd": [
+                "uvicorn",
+                "app.main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8000"
+            ],
+            "Image": "dashboard-dashboard_backend",
+            "Volumes": null,
+            "WorkingDir": "/app",
+            "Entrypoint": null,
+            "Labels": {
+                "com.docker.compose.config-hash": "ad4e52e9457448f69302cbf0d63d5a932aed1d10ff2d3d98fe834e6320880a8f",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "",
+                "com.docker.compose.image": "sha256:bccd6efc226e4f045c51f751a9296f1fc41da1cb3557f4b688a2259b47c01006",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "dashboard",
+                "com.docker.compose.project.config_files": "/home/munaim/srv/apps/dashboard/docker-compose.yml",
+                "com.docker.compose.project.working_dir": "/home/munaim/srv/apps/dashboard",
+                "com.docker.compose.service": "dashboard_backend",
+                "com.docker.compose.version": "5.0.2"
+            }
+        },
+        "NetworkSettings": {
+            "SandboxID": "8ff15a7cd093413619298e9af814021e8a913dae475fe9ed55761f786e04dd91",
+            "SandboxKey": "/var/run/docker/netns/8ff15a7cd093",
+            "Ports": {
+                "8000/tcp": null
+            },
+            "Networks": {
+                "dashboard_default": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "dashboard_backend",
+                        "dashboard_backend"
+                    ],
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "833cf05ffe8c892e68c8082be6a990d708c88acce379ce71980b66737594f989",
+                    "EndpointID": "aa5d65991294b4e465223822e1c5f6693e7d53d569c411d091dbf0e684846db2",
+                    "Gateway": "172.19.0.1",
+                    "IPAddress": "172.19.0.2",
+                    "MacAddress": "66:24:eb:0a:da:24",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "dashboard_backend",
+                        "64bf96b3eeae"
+                    ]
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:1290b7d768098bfd17f2d0e881301f42c04dabec2e100ec69e9b97fa61379595",
+            "size": 2000,
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]
