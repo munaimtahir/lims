@@ -40,41 +40,15 @@ log "Environment: $ENV_FILE"
 log "Stopping all services..."
 docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" down --remove-orphans || true
 
-# Clean previous builds and irrelevant containers/images
-log "Cleaning build cache and dangling resources..."
-docker builder prune -f || true
-docker image prune -f || true
-
 # Build Images
-log "Building Backend (No Cache)..."
-docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build --no-cache backend
-
-log "Building Celery (Using Backend Cache)..."
-docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build celery
-
-log "Building Frontend (No Cache)..."
-docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build --no-cache frontend
+log "Building Images..."
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build backend frontend celery
 
 # Start Services
-log "Starting Infrastructure (DB, Redis)..."
-docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d db redis
-log "Waiting 15s for DB..."
-sleep 15
-
-log "Starting Backend..."
-docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d backend
-log "Waiting 15s for Backend..."
-sleep 15
-
-log "Starting Celery..."
-docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d celery
-log "Waiting 5s for Celery..."
-sleep 5
-
-log "Starting Frontend & Proxy..."
-docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d frontend proxy
-log "Waiting 10s..."
-sleep 10
+log "Starting all services..."
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d
+log "Waiting for services to become healthy..."
+sleep 30 # Give services some time to start and become healthy
 
 # Verification
 log "Looking for active containers..."
