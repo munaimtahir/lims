@@ -95,8 +95,8 @@ class SampleWorkflowToggleTests(TestCase):
             price=Decimal("50"),
         )
 
-    def test_tenant_b_sample_list_returns_403_when_workflow_disabled(self):
-        """When sample_workflow_enabled=False, sample list returns 403."""
+    def test_tenant_b_sample_list_returns_404_when_workflow_disabled(self):
+        """When sample_workflow_enabled=False, sample list returns 404 (feature disabled)."""
         self.client.force_authenticate(user=self.user_b)
         resp = self.client.get("/api/v1/samples/")
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
