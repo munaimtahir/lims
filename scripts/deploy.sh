@@ -38,7 +38,9 @@ set -e  # Exit on any error
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env.production"
-DOCKER_COMPOSE_FILE="${PROJECT_ROOT}/docker-compose.yml"
+# Use docker-compose.prod.yml for production; override with DOCKER_COMPOSE_FILE env if needed
+DOCKER_COMPOSE_FILE="${DOCKER_COMPOSE_FILE:-${PROJECT_ROOT}/docker-compose.prod.yml}"
+COMPOSE_CMD="docker compose -f ${DOCKER_COMPOSE_FILE} --env-file ${ENV_FILE}"
 LOG_DIR="${PROJECT_ROOT}/logs"
 BACKUP_DIR="${PROJECT_ROOT}/backups"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -302,7 +304,7 @@ backup_database() {
     local backup_file="${BACKUP_DIR}/lims_db_${TIMESTAMP}.sql.gz"
     
     log_info "Creating database backup..."
-    docker compose exec -T db pg_dump -U postgres lims_db | gzip > "$backup_file"
+    $COMPOSE_CMD exec -T db pg_dump -U postgres lims_db | gzip > "$backup_file"
     
     if [ -f "$backup_file" ]; then
         local size=$(du -h "$backup_file" | awk '{print $1}')
@@ -323,12 +325,12 @@ run_migrations() {
     print_header "Running Database Migrations"
     
     log_info "Applying migrations..."
-    docker compose exec backend python manage.py migrate
+    $COMPOSE_CMD exec backend python manage.py migrate
     log_success "Migrations completed"
     
     # Run any additional setup
     log_info "Collecting static files..."
-    docker compose exec backend python manage.py collectstatic --noinput
+    $COMPOSE_CMD exec backend python manage.py collectstatic --noinput
     log_success "Static files collected"
 }
 
@@ -355,8 +357,8 @@ build_images() {
     export REDIS_URL
     export SERVER_NAME
     
-    log_info "Building Docker images..."
-    docker compose build --no-cache
+    log_info "Building Docker images (--no-cache)..."
+    $COMPOSE_CMD build --no-cache
     log_success "Docker images built successfully"
 }
 
@@ -365,14 +367,14 @@ start_services() {
     print_header "Starting Services"
     
     log_info "Starting Docker services..."
-    docker compose up -d
+    $COMPOSE_CMD up -d
     log_success "Services started"
     
     log_info "Waiting for services to become healthy..."
     sleep 10
     
     # Check if services are running
-    docker compose ps
+    $COMPOSE_CMD ps
 }
 
 # Stop services
@@ -380,7 +382,7 @@ stop_services() {
     print_header "Stopping Services"
     
     log_info "Stopping Docker services..."
-    docker compose down
+    $COMPOSE_CMD down
     log_success "Services stopped"
 }
 
@@ -389,7 +391,7 @@ restart_services() {
     print_header "Restarting Services"
     
     log_info "Restarting Docker services..."
-    docker compose restart
+    $COMPOSE_CMD restart
     log_success "Services restarted"
     
     log_info "Waiting for services to become healthy..."
@@ -408,11 +410,17 @@ check_health() {
     
     # Check Docker services
     log_info "Checking Docker services..."
-    docker compose ps
+    $COMPOSE_CMD ps
     
-    # Check backend API
+    # Check backend API: via proxy with Host header (ALLOWED_HOSTS), or exec from inside backend
     log_info "Checking Backend API..."
-    if curl -sf http://localhost:8000/api/v1/health/ > /dev/null 2>&1; then
+    if curl -sf -H "Host: lims.alshifalab.pk" http://127.0.0.1:8012/api/v1/health/ > /dev/null 2>&1; then
+        log_success "Backend API: OK"
+    elif $COMPOSE_CMD exec -T backend python -c "
+from urllib.request import Request, urlopen
+req = Request('http://localhost:8000/api/v1/health/', headers={'Host': 'lims.alshifalab.pk'})
+urlopen(req)
+" > /dev/null 2>&1; then
         log_success "Backend API: OK"
     else
         log_error "Backend API: FAILED"
@@ -421,7 +429,7 @@ check_health() {
     
     # Check database
     log_info "Checking Database..."
-    if docker compose exec -T db pg_isready -U postgres > /dev/null 2>&1; then
+    if $COMPOSE_CMD exec -T db pg_isready -U postgres > /dev/null 2>&1; then
         log_success "PostgreSQL: OK"
     else
         log_error "PostgreSQL: FAILED"
@@ -430,16 +438,16 @@ check_health() {
     
     # Check Redis
     log_info "Checking Redis..."
-    if docker compose exec -T redis redis-cli ping > /dev/null 2>&1; then
+    if $COMPOSE_CMD exec -T redis redis-cli ping > /dev/null 2>&1; then
         log_success "Redis: OK"
     else
         log_error "Redis: FAILED"
         health_status=1
     fi
     
-    # Check Caddy
+    # Check Caddy (prod exposes 8012, dev may use 80)
     log_info "Checking Caddy Reverse Proxy..."
-    if curl -sf http://localhost/health > /dev/null 2>&1; then
+    if curl -sf http://127.0.0.1:8012/health > /dev/null 2>&1 || curl -sf http://localhost/health > /dev/null 2>&1; then
         log_success "Caddy: OK"
     else
         log_error "Caddy: FAILED (may not have valid certificate yet)"
@@ -452,7 +460,7 @@ check_health() {
 show_logs() {
     print_header "Service Logs (Last 100 lines)"
     
-    docker compose logs --tail=100
+    $COMPOSE_CMD logs --tail=100
 }
 
 # ============================================
@@ -469,7 +477,12 @@ full_deployment() {
     ensure_directories
     
     update_repository
-    backup_database
+    # Backup only if database container is already running (e.g. re-deploy)
+    if $COMPOSE_CMD ps 2>/dev/null | grep -qE 'db.*Up|lims_db.*Up'; then
+        backup_database
+    else
+        log_info "Skipping database backup (database container not running)."
+    fi
     build_images
     start_services
     
@@ -498,7 +511,7 @@ migrate_only() {
     
     ensure_directories
     
-    if ! docker compose ps | grep -q "backend"; then
+    if ! $COMPOSE_CMD ps | grep -q "backend"; then
         log_error "Backend service is not running. Start services first with: $0"
         exit 1
     fi
@@ -528,6 +541,8 @@ restart_only() {
 # ============================================
 
 main() {
+    # Run from project root so compose and paths resolve correctly
+    cd "$PROJECT_ROOT"
     # Ensure directories exist for logging
     mkdir -p "$LOG_DIR"
     

@@ -51,8 +51,8 @@ export default function RegistrationPage() {
     const [suggestionIndex, setSuggestionIndex] = useState(-1);
     const [isSearching, setIsSearching] = useState(false);
 
-    // Fetch Categories for Section 3
-    const { data: categoriesData } = useQuery({
+    // Fetch Categories for Section 3 (reserved for category dropdown when UI is added)
+    const { data: _categoriesData } = useQuery({
         queryKey: ['test-categories'],
         queryFn: () => laboratoryApi.getCategories(),
     });

@@ -40,15 +40,18 @@ log "Environment: $ENV_FILE"
 log "Stopping all services..."
 docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" down --remove-orphans || true
 
-# Build Images
-log "Building Images..."
-docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build backend frontend celery
+# Build Images (no cache to ensure latest codebase and new features)
+log "Building Images (--no-cache)..."
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build --no-cache backend frontend celery
 
 # Start Services
 log "Starting all services..."
 docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d
 log "Waiting for services to become healthy..."
 sleep 30 # Give services some time to start and become healthy
+
+# Optional: run migrations (uncomment if you use scripts/deploy.sh for migrations)
+# sleep 15 && docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" exec -T backend python manage.py migrate --noinput
 
 # Verification
 log "Looking for active containers..."
