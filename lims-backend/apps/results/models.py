@@ -74,6 +74,7 @@ class TestResult(models.Model):
     verified_at = models.DateTimeField(blank=True, null=True)
     published_at = models.DateTimeField(blank=True, null=True)
 
+    verification_notes = models.TextField(blank=True, help_text="Notes added during verification")
     remarks = models.TextField(blank=True)
     notes = models.TextField(blank=True, help_text="Additional notes about the result")
 

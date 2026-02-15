@@ -274,7 +274,7 @@ class Order(models.Model):
             "NEW": ["COLLECTED", "IN_PROCESS", "CANCELLED"],
             "COLLECTED": ["IN_PROCESS", "CANCELLED"],
             "IN_PROCESS": ["VERIFIED", "CANCELLED"],
-            "VERIFIED": ["PUBLISHED", "CANCELLED"],
+            "VERIFIED": ["IN_PROCESS", "PUBLISHED", "CANCELLED"],  # Allow return to IN_PROCESS (Unverify)
             "PUBLISHED": [],  # Final state, no transitions allowed
             "CANCELLED": [],  # Final state, no transitions allowed
         }

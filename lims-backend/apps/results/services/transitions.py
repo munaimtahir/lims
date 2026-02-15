@@ -34,91 +34,113 @@ def _has_valid_result_value(result: TestResult) -> bool:
 def update_order_item_status(order_item: OrderItem):
     """
     Derive OrderItem status from its TestResults.
-    - All VERIFIED/FINAL -> VERIFIED
-    - Any result exists (DRAFT/ENTERED) -> IN_PROCESS
-    - Else -> No change (or NEW)
+    
+    Canonical Rules:
+    - If any result is DRAFT or ENTERED: status -> IN_PROCESS (or ENTERED if nothing verified yet)
+      - Actually, let's simplify: Any non-VERIFIED/FINAL result means IN_PROCESS.
+    - If ALL results are VERIFIED or FINAL: status -> VERIFIED.
+    - If NO results entered yet: status -> NEW (or whatever original state).
+    
+    Specific Handling for Unverify:
+    - Unverifying one result makes one result ENTERED.
+    - Current statuses: {VERIFIED, VERIFIED, ENTERED} -> Any non-verified means IN_PROCESS.
     """
-    results = order_item.results.all()
-    if not results.exists():
-        return
-
-    statuses = {r.status for r in results}
-    
-    new_status = order_item.status
-    
-    if all(s in ["VERIFIED", "FINAL"] for s in statuses):
-        new_status = "VERIFIED"
-    elif "ENTERED" in statuses or "DRAFT" in statuses or "VERIFIED" in statuses:
-        # Work has started
-        new_status = "IN_PROCESS"
-    else:
-        # Fallback, though usually we don't revert to NEW once results exist
-        pass
-
-    if order_item.status != new_status:
-        logger.info(f"Updating OrderItem {order_item.id} status: {order_item.status} -> {new_status}")
-        order_item.status = new_status
-        # Use update_fields to minimize side effects, but OrderItem doesn't check transitions in save() usually?
-        # Checking OrderItem.save in models.py: it calls super().save. Models usually don't have transition checks unless added.
-        # OrderItem model DOES NOT have transition validation in save(), only Order does.
-        order_item.save(update_fields=["status"])
+    # Use select_related/prefetch_related if passed, but here we just need statuses
+    # We acquire lock on OrderItem to prevent race conditions during status update
+    with transaction.atomic():
+        # Re-fetch with lock
+        item = OrderItem.objects.select_for_update().get(pk=order_item.pk)
         
-    # Propagate to Order
-    update_order_status(order_item.order)
+        # Check results
+        results = item.results.all()
+        if not results.exists():
+            return
+
+        statuses = {r.status for r in results}
+        
+        # New Status Derivation
+        new_status = item.status
+        
+        # 1. Check for complete verification
+        is_fully_verified = all(s in ["VERIFIED", "FINAL"] for s in statuses)
+        
+        if is_fully_verified:
+            if item.status != "VERIFIED":
+                new_status = "VERIFIED"
+        else:
+            # 2. Check for in-progress
+            # If any result is entered/draft/verified (but not all verified), it's IN_PROCESS
+            if any(s in ["DRAFT", "ENTERED", "VERIFIED", "FINAL"] for s in statuses):
+                # If we were VERIFIED, we must revert to IN_PROCESS
+                new_status = "IN_PROCESS"
+            else:
+                # If all are NEW? TestResults don't have NEW. 
+                # If no results existed, we wouldn't be here.
+                pass
+
+        if item.status != new_status:
+            logger.info(f"Updating OrderItem {item.id} status: {item.status} -> {new_status}")
+            item.status = new_status
+            item.save(update_fields=["status"])
+        
+        # Propagate to Order
+        update_order_status(item.order)
 
 
 def update_order_status(order: Order):
     """
     Derive Order status from OrderItems.
-    - All items VERIFIED -> VERIFIED (FINAL for Order)
-    - Any item IN_PROCESS or VERIFIED (but not all) -> IN_PROCESS
+    
+    Canonical Rules:
+    - If ALL items are VERIFIED/CANCELLED/PUBLISHED -> VERIFIED.
+    - If ANY item is IN_PROCESS or has results but not verified -> IN_PROCESS.
+    - Should ideally return to IN_PROCESS if unverifying.
     """
-    items = order.items.all()
-    if not items.exists():
-        return
+    with transaction.atomic():
+        locked_order = Order.objects.select_for_update().get(pk=order.pk)
+        items = locked_order.items.all()
+        
+        if not items.exists():
+            return
 
-    item_statuses = {i.status for i in items}
-    
-    current_status = order.status
-    new_status = current_status
-    
-    # 1. Check for VERIFIED
-    # If all items are VERIFIED (or PUBLISHED/CANCELLED which are final states)
-    # We treat PUBLISHED as a post-verified state, so if it's already published, don't revert to verified unless necessary.
-    # But if we are Unverifying, we might need to revert.
-    
-    is_fully_verified = all(s in ["VERIFIED", "PUBLISHED", "CANCELLED"] for s in item_statuses)
-    
-    if is_fully_verified:
-        if current_status not in ["VERIFIED", "PUBLISHED", "CANCELLED"]:
-             new_status = "VERIFIED"
-    else:
-        # If not fully verified, check if in process
-        # If any item is IN_PROCESS, VERIFIED, or has results -> IN_PROCESS
-        if any(s in ["IN_PROCESS", "VERIFIED", "PUBLISHED"] for s in item_statuses):
-            # If order was VERIFIED/PUBLISHED, revert to IN_PROCESS
-            if current_status in ["VERIFIED", "PUBLISHED", "NEW", "COLLECTED"]:
-                 new_status = "IN_PROCESS"
-        else:
-             # Basic state, maybe NEW or COLLECTED. We usually don't revert to NEW from IN_PROCESS automatically 
-             # unless we strictly handle that. Safest is to leave as IN_PROCESS or current.
+        item_statuses = {i.status for i in items}
+        
+        current_status = locked_order.status
+        new_status = current_status
+        
+        # 1. Check for final/verified state
+        # Allow CANCELLED as a final state that doesn't block verification of others? 
+        # Usually CANCELLED items are ignored for order completion? 
+        # Let's assume CANCELLED items don't hold back the order from being "Complete".
+        relevant_statuses = [s for s in item_statuses if s != "CANCELLED"]
+        
+        if not relevant_statuses:
+             # All cancelled? Order should probably be cancelled or just stay as is.
              pass
+        else:
+            is_all_complete = all(s in ["VERIFIED", "PUBLISHED"] for s in relevant_statuses)
+            
+            if is_all_complete:
+                # If currently working, move to verified
+                if current_status in ["NEW", "COLLECTED", "IN_PROCESS"]:
+                     new_status = "VERIFIED"
+            else:
+                # If not complete, check if work execution started
+                # If any item is IN_PROCESS or VERIFIED (but not all), order is IN_PROCESS
+                is_in_progress = any(s in ["IN_PROCESS", "VERIFIED", "PUBLISHED"] for s in relevant_statuses)
+                
+                if is_in_progress:
+                     new_status = "IN_PROCESS"
+                elif "NEW" in relevant_statuses or "COLLECTED" in relevant_statuses:
+                     # If we reversed from verified, and now everything is NEW? Unlikely for results.
+                     # But if we unverify, we likely go to IN_PROCESS.
+                     if current_status == "VERIFIED":
+                         new_status = "IN_PROCESS"
 
-    if current_status != new_status:
-        logger.info(f"Updating Order {order.order_id} status: {current_status} -> {new_status}")
-        # Order has strict transition validation. We might need to bypass if reverting from VERIFIED to IN_PROCESS is not standard?
-        # Order.validate_status_transition:
-        # VERIFIED -> PUBLISHED, CANCELLED.
-        # It does NOT allow VERIFIED -> IN_PROCESS.
-        # So we must set status directly using query update or bypass save() check if strictly needed?
-        # Or we should modify Order logic to allow VERIFIED->IN_PROCESS (Reversion).
-        # User requirement A2: "VERIFIED -> IN_PROCESS on unverify should happen."
-        # So specific logic in Order might resist.
-        # We can bypass validation by setting the field and saving with update_fields?
-        # Order.save() calls validate_status_transition.
-        # We should modify Order.save or use update() queryset to bypass.
-        # QuerySet.update() is safer to bypass python-level validation checks for "System driven reversions".
-        Order.objects.filter(pk=order.pk).update(status=new_status)
+        if current_status != new_status:
+            logger.info(f"Updating Order {locked_order.order_id} status: {current_status} -> {new_status}")
+            locked_order.status = new_status
+            locked_order.save(update_fields=["status"])
 
 
 def transition_result_state(result: TestResult, target_state: str, actor, source: str = "api", reason: str = None) -> TestResult:
@@ -127,27 +149,33 @@ def transition_result_state(result: TestResult, target_state: str, actor, source
         raise PermissionDeniedError("You do not have permission to transition results.")
 
     with transaction.atomic():
+        # Lock the result row
         locked = TestResult.objects.select_for_update().get(pk=result.pk)
         before_state = locked.status
 
+        # 1. Validation Logic
         if before_state == "FINAL":
             raise InvalidTransitionError("FINAL is immutable.")
         if target_state == before_state:
-            raise InvalidTransitionError(f"Result is already {target_state}.")
+            # Idempotent success
+            return locked
+
+        action = "RESULT_UPDATED"
+        changes = {}
 
         if target_state == "VERIFIED":
             if before_state not in ["DRAFT", "ENTERED"]:
                 raise InvalidTransitionError("Only DRAFT or ENTERED results can be verified.")
             
-            # Check if required
+            # Check required value
             if not _has_valid_result_value(locked):
                  raise BadPayloadError(f"Result value required for {locked.test_parameter.effective_parameter_name} before verification.")
             
             locked.status = "VERIFIED"
             locked.verified_by = actor
             locked.verified_at = timezone.now()
-            locked.save(update_fields=["status", "verified_by", "verified_at"])
             action = "RESULT_VERIFIED"
+            changes = {"status": "VERIFIED", "verified_by": str(actor), "verified_at": str(locked.verified_at)}
             
         elif target_state == "ENTERED":
             # Return to entry / Unverify
@@ -156,39 +184,43 @@ def transition_result_state(result: TestResult, target_state: str, actor, source
                      raise InvalidTransitionError("Cannot return FINAL results.")
             
             locked.status = "ENTERED"
+            # Clear verification metadata
             locked.verified_by = None
             locked.verified_at = None
-            # Clear other metadata if exists (notes?) - User asked to clear verification_notes, 
-            # assuming stored in notes or remarks? logic suggests keeping remarks as they might contain result context.
-            # We'll stick to clearing verified info.
+            locked.verification_notes = ""
             
-            locked.save(update_fields=["status", "verified_by", "verified_at"])
             action = "RESULT_RETURNED"
+            changes = {"status": "ENTERED", "verified_by": None, "verified_at": None, "verification_notes": ""}
             
         elif target_state == "FINAL":
             if before_state != "VERIFIED":
                 raise InvalidTransitionError("Result must be VERIFIED before FINAL.")
             if not _has_valid_result_value(locked):
                 raise BadPayloadError("Result value required before finalization.")
+                
             locked.status = "FINAL"
             locked.published_at = timezone.now()
-            locked.save(update_fields=["status", "published_at"])
             action = "RESULT_FINALIZED"
+            changes = {"status": "FINAL", "published_at": str(locked.published_at)}
+            
         else:
             raise InvalidTransitionError(f"Unsupported target state {target_state}.")
 
+        locked.save()
+        
+        # 2. Audit Trail
         emit_audit_event(
             actor=actor,
             entity_type="result",
             entity_id=locked.pk,
             action=action,
-            before={"status": before_state, "result_value": locked.result_value},
-            after={"status": locked.status, "result_value": locked.result_value},
+            before={"status": before_state},
+            after=changes,
             metadata={"order_item_id": locked.order_item_id, "reason": reason},
             source=source,
         )
         
-        # Determine and update parent statuses
+        # 3. Propagate Status Changes
         update_order_item_status(locked.order_item)
         
         return locked

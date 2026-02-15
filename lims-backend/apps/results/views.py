@@ -568,6 +568,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
             try:
                 # Transition to ENTERED
                 transition_result_state(result, "ENTERED", request.user, source="api", reason=reason)
+                self._check_and_update_status(result.order_item, reverting=True)
             except Exception as exc:
                 return Response(
                     {"detail": str(exc)},
@@ -597,6 +598,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
             for result in results:
                 try:
                     transition_result_state(result, "ENTERED", request.user, source="api", reason=reason)
+                    self._check_and_update_status(result.order_item, reverting=True)
                     success += 1
                 except Exception as exc:
                     errors.append(f"Result {result.id}: {str(exc)}")
@@ -619,6 +621,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
             try:
                 result = transition_result_state(result, "VERIFIED", request.user, source="api")
+                self._check_and_update_status(result.order_item)
             except Exception as exc:
                 return Response(
                     {"detail": str(exc)},
@@ -652,6 +655,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
             for result in results:
                 try:
                     transition_result_state(result, "VERIFIED", request.user, source="api")
+                    self._check_and_update_status(result.order_item)
                     success += 1
                 except Exception as exc:
                     errors.append(f"Result {result.id}: {str(exc)}")
