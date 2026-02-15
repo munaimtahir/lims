@@ -1,1141 +1,530 @@
 import { useState, useEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { patientApi, laboratoryApi, orderApi } from '../../api/services';
-import type { PatientLookupResult, TestSearchResult, Patient, PatientCreateRequest, OrderCreateRequest } from '../../types';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { patientApi, laboratoryApi } from '../../api/services';
+import type { PatientLookupResult } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
-import { useBranding } from '../../contexts/BrandingContext';
-
-import { formatCurrency } from '../../utils/currency';
-import { formatDobDisplay, normalizeDobInput } from '../../utils/dateFormat';
+import { normalizeDobInput, formatDobDisplay } from '../../utils/dateFormat';
 import styles from './RegistrationPage.module.css';
 
-// Simple Receipt Modal Component
-const ReceiptModal = ({
-  orderId,
-  displayId,
-  onClose,
-  onPrint
-}: {
-  orderId: string;
-  displayId?: string;
-  onClose: () => void;
-  onPrint: () => void
-}) => {
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      backdropFilter: 'blur(4px)'
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '2rem',
-        width: '400px',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        textAlign: 'center'
-      }}>
-        <div style={{
-          fontSize: '3rem',
-          marginBottom: '1rem',
-          color: '#22c55e'
-        }}>✓</div>
-        <h2 style={{ marginBottom: '0.5rem', fontSize: '1.5rem', fontWeight: '600' }}>Order Created!</h2>
-        <p style={{ color: '#666', marginBottom: '2rem' }}>
-          Lab Number / Order ID: <strong>{displayId || orderId}</strong>
-        </p>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <button
-            onClick={onPrint}
-            style={{
-              backgroundColor: '#2563eb',
-              color: 'white',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '8px',
-              border: 'none',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            Print Receipt
-          </button>
-          <button
-            onClick={onClose}
-            style={{
-              backgroundColor: 'white',
-              color: '#374151',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+interface FormErrors {
+    [key: string]: string;
+}
 
 export default function RegistrationPage() {
-  const { currentBranch } = useAuth();
-  const { branding } = useBranding();
-  const currency = branding?.currency || 'PKR';
+    const navigate = useNavigate();
+    const { currentBranch, user } = useAuth();
 
-  // Patient form state
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [patientSuggestions, setPatientSuggestions] = useState<PatientLookupResult[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  const [, setLoadingPatients] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+    // Refs for focus management
+    const firstNameRef = useRef<HTMLInputElement>(null);
+    const mobileRef = useRef<HTMLInputElement>(null);
 
-  // Expanded Patient Data
-  const [patientFormData, setPatientFormData] = useState<Partial<PatientCreateRequest>>({
-    phone: '',
-    whatsapp_number: '',
-    gender: 'Male',
-    email: '',
-    address: '',
-    father_husband_name: '',
-    cnic: '',
-  });
+    // High Volume Lab Optimization Toggle
+    const [quickMode, setQuickMode] = useState(false);
 
-
-  // Age & Date Logic
-  const [dobInput, setDobInput] = useState('');
-  const [ageYears, setAgeYears] = useState<number | ''>('');
-  const [ageMonths, setAgeMonths] = useState<number | ''>('');
-  const [ageDays, setAgeDays] = useState<number | ''>('');
-
-  // Order form state
-  const [testQuery, setTestQuery] = useState('');
-  const [testSuggestions, setTestSuggestions] = useState<TestSearchResult[]>([]);
-  const [showTestSuggestions, setShowTestSuggestions] = useState(false);
-  const [selectedTestIndex, setSelectedTestIndex] = useState(-1);
-  const [addedTests, setAddedTests] = useState<TestSearchResult[]>([]);
-
-  // Payment State
-  const [discountPercent, setDiscountPercent] = useState('0');
-  const [discountAmount, setDiscountAmount] = useState('0');
-  const [paidAmount, setPaidAmount] = useState('0');
-  const [, setIsPaidManuallyEdited] = useState(false);
-  const [referredBy, setReferredBy] = useState('');
-
-  // Global Search State
-  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
-  const [globalSuggestions, setGlobalSuggestions] = useState<PatientLookupResult[]>([]);
-  const [showGlobalSuggestions, setShowGlobalSuggestions] = useState(false);
-  const [selectedGlobalIndex, setSelectedGlobalIndex] = useState(-1);
-  const [loadingGlobalSearch, setLoadingGlobalSearch] = useState(false);
-
-  // Receipt Modal State
-  const [showReceipt, setShowReceipt] = useState(false);
-  const [lastOrderId, setLastOrderId] = useState('');
-  const [lastOrderDisplayId, setLastOrderDisplayId] = useState('');
-
-  const globalSearchRef = useRef<HTMLInputElement>(null);
-  const globalSearchContainerRef = useRef<HTMLDivElement>(null);
-  const mobileInputRef = useRef<HTMLInputElement>(null);
-  const testSearchRef = useRef<HTMLInputElement>(null);
-  const serviceRegistrationRef = useRef<HTMLDivElement>(null);
-  const [serviceSectionExpanded, setServiceSectionExpanded] = useState(false);
-
-  // Focus mobile input on mount
-  useEffect(() => {
-    mobileInputRef.current?.focus();
-  }, []);
-
-  // --- AGE / DOB SYNC LOGIC ---
-
-  // Update Age when DOB changes
-  const handleDobChange = (value: string) => {
-    const { iso, display, date } = normalizeDobInput(value);
-    setDobInput(display || value);
-    setPatientFormData(prev => ({ ...prev, date_of_birth: iso || undefined }));
-
-    if (date) {
-      const birthDate = date;
-      const today = new Date();
-
-      let years = today.getFullYear() - birthDate.getFullYear();
-      let months = today.getMonth() - birthDate.getMonth();
-      let days = today.getDate() - birthDate.getDate();
-
-      if (days < 0) {
-        months--;
-        // Get days in previous month
-        const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-        days += prevMonth.getDate();
-      }
-      if (months < 0) {
-        years--;
-        months += 12;
-      }
-
-      setAgeYears(Math.max(0, years));
-      setAgeMonths(Math.max(0, months));
-      setAgeDays(Math.max(0, days));
-
-      setPatientFormData(prev => ({
-        ...prev,
-        age_years: Math.max(0, years),
-        age_months: Math.max(0, months),
-        age_days: Math.max(0, days)
-      }));
-      return;
-    }
-
-    setAgeYears('');
-    setAgeMonths('');
-    setAgeDays('');
-  };
-
-  // Update DOB when Age changes (Years/Months/Days)
-  const handleAgeChange = (years: number | '', months: number | '', days: number | '') => {
-    setAgeYears(years);
-    setAgeMonths(months);
-    setAgeDays(days);
-
-    // Calculate approximate DOB
-    const date = new Date();
-    date.setFullYear(date.getFullYear() - (typeof years === 'number' ? years : 0));
-    date.setMonth(date.getMonth() - (typeof months === 'number' ? months : 0));
-    date.setDate(date.getDate() - (typeof days === 'number' ? days : 0));
-
-    // Format as YYYY-MM-DD
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const formattedDate = `${yyyy}-${mm}-${dd}`;
-
-    setDobInput(formatDobDisplay(formattedDate));
-    setPatientFormData(prev => ({
-      ...prev,
-      date_of_birth: formattedDate,
-      age_years: typeof years === 'number' ? years : 0,
-      age_months: typeof months === 'number' ? months : 0,
-      age_days: typeof days === 'number' ? days : 0,
-    }));
-  };
-
-  // --- PATIENT LOOKUP ---
-  useEffect(() => {
-    if (mobileNumber.length >= 3) {
-      setLoadingPatients(true);
-      const timer = setTimeout(async () => {
-        try {
-          const response = await patientApi.lookup(mobileNumber);
-          setPatientSuggestions(response.data);
-          setShowSuggestions(response.data.length > 0);
-        } catch (error) {
-          console.error('Failed to lookup patients:', error);
-          setPatientSuggestions([]);
-        } finally {
-          setLoadingPatients(false);
-        }
-      }, 300);
-      return () => clearTimeout(timer);
-    } else {
-      setPatientSuggestions([]);
-      setShowSuggestions(false);
-    }
-  }, [mobileNumber]);
-
-  // --- GLOBAL PATIENT SEARCH (debounced ~300ms) ---
-  useEffect(() => {
-    if (globalSearchQuery.trim().length >= 2) {
-      setLoadingGlobalSearch(true);
-      const timer = setTimeout(async () => {
-        try {
-          const response = await patientApi.search(globalSearchQuery.trim());
-          const results = (response.results ?? (response as { data?: PatientLookupResult[] }).data ?? []) as PatientLookupResult[];
-          setGlobalSuggestions(results);
-          setShowGlobalSuggestions(true);
-          setSelectedGlobalIndex(results.length > 0 ? 0 : -1);
-        } catch {
-          setGlobalSuggestions([]);
-          setSelectedGlobalIndex(-1);
-        } finally {
-          setLoadingGlobalSearch(false);
-        }
-      }, 300);
-      return () => clearTimeout(timer);
-    } else {
-      setGlobalSuggestions([]);
-      setShowGlobalSuggestions(false);
-      setSelectedGlobalIndex(-1);
-    }
-  }, [globalSearchQuery]);
-
-  // Close global search on click outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (globalSearchContainerRef.current && !globalSearchContainerRef.current.contains(e.target as Node)) {
-        setShowGlobalSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // --- TEST SEARCH ---
-  useEffect(() => {
-    if (testQuery.length >= 2) {
-      const timer = setTimeout(async () => {
-        try {
-          const response = await laboratoryApi.searchTests(testQuery);
-          setTestSuggestions(response.data);
-          setShowTestSuggestions(response.data.length > 0);
-          setSelectedTestIndex(0); // Select first by default for easier Enter key usage
-        } catch {
-          setTestSuggestions([]);
-        }
-      }, 200);
-      return () => clearTimeout(timer);
-    } else {
-      setTestSuggestions([]);
-      setShowTestSuggestions(false);
-    }
-  }, [testQuery]);
-
-  // --- CALCULATIONS ---
-  const totalAmount = addedTests.reduce((sum, test) => sum + parseFloat(test.price), 0);
-  const discountAmountValue = parseFloat(discountAmount) || 0;
-  const netAmount = Math.max(totalAmount - discountAmountValue, 0);
-  const paidAmountValue = parseFloat(paidAmount) || 0;
-  const dueAmount = Math.max(netAmount - paidAmountValue, 0);
-
-  // Auto-fill paid amount when discount/total changes, UNLESS user manually edited it
-  // Actually, the requirement says "always update it out keep it editable".
-  // "show paid month equial to total payable amunt, always update it but keep keep it editable"
-  useEffect(() => {
-    const net = totalAmount - parseFloat(discountAmount || '0');
-    // If we want to "always update it", we should just update it:
-    setPaidAmount(Math.max(net, 0).toFixed(2));
-
-    // Note: If we really want to support manual override that persists across total changes, 
-    // we would need more complex logic, but "always update it" suggests resetting to Net is preferred behavior 
-    // until user edits it *for that transaction*. 
-    // But since `totalAmount` changes when tests are added, usually you want Paid to match Net.
-  }, [totalAmount, discountAmount]);
-
-  const handleGlobalSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (!showGlobalSuggestions) {
-      if (e.key === 'Escape') (e.target as HTMLInputElement).blur();
-      return;
-    }
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedGlobalIndex(prev =>
-          prev < globalSuggestions.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedGlobalIndex(prev => (prev > 0 ? prev - 1 : -1));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedGlobalIndex >= 0 && selectedGlobalIndex < globalSuggestions.length) {
-          loadPatient(globalSuggestions[selectedGlobalIndex].id);
-        }
-        setShowGlobalSuggestions(false);
-        break;
-      case 'Escape':
-        e.preventDefault();
-        setShowGlobalSuggestions(false);
-        setSelectedGlobalIndex(-1);
-        globalSearchRef.current?.blur();
-        break;
-      default:
-        break;
-    }
-  };
-
-  const handleMobileKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (!showSuggestions || patientSuggestions.length === 0) return;
-    // Total items = patient suggestions + 1 "Create New" option
-    const totalItems = patientSuggestions.length + 1;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedSuggestionIndex(prev => prev < totalItems - 1 ? prev + 1 : prev);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : 0);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < patientSuggestions.length) {
-          // Load existing patient
-          loadPatient(patientSuggestions[selectedSuggestionIndex].id);
-        } else if (selectedSuggestionIndex === patientSuggestions.length) {
-          // Create new patient - just close suggestions and let user continue
-          setShowSuggestions(false);
-          setSelectedSuggestionIndex(-1);
-        }
-        break;
-      case 'Escape':
-        setShowSuggestions(false);
-        break;
-      case 'Tab':
-        // Tab should also close suggestions and move to next field
-        setShowSuggestions(false);
-        break;
-    }
-  };
-
-  const loadPatient = async (patientId: number) => {
-    try {
-      const response = await patientApi.get(patientId);
-      const patient = response.data;
-      setSelectedPatient(patient);
-
-      setPatientFormData({
-        phone: patient.phone,
-        whatsapp_number: patient.whatsapp_number || '',
-        full_name: patient.full_name,
-        first_name: patient.first_name,
-        last_name: patient.last_name,
-        gender: patient.gender,
-        father_husband_name: patient.father_husband_name,
-        address: patient.address,
-        email: patient.email,
-        national_id: patient.national_id,
-        cnic: patient.cnic,
-      });
-
-      // Load Age/DOB
-      if (patient.date_of_birth) {
-        handleDobChange(patient.date_of_birth);
-      } else if (patient.age_years) {
-        // Fallback if only age_years is known
-        handleAgeChange(patient.age_years, patient.age_months || 0, patient.age_days || 0);
-      }
-
-      setMobileNumber(patient.phone);
-      setReferredBy(patient.default_referred_by || '');
-      setShowSuggestions(false);
-
-      // Reset search
-      setGlobalSearchQuery('');
-      setShowGlobalSuggestions(false);
-
-    } catch (error) {
-      console.error('Failed to load patient:', error);
-      alert('Failed to load patient details');
-    }
-  };
-
-  const savePatientMutation = useMutation({
-    mutationFn: (data: PatientCreateRequest) =>
-      selectedPatient ? patientApi.update(selectedPatient.id, data) : patientApi.create(data),
-    onSuccess: (response) => {
-      const patient = response.data;
-      setSelectedPatient(patient);
-      setServiceSectionExpanded(true);
-      setTimeout(() => {
-        serviceRegistrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        testSearchRef.current?.focus();
-      }, 150);
-    },
-    onError: (err: unknown) => {
-      const axiosErr = err as any;
-      let message = 'Unknown error';
-      const respData = axiosErr?.response?.data;
-      if (respData) {
-        if (typeof respData === 'string') {
-          message = respData;
-        } else if (respData.message) {
-          message = respData.message;
-        } else if (respData.detail) {
-          message = respData.detail;
-        } else if (typeof respData === 'object') {
-          message = Object.entries(respData)
-            .map(([k, v]) => {
-              if (Array.isArray(v)) return `${k}: ${v.join(' ')}`;
-              if (typeof v === 'object') return `${k}: ${JSON.stringify(v)}`;
-              return `${k}: ${String(v)}`;
-            })
-            .join('; ');
-        }
-      } else if (axiosErr?.message) {
-        message = axiosErr.message;
-      }
-      alert(`Error saving patient: ${message}`);
-    },
-
-  });
-
-  const createOrderMutation = useMutation({
-    mutationFn: (data: OrderCreateRequest) => orderApi.create(data),
-    onSuccess: (response) => {
-      setLastOrderId(response.order_id || 'Unknown');
-      setLastOrderDisplayId(response.lab_number || response.order_id || 'Unknown');
-      setShowReceipt(true);
-
-      // Reset form handled after receipt close or separately?
-      // Usually we reset after successful order.
-      resetForm();
-    },
-    onError: (err: unknown) => {
-      const axiosErr = err as any;
-      let message = 'Unknown error';
-      const respData = axiosErr?.response?.data;
-      if (respData) {
-        if (typeof respData === 'string') {
-          message = respData;
-        } else if (respData.message) {
-          message = respData.message;
-        } else if (respData.detail) {
-          message = respData.detail;
-        } else if (typeof respData === 'object') {
-          message = Object.entries(respData)
-            .map(([k, v]) => {
-              if (Array.isArray(v)) return `${k}: ${v.join(' ')}`;
-              if (typeof v === 'object') return `${k}: ${JSON.stringify(v)}`;
-              return `${k}: ${String(v)}`;
-            })
-            .join('; ');
-        }
-      } else if (axiosErr?.message) {
-        message = axiosErr.message;
-      }
-      alert(`Error creating order: ${message}`);
-    },
-
-  });
-
-  const resetForm = () => {
-    setSelectedPatient(null);
-    setServiceSectionExpanded(false);
-    setPatientFormData({ phone: '', whatsapp_number: '', gender: 'Male', email: '', address: '', father_husband_name: '', cnic: '' });
-    setMobileNumber('');
-    setDobInput('');
-    setAgeYears('');
-    setAgeMonths('');
-    setAgeDays('');
-    setAddedTests([]);
-    setDiscountPercent('0');
-    setDiscountAmount('0');
-    setPaidAmount('0');
-    setReferredBy('');
-    if (mobileInputRef.current) mobileInputRef.current.focus();
-  };
-
-  const handlePatientSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!patientFormData.phone) return alert('Mobile number is required');
-    if (!patientFormData.full_name) return alert('Full Name is required');
-
-    // Ensure Age/DOB is populated
-    const dataToSubmit = {
-      ...patientFormData,
-      age_years: typeof ageYears === 'number' ? ageYears : 0,
-      age_months: typeof ageMonths === 'number' ? ageMonths : 0,
-      age_days: typeof ageDays === 'number' ? ageDays : 0,
-    };
-
-    savePatientMutation.mutate(dataToSubmit as PatientCreateRequest);
-  };
-
-  const handleTestKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      // If suggestions are visible and one is selected
-      if (showTestSuggestions && testSuggestions.length > 0 && selectedTestIndex >= 0) {
-        addTest(testSuggestions[selectedTestIndex]);
-      }
-      // Or if query exactly matches a test code (optional enhancement, sticking to selection for now)
-    } else if (e.key === 'ArrowDown') {
-      if (showTestSuggestions) {
-        e.preventDefault();
-        setSelectedTestIndex(prev => prev < testSuggestions.length - 1 ? prev + 1 : prev);
-      }
-    } else if (e.key === 'ArrowUp') {
-      if (showTestSuggestions) {
-        e.preventDefault();
-        setSelectedTestIndex(prev => prev > 0 ? prev - 1 : 0);
-      }
-    } else if (e.key === 'Escape') {
-      setShowTestSuggestions(false);
-    }
-  };
-
-  const addTest = (test: TestSearchResult) => {
-    const testId = test.test_id ?? test.id;
-    // Check if already added (check both test_id and panel_id depending on type)
-    const isDuplicate = addedTests.find((t) => {
-      if (test.type === 'panel') {
-        return t.type === 'panel' && (t.id === testId);
-      } else {
-        return t.type === 'test' && ((t.test_id ?? t.id) === testId);
-      }
+    // Form State
+    const [formData, setFormData] = useState({
+        first_name: '',
+        last_name: '',
+        gender: 'Male',
+        phone: '', // Mobile
+        whatsapp_number: '', // Alternate Mobile
+        email: '',
+        address: '',
+        referred_by: '',
+        consultant: '',
+        category: '',
+        mr_number: '',
+        registration_center: currentBranch?.id || '',
     });
 
-    if (!isDuplicate) {
-      setAddedTests([...addedTests, { ...test, id: testId }]);
-    }
-    setTestQuery('');
-    setShowTestSuggestions(false);
-    setSelectedTestIndex(-1);
-    testSearchRef.current?.focus();
-  };
+    // Age/DOB State
+    const [dobInput, setDobInput] = useState('');
+    const [ageYears, setAgeYears] = useState<number>(0);
+    const [ageMonths, setAgeMonths] = useState<number>(0);
+    const [ageDays, setAgeDays] = useState<number>(0);
+    const [ageInput, setAgeInput] = useState('');
 
-  const removeTest = (testId: number) => {
-    setAddedTests(addedTests.filter((t) => (t.test_id ?? t.id) !== testId));
-  };
+    const [errors, setErrors] = useState<FormErrors>({});
 
-  const handleDiscountPercentChange = (value: string) => {
-    const percent = parseFloat(value) || 0;
-    setDiscountPercent(value);
-    const amount = (totalAmount * percent) / 100;
-    setDiscountAmount(amount.toFixed(2));
-  };
+    // Patient Lookup State
+    const [patientSuggestions, setPatientSuggestions] = useState<PatientLookupResult[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [suggestionIndex, setSuggestionIndex] = useState(-1);
+    const [isSearching, setIsSearching] = useState(false);
 
-  const handleDiscountAmountChange = (value: string) => {
-    const amount = parseFloat(value) || 0;
-    setDiscountAmount(value);
-    const percent = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
-    setDiscountPercent(percent.toFixed(2));
-  };
+    // Fetch Categories for Section 3
+    const { data: categoriesData } = useQuery({
+        queryKey: ['test-categories'],
+        queryFn: () => laboratoryApi.getCategories(),
+    });
 
-  const handleCreateOrder = () => {
-    if (!selectedPatient) return alert('Please save patient first');
-    if (addedTests.length === 0) return alert('Please add at least one test');
+    // Focus First Name on Load
+    useEffect(() => {
+        firstNameRef.current?.focus();
+    }, []);
 
-    // Separate tests and panels
-    const tests = addedTests.filter(t => t.type === 'test');
-    const panels = addedTests.filter(t => t.type === 'panel');
+    // Update branch if it changes
+    useEffect(() => {
+        if (currentBranch) {
+            setFormData(prev => ({ ...prev, registration_center: currentBranch.id }));
+        }
+    }, [currentBranch]);
 
-    const orderData = {
-      patient: selectedPatient.id,
-      test_ids: tests.map((t) => t.test_id ?? t.id),
-      panel_ids: panels.map((p) => p.id),
-      discount: discountAmount,
-      discount_percent: discountPercent,
-      paid_amount: paidAmount,
-      referred_by: referredBy,
-      collection_branch: currentBranch?.id,
+    // --- AGE / DOB SYNC ---
+    const handleDobChange = (value: string) => {
+        const normalized = normalizeDobInput(value);
+        const display = normalized.display || value;
+        const date = normalized.date;
+
+        setDobInput(display);
+
+        if (date) {
+            const today = new Date();
+            let years = today.getFullYear() - date.getFullYear();
+            let months = today.getMonth() - date.getMonth();
+            let days = today.getDate() - date.getDate();
+
+            if (days < 0) {
+                months--;
+                const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            const y = Math.max(0, years);
+            const m = Math.max(0, months);
+            const d = Math.max(0, days);
+
+            setAgeYears(y);
+            setAgeMonths(m);
+            setAgeDays(d);
+
+            let ageStr = '';
+            if (y > 0) ageStr += `${y}y `;
+            if (m > 0) ageStr += `${m}m `;
+            if (d > 0) ageStr += `${d}d`;
+            setAgeInput(ageStr.trim() || '0d');
+        }
     };
 
-    createOrderMutation.mutate(orderData);
-  };
+    const parseAge = (str: string) => {
+        let y = 0, m = 0, d = 0;
+        const lower = str.toLowerCase().trim();
+        if (!lower) return { y: 0, m: 0, d: 0 };
 
-  const handlePrintReceipt = () => {
-    const printUrl = `/print/receipt/${lastOrderId}`; // Assuming this route exists or backend provides it
-    setShowReceipt(false);
-    window.open(printUrl, '_blank');
-  };
+        if (/^\d+$/.test(lower)) {
+            y = parseInt(lower);
+        } else {
+            const yMatch = lower.match(/(\d+)\s*y/);
+            const mMatch = lower.match(/(\d+)\s*m/);
+            const dMatch = lower.match(/(\d+)\s*d/);
+            if (yMatch) y = parseInt(yMatch[1]);
+            if (mMatch) m = parseInt(mMatch[1]);
+            if (dMatch) d = parseInt(dMatch[1]);
+        }
+        return { y, m, d };
+    };
 
-  return (
-    <div className={styles.container}>
-      {showReceipt && (
-        <ReceiptModal
-          orderId={lastOrderId}
-          displayId={lastOrderDisplayId}
-          onClose={() => setShowReceipt(false)}
-          onPrint={handlePrintReceipt}
-        />
-      )}
+    const handleAgeBlur = () => {
+        const { y, m, d } = parseAge(ageInput);
+        setAgeYears(y);
+        setAgeMonths(m);
+        setAgeDays(d);
 
-      {/* Page Header: Left = Title, Right = Search */}
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.pageTitle}>Patient Registration</h1>
-          <p className={styles.subtitle}>Enter patient details and select tests</p>
-        </div>
+        const date = new Date();
+        date.setFullYear(date.getFullYear() - y);
+        date.setMonth(date.getMonth() - m);
+        date.setDate(date.getDate() - d);
 
-        {/* Global Patient Search - Top Right */}
-        <div className={styles.globalSearchWrapper} ref={globalSearchContainerRef}>
-          <div className={styles.searchIconWrapper}>
-            <svg className={styles.searchIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <input
-            ref={globalSearchRef}
-            type="text"
-            value={globalSearchQuery}
-            onChange={(e) => setGlobalSearchQuery(e.target.value)}
-            onKeyDown={handleGlobalSearchKeyDown}
-            className={styles.globalSearchInput}
-            placeholder="Search by name, mobile, or reg #"
-            autoComplete="off"
-            aria-label="Search patient by name, mobile, or registration number"
-          />
-          {showGlobalSuggestions && globalSearchQuery.trim().length >= 2 && (
-            <div className={styles.suggestions}>
-              {loadingGlobalSearch ? (
-                <div className={`${styles.suggestionItem} ${styles.suggestionEmpty}`}>
-                  Searching…
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        setDobInput(formatDobDisplay(`${yyyy}-${mm}-${dd}`));
+
+        let ageStr = '';
+        if (y > 0) ageStr += `${y}y `;
+        if (m > 0) ageStr += `${m}m `;
+        if (d > 0) ageStr += `${d}d`;
+        setAgeInput(ageStr.trim() || (y === 0 && m === 0 && d === 0 ? '' : ageInput));
+    };
+
+    // --- SEARCH ---
+    useEffect(() => {
+        if (formData.phone.length >= 3) {
+            setIsSearching(true);
+            const timer = setTimeout(async () => {
+                try {
+                    const res = await patientApi.lookup(formData.phone);
+                    setPatientSuggestions(res.data);
+                    setShowSuggestions(res.data.length > 0);
+                    setSuggestionIndex(res.data.length > 0 ? 0 : -1);
+                } catch (e) {
+                    // ignore
+                } finally {
+                    setIsSearching(false);
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        } else {
+            setPatientSuggestions([]);
+            setShowSuggestions(false);
+            setSuggestionIndex(-1);
+        }
+    }, [formData.phone]);
+
+    const selectPatient = (patient: any) => {
+        navigate(`/dashboard/orders/create?patient_id=${patient.id}`);
+    };
+
+    // --- SUBMISSION ---
+    const saveMutation = useMutation({
+        mutationFn: (data: any) => patientApi.create(data),
+        onSuccess: (res) => {
+            navigate(`/dashboard/orders/create?patient_id=${res.data.id}`);
+        },
+        onError: (err: any) => {
+            const data = err?.response?.data;
+            const newErrors: FormErrors = {};
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    newErrors[key] = Array.isArray(data[key]) ? data[key].join(' ') : String(data[key]);
+                });
+            }
+            if (Object.keys(newErrors).length === 0) {
+                newErrors['global'] = "System error occurred. Please try again.";
+            }
+            setErrors(newErrors);
+
+            const firstField = Object.keys(newErrors)[0];
+            if (firstField) {
+                const el = document.getElementById(`field-${firstField}`);
+                if (el) el.focus();
+            }
+        }
+    });
+
+    const handleSubmit = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        const newErrors: FormErrors = {};
+        if (!formData.first_name) newErrors['first_name'] = 'Required';
+        if (!formData.phone) newErrors['phone'] = 'Required';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        const payload = {
+            ...formData,
+            full_name: `${formData.first_name} ${formData.last_name || ''}`.trim(),
+            date_of_birth: normalizeDobInput(dobInput).iso,
+            age_years: ageYears,
+            age_months: ageMonths,
+            age_days: ageDays,
+            default_referred_by: formData.referred_by || formData.consultant, // mapping
+        };
+
+        saveMutation.mutate(payload);
+    };
+
+    // --- KEYBOARD NAV ---
+    const handleKeyDown = (e: KeyboardEvent, nextId?: string) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (nextId) {
+                const el = document.getElementById(nextId);
+                if (el) el.focus();
+            } else {
+                handleSubmit();
+            }
+        }
+    };
+
+    const handleMobileKeyDown = (e: KeyboardEvent) => {
+        if (showSuggestions) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setSuggestionIndex(prev => Math.min(prev + 1, patientSuggestions.length - 1));
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setSuggestionIndex(prev => Math.max(prev - 1, 0));
+            } else if (e.key === 'Enter' && suggestionIndex >= 0) {
+                e.preventDefault();
+                selectPatient(patientSuggestions[suggestionIndex]);
+                return;
+            }
+        }
+
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            // In Quick Mode, after mobile we might skip to save or go to next visible field
+            const nextId = quickMode ? 'field-submit' : 'field-whatsapp';
+            const el = document.getElementById(nextId);
+            if (el) el.focus();
+        }
+    };
+
+    return (
+        <div className={styles.container}>
+            <header className={styles.header}>
+                <div>
+                    <h1>Patient Registration</h1>
+                    <p className={styles.subtitle}>Keyboard-friendly laboratory workflow</p>
                 </div>
-              ) : globalSuggestions.length > 0 ? (
-                globalSuggestions.map((patient, index) => (
-                  <div
-                    key={patient.id}
-                    className={`${styles.suggestionItem} ${index === selectedGlobalIndex ? styles.suggestionActive : ''}`}
-                    onClick={() => loadPatient(patient.id)}
-                  >
-                    <div className={styles.suggestionMain}>{patient.full_name}</div>
-                    <div className={styles.suggestionMeta}>
-                      {patient.phone} • {patient.gender} • MRN: {patient.registration_number || patient.patient_id}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className={`${styles.suggestionItem} ${styles.suggestionEmpty}`}>
-                  No matches found
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className={styles.splitView}>
-        {/* LEFT: Patient Registration Card */}
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <h2 className={styles.sectionTitle}>
-              <span className={styles.stepBadge}>1</span>
-              {selectedPatient ? 'Edit Patient Details' : 'Patient Information'}
-            </h2>
-            {selectedPatient && (
-              <span className={styles.sectionStatus}>
-                MRN: {selectedPatient.registration_number || selectedPatient.patient_id}
-              </span>
-            )}
-          </div>
-
-          <form onSubmit={handlePatientSubmit} className={styles.registrationForm}>
-            {/* Two-column grid: Patient Identity (left) | Contact & Consultant (right) */}
-            <div className={styles.twoColGrid}>
-              {/* LEFT COLUMN — Patient Identity */}
-              <div className={styles.sectionBlock}>
-                <h3 className={styles.sectionLabel}>Patient Identity</h3>
-                {selectedPatient && (
-                  <div className={styles.formGroup}>
-                    <label>MRN</label>
-                    <input
-                      type="text"
-                      readOnly
-                      value={selectedPatient.registration_number || selectedPatient.patient_id || ''}
-                      className={styles.inputReadOnly}
-                      aria-readonly
-                    />
-                  </div>
-                )}
-                <div className={styles.formGroup}>
-                  <label>Patient Name <span className={styles.required}>*</span></label>
-                  <input
-                    type="text"
-                    value={patientFormData.full_name || ''}
-                    onChange={(e) => setPatientFormData({ ...patientFormData, full_name: e.target.value })}
-                    className={styles.input}
-                    required
-                  />
-                </div>
-                <div className={styles.rowGroup}>
-                  <div className={styles.formGroup}>
-                    <label>Date of Birth</label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="DD/MM/YY"
-                      value={dobInput}
-                      onChange={(e) => handleDobChange(e.target.value)}
-                      className={styles.input}
-                    />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label>Age (Y / M / D)</label>
-                    <div className={styles.ageGroup}>
-                      <div className={styles.ageInput}>
+                <div className={styles.modeToggle}>
+                    <label className={styles.switch}>
                         <input
-                          type="number"
-                          placeholder="Y"
-                          value={ageYears}
-                          onChange={e => handleAgeChange(parseInt(e.target.value) || '', ageMonths, ageDays)}
+                            type="checkbox"
+                            checked={quickMode}
+                            onChange={() => setQuickMode(!quickMode)}
                         />
-                        <span>Yrs</span>
-                      </div>
-                      <div className={styles.ageInput}>
-                        <input
-                          type="number"
-                          placeholder="M"
-                          value={ageMonths}
-                          onChange={e => handleAgeChange(ageYears, parseInt(e.target.value) || '', ageDays)}
-                        />
-                        <span>Mth</span>
-                      </div>
-                      <div className={styles.ageInput}>
-                        <input
-                          type="number"
-                          placeholder="D"
-                          value={ageDays}
-                          onChange={e => handleAgeChange(ageYears, ageMonths, parseInt(e.target.value) || '')}
-                        />
-                        <span>Day</span>
-                      </div>
-                    </div>
-                  </div>
+                        <span className={styles.slider}></span>
+                    </label>
+                    <span className={styles.modeLabel}>Quick Mode</span>
                 </div>
-                <div className={styles.formGroup}>
-                  <label>Gender <span className={styles.required}>*</span></label>
-                  <select
-                    value={patientFormData.gender}
-                    onChange={(e) => setPatientFormData({ ...patientFormData, gender: e.target.value as 'Male' | 'Female' | 'Other' })}
-                    className={styles.select}
-                    required
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Father / Husband Name</label>
-                  <input
-                    type="text"
-                    value={patientFormData.father_husband_name || ''}
-                    onChange={(e) => setPatientFormData({ ...patientFormData, father_husband_name: e.target.value })}
-                    className={styles.input}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>CNIC / National ID</label>
-                  <input
-                    type="text"
-                    value={patientFormData.cnic || patientFormData.national_id || ''}
-                    onChange={(e) => setPatientFormData({ ...patientFormData, cnic: e.target.value })}
-                    className={styles.input}
-                  />
-                </div>
-              </div>
+            </header>
 
-              {/* RIGHT COLUMN — Contact & Consultant */}
-              <div className={styles.sectionBlock}>
-                <h3 className={styles.sectionLabel}>Contact & Consultant</h3>
-                <div className={styles.formGroup}>
-                  <label>Mobile Number <span className={styles.required}>*</span></label>
-                  <div className={styles.lookupWrapper}>
-                    <input
-                      ref={mobileInputRef}
-                      type="text"
-                      value={mobileNumber}
-                      onChange={(e) => {
-                        setMobileNumber(e.target.value);
-                        setPatientFormData({ ...patientFormData, phone: e.target.value });
-                      }}
-                      onKeyDown={handleMobileKeyDown}
-                      className={styles.input}
-                      placeholder="03xxxxxxxxx"
-                      required
-                      autoComplete="off"
-                    />
-                    {showSuggestions && patientSuggestions.length > 0 && (
-                      <div className={styles.suggestions}>
-                        <div className={styles.suggestionHeader} style={{ color: '#d97706', background: '#fffbeb', borderBottom: '1px solid #fcd34d' }}>
-                          ⚠️ Possible Match: Found {patientSuggestions.length} existing patient{patientSuggestions.length > 1 ? 's' : ''}
+            {errors['global'] && <div className={styles.errorBanner}>{errors['global']}</div>}
+
+            <div className={styles.formContainer}>
+                {/* SECTION 1: IDENTITY */}
+                <section className={styles.section}>
+                    <h3 className={styles.sectionTitle}>1. Patient Identity</h3>
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup}>
+                            <label>First Name <span className={styles.required}>*</span></label>
+                            <input
+                                id="field-first_name"
+                                ref={firstNameRef}
+                                type="text"
+                                value={formData.first_name}
+                                onChange={e => setFormData({ ...formData, first_name: e.target.value })}
+                                onKeyDown={e => handleKeyDown(e, quickMode ? 'field-gender' : 'field-last_name')}
+                                className={errors['first_name'] ? styles.errorInput : ''}
+                                autoComplete="off"
+                            />
+                            {errors['first_name'] && <span className={styles.errorMsg}>{errors['first_name']}</span>}
                         </div>
-                        {patientSuggestions.map((patient, index) => (
-                          <div
-                            key={patient.id}
-                            className={`${styles.suggestionItem} ${index === selectedSuggestionIndex ? styles.suggestionActive : ''}`}
-                            onClick={() => loadPatient(patient.id)}
-                          >
-                            <div className={styles.suggestionName}>
-                              <strong>{patient.full_name}</strong>
-                              <span className={styles.registrationBadge}>MRN: {patient.patient_id}</span>
+                        {!quickMode && (
+                            <div className={styles.fieldGroup}>
+                                <label>Last Name</label>
+                                <input
+                                    id="field-last_name"
+                                    type="text"
+                                    value={formData.last_name}
+                                    onChange={e => setFormData({ ...formData, last_name: e.target.value })}
+                                    onKeyDown={e => handleKeyDown(e, 'field-gender')}
+                                    autoComplete="off"
+                                />
                             </div>
-                            <div className={styles.suggestionMeta}>
-                              {patient.gender} • {patient.age ? `${patient.age} years` : 'Age unknown'}
-                              {patient.last_visit && ` • Last visit: ${new Date(patient.last_visit).toLocaleDateString()}`}
-                            </div>
-                          </div>
-                        ))}
-                        <div
-                          className={`${styles.suggestionItem} ${styles.createNewOption} ${selectedSuggestionIndex === patientSuggestions.length ? styles.suggestionActive : ''}`}
-                          onClick={() => {
-                            setShowSuggestions(false);
-                            setSelectedSuggestionIndex(-1);
-                          }}
-                        >
-                          <div className={styles.suggestionName}>
-                            <strong>➕ Create New Patient</strong>
-                          </div>
-                          <div className={styles.suggestionMeta}>
-                            Register a new patient with this mobile number
-                          </div>
+                        )}
+                        <div className={styles.fieldGroup}>
+                            <label>Gender</label>
+                            <select
+                                id="field-gender"
+                                value={formData.gender}
+                                onChange={e => setFormData({ ...formData, gender: e.target.value as any })}
+                                onKeyDown={e => handleKeyDown(e, 'field-age')}
+                            >
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Consultant / Ref-By</label>
-                  <input
-                    type="text"
-                    value={referredBy}
-                    onChange={(e) => setReferredBy(e.target.value)}
-                    className={styles.input}
-                    placeholder="Referring doctor or clinic"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Email (Optional)</label>
-                  <input
-                    type="email"
-                    value={patientFormData.email || ''}
-                    onChange={(e) => setPatientFormData({ ...patientFormData, email: e.target.value })}
-                    className={styles.input}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Address</label>
-                  <textarea
-                    value={patientFormData.address || ''}
-                    onChange={(e) => setPatientFormData({ ...patientFormData, address: e.target.value })}
-                    className={styles.textarea}
-                    rows={3}
-                  />
-                </div>
-              </div>
-            </div>
+                    </div>
 
-            {/* Footer Actions */}
-            <div className={styles.formActions}>
-              <button
-                type="submit"
-                className={styles.primaryButton}
-                disabled={savePatientMutation.isPending}
-              >
-                {savePatientMutation.isPending ? 'Saving...' : selectedPatient ? 'Update & Proceed to Tests' : 'Save Patient & Proceed'}
-              </button>
-              {selectedPatient && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className={styles.secondaryButton}
-                >
-                  Clear / New Patient
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {/* SERVICE REGISTRATION — Order Tests & Billing (visually distinct, expands after save) */}
-        <div
-          ref={serviceRegistrationRef}
-          className={`${styles.card} ${styles.serviceRegistrationCard} ${serviceSectionExpanded ? styles.serviceRegistrationCardExpanded : ''}`}
-          style={{
-            opacity: selectedPatient ? 1 : 0.5,
-            pointerEvents: selectedPatient ? 'auto' : 'none',
-            transition: 'opacity 0.3s ease, box-shadow 0.3s ease'
-          }}
-        >
-          <div className={styles.cardHeader}>
-            <h2 className={styles.sectionTitle}>
-              <span className={styles.stepBadge}>2</span>
-              Service Registration
-            </h2>
-          </div>
-
-          <div className={styles.orderContainer}>
-            {/* 1. Search Bar */}
-            <div className={styles.searchSection}>
-              <div className={styles.autocompleteWrapper}>
-                <input
-                  ref={testSearchRef}
-                  type="text"
-                  value={testQuery}
-                  onChange={(e) => setTestQuery(e.target.value)}
-                  onKeyDown={handleTestKeyDown}
-                  className={styles.largeSearchInput}
-                  placeholder="Search tests or panels by name or code (Enter to add)"
-                />
-                {showTestSuggestions && testSuggestions.length > 0 && (
-                  <div className={styles.suggestions}>
-                    {testSuggestions.map((test, index) => (
-                      <div
-                        key={test.id}
-                        className={`${styles.suggestionItem} ${index === selectedTestIndex ? styles.suggestionActive : ''} `}
-                        onClick={() => addTest(test)}
-                      >
-                        <div className={styles.suggestionName}>
-                          <span style={{ fontWeight: 'bold', color: 'var(--color-primary)' }}>{test.test_code}</span> - {test.test_name}
-                          {test.type === 'panel' && (
-                            <span style={{
-                              marginLeft: '8px',
-                              backgroundColor: '#8b5cf6',
-                              color: 'white',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontSize: '0.7em',
-                              fontWeight: '600',
-                              textTransform: 'uppercase'
-                            }}>
-                              Panel
-                            </span>
-                          )}
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup} style={{ flex: 1.5 }}>
+                            <label>Age (e.g. 25, 25y, 2m)</label>
+                            <input
+                                id="field-age"
+                                type="text"
+                                autoComplete="off"
+                                value={ageInput}
+                                onChange={e => setAgeInput(e.target.value)}
+                                onBlur={handleAgeBlur}
+                                onKeyDown={e => handleKeyDown(e, 'field-dob')}
+                                placeholder="Years, Months, Days"
+                            />
                         </div>
-                        <div className={styles.suggestionMeta}>
-                          {test.category_name} • {formatCurrency(test.price, currency)}
+                        <div className={styles.fieldGroup}>
+                            <label>Date of Birth</label>
+                            <input
+                                id="field-dob"
+                                type="text"
+                                placeholder="DD/MM/YYYY"
+                                value={dobInput}
+                                onChange={e => handleDobChange(e.target.value)}
+                                onKeyDown={e => handleKeyDown(e, 'field-phone')}
+                                autoComplete="off"
+                            />
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+                    </div>
+                </section>
 
-            {/* 2. Added Tests List (Shopping Cart Style) */}
-            <div className={styles.addedTestsSection}>
-              {addedTests.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <p>No tests selected. Search above to add tests.</p>
-                </div>
-              ) : (
-                <div className={styles.testsTableContainer}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th>Code</th>
-                        <th>Test Name</th>
-                        <th style={{ textAlign: 'right' }}>Price</th>
-                        <th style={{ width: '50px' }}></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {addedTests.map(test => (
-                        <tr key={test.test_id ?? test.id}>
-                          <td>
-                            <strong>{test.test_code}</strong>
-                            {test.type === 'panel' && (
-                              <span style={{
-                                marginLeft: '6px',
-                                backgroundColor: '#8b5cf6',
-                                color: 'white',
-                                padding: '1px 5px',
-                                borderRadius: '3px',
-                                fontSize: '0.65em',
-                                fontWeight: '600',
-                                textTransform: 'uppercase',
-                                verticalAlign: 'middle'
-                              }}>
-                                Panel
-                              </span>
+                {/* SECTION 2: CONTACT */}
+                <section className={styles.section}>
+                    <h3 className={styles.sectionTitle}>2. Contact</h3>
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup} style={{ position: 'relative' }}>
+                            <label>Mobile <span className={styles.required}>*</span></label>
+                            <input
+                                id="field-phone"
+                                ref={mobileRef}
+                                type="text"
+                                value={formData.phone}
+                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                onKeyDown={handleMobileKeyDown}
+                                className={errors['phone'] ? styles.errorInput : ''}
+                                autoComplete="off"
+                            />
+                            {isSearching && <div className={styles.loadingSpinner}></div>}
+                            {showSuggestions && (
+                                <div className={styles.suggestions}>
+                                    {patientSuggestions.map((p, idx) => (
+                                        <div
+                                            key={p.id}
+                                            className={`${styles.suggestionItem} ${idx === suggestionIndex ? styles.active : ''}`}
+                                            onClick={() => selectPatient(p)}
+                                        >
+                                            <div className={styles.suggestionMain}>
+                                                <strong>{p.full_name}</strong>
+                                                <span>{p.phone}</span>
+                                            </div>
+                                            <div className={styles.suggestionMeta}>
+                                                {p.gender} • {p.age}Y • Reg: {p.registration_number || p.patient_id}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
-                          </td>
-                          <td>{test.test_name}</td>
-                          <td style={{ textAlign: 'right' }}>{formatCurrency(test.price, currency)}</td>
-                          <td>
-                            <button onClick={() => removeTest(test.test_id ?? test.id)} className={styles.removeButton}>
-                              &times;
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
-            {/* 3. Payment Section (Referred By is in Contact & Consultant above) */}
-            <div className={styles.paymentSection}>
-              <div className={`${styles.paymentGrid} ${styles.paymentGridSingle}`}>
-                <div className={styles.paymentColRight}>
-                  <div className={styles.summaryRow}>
-                    <span>Total Amount</span>
-                    <span className={styles.amountLarge}>{formatCurrency(totalAmount.toFixed(2), currency)}</span>
-                  </div>
-
-                  <div className={styles.discountRow}>
-                    <div className={styles.discountInputGroup}>
-                      <label>Disc %</label>
-                      <input
-                        type="number"
-                        value={discountPercent}
-                        onChange={e => handleDiscountPercentChange(e.target.value)}
-                        className={styles.compactInput}
-                      />
+                            {errors['phone'] && <span className={styles.errorMsg}>{errors['phone']}</span>}
+                        </div>
+                        {!quickMode && (
+                            <div className={styles.fieldGroup}>
+                                <label>Alternate Mobile</label>
+                                <input
+                                    id="field-whatsapp"
+                                    type="text"
+                                    value={formData.whatsapp_number}
+                                    onChange={e => setFormData({ ...formData, whatsapp_number: e.target.value })}
+                                    onKeyDown={e => handleKeyDown(e, 'field-address')}
+                                    autoComplete="off"
+                                />
+                            </div>
+                        )}
                     </div>
-                    <div className={styles.discountInputGroup}>
-                      <label>Disc Amt</label>
-                      <input
-                        type="number"
-                        value={discountAmount}
-                        onChange={e => handleDiscountAmountChange(e.target.value)}
-                        className={styles.compactInput}
-                      />
-                    </div>
-                  </div>
+                    {!quickMode && (
+                        <div className={styles.row}>
+                            <div className={styles.fieldGroupFull}>
+                                <label>Address</label>
+                                <textarea
+                                    id="field-address"
+                                    value={formData.address}
+                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                    onKeyDown={e => handleKeyDown(e, 'field-referred_by')}
+                                    className={styles.expandableTextarea}
+                                    rows={1}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </section>
 
-                  <div className={styles.summaryRow}>
-                    <span>Net Payable</span>
-                    <span className={styles.amountHighlight}>{formatCurrency(netAmount.toFixed(2), currency)}</span>
-                  </div>
+                {/* SECTION 3: ADMINISTRATIVE */}
+                {!quickMode && (
+                    <section className={styles.section}>
+                        <h3 className={styles.sectionTitle}>3. Lab Administrative</h3>
+                        <div className={styles.row}>
+                            <div className={styles.fieldGroup}>
+                                <label>Branch</label>
+                                <select
+                                    id="field-branch"
+                                    value={formData.registration_center}
+                                    onChange={e => setFormData({ ...formData, registration_center: e.target.value })}
+                                    onKeyDown={e => handleKeyDown(e, 'field-referred_by')}
+                                >
+                                    {user?.branch_memberships.map(m => (
+                                        <option key={m.branch.id} value={m.branch.id}>
+                                            {m.branch.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.fieldGroup}>
+                                <label>Referred By</label>
+                                <input
+                                    id="field-referred_by"
+                                    type="text"
+                                    value={formData.referred_by}
+                                    onChange={e => setFormData({ ...formData, referred_by: e.target.value })}
+                                    onKeyDown={e => handleKeyDown(e, 'field-consultant')}
+                                    autoComplete="off"
+                                />
+                            </div>
+                        </div>
+                        <div className={styles.row}>
+                            <div className={styles.fieldGroup}>
+                                <label>Consultant</label>
+                                <input
+                                    id="field-consultant"
+                                    type="text"
+                                    value={formData.consultant}
+                                    onChange={e => setFormData({ ...formData, consultant: e.target.value })}
+                                    onKeyDown={e => handleKeyDown(e, 'field-category')}
+                                    autoComplete="off"
+                                />
+                            </div>
+                            <div className={styles.fieldGroup}>
+                                <label>Category</label>
+                                <select
+                                    id="field-category"
+                                    value={formData.category}
+                                    onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                    onKeyDown={e => handleKeyDown(e, 'field-mr_number')}
+                                >
+                                    <option value="">Standard</option>
+                                    {categoriesData?.results.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.fieldGroup}>
+                                <label>MR Number</label>
+                                <input
+                                    id="field-mr_number"
+                                    type="text"
+                                    value={formData.mr_number}
+                                    onChange={e => setFormData({ ...formData, mr_number: e.target.value })}
+                                    onKeyDown={e => handleKeyDown(e, 'field-submit')}
+                                    placeholder="Legacy / Auto-gen"
+                                    autoComplete="off"
+                                />
+                            </div>
+                        </div>
+                    </section>
+                )}
 
-                  <div className={styles.summaryRow}>
-                    <span>Paid Amount</span>
-                    <input
-                      type="number"
-                      value={paidAmount}
-                      onChange={e => {
-                        setPaidAmount(e.target.value);
-                        setIsPaidManuallyEdited(true);
-                      }}
-                      className={styles.paymentInput}
-                    />
-                  </div>
-
-                  <div className={styles.summaryRow}>
-                    <span>Due Balance</span>
-                    <span className={`${styles.amountHighlight} ${dueAmount > 0 ? styles.textRed : styles.textGreen} `}>
-                      {formatCurrency(dueAmount.toFixed(2), currency)}
-                    </span>
-                  </div>
+                <div className={styles.actions}>
+                    <button
+                        id="field-submit"
+                        onClick={() => handleSubmit()}
+                        disabled={saveMutation.isPending}
+                        className={styles.submitButton}
+                    >
+                        {saveMutation.isPending ? (
+                            <>
+                                <span className={styles.btnSpinner}></span> Saving...
+                            </>
+                        ) : 'Complete Registration & Create Order (Enter)'}
+                    </button>
                 </div>
-              </div>
-
-              <div className={styles.formActions}>
-                <button
-                  onClick={handleCreateOrder}
-                  className={styles.primaryButtonLarge}
-                  disabled={createOrderMutation.isPending || addedTests.length === 0}
-                >
-                  {createOrderMutation.isPending ? 'Processing...' : 'CONFIRM & PRINT RECEIPT'}
-                </button>
-              </div>
             </div>
-
-          </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

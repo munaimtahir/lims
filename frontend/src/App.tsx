@@ -23,6 +23,7 @@ import { BackupsPage } from './pages/backups';
 import ReferenceRangesPage from './pages/reference-ranges';
 import SystemSettingsPage from './pages/settings';
 import RegistrationPage from './pages/registration';
+import { OrdersPage, CreateOrderPage } from './pages/orders';
 import {
   AnalyticsOverviewPage,
   AnalyticsPatientsPage,
@@ -78,7 +79,8 @@ function App() {
                 <Route path="registration" element={<RegistrationPage />} />
                 <Route path="patients" element={<PatientsPage />} />
                 <Route path="patients-worklist" element={<PatientsWorklistPage />} />
-                <Route path="orders" element={<Navigate to="/dashboard/patients" replace />} />
+                <Route path="orders" element={<OrdersPage />} />
+                <Route path="orders/create" element={<CreateOrderPage />} />
                 <Route path="tests" element={<TestCatalogPage />} />
                 <Route path="samples" element={<SamplesPage />} />
                 <Route path="collection" element={<CollectionWorklistPage />} />
