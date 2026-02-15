@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { coreApi } from '../../api/services';
+import { coreApi, tenantSettingsApi } from '../../api/services';
 import type { Branch, CollectionCenter } from '../../types';
 import styles from './BranchesAndCentersPage.module.css';
 
@@ -11,14 +11,25 @@ export default function BranchesAndCentersPage() {
   const [branchModal, setBranchModal] = useState<{ open: boolean; branch?: Branch | null }>({ open: false, branch: null });
   const [centerModal, setCenterModal] = useState<{ open: boolean; center?: CollectionCenter | null }>({ open: false, center: null });
 
+  const { data: tenantSettings } = useQuery({
+    queryKey: ['tenant-settings'],
+    queryFn: () => tenantSettingsApi.get(),
+    staleTime: 60_000,
+  });
+  const enableBranches = tenantSettings?.enable_branches ?? false;
+  const enableCollectionCenters = tenantSettings?.enable_collection_centers ?? false;
+  const featureDisabled = !enableBranches && !enableCollectionCenters;
+
   const { data: branches = [], isLoading: loadingBranches } = useQuery({
     queryKey: ['core-branches'],
     queryFn: () => coreApi.listBranches(),
+    enabled: enableBranches,
   });
 
   const { data: centers = [], isLoading: loadingCenters } = useQuery({
     queryKey: ['core-collection-centers'],
     queryFn: () => coreApi.listCollectionCenters(),
+    enabled: enableCollectionCenters,
   });
 
   const branchCreateMutation = useMutation({
@@ -81,6 +92,17 @@ export default function BranchesAndCentersPage() {
     onError: (e: any) => alert(e?.response?.data?.detail || e?.message || 'Failed to delete collection center'),
   });
 
+  if (featureDisabled) {
+    return (
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <h1>Branches &amp; Collection Centers</h1>
+          <p className={styles.subtitle}>This feature is disabled. Enable Branches or Collection Centers in Lab Workflow &amp; Branch Settings (Settings) to manage them.</p>
+        </header>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -88,6 +110,7 @@ export default function BranchesAndCentersPage() {
         <p className={styles.subtitle}>Add, edit, or remove branches and collection centers (admin).</p>
       </header>
 
+      {enableBranches && (
       <section className={styles.section}>
         <h2>Branches</h2>
         <p className={styles.hint}>Branches are scoped to your tenant. Code must be 2 digits (00–99). Code 00 is HQ.</p>
@@ -127,7 +150,9 @@ export default function BranchesAndCentersPage() {
         )}
         {branches.length === 0 && !loadingBranches && <p className={styles.empty}>No branches yet. Add one above.</p>}
       </section>
+      )}
 
+      {enableCollectionCenters && (
       <section className={styles.section}>
         <h2>Collection Centers</h2>
         <p className={styles.hint}>Collection centers are system-wide. Code must be 2 digits (00–99).</p>
@@ -163,6 +188,7 @@ export default function BranchesAndCentersPage() {
         )}
         {centers.length === 0 && !loadingCenters && <p className={styles.empty}>No collection centers yet. Add one above.</p>}
       </section>
+      )}
 
       {branchModal.open && (
         <BranchModal

@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { orderApi, patientApi, laboratoryApi } from '../../api/services';
+import { orderApi, patientApi, laboratoryApi, tenantSettingsApi } from '../../api/services';
 import type { Patient, OrderCreateRequest, TestSearchResult } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
 import { useBranding } from '../../contexts/BrandingContext';
 import { formatCurrency } from '../../utils/currency';
 import styles from './CreateOrderPage.module.css';
@@ -16,6 +17,13 @@ export default function CreateOrderPage() {
     const { currentBranch } = useAuth();
     const { branding } = useBranding();
     const currency = branding?.currency || 'PKR';
+
+    const { data: tenantSettings } = useQuery({
+        queryKey: ['tenant-settings'],
+        queryFn: () => tenantSettingsApi.get(),
+        staleTime: 60_000,
+    });
+    const enableBranches = tenantSettings?.enable_branches ?? false;
 
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     const [loadingPatient, setLoadingPatient] = useState(false);
@@ -91,17 +99,13 @@ export default function CreateOrderPage() {
     const createOrderMutation = useMutation({
         mutationFn: (data: OrderCreateRequest) => orderApi.create(data),
         onSuccess: (response) => {
-            // Navigate to order details or show receipt
-            // For now, let's redirect to orders list or show a success message
-            // The prompt says "Order screen must open in ready state" and "Redirect logic into Order Creation"
-            // Maybe we stay here and show receipt?
-            // Let's redirect to print receipt for now or back to dashboard
-            const orderId = response.order_id;
-            // Assuming we want to show receipt immediately
-            navigate(`/dashboard/orders`); // Or print route
-            // In a real app we might show a modal here similar to RegistrationPage.
-            // For this refactor, I'll stick to basic navigation or reused modal if I could, but I'll keeping it simple.
-            alert(`Order Created! ID: ${response.lab_number || orderId}`);
+            // Open receipt so user can print immediately after registration/order
+            const orderId = response.id ?? response.order_id;
+            if (orderId != null) {
+                navigate(`/print/receipt/${orderId}`);
+            } else {
+                navigate(`/dashboard/orders`);
+            }
         },
         onError: (err: any) => {
             console.error(err);
@@ -125,7 +129,7 @@ export default function CreateOrderPage() {
             paid_amount: paidAmount,
             referred_by: referredBy,
         };
-        if (currentBranch?.id) {
+        if (enableBranches && currentBranch?.id) {
             orderData.collection_branch = currentBranch.id;
         }
 

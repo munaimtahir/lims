@@ -489,8 +489,7 @@ class OrderIdSequence(models.Model):
 class TenantSettings(models.Model):
     """
     Tenant-scoped settings for branch/collection center and sample workflow behavior.
-    Collection Center is optional (enable_collection_centers=False by default).
-    Sample workflow is optional (sample_workflow_enabled=True by default for backward compatibility).
+    When flags are False, corresponding APIs return 404 and UI hides those modules.
     """
 
     tenant = models.OneToOneField(
@@ -499,12 +498,16 @@ class TenantSettings(models.Model):
         related_name="settings",
         primary_key=True,
     )
+    enable_branches = models.BooleanField(
+        default=False,
+        help_text="When True, branch and dispatch APIs and UI are enabled. When False, branches are hidden and orders do not require a branch.",
+    )
     enable_collection_centers = models.BooleanField(
         default=False,
         help_text="When True, registration/order flows may require or use collection center.",
     )
     sample_workflow_enabled = models.BooleanField(
-        default=True,
+        default=False,
         help_text="When True, sample collection/receiving is required before result entry. When False, orders go directly to result entry after receipt/payment.",
     )
     default_branch = models.ForeignKey(

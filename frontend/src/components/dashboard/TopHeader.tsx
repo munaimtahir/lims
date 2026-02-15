@@ -1,12 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
-import { patientApi } from '../../api/services';
+import { patientApi, tenantSettingsApi } from '../../api/services';
 import styles from './TopHeader.module.css';
 
 export function TopHeader() {
     const { user, currentBranch, setCurrentBranch } = useAuth();
     const navigate = useNavigate();
+
+    const { data: tenantSettings } = useQuery({
+        queryKey: ['tenant-settings'],
+        queryFn: () => tenantSettingsApi.get(),
+        staleTime: 1000 * 60 * 5,
+    });
+    const enableBranches = tenantSettings?.enable_branches ?? false;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [results, setResults] = useState<any[]>([]);
@@ -77,42 +85,48 @@ export function TopHeader() {
     return (
         <header className={styles.header}>
             <div className={styles.left}>
-                {/* Branch Switcher */}
-                <div style={{ position: 'relative' }}>
-                    <div
-                        className={`${styles.branchChip} ${branchMenuOpen ? styles.branchChipActive : ''}`}
-                        onClick={handleBranchClick}
-                        role="button"
-                        tabIndex={0}
-                    >
-                        <span className={styles.branchCode}>{currentBranch?.code || '00'}</span>
-                        <span>{currentBranch?.name || 'Loading...'}</span>
-                        {currentBranch?.capability_mode === 'COLLECT_ONLY' && (
-                            <span style={{ fontSize: '0.7em', color: '#ea580c', background: '#fff7ed', padding: '1px 4px', borderRadius: 4 }}>COLLECT ONLY</span>
-                        )}
-                        {branches.length > 1 && (
-                            <span style={{ fontSize: '0.7em', marginLeft: 4 }}>▼</span>
+                {/* Branch Switcher (hidden when branches feature is disabled) */}
+                {enableBranches ? (
+                    <div style={{ position: 'relative' }}>
+                        <div
+                            className={`${styles.branchChip} ${branchMenuOpen ? styles.branchChipActive : ''}`}
+                            onClick={handleBranchClick}
+                            role="button"
+                            tabIndex={0}
+                        >
+                            <span className={styles.branchCode}>{currentBranch?.code || '00'}</span>
+                            <span>{currentBranch?.name || 'Loading...'}</span>
+                            {currentBranch?.capability_mode === 'COLLECT_ONLY' && (
+                                <span style={{ fontSize: '0.7em', color: '#ea580c', background: '#fff7ed', padding: '1px 4px', borderRadius: 4 }}>COLLECT ONLY</span>
+                            )}
+                            {branches.length > 1 && (
+                                <span style={{ fontSize: '0.7em', marginLeft: 4 }}>▼</span>
+                            )}
+                        </div>
+
+                        {branchMenuOpen && (
+                            <div className={styles.branchMenu}>
+                                {branches.map(b => (
+                                    <div
+                                        key={b.id}
+                                        className={styles.branchMenuItem}
+                                        onClick={() => switchBranch(b)}
+                                    >
+                                        <span>
+                                            <span className={styles.branchCode} style={{ marginRight: 8 }}>{b.code}</span>
+                                            {b.name}
+                                        </span>
+                                        {b.id === currentBranch?.id && <span>✓</span>}
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </div>
-
-                    {branchMenuOpen && (
-                        <div className={styles.branchMenu}>
-                            {branches.map(b => (
-                                <div
-                                    key={b.id}
-                                    className={styles.branchMenuItem}
-                                    onClick={() => switchBranch(b)}
-                                >
-                                    <span>
-                                        <span className={styles.branchCode} style={{ marginRight: 8 }}>{b.code}</span>
-                                        {b.name}
-                                    </span>
-                                    {b.id === currentBranch?.id && <span>✓</span>}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                ) : (
+                    <div className={styles.branchChip} style={{ cursor: 'default' }}>
+                        <span>Lab</span>
+                    </div>
+                )}
             </div>
 
             <div className={styles.right}>

@@ -19,6 +19,7 @@ from apps.core.authz import (
     user_has_branch_access,
     user_tenant,
 )
+from apps.core.features import FeatureFlagPermission
 from apps.core.export_utils import export_to_csv, export_to_excel
 from apps.patients.models import Patient
 from apps.reports.models import Report, ReportStatus
@@ -386,10 +387,10 @@ class WorklistPatientsView(APIView):
 class DispatchViewSet(viewsets.ModelViewSet):
     """
     Create dispatch (branch → main lab), send (mark IN_TRANSIT), receive (mark RECEIVED, set samples).
-    Branch users can create/send only for their branch; main lab can receive.
+    When enable_branches is False, returns 404.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, FeatureFlagPermission("enable_branches")]
     http_method_names = ["get", "post", "head", "options"]
 
     def get_serializer_class(self):

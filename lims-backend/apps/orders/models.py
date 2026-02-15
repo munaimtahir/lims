@@ -177,17 +177,22 @@ class Order(models.Model):
 
             self.tenant = get_default_tenant()
 
-        # Default branches
-        if not self.collection_branch:
-            from apps.core.models import Branch
+        # Default branches only when enable_branches is True (small-lab flow works with null branch)
+        from apps.core.services.settings import get_tenant_settings
 
-            hq_branch = (
-                Branch.objects.filter(tenant=self.tenant, code="00").first()
-                or Branch.objects.filter(code="00").first()
-            )
-            self.collection_branch = hq_branch
-        if not self.processing_branch:
-            self.processing_branch = self.collection_branch
+        tenant_settings = get_tenant_settings(self.tenant) if self.tenant else None
+        enable_branches = getattr(tenant_settings, "enable_branches", False) if tenant_settings else False
+        if enable_branches:
+            if not self.collection_branch:
+                from apps.core.models import Branch
+
+                hq_branch = (
+                    Branch.objects.filter(tenant=self.tenant, code="00").first()
+                    or Branch.objects.filter(code="00").first()
+                )
+                self.collection_branch = hq_branch
+            if not self.processing_branch:
+                self.processing_branch = self.collection_branch
 
         if not self.order_id:
             # Branch-based order ID if branch available

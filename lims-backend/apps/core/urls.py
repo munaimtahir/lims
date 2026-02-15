@@ -8,6 +8,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     BranchViewSet,
     CollectionCenterViewSet,
+    FeaturesView,
     HealthCheckView,
     PrintTemplateViewSet,
     SystemSettingsViewSet,
@@ -52,6 +53,11 @@ urlpatterns = [
         "settings/tenant/",
         TenantSettingsView.as_view(),
         name="settings-tenant",
+    ),
+    path(
+        "settings/features/",
+        FeaturesView.as_view(),
+        name="settings-features",
     ),
     # Health check endpoint
     path("health/", HealthCheckView.as_view(), name="health-check"),

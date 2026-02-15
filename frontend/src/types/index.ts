@@ -133,8 +133,11 @@ export interface CollectionCenter {
 
 /** Tenant-scoped settings (branch/collection center and sample workflow feature flags). */
 export interface TenantSettings {
+  enable_branches: boolean;
   enable_collection_centers: boolean;
   sample_workflow_enabled: boolean;
+  /** Alias for sample_workflow_enabled (from API). */
+  enable_sample_workflow?: boolean;
   default_branch_id: number | null;
   default_branch_code: string | null;
   default_branch_name: string | null;
@@ -149,6 +152,7 @@ export interface TenantSettings {
 
 /** Payload for PATCH tenant settings (ids only for FKs). */
 export interface TenantSettingsPatch {
+  enable_branches?: boolean;
   enable_collection_centers?: boolean;
   sample_workflow_enabled?: boolean;
   default_branch?: number | null;
@@ -308,7 +312,7 @@ export type ResultFlag =
   | 'critical_low'
   | 'critical_high'
   | 'abnormal';
-export type ResultStatus = 'pending' | 'verified' | 'rejected';
+export type ResultStatus = 'pending' | 'verified' | 'rejected' | 'DRAFT' | 'ENTERED' | 'VERIFIED' | 'FINAL' | 'REJECTED';
 
 export interface TestResult {
   id: number;

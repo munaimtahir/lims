@@ -154,12 +154,48 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
         return value
 
 
+class FeatureFlagsSerializer(serializers.Serializer):
+    """Read/write only the three feature flags for GET/PATCH settings/features/."""
+
+    enable_branches = serializers.BooleanField(required=False)
+    enable_collection_centers = serializers.BooleanField(required=False)
+    enable_sample_workflow = serializers.BooleanField(required=False)
+
+    def to_representation(self, instance):
+        # instance is TenantSettings
+        return {
+            "enable_branches": getattr(instance, "enable_branches", False),
+            "enable_collection_centers": getattr(
+                instance, "enable_collection_centers", False
+            ),
+            "enable_sample_workflow": getattr(
+                instance, "sample_workflow_enabled", False
+            ),
+        }
+
+    def update(self, instance, validated_data):
+        if "enable_sample_workflow" in validated_data:
+            instance.sample_workflow_enabled = validated_data["enable_sample_workflow"]
+        if "enable_branches" in validated_data:
+            instance.enable_branches = validated_data["enable_branches"]
+        if "enable_collection_centers" in validated_data:
+            instance.enable_collection_centers = validated_data[
+                "enable_collection_centers"
+            ]
+        request = self.context.get("request")
+        if request and getattr(request, "user", None):
+            instance.updated_by = request.user
+        instance.save()
+        return instance
+
+
 class TenantSettingsSerializer(serializers.ModelSerializer):
     """Serializer for tenant-scoped settings (branch/collection center and sample workflow flags)."""
 
     class Meta:
         model = TenantSettings
         fields = [
+            "enable_branches",
             "enable_collection_centers",
             "sample_workflow_enabled",
             "default_branch",
@@ -171,8 +207,11 @@ class TenantSettingsSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "updated_at", "updated_by"]
 
     def to_representation(self, instance):
-        """Expose ids and minimal branch/center info for frontend."""
+        """Expose ids and minimal branch/center info for frontend; alias enable_sample_workflow."""
         data = super().to_representation(instance)
+        data["enable_sample_workflow"] = getattr(
+            instance, "sample_workflow_enabled", False
+        )
         data["default_branch_id"] = instance.default_branch_id
         data["default_collection_center_id"] = instance.default_collection_center_id
         if instance.default_branch_id:

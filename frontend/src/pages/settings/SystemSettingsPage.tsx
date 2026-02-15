@@ -82,13 +82,13 @@ export default function SystemSettingsPage() {
   const { data: branchesData } = useQuery({
     queryKey: ['core-branches'],
     queryFn: () => coreApi.listBranches(),
-    enabled: activeTab === 'tenant',
+    enabled: activeTab === 'tenant' && (tenantSettingsData?.enable_branches ?? false),
   });
 
   const { data: collectionCentersData } = useQuery({
     queryKey: ['core-collection-centers'],
     queryFn: () => coreApi.listCollectionCenters(),
-    enabled: activeTab === 'tenant',
+    enabled: activeTab === 'tenant' && (tenantSettingsData?.enable_collection_centers ?? false),
   });
 
   const branches = branchesData ?? [];
@@ -1085,16 +1085,16 @@ export default function SystemSettingsPage() {
                     <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                       <input
                         type="checkbox"
-                        checked={tenantSettingsData.sample_workflow_enabled ?? true}
+                        checked={tenantSettingsData.enable_branches ?? false}
                         onChange={(e) => {
-                          tenantSettingsMutation.mutate({ sample_workflow_enabled: e.target.checked });
+                          tenantSettingsMutation.mutate({ enable_branches: e.target.checked });
                         }}
                         disabled={tenantSettingsMutation.isPending}
                       />
-                      <span>Enable sample workflow (collection/receiving)</span>
+                      <span>Enable branches</span>
                     </label>
                     <p style={{ marginTop: 8, color: '#64748b', fontSize: '0.9rem' }}>
-                      When enabled, orders require sample collection and receiving before result entry. When disabled, paid orders go directly to result entry.
+                      When enabled, branch and dispatch APIs and Branches &amp; Centers page are available; orders can be assigned to a branch. When disabled, single-lab flow: no branch required.
                     </p>
                   </div>
                   <div className={styles.formGroup}>
@@ -1113,6 +1113,23 @@ export default function SystemSettingsPage() {
                       When enabled, patient registration and orders may require or use a collection center. When disabled, registration/order flows ignore collection center.
                     </p>
                   </div>
+                  <div className={styles.formGroup}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={tenantSettingsData.sample_workflow_enabled ?? false}
+                        onChange={(e) => {
+                          tenantSettingsMutation.mutate({ sample_workflow_enabled: e.target.checked });
+                        }}
+                        disabled={tenantSettingsMutation.isPending}
+                      />
+                      <span>Enable sample workflow (collection/receiving)</span>
+                    </label>
+                    <p style={{ marginTop: 8, color: '#64748b', fontSize: '0.9rem' }}>
+                      When enabled, orders require sample collection and receiving before result entry. When disabled, paid orders go directly to result entry.
+                    </p>
+                  </div>
+                  {(tenantSettingsData.enable_branches ?? false) && (
                   <div className={styles.formGroup}>
                     <label htmlFor="tenant-default-branch">Default branch (for orders when user has no branch)</label>
                     <select
@@ -1139,6 +1156,8 @@ export default function SystemSettingsPage() {
                       Used when creating orders if the user has no branch assigned. Usually set to HQ.
                     </p>
                   </div>
+                  )}
+                  {(tenantSettingsData.enable_collection_centers ?? false) && (
                   <div className={styles.formGroup}>
                     <label htmlFor="tenant-default-collection-center">Default collection center (for registration when centers enabled)</label>
                     <select
@@ -1164,6 +1183,7 @@ export default function SystemSettingsPage() {
                       When collection centers are enabled, this is used for patient registration if the user does not select a center. Optional.
                     </p>
                   </div>
+                  )}
                   {(tenantSettingsData.updated_at || tenantSettingsData.updated_by_name) && (
                     <p style={{ marginTop: 12, color: '#64748b', fontSize: '0.85rem' }}>
                       Last updated: {tenantSettingsData.updated_at ? new Date(tenantSettingsData.updated_at).toLocaleString() : ''}

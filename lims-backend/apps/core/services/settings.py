@@ -16,8 +16,9 @@ def get_tenant_settings(tenant):
     settings, _ = TenantSettings.objects.get_or_create(
         tenant=tenant,
         defaults={
+            "enable_branches": False,
             "enable_collection_centers": False,
-            "sample_workflow_enabled": True,
+            "sample_workflow_enabled": False,
             "default_branch_id": None,
             "default_collection_center_id": None,
         },
@@ -29,18 +30,19 @@ def require_sample_workflow_enabled(tenant):
     """
     Raise if sample workflow is disabled for this tenant.
     Use in sample collection/receiving endpoints to enforce tenant setting.
+    Returns 404 (feature disabled) for consistency with branch/CC gating.
 
     Raises:
-        rest_framework.exceptions.PermissionDenied: When sample_workflow_enabled is False.
+        apps.core.features.FeatureDisabled: When sample_workflow_enabled is False.
     """
-    from rest_framework.exceptions import PermissionDenied
+    from apps.core.features import FeatureDisabled
 
     if tenant is None:
         return
     settings_obj = get_tenant_settings(tenant)
     if settings_obj is not None and not getattr(
-        settings_obj, "sample_workflow_enabled", True
+        settings_obj, "sample_workflow_enabled", False
     ):
-        raise PermissionDenied(
-            detail="Sample workflow is disabled by lab settings. Collection and receiving endpoints are not available."
+        raise FeatureDisabled(
+            detail="This feature is not available."
         )

@@ -94,7 +94,10 @@ class OrderListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-    collection_branch_name = serializers.CharField(source="collection_branch.name", read_only=True)
+    collection_branch_name = serializers.SerializerMethodField()
+
+    def get_collection_branch_name(self, obj):
+        return getattr(obj.collection_branch, "name", None) if obj.collection_branch else None
 
     def get_item_count(self, obj):
         """Return the number of items in the order."""
@@ -198,16 +201,17 @@ class OrderSerializer(serializers.ModelSerializer):
             if not validated_data.get("tenant") and req_user:
                 validated_data["tenant"] = user_tenant(req_user)
 
-            # collection_branch: from body, else user branches, else tenant default,
-            # else tenant HQ, else any tenant branch; 400 only if tenant has no branches
-            if not validated_data.get("collection_branch") and req_user:
-                tenant = validated_data.get("tenant") or user_tenant(req_user)
+            tenant = validated_data.get("tenant") or (user_tenant(req_user) if req_user else None)
+            tenant_settings = get_tenant_settings(tenant) if tenant else None
+            enable_branches = getattr(tenant_settings, "enable_branches", False) if tenant_settings else False
+
+            # When enable_branches is False: leave collection_branch/processing_branch null (core workflow).
+            # When True: resolve from body, else user branches, else tenant default, else HQ, else any branch.
+            if enable_branches and not validated_data.get("collection_branch") and req_user:
                 branches = user_active_branches(req_user)
                 first_branch = branches.first()
-                if not first_branch and tenant:
-                    tenant_settings = get_tenant_settings(tenant)
-                    if tenant_settings and tenant_settings.default_branch_id:
-                        first_branch = tenant_settings.default_branch
+                if not first_branch and tenant and tenant_settings and tenant_settings.default_branch_id:
+                    first_branch = tenant_settings.default_branch
                 if not first_branch and tenant:
                     first_branch = Branch.objects.filter(
                         tenant=tenant, is_hq=True, is_active=True
@@ -222,8 +226,7 @@ class OrderSerializer(serializers.ModelSerializer):
                     )
                 validated_data["collection_branch"] = first_branch
 
-            # Default processing branch to collection_branch
-            if not validated_data.get("processing_branch"):
+            if enable_branches and not validated_data.get("processing_branch"):
                 validated_data["processing_branch"] = validated_data.get("collection_branch")
 
             order = Order.objects.create(**validated_data)
@@ -275,6 +278,19 @@ class OrderSerializer(serializers.ModelSerializer):
                     order_item=item,
                     sample_type=sample_type,
                     status=SampleStatus.PENDING,
+                )
+
+            # If order was created with paid_amount, create a Payment so receipt is available
+            from decimal import Decimal
+            from apps.billing.models import Payment
+
+            paid = getattr(order, "paid_amount", None)
+            if paid is not None and paid > Decimal("0.00"):
+                Payment.objects.create(
+                    order=order,
+                    amount=paid,
+                    payment_method="cash",
+                    recorded_by=req_user,
                 )
 
         return order

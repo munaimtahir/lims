@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 
 from apps.core.authz import user_tenant
+from apps.core.features import FeatureFlagPermission
 from apps.accounts.permissions import IsAdminOrReadOnly
 from apps.core.services.settings import get_tenant_settings
 
@@ -21,6 +22,7 @@ from .models import Branch, CollectionCenter, PrintTemplate, SystemSettings, Ten
 from .serializers import (
     BranchSerializer,
     CollectionCenterSerializer,
+    FeatureFlagsSerializer,
     PrintTemplateSerializer,
     SystemSettingsSerializer,
     TenantSettingsSerializer,
@@ -206,11 +208,47 @@ class TenantSettingsView(APIView):
         return Response(serializer.data)
 
 
+class FeaturesView(APIView):
+    """
+    GET: Return feature flags for the current tenant (enable_branches, enable_collection_centers, enable_sample_workflow).
+    PATCH: Update feature flags (admin only).
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
+
+    def get(self, request):
+        tenant = user_tenant(request.user)
+        settings_obj = get_tenant_settings(tenant)
+        if settings_obj is None:
+            return Response(
+                {"detail": "No tenant assigned."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = FeatureFlagsSerializer(settings_obj)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        tenant = user_tenant(request.user)
+        settings_obj = get_tenant_settings(tenant)
+        if settings_obj is None:
+            return Response(
+                {"detail": "No tenant assigned."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = FeatureFlagsSerializer(
+            settings_obj, data=request.data, partial=True, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
 class BranchViewSet(viewsets.ModelViewSet):
     """
     CRUD for branches (current user's tenant). Admin can add/edit/remove branches.
+    When enable_branches is False, returns 404.
     """
-    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticated, FeatureFlagPermission("enable_branches"), IsAdminOrReadOnly]
     serializer_class = BranchSerializer
 
     def get_queryset(self):
@@ -230,10 +268,11 @@ class BranchViewSet(viewsets.ModelViewSet):
 class CollectionCenterViewSet(viewsets.ModelViewSet):
     """
     CRUD for collection centers. Admin can add/edit/remove collection centers.
+    When enable_collection_centers is False, returns 404.
     """
     queryset = CollectionCenter.objects.all().order_by("code")
     serializer_class = CollectionCenterSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticated, FeatureFlagPermission("enable_collection_centers"), IsAdminOrReadOnly]
 
 
 class HealthCheckView(APIView):

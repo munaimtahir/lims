@@ -19,7 +19,8 @@ export default function DashboardLayout() {
     queryFn: () => tenantSettingsApi.get(),
     staleTime: 1000 * 60 * 5,
   });
-  const sampleWorkflowEnabled = tenantSettings?.sample_workflow_enabled ?? true;
+  const sampleWorkflowEnabled = tenantSettings?.sample_workflow_enabled ?? false;
+  const enableBranches = tenantSettings?.enable_branches ?? false;
   const redirectMessage = location.state && 'message' in location.state ? (location.state as { message?: string }).message : null;
 
   const handleLogout = async () => {
@@ -72,7 +73,7 @@ export default function DashboardLayout() {
         addSection('Administration', [
           { to: '/dashboard/settings?tab=ui', label: 'UI Update' },
           { to: '/dashboard/settings?tab=users', label: 'User Management' },
-          { to: '/dashboard/branches-and-centers', label: 'Branches & Centers' },
+          ...(enableBranches ? [{ to: '/dashboard/branches-and-centers', label: 'Branches & Centers' }] : []),
           { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
           { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
           { to: '/dashboard/tests', label: 'Test Catalog' },
@@ -127,7 +128,7 @@ export default function DashboardLayout() {
         ]);
         addSection('Administration', [
           { to: '/dashboard/settings?tab=users', label: 'User Management' },
-          { to: '/dashboard/branches-and-centers', label: 'Branches & Centers' },
+          ...(enableBranches ? [{ to: '/dashboard/branches-and-centers', label: 'Branches & Centers' }] : []),
           { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
           { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
           { to: '/dashboard/tests', label: 'Test Catalog' },
