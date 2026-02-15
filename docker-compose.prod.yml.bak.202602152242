@@ -74,8 +74,7 @@ services:
 
     volumes:
       - PROD_lims_static_files:/app/staticfiles
-      - /home/munaim/srv/apps/lims/media:/app/media:rw
-      - /home/munaim/srv/apps/lims/uploads:/app/uploads:rw
+      - ./lims-backend/media:/app/media:rw
       - ./backups:/backups:rw
       - ./logs:/app/logs:rw
     environment:
@@ -160,8 +159,7 @@ services:
     command: celery -A config worker -l ${LOG_LEVEL:-INFO} --concurrency=4
 
     volumes:
-      - /home/munaim/srv/apps/lims/media:/app/media:rw
-      - /home/munaim/srv/apps/lims/uploads:/app/uploads:rw
+      - ./lims-backend/media:/app/media:rw
       - ./backups:/backups:rw
       - ./logs:/app/logs:rw
     environment:
@@ -218,8 +216,7 @@ services:
     restart: unless-stopped
     command: celery -A config beat -l ${LOG_LEVEL:-INFO}
     volumes:
-      - /home/munaim/srv/apps/lims/media:/app/media:rw
-      - /home/munaim/srv/apps/lims/uploads:/app/uploads:rw
+      - ./lims-backend/media:/app/media:rw
       - ./backups:/backups:rw
       - ./logs:/app/logs:rw
     environment:
@@ -302,8 +299,8 @@ services:
       - PROD_lims_caddy_config:/config
       # Static files (read-only from backend)
       - PROD_lims_static_files:/srv/static:ro
-      # Media files (read-only from host bind mount)
-      - ./media:/srv/media:ro
+      # Media files (read-only from backend)
+      - ./lims-backend/media:/srv/media:ro
     environment:
       # Internal proxy - host Caddy handles domain routing
       CADDY_DOMAIN: ${SERVER_NAME:-localhost}

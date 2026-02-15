@@ -17,9 +17,13 @@ export interface Branch {
   id: number;
   code: string;
   name: string;
+  address?: string | null;
+  phone?: string | null;
   capability_mode: 'COLLECT_ONLY' | 'COLLECT_AND_PROCESS' | 'HQ_PROCESSING';
   is_hq: boolean;
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface UserBranchMembership {

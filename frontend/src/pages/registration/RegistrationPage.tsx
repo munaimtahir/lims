@@ -16,22 +16,19 @@ export default function RegistrationPage() {
     const navigate = useNavigate();
     const { currentBranch, user } = useAuth();
 
-    // Refs for focus management
-    const firstNameRef = useRef<HTMLInputElement>(null);
+    // Refs for focus management (mobile is search field, so first)
     const mobileRef = useRef<HTMLInputElement>(null);
+    const nameRef = useRef<HTMLInputElement>(null);
 
-    // High Volume Lab Optimization Toggle
-    const [quickMode, setQuickMode] = useState(false);
-
-    // Form State
+    // Form State: mobile first, then name, age, then optional fields
     const [formData, setFormData] = useState({
-        first_name: '',
-        last_name: '',
-        gender: 'Male',
-        phone: '', // Mobile
-        whatsapp_number: '', // Alternate Mobile
-        email: '',
-        address: '',
+        phone: '',           // Mobile (required, search field) - first
+        full_name: '',       // Single name field (required)
+        gender: 'Male' as const,
+        father_husband_name: '',
+        cnic: '',
+        address: '',        // Address / comments (optional)
+        whatsapp_number: '',
         referred_by: '',
         consultant: '',
         category: '',
@@ -68,9 +65,9 @@ export default function RegistrationPage() {
     });
     const enableCollectionCenters = tenantSettings?.enable_collection_centers ?? false;
 
-    // Focus First Name on Load
+    // Focus Mobile (search field) on Load
     useEffect(() => {
-        firstNameRef.current?.focus();
+        mobileRef.current?.focus();
     }, []);
 
     // Update branch if it changes (only used when enable_collection_centers is true)
@@ -219,8 +216,9 @@ export default function RegistrationPage() {
     const handleSubmit = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         const newErrors: FormErrors = {};
-        if (!formData.first_name) newErrors['first_name'] = 'Required';
-        if (!formData.phone) newErrors['phone'] = 'Required';
+        if (!formData.phone) newErrors['phone'] = 'Mobile number is required';
+        if (!formData.full_name?.trim()) newErrors['full_name'] = 'Name is required';
+        if (!ageInput?.trim() && !dobInput?.trim()) newErrors['age'] = 'Age or date of birth is required';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -229,19 +227,17 @@ export default function RegistrationPage() {
 
         const payload: Record<string, unknown> = {
             ...formData,
-            full_name: `${formData.first_name} ${formData.last_name || ''}`.trim(),
+            full_name: formData.full_name.trim(),
             date_of_birth: normalizeDobInput(dobInput).iso,
             age_years: ageYears,
             age_months: ageMonths,
             age_days: ageDays,
-            default_referred_by: formData.referred_by || formData.consultant, // mapping
+            default_referred_by: formData.referred_by || formData.consultant,
         };
-        // When collection centers OFF: do not send registration_center or branch (backend ignores invalid values)
         if (!enableCollectionCenters) {
             delete payload.registration_center;
             delete payload.branch;
         } else {
-            // When ON: send branch (Branch id); do NOT send Branch id as registration_center
             if (formData.registration_center) {
                 payload.branch = Number(formData.registration_center);
             }
@@ -281,10 +277,7 @@ export default function RegistrationPage() {
 
         if (e.key === 'Enter') {
             e.preventDefault();
-            // In Quick Mode, after mobile we might skip to save or go to next visible field
-            const nextId = quickMode ? 'field-submit' : 'field-whatsapp';
-            const el = document.getElementById(nextId);
-            if (el) el.focus();
+            document.getElementById('field-full_name')?.focus();
         }
     };
 
@@ -293,109 +286,23 @@ export default function RegistrationPage() {
             <header className={styles.header}>
                 <div>
                     <h1>Patient Registration</h1>
-                    <p className={styles.subtitle}>Keyboard-friendly laboratory workflow</p>
-                </div>
-                <div className={styles.modeToggle}>
-                    <label className={styles.switch}>
-                        <input
-                            type="checkbox"
-                            checked={quickMode}
-                            onChange={() => setQuickMode(!quickMode)}
-                        />
-                        <span className={styles.slider}></span>
-                    </label>
-                    <span className={styles.modeLabel}>Quick Mode</span>
+                    <p className={styles.subtitle}>Enter mobile to search existing or register new patient</p>
                 </div>
             </header>
 
             {errors['global'] && <div className={styles.errorBanner}>{errors['global']}</div>}
 
             <div className={styles.formContainer}>
-                {/* SECTION 1: IDENTITY */}
                 <section className={styles.section}>
-                    <h3 className={styles.sectionTitle}>1. Patient Identity</h3>
+                    {/* 1. Mobile (search field) - first */}
                     <div className={styles.row}>
-                        <div className={styles.fieldGroup}>
-                            <label>First Name <span className={styles.required}>*</span></label>
-                            <input
-                                id="field-first_name"
-                                ref={firstNameRef}
-                                type="text"
-                                value={formData.first_name}
-                                onChange={e => setFormData({ ...formData, first_name: e.target.value })}
-                                onKeyDown={e => handleKeyDown(e, quickMode ? 'field-gender' : 'field-last_name')}
-                                className={errors['first_name'] ? styles.errorInput : ''}
-                                autoComplete="off"
-                            />
-                            {errors['first_name'] && <span className={styles.errorMsg}>{errors['first_name']}</span>}
-                        </div>
-                        {!quickMode && (
-                            <div className={styles.fieldGroup}>
-                                <label>Last Name</label>
-                                <input
-                                    id="field-last_name"
-                                    type="text"
-                                    value={formData.last_name}
-                                    onChange={e => setFormData({ ...formData, last_name: e.target.value })}
-                                    onKeyDown={e => handleKeyDown(e, 'field-gender')}
-                                    autoComplete="off"
-                                />
-                            </div>
-                        )}
-                        <div className={styles.fieldGroup}>
-                            <label>Gender</label>
-                            <select
-                                id="field-gender"
-                                value={formData.gender}
-                                onChange={e => setFormData({ ...formData, gender: e.target.value as any })}
-                                onKeyDown={e => handleKeyDown(e, 'field-age')}
-                            >
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className={styles.row}>
-                        <div className={styles.fieldGroup} style={{ flex: 1.5 }}>
-                            <label>Age (e.g. 25, 25y, 2m)</label>
-                            <input
-                                id="field-age"
-                                type="text"
-                                autoComplete="off"
-                                value={ageInput}
-                                onChange={e => setAgeInput(e.target.value)}
-                                onBlur={handleAgeBlur}
-                                onKeyDown={e => handleKeyDown(e, 'field-dob')}
-                                placeholder="Years, Months, Days"
-                            />
-                        </div>
-                        <div className={styles.fieldGroup}>
-                            <label>Date of Birth</label>
-                            <input
-                                id="field-dob"
-                                type="text"
-                                placeholder="DD/MM/YYYY"
-                                value={dobInput}
-                                onChange={e => handleDobChange(e.target.value)}
-                                onKeyDown={e => handleKeyDown(e, 'field-phone')}
-                                autoComplete="off"
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                {/* SECTION 2: CONTACT */}
-                <section className={styles.section}>
-                    <h3 className={styles.sectionTitle}>2. Contact</h3>
-                    <div className={styles.row}>
-                        <div className={styles.fieldGroup} style={{ position: 'relative' }}>
-                            <label>Mobile <span className={styles.required}>*</span></label>
+                        <div className={styles.fieldGroup} style={{ position: 'relative', flex: 1 }}>
+                            <label>Mobile phone <span className={styles.required}>*</span></label>
                             <input
                                 id="field-phone"
                                 ref={mobileRef}
                                 type="text"
+                                placeholder="Search by mobile or enter new"
                                 value={formData.phone}
                                 onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                 onKeyDown={handleMobileKeyDown}
@@ -424,127 +331,146 @@ export default function RegistrationPage() {
                             )}
                             {errors['phone'] && <span className={styles.errorMsg}>{errors['phone']}</span>}
                         </div>
-                        {!quickMode && (
-                            <div className={styles.fieldGroup}>
-                                <label>Alternate Mobile</label>
-                                <input
-                                    id="field-whatsapp"
-                                    type="text"
-                                    value={formData.whatsapp_number}
-                                    onChange={e => setFormData({ ...formData, whatsapp_number: e.target.value })}
-                                    onKeyDown={e => handleKeyDown(e, 'field-address')}
-                                    autoComplete="off"
-                                />
-                            </div>
-                        )}
                     </div>
-                    {!quickMode && (
-                        <div className={styles.row}>
-                            <div className={styles.fieldGroupFull}>
-                                <label>Address</label>
-                                <textarea
-                                    id="field-address"
-                                    value={formData.address}
-                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                    onKeyDown={e => handleKeyDown(e, 'field-referred_by')}
-                                    className={styles.expandableTextarea}
-                                    rows={1}
-                                />
-                            </div>
-                        </div>
-                    )}
-                </section>
 
-                {/* SECTION 3: ADMINISTRATIVE */}
-                {!quickMode && (
-                    <section className={styles.section}>
-                        <h3 className={styles.sectionTitle}>3. Lab Administrative</h3>
-                        <div className={styles.row}>
-                            {enableCollectionCenters && (
-                                <div className={styles.fieldGroup}>
-                                    <label>Collection center (branch)</label>
-                                    <select
-                                        id="field-branch"
-                                        value={formData.registration_center}
-                                        onChange={e => setFormData({ ...formData, registration_center: e.target.value })}
-                                        onKeyDown={e => handleKeyDown(e, 'field-referred_by')}
-                                    >
-                                        {user?.branch_memberships?.map(m => (
-                                            <option key={m.branch.id} value={m.branch.id}>
-                                                {m.branch.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-                            <div className={styles.fieldGroup}>
-                                <label>Referred By</label>
-                                <input
-                                    id="field-referred_by"
-                                    type="text"
-                                    value={formData.referred_by}
-                                    onChange={e => setFormData({ ...formData, referred_by: e.target.value })}
-                                    onKeyDown={e => handleKeyDown(e, 'field-consultant')}
-                                    autoComplete="off"
-                                />
-                            </div>
+                    {/* 2. Name (single field) */}
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup} style={{ flex: 1 }}>
+                            <label>Name <span className={styles.required}>*</span></label>
+                            <input
+                                id="field-full_name"
+                                ref={nameRef}
+                                type="text"
+                                value={formData.full_name}
+                                onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                                onKeyDown={e => handleKeyDown(e, 'field-gender')}
+                                className={errors['full_name'] ? styles.errorInput : ''}
+                                autoComplete="off"
+                            />
+                            {errors['full_name'] && <span className={styles.errorMsg}>{errors['full_name']}</span>}
                         </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Gender</label>
+                            <select
+                                id="field-gender"
+                                value={formData.gender}
+                                onChange={e => setFormData({ ...formData, gender: e.target.value as any })}
+                                onKeyDown={e => handleKeyDown(e, 'field-age')}
+                            >
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* 3. Age and DOB */}
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup} style={{ flex: 1.5 }}>
+                            <label>Age <span className={styles.required}>*</span> (e.g. 25, 25y, 2m)</label>
+                            <input
+                                id="field-age"
+                                type="text"
+                                autoComplete="off"
+                                value={ageInput}
+                                onChange={e => setAgeInput(e.target.value)}
+                                onBlur={handleAgeBlur}
+                                onKeyDown={e => handleKeyDown(e, 'field-dob')}
+                                placeholder="Years, Months, Days"
+                                className={errors['age'] ? styles.errorInput : ''}
+                            />
+                            {errors['age'] && <span className={styles.errorMsg}>{errors['age']}</span>}
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Date of Birth</label>
+                            <input
+                                id="field-dob"
+                                type="text"
+                                placeholder="DD/MM/YYYY"
+                                value={dobInput}
+                                onChange={e => handleDobChange(e.target.value)}
+                                onKeyDown={e => handleKeyDown(e, 'field-father_husband_name')}
+                                autoComplete="off"
+                            />
+                        </div>
+                    </div>
+
+                    {/* 4. Optional: Husband/Father, CNIC, Address / Comments */}
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup} style={{ flex: 1 }}>
+                            <label>Husband / Father name (optional)</label>
+                            <input
+                                id="field-father_husband_name"
+                                type="text"
+                                value={formData.father_husband_name}
+                                onChange={e => setFormData({ ...formData, father_husband_name: e.target.value })}
+                                onKeyDown={e => handleKeyDown(e, 'field-cnic')}
+                                autoComplete="off"
+                            />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>CNIC (optional)</label>
+                            <input
+                                id="field-cnic"
+                                type="text"
+                                value={formData.cnic}
+                                onChange={e => setFormData({ ...formData, cnic: e.target.value })}
+                                onKeyDown={e => handleKeyDown(e, 'field-address')}
+                                placeholder="#####-#######-#"
+                                autoComplete="off"
+                            />
+                        </div>
+                    </div>
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroupFull}>
+                            <label>Address / Comments (optional)</label>
+                            <textarea
+                                id="field-address"
+                                value={formData.address}
+                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                onKeyDown={e => handleKeyDown(e, enableCollectionCenters ? 'field-branch' : 'field-submit')}
+                                className={styles.expandableTextarea}
+                                rows={2}
+                                placeholder="Address or any comments"
+                            />
+                        </div>
+                    </div>
+
+                    {enableCollectionCenters && (
                         <div className={styles.row}>
                             <div className={styles.fieldGroup}>
-                                <label>Consultant</label>
-                                <input
-                                    id="field-consultant"
-                                    type="text"
-                                    value={formData.consultant}
-                                    onChange={e => setFormData({ ...formData, consultant: e.target.value })}
-                                    onKeyDown={e => handleKeyDown(e, 'field-category')}
-                                    autoComplete="off"
-                                />
-                            </div>
-                            <div className={styles.fieldGroup}>
-                                <label>Category</label>
+                                <label>Collection center (branch)</label>
                                 <select
-                                    id="field-category"
-                                    value={formData.category}
-                                    onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                    onKeyDown={e => handleKeyDown(e, 'field-mr_number')}
+                                    id="field-branch"
+                                    value={formData.registration_center}
+                                    onChange={e => setFormData({ ...formData, registration_center: e.target.value })}
+                                    onKeyDown={e => handleKeyDown(e, 'field-submit')}
                                 >
-                                    <option value="">Standard</option>
-                                    {categoriesData?.results.map(c => (
-                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    {user?.branch_memberships?.map(m => (
+                                        <option key={m.branch.id} value={m.branch.id}>
+                                            {m.branch.name}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
-                            <div className={styles.fieldGroup}>
-                                <label>MR Number</label>
-                                <input
-                                    id="field-mr_number"
-                                    type="text"
-                                    value={formData.mr_number}
-                                    onChange={e => setFormData({ ...formData, mr_number: e.target.value })}
-                                    onKeyDown={e => handleKeyDown(e, 'field-submit')}
-                                    placeholder="Legacy / Auto-gen"
-                                    autoComplete="off"
-                                />
-                            </div>
                         </div>
-                    </section>
-                )}
+                    )}
 
-                <div className={styles.actions}>
-                    <button
-                        id="field-submit"
-                        onClick={() => handleSubmit()}
-                        disabled={saveMutation.isPending}
-                        className={styles.submitButton}
-                    >
-                        {saveMutation.isPending ? (
-                            <>
-                                <span className={styles.btnSpinner}></span> Saving...
-                            </>
-                        ) : 'Complete Registration & Create Order (Enter)'}
-                    </button>
-                </div>
+                    <div className={styles.actions}>
+                        <button
+                            id="field-submit"
+                            onClick={() => handleSubmit()}
+                            disabled={saveMutation.isPending}
+                            className={styles.submitButton}
+                        >
+                            {saveMutation.isPending ? (
+                                <>
+                                    <span className={styles.btnSpinner}></span> Saving...
+                                </>
+                            ) : 'Create Registration'}
+                        </button>
+                    </div>
+                </section>
             </div>
         </div>
     );

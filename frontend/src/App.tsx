@@ -23,6 +23,7 @@ import { BackupsPage } from './pages/backups';
 import ReferenceRangesPage from './pages/reference-ranges';
 import SystemSettingsPage from './pages/settings';
 import RegistrationPage from './pages/registration';
+import { BranchesAndCentersPage } from './pages/branches-and-centers';
 import { OrdersPage, CreateOrderPage } from './pages/orders';
 import {
   AnalyticsOverviewPage,
@@ -112,6 +113,14 @@ function App() {
                 {/* Settings pages */}
                 <Route path="reference-ranges" element={<ReferenceRangesPage />} />
                 <Route path="settings" element={<SystemSettingsPage />} />
+                <Route
+                  path="branches-and-centers"
+                  element={
+                    <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
+                      <BranchesAndCentersPage />
+                    </ProtectedRoute>
+                  }
+                />
               </Route>
 
 

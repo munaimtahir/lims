@@ -123,10 +123,11 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Media files (served by Caddy in production; /app/media in container)
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/app/media")
+MEDIA_ROOT = BASE_DIR / "media"
 
-# Uploads root (bind-mounted in Docker)
+# Optional file roots (bind-mounted in Docker; Caddy can serve optionally)
 UPLOADS_ROOT = os.getenv("UPLOADS_ROOT", "/app/uploads")
+MOBILE_ROOT = os.getenv("MOBILE_ROOT", "/app/mobile")
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { orderApi, patientApi, laboratoryApi } from '../../api/services';
 import type { Patient, OrderCreateRequest, TestSearchResult } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 import { useBranding } from '../../contexts/BrandingContext';
 import { formatCurrency } from '../../utils/currency';
 import styles from './CreateOrderPage.module.css';
@@ -12,6 +13,7 @@ export default function CreateOrderPage() {
     const navigate = useNavigate();
     const patientId = searchParams.get('patient_id');
 
+    const { currentBranch } = useAuth();
     const { branding } = useBranding();
     const currency = branding?.currency || 'PKR';
 
@@ -115,7 +117,7 @@ export default function CreateOrderPage() {
         const tests = addedTests.filter(t => t.type === 'test');
         const panels = addedTests.filter(t => t.type === 'panel');
 
-        const orderData = {
+        const orderData: OrderCreateRequest = {
             patient: selectedPatient.id,
             test_ids: tests.map((t) => t.test_id ?? t.id),
             panel_ids: panels.map((p) => p.id),
@@ -123,6 +125,9 @@ export default function CreateOrderPage() {
             paid_amount: paidAmount,
             referred_by: referredBy,
         };
+        if (currentBranch?.id) {
+            orderData.collection_branch = currentBranch.id;
+        }
 
         createOrderMutation.mutate(orderData);
     };

@@ -72,6 +72,7 @@ export default function DashboardLayout() {
         addSection('Administration', [
           { to: '/dashboard/settings?tab=ui', label: 'UI Update' },
           { to: '/dashboard/settings?tab=users', label: 'User Management' },
+          { to: '/dashboard/branches-and-centers', label: 'Branches & Centers' },
           { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
           { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
           { to: '/dashboard/tests', label: 'Test Catalog' },
@@ -126,6 +127,7 @@ export default function DashboardLayout() {
         ]);
         addSection('Administration', [
           { to: '/dashboard/settings?tab=users', label: 'User Management' },
+          { to: '/dashboard/branches-and-centers', label: 'Branches & Centers' },
           { to: '/dashboard/settings?tab=reports', label: 'Report Customization' },
           { to: '/dashboard/settings?tab=print', label: 'Print Templates' },
           { to: '/dashboard/tests', label: 'Test Catalog' },

@@ -40,6 +40,27 @@ class BranchListSerializer(serializers.ModelSerializer):
         fields = ["id", "code", "name", "is_hq", "is_active"]
 
 
+class BranchSerializer(serializers.ModelSerializer):
+    """Full serializer for branch create/update in admin UI."""
+
+    class Meta:
+        model = Branch
+        fields = [
+            "id",
+            "code",
+            "name",
+            "address",
+            "phone",
+            "capability_mode",
+            "is_hq",
+            "is_active",
+            "tenant",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["tenant", "is_hq", "created_at", "updated_at"]
+
+
 class RegistrationCounterSerializer(serializers.ModelSerializer):
     """Serializer for Registration Counters (read-only)."""
 

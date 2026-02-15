@@ -6,8 +6,8 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    BranchListView,
-    CollectionCenterListView,
+    BranchViewSet,
+    CollectionCenterViewSet,
     HealthCheckView,
     PrintTemplateViewSet,
     SystemSettingsViewSet,
@@ -16,6 +16,8 @@ from .views import (
 
 router = DefaultRouter()
 router.register("print-templates", PrintTemplateViewSet, basename="print-template")
+router.register("branches", BranchViewSet, basename="branch")
+router.register("collection-centers", CollectionCenterViewSet, basename="collection-center")
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -51,9 +53,6 @@ urlpatterns = [
         TenantSettingsView.as_view(),
         name="settings-tenant",
     ),
-    # Lists for tenant settings dropdowns (admin/manage without Django admin)
-    path("branches/", BranchListView.as_view(), name="branch-list"),
-    path("collection-centers/", CollectionCenterListView.as_view(), name="collection-center-list"),
     # Health check endpoint
     path("health/", HealthCheckView.as_view(), name="health-check"),
 ]

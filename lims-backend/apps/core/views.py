@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
 
 from apps.core.authz import user_tenant
 from apps.accounts.permissions import IsAdminOrReadOnly
@@ -18,7 +19,7 @@ from apps.core.services.settings import get_tenant_settings
 
 from .models import Branch, CollectionCenter, PrintTemplate, SystemSettings, TenantSettings
 from .serializers import (
-    BranchListSerializer,
+    BranchSerializer,
     CollectionCenterSerializer,
     PrintTemplateSerializer,
     SystemSettingsSerializer,
@@ -205,36 +206,34 @@ class TenantSettingsView(APIView):
         return Response(serializer.data)
 
 
-class BranchListView(APIView):
+class BranchViewSet(viewsets.ModelViewSet):
     """
-    List branches for the current user's tenant (for tenant settings default_branch).
-    Read-only; admin or any authenticated user with tenant can list.
+    CRUD for branches (current user's tenant). Admin can add/edit/remove branches.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
+    serializer_class = BranchSerializer
 
-    def get(self, request):
-        tenant = user_tenant(request.user)
+    def get_queryset(self):
+        tenant = user_tenant(self.request.user)
         if tenant is None:
-            return Response(
-                {"detail": "No tenant assigned."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        branches = Branch.objects.filter(tenant=tenant, is_active=True).order_by("code")
-        serializer = BranchListSerializer(branches, many=True)
-        return Response(serializer.data)
+            return Branch.objects.none()
+        return Branch.objects.filter(tenant=tenant).order_by("code")
+
+    def perform_create(self, serializer):
+        tenant = user_tenant(self.request.user)
+        if tenant is None:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "No tenant assigned."})
+        serializer.save(tenant=tenant)
 
 
-class CollectionCenterListView(APIView):
+class CollectionCenterViewSet(viewsets.ModelViewSet):
     """
-    List active collection centers (for tenant settings default_collection_center).
-    Read-only.
+    CRUD for collection centers. Admin can add/edit/remove collection centers.
     """
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        centers = CollectionCenter.objects.filter(is_active=True).order_by("code")
-        serializer = CollectionCenterSerializer(centers, many=True)
-        return Response(serializer.data)
+    queryset = CollectionCenter.objects.all().order_by("code")
+    serializer_class = CollectionCenterSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
 
 
 class HealthCheckView(APIView):

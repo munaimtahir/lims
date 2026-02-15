@@ -617,17 +617,48 @@ export const tenantSettingsApi = {
 };
 
 /**
- * Core lists for tenant settings UI (branches and collection centers).
- * Admin can set default_branch and default_collection_center without using Django admin.
+ * Core API: branches and collection centers (list + CRUD for admin UI).
  */
 export const coreApi = {
   listBranches: async (): Promise<Branch[]> => {
-    const response = await api.get<Branch[]>('core/branches/');
-    return Array.isArray(response.data) ? response.data : (response.data as { results?: Branch[] }).results ?? [];
+    const response = await api.get<Branch[] | { results: Branch[] }>('core/branches/');
+    const data = response.data;
+    return Array.isArray(data) ? data : (data?.results ?? []);
+  },
+  getBranch: async (id: number): Promise<Branch> => {
+    const response = await api.get<Branch>(`core/branches/${id}/`);
+    return response.data;
+  },
+  createBranch: async (data: Partial<Branch>): Promise<Branch> => {
+    const response = await api.post<Branch>('core/branches/', data);
+    return response.data;
+  },
+  updateBranch: async (id: number, data: Partial<Branch>): Promise<Branch> => {
+    const response = await api.patch<Branch>(`core/branches/${id}/`, data);
+    return response.data;
+  },
+  deleteBranch: async (id: number): Promise<void> => {
+    await api.delete(`core/branches/${id}/`);
   },
   listCollectionCenters: async (): Promise<CollectionCenter[]> => {
-    const response = await api.get<CollectionCenter[]>('core/collection-centers/');
-    return Array.isArray(response.data) ? response.data : (response.data as { results?: CollectionCenter[] }).results ?? [];
+    const response = await api.get<CollectionCenter[] | { results: CollectionCenter[] }>('core/collection-centers/');
+    const data = response.data;
+    return Array.isArray(data) ? data : (data?.results ?? []);
+  },
+  getCollectionCenter: async (id: number): Promise<CollectionCenter> => {
+    const response = await api.get<CollectionCenter>(`core/collection-centers/${id}/`);
+    return response.data;
+  },
+  createCollectionCenter: async (data: Partial<CollectionCenter>): Promise<CollectionCenter> => {
+    const response = await api.post<CollectionCenter>('core/collection-centers/', data);
+    return response.data;
+  },
+  updateCollectionCenter: async (id: number, data: Partial<CollectionCenter>): Promise<CollectionCenter> => {
+    const response = await api.patch<CollectionCenter>(`core/collection-centers/${id}/`, data);
+    return response.data;
+  },
+  deleteCollectionCenter: async (id: number): Promise<void> => {
+    await api.delete(`core/collection-centers/${id}/`);
   },
 };
 

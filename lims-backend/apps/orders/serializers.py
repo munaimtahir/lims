@@ -198,15 +198,24 @@ class OrderSerializer(serializers.ModelSerializer):
             if not validated_data.get("tenant") and req_user:
                 validated_data["tenant"] = user_tenant(req_user)
 
-            # collection_branch: user's first active branch, else tenant default_branch, else 400
+            # collection_branch: from body, else user branches, else tenant default,
+            # else tenant HQ, else any tenant branch; 400 only if tenant has no branches
             if not validated_data.get("collection_branch") and req_user:
+                tenant = validated_data.get("tenant") or user_tenant(req_user)
                 branches = user_active_branches(req_user)
                 first_branch = branches.first()
-                if not first_branch:
-                    tenant = validated_data.get("tenant") or user_tenant(req_user)
+                if not first_branch and tenant:
                     tenant_settings = get_tenant_settings(tenant)
                     if tenant_settings and tenant_settings.default_branch_id:
                         first_branch = tenant_settings.default_branch
+                if not first_branch and tenant:
+                    first_branch = Branch.objects.filter(
+                        tenant=tenant, is_hq=True, is_active=True
+                    ).first()
+                if not first_branch and tenant:
+                    first_branch = Branch.objects.filter(
+                        tenant=tenant, is_active=True
+                    ).order_by("code").first()
                 if not first_branch:
                     raise serializers.ValidationError(
                         {"collection_branch": "No branch assigned. Contact admin."}
