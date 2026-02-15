@@ -116,6 +116,17 @@ export interface PatientCreateRequest {
   branch?: number | null;
 }
 
+/** Collection center (for tenant settings default). */
+export interface CollectionCenter {
+  id: number;
+  code: string;
+  name: string;
+  address?: string | null;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 /** Tenant-scoped settings (branch/collection center and sample workflow feature flags). */
 export interface TenantSettings {
   enable_collection_centers: boolean;
@@ -130,6 +141,14 @@ export interface TenantSettings {
   updated_at?: string;
   updated_by_id?: number | null;
   updated_by_name?: string | null;
+}
+
+/** Payload for PATCH tenant settings (ids only for FKs). */
+export interface TenantSettingsPatch {
+  enable_collection_centers?: boolean;
+  sample_workflow_enabled?: boolean;
+  default_branch?: number | null;
+  default_collection_center?: number | null;
 }
 
 /**

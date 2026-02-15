@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { systemSettingsApi, printTemplateApi, userApi, tenantSettingsApi } from '../../api/services';
+import { systemSettingsApi, printTemplateApi, userApi, tenantSettingsApi, coreApi } from '../../api/services';
 import { normalizeListResponse, normalizeObjectResponse } from '../../utils/apiHelpers';
 import { isSampleBarcodeEnabled, setSampleBarcodeEnabled as setStoredBarcodeEnabled } from '../../utils/featureFlags';
 import type { SystemSettings, PrintTemplate, PrintSignatory, PrintTemplateConfig, User, UserRole } from '../../types';
@@ -78,6 +78,21 @@ export default function SystemSettingsPage() {
     queryFn: () => tenantSettingsApi.get(),
     enabled: activeTab === 'tenant',
   });
+
+  const { data: branchesData } = useQuery({
+    queryKey: ['core-branches'],
+    queryFn: () => coreApi.listBranches(),
+    enabled: activeTab === 'tenant',
+  });
+
+  const { data: collectionCentersData } = useQuery({
+    queryKey: ['core-collection-centers'],
+    queryFn: () => coreApi.listCollectionCenters(),
+    enabled: activeTab === 'tenant',
+  });
+
+  const branches = branchesData ?? [];
+  const collectionCenters = collectionCentersData ?? [];
 
   const tenantSettingsMutation = useMutation({
     mutationFn: (data: Parameters<typeof tenantSettingsApi.patch>[0]) => tenantSettingsApi.patch(data),
@@ -1060,27 +1075,102 @@ export default function SystemSettingsPage() {
 
           {activeTab === 'tenant' && (
             <div className={styles.tabContent}>
-              <h2>Lab Workflow</h2>
+              <h2>Lab Workflow &amp; Branch Settings</h2>
               <p className={styles.description}>
-                Tenant-level options. Changes affect what workflows are available for this lab.
+                Tenant-level options. Configure sample workflow and collection center behaviour here—no need to open the Django admin panel. Only administrators can save changes.
               </p>
               {tenantSettingsData && (
-                <div className={styles.formGroup}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={tenantSettingsData.sample_workflow_enabled ?? true}
+                <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+                  <div className={styles.formGroup}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={tenantSettingsData.sample_workflow_enabled ?? true}
+                        onChange={(e) => {
+                          tenantSettingsMutation.mutate({ sample_workflow_enabled: e.target.checked });
+                        }}
+                        disabled={tenantSettingsMutation.isPending}
+                      />
+                      <span>Enable sample workflow (collection/receiving)</span>
+                    </label>
+                    <p style={{ marginTop: 8, color: '#64748b', fontSize: '0.9rem' }}>
+                      When enabled, orders require sample collection and receiving before result entry. When disabled, paid orders go directly to result entry.
+                    </p>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={tenantSettingsData.enable_collection_centers ?? false}
+                        onChange={(e) => {
+                          tenantSettingsMutation.mutate({ enable_collection_centers: e.target.checked });
+                        }}
+                        disabled={tenantSettingsMutation.isPending}
+                      />
+                      <span>Enable collection centers</span>
+                    </label>
+                    <p style={{ marginTop: 8, color: '#64748b', fontSize: '0.9rem' }}>
+                      When enabled, patient registration and orders may require or use a collection center. When disabled, registration/order flows ignore collection center.
+                    </p>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="tenant-default-branch">Default branch (for orders when user has no branch)</label>
+                    <select
+                      id="tenant-default-branch"
+                      value={tenantSettingsData.default_branch_id ?? ''}
                       onChange={(e) => {
-                        tenantSettingsMutation.mutate({ sample_workflow_enabled: e.target.checked });
+                        const v = e.target.value;
+                        tenantSettingsMutation.mutate({
+                          default_branch: v === '' ? null : Number(v),
+                        });
                       }}
                       disabled={tenantSettingsMutation.isPending}
-                    />
-                    <span>Enable sample workflow (collection/receiving)</span>
-                  </label>
-                  <p style={{ marginTop: 8, color: '#64748b', fontSize: '0.9rem' }}>
-                    When enabled, orders require sample collection and receiving before result entry. When disabled, paid orders go directly to result entry.
-                  </p>
-                </div>
+                      className={styles.input}
+                    >
+                      <option value="">— None —</option>
+                      {branches.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.code} – {b.name}
+                          {b.is_hq ? ' (HQ)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                    <p style={{ marginTop: 6, color: '#64748b', fontSize: '0.9rem' }}>
+                      Used when creating orders if the user has no branch assigned. Usually set to HQ.
+                    </p>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="tenant-default-collection-center">Default collection center (for registration when centers enabled)</label>
+                    <select
+                      id="tenant-default-collection-center"
+                      value={tenantSettingsData.default_collection_center_id ?? ''}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        tenantSettingsMutation.mutate({
+                          default_collection_center: v === '' ? null : Number(v),
+                        });
+                      }}
+                      disabled={tenantSettingsMutation.isPending}
+                      className={styles.input}
+                    >
+                      <option value="">— None —</option>
+                      {collectionCenters.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.code} – {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p style={{ marginTop: 6, color: '#64748b', fontSize: '0.9rem' }}>
+                      When collection centers are enabled, this is used for patient registration if the user does not select a center. Optional.
+                    </p>
+                  </div>
+                  {(tenantSettingsData.updated_at || tenantSettingsData.updated_by_name) && (
+                    <p style={{ marginTop: 12, color: '#64748b', fontSize: '0.85rem' }}>
+                      Last updated: {tenantSettingsData.updated_at ? new Date(tenantSettingsData.updated_at).toLocaleString() : ''}
+                      {tenantSettingsData.updated_by_name ? ` by ${tenantSettingsData.updated_by_name}` : ''}
+                    </p>
+                  )}
+                </form>
               )}
               {activeTab === 'tenant' && !tenantSettingsData && !tenantSettingsMutation.isPending && (
                 <p>Loading tenant settings…</p>

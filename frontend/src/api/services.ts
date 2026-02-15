@@ -28,6 +28,9 @@ import type {
   BackupArtifact,
   BackupSettings,
   TenantSettings,
+  TenantSettingsPatch,
+  Branch,
+  CollectionCenter,
 } from '../types';
 
 /**
@@ -607,9 +610,24 @@ export const tenantSettingsApi = {
     const response = await api.get<TenantSettings>('core/settings/tenant/');
     return response.data;
   },
-  patch: async (data: Partial<TenantSettings>): Promise<TenantSettings> => {
+  patch: async (data: TenantSettingsPatch): Promise<TenantSettings> => {
     const response = await api.patch<TenantSettings>('core/settings/tenant/', data);
     return response.data;
+  },
+};
+
+/**
+ * Core lists for tenant settings UI (branches and collection centers).
+ * Admin can set default_branch and default_collection_center without using Django admin.
+ */
+export const coreApi = {
+  listBranches: async (): Promise<Branch[]> => {
+    const response = await api.get<Branch[]>('core/branches/');
+    return Array.isArray(response.data) ? response.data : (response.data as { results?: Branch[] }).results ?? [];
+  },
+  listCollectionCenters: async (): Promise<CollectionCenter[]> => {
+    const response = await api.get<CollectionCenter[]>('core/collection-centers/');
+    return Array.isArray(response.data) ? response.data : (response.data as { results?: CollectionCenter[] }).results ?? [];
   },
 };
 

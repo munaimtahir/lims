@@ -16,8 +16,10 @@ from apps.core.authz import user_tenant
 from apps.accounts.permissions import IsAdminOrReadOnly
 from apps.core.services.settings import get_tenant_settings
 
-from .models import PrintTemplate, SystemSettings, TenantSettings
+from .models import Branch, CollectionCenter, PrintTemplate, SystemSettings, TenantSettings
 from .serializers import (
+    BranchListSerializer,
+    CollectionCenterSerializer,
     PrintTemplateSerializer,
     SystemSettingsSerializer,
     TenantSettingsSerializer,
@@ -200,6 +202,38 @@ class TenantSettingsView(APIView):
             )
         except Exception:
             pass
+        return Response(serializer.data)
+
+
+class BranchListView(APIView):
+    """
+    List branches for the current user's tenant (for tenant settings default_branch).
+    Read-only; admin or any authenticated user with tenant can list.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        tenant = user_tenant(request.user)
+        if tenant is None:
+            return Response(
+                {"detail": "No tenant assigned."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        branches = Branch.objects.filter(tenant=tenant, is_active=True).order_by("code")
+        serializer = BranchListSerializer(branches, many=True)
+        return Response(serializer.data)
+
+
+class CollectionCenterListView(APIView):
+    """
+    List active collection centers (for tenant settings default_collection_center).
+    Read-only.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        centers = CollectionCenter.objects.filter(is_active=True).order_by("code")
+        serializer = CollectionCenterSerializer(centers, many=True)
         return Response(serializer.data)
 
 

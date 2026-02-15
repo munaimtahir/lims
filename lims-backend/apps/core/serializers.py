@@ -5,6 +5,7 @@ Serializers for core models.
 from rest_framework import serializers
 
 from .models import (
+    Branch,
     CollectionCenter,
     LabDailyCounter,
     PrintTemplate,
@@ -29,6 +30,14 @@ class CollectionCenterSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at"]
+
+
+class BranchListSerializer(serializers.ModelSerializer):
+    """Minimal serializer for branch list (tenant settings dropdown)."""
+
+    class Meta:
+        model = Branch
+        fields = ["id", "code", "name", "is_hq", "is_active"]
 
 
 class RegistrationCounterSerializer(serializers.ModelSerializer):
