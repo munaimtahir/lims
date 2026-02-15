@@ -331,6 +331,26 @@ export interface TestResult {
   reference_range?: string;
 }
 
+export interface VerificationQueueItem {
+  id: number;
+  test_name: string;
+  total_results: number;
+  pending_results: number;
+  verified_results: number;
+}
+
+export interface VerificationQueueOrder {
+  order_id: string; // Display ID
+  order_internal_id: number;
+  patient_name: string;
+  mrn: string;
+  details: string; // Age/Gender | Priority
+  tests: string; // Summary
+  pending_count: number;
+  status: string;
+  items: VerificationQueueItem[];
+}
+
 /**
  * Billing types
  */

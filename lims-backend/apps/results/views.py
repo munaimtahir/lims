@@ -346,27 +346,83 @@ class TestResultViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def verification_queue(self, request):
         """
-        Get queue of results pending verification.
+        Get queue of results pending verification, grouped by Order.
+        Returns a list of orders that have pending results.
         """
-        pending_results = (
-            self.queryset.filter(status="DRAFT")
-            .select_related(
-                "order_item",
-                "order_item__order",
-                "order_item__order__patient",
-                "test_parameter",
-                "entered_by",
-            )
-            .order_by("entered_at")
+        tenant = user_tenant(request.user)
+        base_qs = self.queryset.filter(status__in=["DRAFT", "ENTERED"]).order_by("order_item__order__created_at", "order_item__order__id")
+
+        # Group by order items -> orders
+        # We need: Order details, Patient details, Test count, Verified count, Pending count.
+        
+        # Get all pending results with related data
+        results = base_qs.select_related(
+            "order_item__order",
+            "order_item__order__patient",
+            "order_item__test",
+            "order_item__panel",
         )
 
-        page = self.paginate_queryset(pending_results)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        # Dictionary to group by order_item_id (or order_id if we want full order grouping)
+        # The UI request says "Verification queue shows PATIENT + ORDER context first, then tests within."
+        # Group by Order ID first.
+        
+        orders_map = {}
+        
+        for res in results:
+            order = res.order_item.order
+            oid = order.id
+            if oid not in orders_map:
+                orders_map[oid] = {
+                    "order_internal_id": order.id,
+                    "order_id": order.order_id,
+                    "patient_name": order.patient.get_full_name() if order.patient else "Unknown",
+                    "mrn": getattr(order.patient, "mrn", "") if order.patient else "",
+                    "age_gender": f"{getattr(order.patient, 'age', '')}/{getattr(order.patient, 'gender', '')}",
+                    "created_at": order.created_at,
+                    "priority": order.priority,
+                    "status": order.status,
+                    "items": {} # Map of order_item_id -> details
+                }
+            
+            oi_id = res.order_item.id
+            if oi_id not in orders_map[oid]["items"]:
+                 orders_map[oid]["items"][oi_id] = {
+                     "id": oi_id,
+                     "test_name": res.order_item.test.test_name if res.order_item.test else (res.order_item.panel.panel_name if res.order_item.panel else "Unknown"),
+                     "total_results": 0,
+                     "pending_results": 0,
+                     "verified_results": 0, # We might need to query verified ones too?
+                     # Wait, if we only query pending results, we won't know verified count unless we query separate.
+                     # For performance, maybe just showing "Pending inputs" count is enough for the queue?
+                     # Let's keep it simple: Show pending results count.
+                 }
+            
+            orders_map[oid]["items"][oi_id]["total_results"] += 1
+            orders_map[oid]["items"][oi_id]["pending_results"] += 1
+            # Note: Total count here is only "Total PENDING/ENTERED". 
+            # If we want true total, we need a separate aggregate query.
+            # But the queue is "Works requiring verification". 
 
-        serializer = self.get_serializer(pending_results, many=True)
-        return Response(serializer.data)
+        # Flatten structure
+        response_data = []
+        for order_info in orders_map.values():
+            # Summarize item info string
+            tests_summary = ", ".join([i["test_name"] for i in order_info["items"].values()])
+            total_pending = sum([i["pending_results"] for i in order_info["items"].values()])
+            
+            response_data.append({
+                "order_id": order_info["order_id"],
+                "patient_name": order_info["patient_name"],
+                "mrn": order_info["mrn"],
+                "details": f"{order_info['age_gender']} | {order_info['priority']}",
+                "tests": tests_summary,
+                "pending_count": total_pending,
+                "order_internal_id": order_info["order_internal_id"], # For linking
+                "items": list(order_info["items"].values())
+            })
+
+        return Response({"queue": response_data})
 
     @action(detail=False, methods=["post"])
     def bulk_entry(self, request):
@@ -382,6 +438,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
         created_results = []
         errors = []
+
+        # Track modified order items to update status later
+        modified_order_items = set()
 
         with transaction.atomic():
             for result_data in results_data:
@@ -422,7 +481,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
                             remarks=result_data.get("remarks", ""),
                             entered_by=request.user,
                             entered_at=timezone.now(),
-                            status="DRAFT",
+                            status="ENTERED",
                         )
                         emit_audit_event(
                             actor=request.user,
@@ -444,27 +503,34 @@ class TestResultViewSet(viewsets.ModelViewSet):
                             )
                             continue
 
-                        before_value = result.result_value
+                        before_val = result.result_value
                         result.result_value = result_value
                         result.remarks = result_data.get("remarks", "")
                         result.entered_by = request.user
                         result.entered_at = timezone.now()
-                        result.status = "DRAFT"
+                        result.status = "ENTERED"
                         result.save()
                         emit_audit_event(
                             actor=request.user,
                             entity_type="result",
                             entity_id=result.pk,
                             action="RESULT_VALUE_UPDATED",
-                            before={"result_value": before_value},
+                            before={"result_value": before_val},
                             after={"result_value": result.result_value},
                             metadata={"order_item_id": result.order_item_id},
                             source="api",
                         )
 
                     created_results.append(self.get_serializer(result).data)
+                    modified_order_items.add(result.order_item_id)
                 except Exception as e:
                     errors.append({"data": result_data, "detail": str(e)})
+
+            # Update statuses for affected order items
+            if modified_order_items:
+                from .services.transitions import update_order_item_status
+                for item in OrderItem.objects.filter(id__in=modified_order_items):
+                    update_order_item_status(item)
 
         response_data = {
             "created": len(created_results),
@@ -482,25 +548,62 @@ class TestResultViewSet(viewsets.ModelViewSet):
             else status.HTTP_400_BAD_REQUEST,
         )
 
-    def _check_and_update_status(self, order_item):
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
         """
-        Check if all results for an order item are verified using strict logic.
+        Return a verified result to entry (VERFIED/DRAFT -> ENTERED).
+        Also known as 'Unverify' or 'Return to Entry'.
+        Requires 'reason'.
         """
-        all_results = order_item.results.all()
-        if not all_results.exists():
-            return
+        reason = request.data.get("reason", "").strip()
+        if not reason:
+             return Response({"detail": "Reason is required to return results."}, status=400)
 
-        # Check if all existing results are VERIFIED or FINAL
-        # We only auto-verify the OrderItem if all results are processed.
-        verified_count = all_results.filter(status__in=["VERIFIED", "FINAL"]).count()
-        if verified_count == all_results.count():
-            # All results for this item are verified.
-            if order_item.status != "VERIFIED":
-                order_item.status = "VERIFIED"
-                order_item.save(update_fields=["status"])
+        with transaction.atomic():
+            result = (
+                TestResult.objects.select_for_update()
+                .select_related("order_item")
+                .get(pk=pk)
+            )
+            try:
+                # Transition to ENTERED
+                transition_result_state(result, "ENTERED", request.user, source="api", reason=reason)
+            except Exception as exc:
+                return Response(
+                    {"detail": str(exc)},
+                    status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
+                )
         
-        # We removed auto-finalization and auto-report generation 
-        # to strictly follow "VERIFIED -> FINAL requires permission".
+        serializer = self.get_serializer(result)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path="bulk-reject")
+    def bulk_reject(self, request):
+        """
+        Return multiple results to entry.
+        """
+        result_ids = request.data.get("result_ids", [])
+        reason = request.data.get("reason", "").strip()
+
+        if not result_ids:
+            return Response({"detail": "result_ids required"}, status=400)
+        if not reason:
+            return Response({"detail": "Reason is required"}, status=400)
+            
+        success = 0
+        errors = []
+        with transaction.atomic():
+            results = TestResult.objects.select_for_update().filter(id__in=result_ids).select_related("order_item")
+            for result in results:
+                try:
+                    transition_result_state(result, "ENTERED", request.user, source="api", reason=reason)
+                    success += 1
+                except Exception as exc:
+                    errors.append(f"Result {result.id}: {str(exc)}")
+        
+        if errors:
+            return Response({"detail": "Some results failed to return.", "errors": errors, "processed": success}, status=409)
+        return Response({"detail": "Results returned to entry.", "processed": success})
 
     @action(detail=True, methods=["post"])
     def verify(self, request, pk=None):
@@ -514,16 +617,13 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 .get(pk=pk)
             )
 
-        try:
-            result = transition_result_state(result, "VERIFIED", request.user, source="api")
-        except Exception as exc:
-            return Response(
-                {"detail": str(exc)},
-                status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
-            )
-
-        # Update OrderItem status
-        self._check_and_update_status(result.order_item)
+            try:
+                result = transition_result_state(result, "VERIFIED", request.user, source="api")
+            except Exception as exc:
+                return Response(
+                    {"detail": str(exc)},
+                    status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
+                )
 
         serializer = self.get_serializer(result)
         return Response(serializer.data)
@@ -552,7 +652,6 @@ class TestResultViewSet(viewsets.ModelViewSet):
             for result in results:
                 try:
                     transition_result_state(result, "VERIFIED", request.user, source="api")
-                    self._check_and_update_status(result.order_item)
                     success += 1
                 except Exception as exc:
                     errors.append(f"Result {result.id}: {str(exc)}")
@@ -573,13 +672,13 @@ class TestResultViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             result = TestResult.objects.select_for_update().get(pk=pk)
 
-        try:
-            result = transition_result_state(result, "FINAL", request.user, source="api")
-        except Exception as exc:
-            return Response(
-                {"detail": str(exc)},
-                status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
-            )
+            try:
+                result = transition_result_state(result, "FINAL", request.user, source="api")
+            except Exception as exc:
+                return Response(
+                    {"detail": str(exc)},
+                    status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
+                )
 
         serializer = self.get_serializer(result)
         return Response(serializer.data)

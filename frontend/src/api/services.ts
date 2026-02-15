@@ -31,6 +31,7 @@ import type {
   TenantSettingsPatch,
   Branch,
   CollectionCenter,
+  VerificationQueueOrder,
 } from '../types';
 
 /**
@@ -347,7 +348,7 @@ export const resultApi = {
   },
 
   getVerificationQueue: async () => {
-    const response = await api.get<PaginatedResponse<TestResult>>('results/verification_queue/');
+    const response = await api.get<{ queue: VerificationQueueOrder[] }>('results/verification_queue/');
     return response.data;
   },
 
@@ -410,8 +411,8 @@ export const reportApi = {
     return response.data;
   },
 
-  generate: async (orderId: number) => {
-    const response = await api.post<Report>('reports/generate/', { order_id: orderId });
+  generate: async (orderId: number, options?: { is_final?: boolean; regenerate?: boolean }) => {
+    const response = await api.post<Report>('reports/generate/', { order_id: orderId, ...options });
     return response.data;
   },
 

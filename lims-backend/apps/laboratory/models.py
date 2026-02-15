@@ -156,6 +156,7 @@ class TestParameter(models.Model):
     )
     display_order = models.IntegerField(default=0)
     reportable = models.BooleanField(default=True)
+    is_required = models.BooleanField(default=False, help_text="If true, result value is mandatory for verification.")
 
     # Legacy field preserved for backward compatibility/migration
     parameter_name = models.CharField(max_length=200, blank=True, null=True)

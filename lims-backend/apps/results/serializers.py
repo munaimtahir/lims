@@ -107,10 +107,21 @@ class TestResultSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError("Invalid status transition.")
 
         if new_status in ["VERIFIED", "FINAL"]:
-            if not result_value or str(result_value).strip() in {"", "*"}:
-                raise serializers.ValidationError(
-                    "Result value is required before verification/finalization."
-                )
+            is_empty = not result_value or str(result_value).strip() in {"", "*"}
+            
+            # Check if parameter is required
+            test_parameter = getattr(instance, "test_parameter", None)
+            # If creating a new instance, we might need to fetch it from attrs (not easily available here without DB hit)
+            # But usually we update existing results for verification.
+            
+            if is_empty and instance:
+                if instance.test_parameter.is_required:
+                    raise serializers.ValidationError(
+                        f"Result value is required for {instance.test_parameter.effective_parameter_name} before verification."
+                    )
+            elif is_empty and not instance:
+                # Creation time verification? Unlikely but possible.
+                pass
 
         return attrs
 
