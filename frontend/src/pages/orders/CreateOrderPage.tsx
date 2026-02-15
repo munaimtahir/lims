@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { orderApi, patientApi, laboratoryApi } from '../../api/services';
 import type { Patient, OrderCreateRequest, TestSearchResult } from '../../types';
@@ -26,7 +26,6 @@ export default function CreateOrderPage() {
     const [addedTests, setAddedTests] = useState<TestSearchResult[]>([]);
 
     // Payment State
-    const [discountPercent, setDiscountPercent] = useState('0');
     const [discountAmount, setDiscountAmount] = useState('0');
     const [paidAmount, setPaidAmount] = useState('0');
     const [referredBy, setReferredBy] = useState('');
@@ -121,7 +120,6 @@ export default function CreateOrderPage() {
             test_ids: tests.map((t) => t.test_id ?? t.id),
             panel_ids: panels.map((p) => p.id),
             discount: discountAmount,
-            discount_percent: discountPercent,
             paid_amount: paidAmount,
             referred_by: referredBy,
         };
@@ -218,7 +216,7 @@ export default function CreateOrderPage() {
                                         className={`${styles.suggestionItem} ${index === selectedTestIndex ? styles.active : ''}`}
                                         onClick={() => addTest(test)}
                                     >
-                                        {test.test_name || test.panel_name} - {formatCurrency(test.price, currency)}
+                                        {test.test_name} - {formatCurrency(test.price, currency)}
                                     </div>
                                 ))}
                             </div>
@@ -228,7 +226,7 @@ export default function CreateOrderPage() {
                     <div className={styles.addedTests}>
                         {addedTests.map(test => (
                             <div key={test.test_id ?? test.id} className={styles.testItem}>
-                                <span>{test.test_name || test.panel_name}</span>
+                                <span>{test.test_name}</span>
                                 <span>{formatCurrency(test.price, currency)}</span>
                                 <button onClick={() => removeTest(test.test_id ?? test.id)}>×</button>
                             </div>
