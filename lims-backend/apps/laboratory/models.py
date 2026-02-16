@@ -108,6 +108,14 @@ class Test(models.Model):
     instructions = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
+    # Phase 3: Printing Rules
+    print_group = models.CharField(max_length=100, blank=True, null=True)
+    print_priority = models.IntegerField(default=0)
+    force_separate_page = models.BooleanField(default=False, help_text="Force this test to start on a new page in reports")
+    omit_blank_parameters = models.BooleanField(default=True)
+    footer_comments_static = models.TextField(blank=True, null=True)
+    print_if_any_result_present = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -157,6 +165,30 @@ class TestParameter(models.Model):
     display_order = models.IntegerField(default=0)
     reportable = models.BooleanField(default=True)
     is_required = models.BooleanField(default=False, help_text="If true, result value is mandatory for verification.")
+    is_required_for_verification = models.BooleanField(default=False, help_text="Explicit flag for verification blocking")
+
+    # Phase 3: Result Entry & Printing
+    is_printable = models.BooleanField(default=True)
+    default_value = models.CharField(max_length=255, blank=True, null=True)
+    
+    DEFAULT_MODE_CHOICES = [
+        ("ALWAYS", "Always"),
+        ("IF_EMPTY", "If Empty"),
+        ("PER_VISIT", "Per Visit"),
+    ]
+    default_mode = models.CharField(max_length=20, choices=DEFAULT_MODE_CHOICES, default="IF_EMPTY")
+
+    VALUE_SOURCE_CHOICES = [
+        ("MANUAL", "Manual"),
+        ("FORMULA", "Formula"),
+        ("INSTRUMENT", "Instrument"),
+        ("MIXED", "Mixed"),
+    ]
+    value_source = models.CharField(max_length=20, choices=VALUE_SOURCE_CHOICES, default="MANUAL")
+    
+    formula_expression = models.TextField(blank=True, null=True, help_text="e.g. {WBC} * 10 or complex logic")
+    formula_dependencies = models.JSONField(blank=True, null=True, help_text="List of parameter IDs this depends on")
+    allow_manual_override = models.BooleanField(default=False)
 
     # Legacy field preserved for backward compatibility/migration
     parameter_name = models.CharField(max_length=200, blank=True, null=True)
@@ -451,6 +483,14 @@ class TestPanel(models.Model):
     # Additional info
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
+
+    # Phase 3: Printing Rules
+    print_group = models.CharField(max_length=100, blank=True, null=True)
+    print_priority = models.IntegerField(default=0)
+    force_separate_page = models.BooleanField(default=False)
+    omit_blank_parameters = models.BooleanField(default=True)
+    footer_comments_static = models.TextField(blank=True, null=True)
+    print_if_any_result_present = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -49,7 +49,8 @@ class TestResult(models.Model):
     # Verification Status
     VERIFICATION_STATUS = [
         ("DRAFT", "Draft"),
-        ("ENTERED", "Entered"),
+        ("ENTERED", "Entered (Legacy)"),  # Kept for compatibility
+        ("READY", "Ready for Verification"),
         ("VERIFIED", "Verified"),
         ("FINAL", "Final"),
     ]
@@ -108,9 +109,10 @@ class TestResult(models.Model):
             # Actually, standard save() shouldn't restrict regressions if the logic handles it.
             # But to be safe, we allow:
             allowed = {
-                "DRAFT": {"DRAFT", "ENTERED", "VERIFIED"},
-                "ENTERED": {"DRAFT", "ENTERED", "VERIFIED"},
-                "VERIFIED": {"VERIFIED", "FINAL", "ENTERED", "DRAFT"},  # Allow return to entry
+                "DRAFT": {"DRAFT", "READY", "ENTERED", "VERIFIED"},
+                "ENTERED": {"DRAFT", "READY", "ENTERED", "VERIFIED"},
+                "READY": {"DRAFT", "READY", "VERIFIED"},
+                "VERIFIED": {"VERIFIED", "FINAL", "READY", "DRAFT"},  # Allow return to entry
                 "FINAL": set(),  # FINAL implies immutable
             }
             if self.status not in allowed.get(previous.status, set()):
