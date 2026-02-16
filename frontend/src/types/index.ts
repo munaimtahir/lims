@@ -264,6 +264,9 @@ export interface Order {
   is_paid: boolean;
   items: OrderItem[];
   collection_branch_name?: string;
+  patient_id?: string;
+  registration_number?: string;
+  patient_id_display?: string;
 }
 
 export interface OrderCreateRequest {

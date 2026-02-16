@@ -7,8 +7,8 @@ of critical settings via environment variables.
 
 Critical Environment Variables:
     - SECRET_KEY: Django secret key (generate with: python3 -c "import secrets; print(secrets.token_urlsafe(50))")
-    - DB_PASSWORD: PostgreSQL password
-    - ALLOWED_HOSTS: Comma-separated list including domain and public IP
+    - LIMS_DB_PASSWORD: PostgreSQL password
+    - LIMS_ALLOWED_HOSTS: Comma-separated list including domain and public IP
     - CORS_ALLOWED_ORIGINS: Comma-separated list of allowed frontend origins
     
 See .env.production.example for complete configuration template.
@@ -42,11 +42,11 @@ if not SECRET_KEY:
         'Generate with: python3 -c "import secrets; print(secrets.token_urlsafe(50))"'
     )
 
-# Validate DB_PASSWORD
-DB_PASSWORD = os.environ.get("DB_PASSWORD")
-if not DB_PASSWORD:
+# Validate LIMS_DB_PASSWORD
+LIMS_DB_PASSWORD = os.environ.get("LIMS_DB_PASSWORD")
+if not LIMS_DB_PASSWORD:
     raise ValueError(
-        "CRITICAL: DB_PASSWORD environment variable must be set in production. "
+        "CRITICAL: LIMS_DB_PASSWORD environment variable must be set in production. "
         "Generate with: openssl rand -base64 32"
     )
 
@@ -66,7 +66,7 @@ logger = logging.getLogger(__name__)
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
+    for host in os.environ.get("LIMS_ALLOWED_HOSTS", "").split(",")
     if host.strip()
 ]
 
@@ -74,17 +74,17 @@ if not ALLOWED_HOSTS:
     if IS_VERIFICATION_CONTEXT:
         ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
         logger.warning(
-            "VERIFICATION CONTEXT: ALLOWED_HOSTS not set, defaulting to localhost for tests/CI."
+            "VERIFICATION CONTEXT: LIMS_ALLOWED_HOSTS not set, defaulting to localhost for tests/CI."
         )
     else:
         raise ValueError(
-            "CRITICAL: ALLOWED_HOSTS environment variable must be set in production. "
+            "CRITICAL: LIMS_ALLOWED_HOSTS environment variable must be set in production. "
             "Include your public domain(s) and IP (e.g., 'your-domain.com,www.your-domain.com,xxx.xxx.xxx.xxx')."
         )
 
 if "*" in ALLOWED_HOSTS:
     raise ValueError(
-        "CRITICAL: Wildcard '*' is not permitted in ALLOWED_HOSTS. Use explicit domains/IPs."
+        "CRITICAL: Wildcard '*' is not permitted in LIMS_ALLOWED_HOSTS. Use explicit domains/IPs."
     )
 
 non_local_hosts = [
@@ -92,12 +92,12 @@ non_local_hosts = [
 ]
 if not non_local_hosts and not IS_VERIFICATION_CONTEXT:
     raise ValueError(
-        "CRITICAL: ALLOWED_HOSTS is limited to localhost values. "
+        "CRITICAL: LIMS_ALLOWED_HOSTS is limited to localhost values. "
         "Configure public-facing domains/IPs for production or switch to non-production settings explicitly."
     )
 
 # Log allowed hosts for debugging
-logger.info(f"Production ALLOWED_HOSTS configured: {ALLOWED_HOSTS}")
+logger.info(f"Production LIMS_ALLOWED_HOSTS configured: {ALLOWED_HOSTS}")
 
 
 # ============================================
@@ -132,7 +132,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ.get("DB_NAME", "lims_db"),
         "USER": os.environ.get("DB_USER", "postgres"),
-        "PASSWORD": DB_PASSWORD,
+        "PASSWORD": LIMS_DB_PASSWORD,
         "HOST": os.environ.get("DB_HOST", "db"),
         "PORT": os.environ.get("DB_PORT", "5432"),
         "CONN_MAX_AGE": 600,  # Connection pooling
@@ -417,7 +417,7 @@ if __name__ == "__main__":
     logger.info("LIMS Production Configuration Loaded")
     logger.info("=" * 60)
     logger.info(f"Debug Mode: {DEBUG}")
-    logger.info(f"Allowed Hosts: {ALLOWED_HOSTS}")
+    logger.info(f"Allowed Hosts: {LIMS_ALLOWED_HOSTS}")
     logger.info(f"CORS Origins: {CORS_ALLOWED_ORIGINS}")
     logger.info(
         f"Database: {DATABASES['default']['NAME']}@{DATABASES['default']['HOST']}"

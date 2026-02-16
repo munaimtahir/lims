@@ -42,7 +42,7 @@ docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" down --remove-o
 
 # Build Images (no cache to ensure latest codebase and new features)
 log "Building Images (--no-cache)..."
-docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build --no-cache backend frontend celery
+docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" build --no-cache
 
 # Start Services
 log "Starting all services..."

@@ -105,6 +105,14 @@ export default function RegistrationPage() {
 
         setDobInput(display);
 
+        if (!value.trim()) {
+            setAgeInput('');
+            setAgeYears(0);
+            setAgeMonths(0);
+            setAgeDays(0);
+            return;
+        }
+
         if (date) {
             const today = new Date();
             let years = today.getFullYear() - date.getFullYear();
@@ -156,6 +164,14 @@ export default function RegistrationPage() {
     };
 
     const handleAgeBlur = () => {
+        if (!ageInput.trim()) {
+            setDobInput('');
+            setAgeYears(0);
+            setAgeMonths(0);
+            setAgeDays(0);
+            return;
+        }
+
         const { y, m, d } = parseAge(ageInput);
         setAgeYears(y);
         setAgeMonths(m);
@@ -238,6 +254,28 @@ export default function RegistrationPage() {
     const handleSubmit = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         const newErrors: FormErrors = {};
+
+        // Sync Age/DOB before validation if one is missing
+        let finalAgeYears = ageYears;
+        let finalAgeMonths = ageMonths;
+        let finalAgeDays = ageDays;
+        let finalDob = normalizeDobInput(dobInput).iso;
+
+        if (!finalDob && ageInput?.trim()) {
+            const { y, m, d } = parseAge(ageInput);
+            const date = new Date();
+            date.setFullYear(date.getFullYear() - y);
+            date.setMonth(date.getMonth() - m);
+            date.setDate(date.getDate() - d);
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            finalDob = `${yyyy}-${mm}-${dd}`;
+            finalAgeYears = y;
+            finalAgeMonths = m;
+            finalAgeDays = d;
+        }
+
         if (!formData.phone) newErrors['phone'] = 'Mobile number is required';
         if (!formData.full_name?.trim()) newErrors['full_name'] = 'Name is required';
         if (!ageInput?.trim() && !dobInput?.trim()) newErrors['age'] = 'Age or date of birth is required';
@@ -251,11 +289,13 @@ export default function RegistrationPage() {
             ...formData,
             phone: formData.phone.replace(/\D/g, ''),
             full_name: formData.full_name.trim(),
-            date_of_birth: normalizeDobInput(dobInput).iso,
-            age_years: ageYears,
-            age_months: ageMonths,
-            age_days: ageDays,
+            date_of_birth: finalDob,
+            age_years: finalAgeYears,
+            age_months: finalAgeMonths,
+            age_days: finalAgeDays,
             default_referred_by: formData.referred_by || formData.consultant,
+            // Ensure empty unique fields are null
+            cnic: formData.cnic?.trim() || null,
         };
         // When enable_collection_centers is OFF, do not send branch or registration_center.
         // When ON, send branch id only; backend resolves to CollectionCenter or uses default.
@@ -401,7 +441,15 @@ export default function RegistrationPage() {
                                 type="text"
                                 autoComplete="off"
                                 value={ageInput}
-                                onChange={e => setAgeInput(e.target.value)}
+                                onChange={e => {
+                                    setAgeInput(e.target.value);
+                                    if (!e.target.value.trim()) {
+                                        setDobInput('');
+                                        setAgeYears(0);
+                                        setAgeMonths(0);
+                                        setAgeDays(0);
+                                    }
+                                }}
                                 onBlur={handleAgeBlur}
                                 onKeyDown={e => handleKeyDown(e, 'field-date_of_birth')}
                                 placeholder="Years, Months, Days"

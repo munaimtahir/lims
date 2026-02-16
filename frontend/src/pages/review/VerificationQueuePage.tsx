@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { resultApi, reportApi } from '../../api/services';
+import { resultApi, reportApi, orderApi } from '../../api/services';
 import type { TestResult, VerificationQueueOrder } from '../../types';
 import styles from './VerificationQueuePage.module.css';
 
@@ -177,8 +177,8 @@ export default function VerificationQueuePage() {
     mutationFn: (orderId: number) => orderApi.publishReport(orderId),
     onSuccess: (response) => {
       setNotice({ type: 'success', message: 'Report published successfully.' });
-      if (response.data.pdf_url) {
-        window.open(response.data.pdf_url, '_blank');
+      if (response.data && (response.data as any).pdf_url) {
+        window.open((response.data as any).pdf_url, '_blank');
       }
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
     },

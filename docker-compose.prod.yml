@@ -8,8 +8,8 @@
 #
 # Environment variables required (see .env.production.example):
 #   - SECRET_KEY: Django secret key
-#   - DB_PASSWORD: PostgreSQL password
-#   - ALLOWED_HOSTS: Comma-separated list of allowed hosts
+#   - LIMS_DB_PASSWORD: PostgreSQL password
+#   - LIMS_ALLOWED_HOSTS: Comma-separated list of allowed hosts
 #   - CORS_ALLOWED_ORIGINS: Comma-separated list of CORS origins
 
 services:
@@ -24,7 +24,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-lims_db}
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${LIMS_DB_PASSWORD}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
@@ -82,14 +82,14 @@ services:
       # Django Settings
       DJANGO_SETTINGS_MODULE: config.settings.production
       SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
+      LIMS_ALLOWED_HOSTS: ${LIMS_ALLOWED_HOSTS:?Define LIMS_ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
       DEBUG: "False"
 
       # Database Configuration
       DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
       DB_NAME: ${DB_NAME:-lims_db}
       DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD}
+      LIMS_DB_PASSWORD: ${LIMS_DB_PASSWORD}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
 
@@ -168,12 +168,12 @@ services:
       # Django Settings
       DJANGO_SETTINGS_MODULE: config.settings.production
       SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
+      LIMS_ALLOWED_HOSTS: ${LIMS_ALLOWED_HOSTS:?Define LIMS_ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
 
       # Database Configuration
       DB_NAME: ${DB_NAME:-lims_db}
       DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD}
+      LIMS_DB_PASSWORD: ${LIMS_DB_PASSWORD}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
 
@@ -225,10 +225,10 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
+      LIMS_ALLOWED_HOSTS: ${LIMS_ALLOWED_HOSTS:?Define LIMS_ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
       DB_NAME: ${DB_NAME:-lims_db}
       DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD}
+      LIMS_DB_PASSWORD: ${LIMS_DB_PASSWORD}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}

@@ -11,7 +11,11 @@ from apps.core.models import Branch, CollectionCenter
 from apps.core.authz import user_tenant
 from apps.core.services.settings import get_tenant_settings
 
+import logging
+
 from .models import Patient
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_age_parts(dob, today=None):
@@ -396,6 +400,11 @@ class PatientCreateSerializer(PatientValidationMixin, serializers.ModelSerialize
                     # Invalid or Branch id sent as registration_center — ignore
                     attrs["registration_center"] = None
             # branch field is already popped; no need to set registration_center again
+
+        # Convert empty strings to None for unique fields to avoid IntegrityError (duplicate empty string)
+        for field in ["cnic", "national_id"]:
+            if attrs.get(field) == "":
+                attrs[field] = None
 
         return attrs
 

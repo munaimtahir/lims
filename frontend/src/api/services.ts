@@ -247,6 +247,11 @@ export const orderApi = {
     const response = await api.get<OrderItem>(`orders/order-items/${id}/`);
     return response.data;
   },
+
+  publishReport: async (id: number) => {
+    const response = await api.post<{ success: boolean; data: { pdf_url: string } }>(`orders/orders/${id}/publish-report/`);
+    return response.data;
+  },
 };
 
 /**
