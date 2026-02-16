@@ -5,10 +5,14 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import logging
+
+logger = logging.getLogger(__name__)
 
 from apps.billing.models import Payment
 from apps.billing.views import PaymentViewSet
@@ -69,10 +73,33 @@ class OrderViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         instance = serializer.instance
         target_status = serializer.validated_data.get("status")
-        if target_status and target_status != instance.status:
-            transition_visit_state(instance, target_status, self.request.user, source="api")
-            serializer.validated_data.pop("status", None)
-        serializer.save()
+
+        try:
+            if target_status and target_status != instance.status:
+                logger.info(
+                    f"Transitioning order {instance.order_id} from {instance.status} to {target_status}",
+                    extra={
+                        "order_id": instance.order_id,
+                        "old_status": instance.status,
+                        "new_status": target_status,
+                        "user": self.request.user.username,
+                    },
+                )
+                transition_visit_state(instance, target_status, self.request.user, source="api")
+                serializer.validated_data.pop("status", None)
+            serializer.save()
+        except Exception as e:
+            logger.error(
+                f"Failed to update order {instance.order_id}: {str(e)}",
+                exc_info=True,
+                extra={"order_id": instance.order_id, "error": str(e)},
+            )
+            # Re-raise standard DRF exceptions or wrap others
+            if hasattr(e, "detail"):
+                raise
+            raise ValidationError(
+                {"detail": "Update failed.", "code": "update_failed", "message": str(e)}
+            )
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -255,6 +282,17 @@ class WorklistPatientsView(APIView):
         date_from = request.query_params.get("date_from")
         date_to = request.query_params.get("date_to")
         status_filter = request.query_params.get("status")
+
+        if status_filter or search:
+            logger.info(
+                f"Worklist search by {request.user.username}",
+                extra={
+                    "search": search,
+                    "date_from": date_from,
+                    "date_to": date_to,
+                    "status": status_filter,
+                },
+            )
 
         orders = Order.objects.select_related("patient").all()
 

@@ -6,10 +6,14 @@ from apps.audit.utils import emit_audit_event
 from apps.core.state import InvalidTransitionError, PermissionDeniedError
 
 from .models import Order
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def transition_visit_state(order: Order, target_state: str, actor, source: str = "api") -> Order:
     """Transition order/visit status with validation, lock, and audit logging."""
+    logger.info(f"Attempting transition for order {order.pk} to {target_state} by {actor}", extra={"order_id": order.order_id, "user": str(actor)})
     with transaction.atomic():
         locked = Order.objects.select_for_update().get(pk=order.pk)
         before_state = locked.status

@@ -524,6 +524,11 @@ class TestResultViewSet(viewsets.ModelViewSet):
                     created_results.append(self.get_serializer(result).data)
                     modified_order_items.add(result.order_item_id)
                 except Exception as e:
+                    logger.error(
+                        f"Bulk entry failed for item {order_item_id}: {str(e)}",
+                        exc_info=True,
+                        extra={"user": request.user.username, "data": result_data},
+                    )
                     errors.append({"data": result_data, "detail": str(e)})
 
             # Update statuses for affected order items
@@ -570,8 +575,13 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 transition_result_state(result, "ENTERED", request.user, source="api", reason=reason)
                 self._check_and_update_status(result.order_item, reverting=True)
             except Exception as exc:
+                logger.error(
+                    f"Result rejection failed for result {pk}: {str(exc)}",
+                    exc_info=True,
+                    extra={"user": request.user.username, "result_id": pk},
+                )
                 return Response(
-                    {"detail": str(exc)},
+                    {"detail": str(exc), "code": "rejection_failed"},
                     status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
                 )
         
@@ -623,8 +633,13 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 result = transition_result_state(result, "VERIFIED", request.user, source="api")
                 self._check_and_update_status(result.order_item)
             except Exception as exc:
+                logger.error(
+                    f"Result verification failed for result {pk}: {str(exc)}",
+                    exc_info=True,
+                    extra={"user": request.user.username, "result_id": pk},
+                )
                 return Response(
-                    {"detail": str(exc)},
+                    {"detail": str(exc), "code": "verification_failed"},
                     status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
                 )
 
@@ -679,8 +694,13 @@ class TestResultViewSet(viewsets.ModelViewSet):
             try:
                 result = transition_result_state(result, "FINAL", request.user, source="api")
             except Exception as exc:
+                logger.error(
+                    f"Result finalization failed for result {pk}: {str(exc)}",
+                    exc_info=True,
+                    extra={"user": request.user.username, "result_id": pk},
+                )
                 return Response(
-                    {"detail": str(exc)},
+                    {"detail": str(exc), "code": "finalization_failed"},
                     status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
                 )
 
