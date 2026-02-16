@@ -143,12 +143,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
             collected_samples = Sample.objects.filter(
                 status__in=[SampleStatus.COLLECTED, SampleStatus.RECEIVED]
             ).values_list("order_item_id", flat=True)
-            order_items_needing_results = (
-                OrderItem.objects.filter(id__in=collected_samples)
-                .exclude(results__isnull=False)
-                .select_related("order", "order__patient", "test", "panel")
-                .distinct()
-            )
+            base = OrderItem.objects.filter(id__in=collected_samples)
         else:
             # Sample workflow off: paid orders are eligible for result entry immediately
             base = OrderItem.objects.filter(
@@ -160,13 +155,44 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 base = filter_queryset_for_branches(
                     base, "order__collection_branch", request.user
                 )
-            # Items that need result entry: no results yet or have DRAFT results
-            order_items_needing_results = (
-                base.annotate(rc=Count("results"))
-                .filter(Q(rc=0) | Q(results__status="DRAFT"))
-                .select_related("order", "order__patient", "test", "panel")
-                .distinct()
+
+        # Annotate with parameter counts to determine completion status
+        # We need F expression for comparison
+        from django.db.models import F
+
+        # Count total parameters expected (Test or Panel)
+        # Count results entered/verified
+        # Count results in draft
+        order_items_needing_results = (
+            base.annotate(
+                # Calculate total parameters expected
+                # distinct=True is required because of multiple joins
+                total_params=Count("test__test_parameters", distinct=True)
+                + Count("panel__tests__test_parameters", distinct=True),
+                
+                # Count results that move item towards completion (ENTERED or VERIFIED)
+                entered_params=Count(
+                    "results",
+                    filter=Q(results__status__in=["ENTERED", "VERIFIED", "FINAL"]),
+                    distinct=True
+                ),
+                
+                # Count draft results (active work in progress)
+                draft_params=Count(
+                    "results",
+                    filter=Q(results__status="DRAFT"),
+                    distinct=True
+                )
             )
+            .filter(
+                # Keep visible if:
+                # 1. Has draft results (currently being worked on)
+                # 2. OR Total entered/verified is less than total expected parameters (incomplete)
+                Q(draft_params__gt=0) | Q(entered_params__lt=F("total_params"))
+            )
+            .select_related("order", "order__patient", "test", "panel")
+            .distinct()
+        )
 
         # Also include order items with pending results (DRAFT)
         pending_results = (
@@ -376,6 +402,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 orders_map[oid] = {
                     "order_internal_id": order.id,
                     "order_id": order.order_id,
+                    "lab_number": order.lab_number or order.order_id,
                     "patient_name": order.patient.get_full_name() if order.patient else "Unknown",
                     "mrn": getattr(order.patient, "mrn", "") if order.patient else "",
                     "age_gender": f"{getattr(order.patient, 'age', '')}/{getattr(order.patient, 'gender', '')}",
@@ -413,6 +440,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
             
             response_data.append({
                 "order_id": order_info["order_id"],
+                "lab_number": order_info.get("lab_number"),
                 "patient_name": order_info["patient_name"],
                 "mrn": order_info["mrn"],
                 "details": f"{order_info['age_gender']} | {order_info['priority']}",

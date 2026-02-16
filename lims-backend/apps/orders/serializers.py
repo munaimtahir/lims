@@ -31,7 +31,7 @@ class MinimalOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "order_id", "patient", "priority"]
+        fields = ["id", "order_id", "lab_number", "patient", "priority"]
 
 
 class OrderItemSerializer(serializers.ModelSerializer):

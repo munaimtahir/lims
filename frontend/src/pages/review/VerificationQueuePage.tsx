@@ -205,7 +205,7 @@ export default function VerificationQueuePage() {
             <div>
               <h2>{currentOrder?.patient_name || 'Patient'}</h2>
               <div className={styles.meta}>
-                <span className={styles.orderId}>{currentOrder?.order_id}</span>
+                <span className={styles.orderId}>{currentOrder?.lab_number || currentOrder?.order_id}</span>
                 <span className={styles.separator}>|</span>
                 <span>{currentOrder?.mrn}</span>
                 <span className={styles.separator}>|</span>
@@ -332,7 +332,7 @@ export default function VerificationQueuePage() {
           <table className={styles.queueTable}>
             <thead>
               <tr>
-                <th>Order ID</th>
+                <th>Lab No</th>
                 <th>Patient</th>
                 <th>Details</th>
                 <th>Tests</th>
@@ -343,7 +343,7 @@ export default function VerificationQueuePage() {
             <tbody>
               {queue.map((order) => (
                 <tr key={order.order_internal_id} onClick={() => setSelectedOrderInternalId(order.order_internal_id)} className={styles.clickableRow}>
-                  <td className={styles.bold}>{order.order_id}</td>
+                  <td className={styles.bold}>{order.lab_number || order.order_id}</td>
                   <td>
                     <div className={styles.patientName}>{order.patient_name}</div>
                     <div className={styles.mrn}>{order.mrn}</div>

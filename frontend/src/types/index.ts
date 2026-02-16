@@ -345,6 +345,7 @@ export interface VerificationQueueItem {
 
 export interface VerificationQueueOrder {
   order_id: string; // Display ID
+  lab_number?: string;
   order_internal_id: number;
   patient_name: string;
   mrn: string;
@@ -626,16 +627,21 @@ export interface CatalogAuditSummary {
 export interface WorklistPatient {
   patient_id: number;
   patient_name: string;
+  patient_mrn?: string;
   mobile: string;
   gender: string;
   date_of_birth?: string;
   age_years?: number;
   age_months?: number;
   age_days?: number;
+  order_pk?: number;
+  lab_number?: string;
   latest_order_id: number;
   latest_order_number: string;
   latest_order_created_at: string;
+  status?: string;
   current_status: string;
+  is_paid?: boolean;
   can_reprint_receipt: boolean;
   can_reprint_report: boolean;
   receipt_pdf_url?: string;

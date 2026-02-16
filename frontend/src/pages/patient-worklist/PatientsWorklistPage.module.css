@@ -130,3 +130,13 @@
   padding: 24px;
   color: #64748b;
 }
+
+.labNo {
+  font-weight: 700;
+  color: #1e293b;
+  font-family: 'JetBrains Mono', monospace;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}

@@ -78,7 +78,7 @@ export default function OrdersPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Order ID</th>
+              <th>Lab No</th>
               <th>Patient</th>
               <th>Tests</th>
               <th>Total</th>
@@ -91,8 +91,15 @@ export default function OrdersPage() {
           <tbody>
             {orders.map((order) => (
               <tr key={order.id}>
-                <td>{order.order_id}</td>
-                <td>{order.patient_name}</td>
+                <td>
+                  <span className={styles.labNo}>{order.lab_number || order.order_id}</span>
+                </td>
+                <td>
+                  <div className={styles.patientInfo}>
+                    <span className={styles.patientName}>{order.patient_name}</span>
+                    <span className={styles.patientId}>{order.registration_number || order.patient_id}</span>
+                  </div>
+                </td>
                 <td>{order.items.length} items</td>
                 <td>{formatCurrency(order.net_amount, currency)}</td>
                 <td>

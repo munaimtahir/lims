@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from apps.core.views import HealthCheckView
-from apps.orders.views import WorklistPatientsView
+from apps.orders.views import WorklistOrdersView
 
 urlpatterns = [
     # Admin
@@ -39,7 +39,7 @@ urlpatterns = [
     path("api/v1/backups/", include("apps.backups.urls")),
     path(
         "api/v1/worklist/patients/",
-        WorklistPatientsView.as_view(),
+        WorklistOrdersView.as_view(),
         name="worklist-patients",
     ),
 ]

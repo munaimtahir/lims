@@ -361,3 +361,29 @@
 .orderItem:last-child {
   border-bottom: none;
 }
+
+.labNo {
+  font-weight: 700;
+  color: #1e293b;
+  font-family: 'JetBrains Mono', monospace;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.patientInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.patientName {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.patientId {
+  font-size: 0.75rem;
+  color: #64748b;
+}

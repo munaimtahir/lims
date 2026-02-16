@@ -162,7 +162,7 @@ export default function PatientsWorklistPage() {
             <tr>
               <th>Patient</th>
               <th>Mobile</th>
-              <th>Order</th>
+              <th>Lab No</th>
               <th>Status</th>
               <th>Date</th>
               <th>Actions</th>
@@ -180,46 +180,50 @@ export default function PatientsWorklistPage() {
               const canPrintReceipt = canPrintByRole && (item.can_reprint_receipt ?? true) && Boolean(receiptTarget);
               const canPrintReport = canPrintByRole && (item.can_reprint_report ?? true) && Boolean(reportTarget);
               return (
-              <tr key={item.latest_order_id}>
-                <td>
-                  <div className={styles.patientCell}>
-                    <span className={styles.patientName}>{item.patient_name}</span>
-                    <span className={styles.patientMeta}>{item.gender}</span>
-                  </div>
-                </td>
-                <td>{item.mobile}</td>
-                <td>{item.latest_order_number}</td>
-                <td>
-                  <span className={styles.statusBadge}>{item.current_status}</span>
-                </td>
-                <td>{formatDateDDMMYY(item.latest_order_created_at)}</td>
-                <td>
-                  <div className={styles.actionButtons}>
-                    <button
-                      type="button"
-                      className={`${styles.actionButton} ${!canPrintReceipt ? styles.actionButtonDisabled : ''}`}
-                      disabled={!canPrintByRole || (printState?.type === 'receipt' && printState.orderId === item.latest_order_id)}
-                      aria-disabled={!canPrintReceipt}
-                      data-testid="print-receipt"
-                      data-available={canPrintReceipt ? 'true' : 'false'}
-                      onClick={() => handlePrintReceipt(item)}
-                    >
-                      {(printState?.type === 'receipt' && printState.orderId === item.latest_order_id) ? 'Opening...' : 'Print Receipt'}
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.actionButton} ${!canPrintReport ? styles.actionButtonDisabled : ''}`}
-                      disabled={!canPrintByRole || (printState?.type === 'report' && printState.orderId === item.latest_order_id)}
-                      aria-disabled={!canPrintReport}
-                      data-testid="print-report"
-                      data-available={canPrintReport ? 'true' : 'false'}
-                      onClick={() => handlePrintReport(item)}
-                    >
-                      {(printState?.type === 'report' && printState.orderId === item.latest_order_id) ? 'Opening...' : 'Print Report'}
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                <tr key={item.latest_order_id}>
+                  <td>
+                    <div className={styles.patientCell}>
+                      <span className={styles.patientName}>{item.patient_name}</span>
+                      <span className={styles.patientMeta}>{item.gender} {item.patient_mrn ? `| MRN: ${item.patient_mrn}` : ''}</span>
+                    </div>
+                  </td>
+                  <td>{item.mobile}</td>
+                  <td>
+                    <div className={styles.labNoCell}>
+                      <span className={styles.labNo}>{item.lab_number || item.latest_order_number}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={styles.statusBadge}>{item.current_status}</span>
+                  </td>
+                  <td>{formatDateDDMMYY(item.latest_order_created_at)}</td>
+                  <td>
+                    <div className={styles.actionButtons}>
+                      <button
+                        type="button"
+                        className={`${styles.actionButton} ${!canPrintReceipt ? styles.actionButtonDisabled : ''}`}
+                        disabled={!canPrintByRole || (printState?.type === 'receipt' && printState.orderId === item.latest_order_id)}
+                        aria-disabled={!canPrintReceipt}
+                        data-testid="print-receipt"
+                        data-available={canPrintReceipt ? 'true' : 'false'}
+                        onClick={() => handlePrintReceipt(item)}
+                      >
+                        {(printState?.type === 'receipt' && printState.orderId === item.latest_order_id) ? 'Opening...' : 'Print Receipt'}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.actionButton} ${!canPrintReport ? styles.actionButtonDisabled : ''}`}
+                        disabled={!canPrintByRole || (printState?.type === 'report' && printState.orderId === item.latest_order_id)}
+                        aria-disabled={!canPrintReport}
+                        data-testid="print-report"
+                        data-available={canPrintReport ? 'true' : 'false'}
+                        onClick={() => handlePrintReport(item)}
+                      >
+                        {(printState?.type === 'report' && printState.orderId === item.latest_order_id) ? 'Opening...' : 'Print Report'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               );
             })}
             {patients.length === 0 && (

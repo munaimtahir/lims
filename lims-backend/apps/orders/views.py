@@ -271,8 +271,11 @@ class WorklistPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class WorklistPatientsView(APIView):
-    """List patients with latest order workflow status for worklist."""
+class WorklistOrdersView(APIView):
+    """
+    List orders for worklist.
+    Returns a list of orders (Visits) instead of patients, ensuring every active order is visible.
+    """
 
     pagination_class = WorklistPagination
     permission_classes = [IsAuthenticated]
@@ -294,7 +297,12 @@ class WorklistPatientsView(APIView):
                 },
             )
 
-        orders = Order.objects.select_related("patient").all()
+        # Query Orders directly (one row per order)
+        orders = (
+            Order.objects.select_related("patient")
+            .exclude(status__in=["FINAL", "CANCELLED"])
+            .order_by("-created_at")
+        )
 
         if date_from:
             orders = orders.filter(created_at__date__gte=date_from)
@@ -310,111 +318,97 @@ class WorklistPatientsView(APIView):
                 orders = orders.filter(status=status_filter.upper())
 
         if search:
-            matching_patients = Patient.objects.filter(
-                Q(full_name__icontains=search)
-                | Q(first_name__icontains=search)
-                | Q(last_name__icontains=search)
-                | Q(phone__icontains=search)
-                | Q(patient_id__icontains=search)
-            )
             orders = orders.filter(
-                Q(order_id__icontains=search) | Q(patient__in=matching_patients)
+                Q(order_id__icontains=search)
+                | Q(lab_number__icontains=search)
+                | Q(patient__full_name__icontains=search)
+                | Q(patient__first_name__icontains=search)
+                | Q(patient__last_name__icontains=search)
+                | Q(patient__phone__icontains=search)
+                | Q(patient__patient_id__icontains=search)
+                | Q(patient__mrn__icontains=search)
             )
-
-        latest_order_subquery = orders.filter(patient=OuterRef("pk")).order_by(
-            "-created_at"
-        )
-
-        patients = (
-            Patient.objects.annotate(
-                latest_order_id=Subquery(latest_order_subquery.values("id")[:1]),
-                latest_order_number=Subquery(
-                    latest_order_subquery.values("order_id")[:1]
-                ),
-                latest_order_created_at=Subquery(
-                    latest_order_subquery.values("created_at")[:1]
-                ),
-                latest_order_status=Subquery(
-                    latest_order_subquery.values("status")[:1]
-                ),
-                latest_order_is_paid=Subquery(
-                    latest_order_subquery.values("is_paid")[:1]
-                ),
-            )
-            .filter(latest_order_id__isnull=False)
-            .order_by("-latest_order_created_at")
-        )
 
         paginator = self.pagination_class()
-        page = paginator.paginate_queryset(patients, request)
-        order_ids = [patient.latest_order_id for patient in page]
+        page = paginator.paginate_queryset(orders, request)
 
+        order_ids = [o.id for o in page]
         payments = set(
             Payment.objects.filter(order_id__in=order_ids).values_list(
                 "order_id", flat=True
             )
         )
-        reports = Report.objects.filter(
-            order_id__in=order_ids,
-            status__in=[ReportStatus.FINAL, ReportStatus.AMENDED],
-        ).order_by("-generated_at")
+        reports = (
+            Report.objects.filter(
+                order_id__in=order_ids,
+                status__in=[ReportStatus.FINAL, ReportStatus.AMENDED],
+            )
+            .order_by("-generated_at")
+        )
+        
         report_map = {}
         for report in reports:
-            report_map.setdefault(report.order_id, report)
+            if report.order_id not in report_map:
+                report_map[report.order_id] = report
 
         results = []
-        for patient in page:
-            latest_order_status = patient.latest_order_status or "NEW"
+        for order in page:
+            patient = order.patient
+            
+            # Map internal status to display status
             current_status = "Registered / Order Created"
-            if latest_order_status == "NEW" and patient.latest_order_is_paid:
+            if order.status == "NEW" and order.is_paid:
                 current_status = "Paid"
-            elif latest_order_status == "COLLECTED":
+            elif order.status == "COLLECTED":
                 current_status = "Sample Collected"
-            elif latest_order_status == "IN_PROCESS":
+            elif order.status == "IN_PROCESS":
                 current_status = "In Testing / Result Pending"
-            elif latest_order_status == "VERIFIED":
+            elif order.status == "VERIFIED":
                 current_status = "Report Ready / Verified"
-            elif latest_order_status == "PUBLISHED":
+            elif order.status == "PUBLISHED":
                 current_status = "Report Published"
-            elif latest_order_status == "CANCELLED":
+            elif order.status == "CANCELLED":
                 current_status = "Cancelled"
 
-            report = report_map.get(patient.latest_order_id)
+            report = report_map.get(order.id)
             can_reprint_report = bool(report and report.report_file)
+            
             receipt_pdf_url = None
             report_pdf_url = None
-            if patient.latest_order_id and patient.latest_order_id in payments:
-                receipt_pdf_url = (
-                    f"/api/v1/orders/orders/{patient.latest_order_id}/receipt.pdf"
-                )
-            if patient.latest_order_id and can_reprint_report and report:
+            if order.id in payments:
+                receipt_pdf_url = f"/api/v1/orders/orders/{order.id}/receipt.pdf"
+            if can_reprint_report and report:
                 report_pdf_url = report.report_file.url
-            age_years = (
-                patient.age_years if patient.age_years is not None else patient.age
-            )
+
+            age_years = patient.age_years if patient.age_years is not None else patient.age
 
             results.append(
                 {
+                    "order_pk": order.id,
+                    "lab_number": order.lab_number or order.order_id,
+                    "order_id": order.order_id,
                     "patient_id": patient.id,
+                    "patient_mrn": patient.mrn or patient.patient_id,
                     "patient_name": patient.get_full_name(),
                     "mobile": patient.phone,
                     "gender": patient.gender,
-                    "date_of_birth": patient.date_of_birth,
                     "age_years": age_years,
                     "age_months": patient.age_months,
                     "age_days": patient.age_days,
-                    "latest_order_id": patient.latest_order_id,
-                    "latest_order_number": patient.latest_order_number,
-                    "latest_order_created_at": patient.latest_order_created_at,
+                    "created_at": order.created_at,
+                    "status": order.status,
                     "current_status": current_status,
-                    "can_reprint_receipt": patient.latest_order_id in payments,
+                    "is_paid": order.is_paid,
+                    "can_reprint_receipt": order.id in payments,
                     "can_reprint_report": can_reprint_report,
                     "receipt_pdf_url": receipt_pdf_url,
                     "report_pdf_url": report_pdf_url,
-                    # Backwards-compatible fields for existing clients
-                    "receipt_url": str(patient.latest_order_id)
-                    if patient.latest_order_id
-                    else None,
+                    
+                    # Backward compatibility keys
+                    "latest_order_id": order.id,
+                    "latest_order_number": order.lab_number or order.order_id,
+                    "latest_order_created_at": order.created_at,
+                    "receipt_url": receipt_pdf_url,
                     "report_url": report_pdf_url,
                 }
             )

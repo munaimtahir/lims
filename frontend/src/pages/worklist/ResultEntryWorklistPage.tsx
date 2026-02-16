@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { resultApi } from '../../api/services';
-import type { OrderItem } from '../../types';
+import type { OrderItem, WorklistOrderItem } from '../../types';
 import styles from './ResultEntryWorklistPage.module.css';
 
 export default function ResultEntryWorklistPage() {
@@ -42,28 +42,28 @@ export default function ResultEntryWorklistPage() {
             </div>
           ) : (
             <div className={styles.worklist}>
-              {worklistItems.map((item: OrderItem) => (
+              {worklistItems.map((item: WorklistOrderItem) => (
                 <div
                   key={item.id}
                   className={`${styles.worklistItem} ${selectedItem?.id === item.id ? styles.selected : ''}`}
-                  onClick={() => setSelectedItem(item)}
+                  onClick={() => setSelectedItem(item as any)}
                 >
                   <div className={styles.itemHeader}>
                     <div>
-                      <h3>{item.test_name || item.panel_name}</h3>
-                      <p className={styles.itemCode}>{item.test_code || item.panel_code}</p>
+                      <h3 className={styles.patientName}>{item.order?.patient?.full_name || item.patient_name}</h3>
+                      <p className={styles.testName}>{item.test_name || item.panel_name}</p>
                     </div>
                     <span className={styles.statusBadge}>{item.status}</span>
                   </div>
-                  
+
                   <div className={styles.itemDetails}>
                     <div className={styles.detail}>
-                      <span className={styles.label}>Order ID:</span>
-                      <span className={styles.value}>ORD-{item.id}</span>
+                      <span className={styles.label}>Lab No:</span>
+                      <span className={styles.value}>{item.order?.lab_number || item.order?.order_id || `ORD-${item.id}`}</span>
                     </div>
                     <div className={styles.detail}>
-                      <span className={styles.label}>Price:</span>
-                      <span className={styles.value}>${item.price}</span>
+                      <span className={styles.label}>MRN:</span>
+                      <span className={styles.value}>{item.order?.patient?.mrn || 'N/A'}</span>
                     </div>
                   </div>
 
@@ -71,8 +71,7 @@ export default function ResultEntryWorklistPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        const orderItem = item as OrderItem & { order: { id: number } };
-                        navigate(`/dashboard/results?orderId=${orderItem.order.id}&orderItemId=${item.id}`);
+                        navigate(`/dashboard/results?orderId=${item.order.id}&orderItemId=${item.id}`);
                       }}
                       className={styles.enterButton}
                     >
