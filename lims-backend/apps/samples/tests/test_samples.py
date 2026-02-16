@@ -88,7 +88,7 @@ def test_instance(db, test_category):
 def order(db, patient, admin_user, test_instance):
     """Create and return an order."""
     order = Order.objects.create(
-        patient=patient, ordered_by=admin_user, status="pending"
+        patient=patient, ordered_by=admin_user, status="NEW"
     )
     OrderItem.objects.create(order=order, test=test_instance, price=test_instance.price)
     order.calculate_total()

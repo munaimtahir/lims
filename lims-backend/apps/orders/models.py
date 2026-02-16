@@ -222,7 +222,15 @@ class Order(models.Model):
 
         # V2 Lab Numbering (legacy) retained; branch fields separate
         if not self.lab_number:
-            if not self.collection_center:
+            # Check if collection centers enabled
+            # Re-fetch settings if not available (Order.save logic is complex)
+            if not tenant_settings and self.tenant:
+                from apps.core.services.settings import get_tenant_settings
+                tenant_settings = get_tenant_settings(self.tenant)
+            
+            enable_collection = getattr(tenant_settings, "enable_collection_centers", False) if tenant_settings else False
+
+            if enable_collection and not self.collection_center:
                 center_00, _ = CollectionCenter.objects.get_or_create(
                     code="00", defaults={"name": "Head Office", "is_active": True}
                 )

@@ -229,8 +229,17 @@ class Patient(models.Model):
         """
         # V2 Numbering System (Branch-aware now uses tenant MRN)
         if not self.registration_number:
-            # Ensure center exists - fallback to Head Office (00)
-            if not self.registration_center:
+            # Determine if we should enforce collection center
+            # Check feature flag (default False)
+            enable_collection = False
+            if self.tenant:
+                from apps.core.services.settings import get_tenant_settings
+                ts = get_tenant_settings(self.tenant)
+                if ts:
+                    enable_collection = ts.enable_collection_centers
+            
+            # Ensure center exists - fallback to Head Office (00) only if enabled
+            if enable_collection and not self.registration_center:
                 center_00, _ = CollectionCenter.objects.get_or_create(
                     code="00", defaults={"name": "Head Office", "is_active": True}
                 )

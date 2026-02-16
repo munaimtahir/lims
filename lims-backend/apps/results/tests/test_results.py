@@ -147,7 +147,7 @@ def test_parameter(db, test_instance):
 def order(db, patient, admin_user, test_instance):
     """Create and return an order."""
     order = Order.objects.create(
-        patient=patient, ordered_by=admin_user, status="pending"
+        patient=patient, ordered_by=admin_user, status="NEW"
     )
     OrderItem.objects.create(order=order, test=test_instance, price=test_instance.price)
     order.calculate_total()
@@ -383,7 +383,7 @@ class TestTestResultViewSet:
     def test_verification_queue(self, api_client, pathologist_user, test_result):
         """Test verification queue endpoint."""
         api_client.force_authenticate(user=pathologist_user)
-        test_result.status = "pending"
+        test_result.status = "ENTERED"
         test_result.save()
 
         response = api_client.get("/api/v1/results/verification_queue/")
@@ -625,7 +625,7 @@ class TestTestResultViewSet:
 
     def test_verification_queue(self, authenticated_client, test_result):
         """Test verification queue endpoint."""
-        test_result.status = "pending"
+        test_result.status = "ENTERED"
         test_result.save()
 
         response = authenticated_client.get("/api/v1/results/verification_queue/")
