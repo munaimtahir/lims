@@ -14,4 +14,5 @@ export const orderApi = {
     return response;
   },
   getOrderItem: (id: number) => apiClient.get<OrderItem>(`orders/order-items/${id}`),
+  publishReport: (id: number) => apiClient.post<{ detail: string; pdf_url: string }>(`orders/orders/${id}/publish-report/`, {}),
 };

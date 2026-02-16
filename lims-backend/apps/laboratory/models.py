@@ -110,11 +110,11 @@ class Test(models.Model):
 
     # Phase 3: Printing Rules
     print_group = models.CharField(max_length=100, blank=True, null=True)
-    print_priority = models.IntegerField(default=0)
+    print_priority = models.IntegerField(default=1000)
     force_separate_page = models.BooleanField(default=False, help_text="Force this test to start on a new page in reports")
     omit_blank_parameters = models.BooleanField(default=True)
     footer_comments_static = models.TextField(blank=True, null=True)
-    print_if_any_result_present = models.BooleanField(default=False)
+    print_if_any_result_present = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -485,11 +485,11 @@ class TestPanel(models.Model):
 
     # Phase 3: Printing Rules
     print_group = models.CharField(max_length=100, blank=True, null=True)
-    print_priority = models.IntegerField(default=0)
+    print_priority = models.IntegerField(default=1000)
     force_separate_page = models.BooleanField(default=False)
     omit_blank_parameters = models.BooleanField(default=True)
     footer_comments_static = models.TextField(blank=True, null=True)
-    print_if_any_result_present = models.BooleanField(default=False)
+    print_if_any_result_present = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

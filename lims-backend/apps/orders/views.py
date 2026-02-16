@@ -27,6 +27,7 @@ from apps.core.features import FeatureFlagPermission
 from apps.core.export_utils import export_to_csv, export_to_excel
 from apps.patients.models import Patient
 from apps.reports.models import Report, ReportStatus
+from apps.reports.logic import collect_report_blockers, build_order_report_context, build_page_plan, generate_v2_report
 from apps.orders.services import transition_visit_state
 
 from .filters import OrderFilter
@@ -214,13 +215,10 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="report.pdf")
     def report_pdf(self, request, pk=None):
-        """Return report PDF for a published order."""
+        """Return report PDF for a published order with detailed blockers if not available."""
         order = self.get_object()
-        if order.status != "PUBLISHED":
-            return Response(
-                {"detail": "Report is not published."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        
+        # Check for existing artifact
         report = (
             Report.objects.filter(
                 order=order, status__in=[ReportStatus.FINAL, ReportStatus.AMENDED]
@@ -228,16 +226,98 @@ class OrderViewSet(viewsets.ModelViewSet):
             .order_by("-generated_at")
             .first()
         )
-        if not report or not report.report_file:
-            return Response(
-                {"detail": "Report file not found."},
-                status=status.HTTP_404_NOT_FOUND,
+        
+        if report and report.report_file:
+            return FileResponse(
+                report.report_file.open("rb"),
+                content_type="application/pdf",
+                filename=report.report_file.name.split("/")[-1],
             )
-        return FileResponse(
-            report.report_file.open("rb"),
-            content_type="application/pdf",
-            filename=report.report_file.name.split("/")[-1],
+            
+        # If no artifact, collect blockers to explain why
+        blockers = collect_report_blockers(order.id)
+        
+        # Add special blocker for NO_ARTIFACT if it would otherwise be printable
+        if not blockers:
+            blockers.append({
+                "reason_code": "NO_ARTIFACT",
+                "detail": "Order is verified but report has not been published/generated yet. Please click 'Publish' first."
+            })
+            
+        return Response(
+            {
+                "code": "REPORT_BLOCKED",
+                "message": "Report cannot be downloaded.",
+                "blocking_reasons": blockers
+            },
+            status=status.HTTP_400_BAD_REQUEST
         )
+
+    @action(detail=True, methods=["post"], url_path="publish-report")
+    def publish_report(self, request, pk=None):
+        """
+        Validate eligibility, generate PDF, persist as Report artifact, and set status to PUBLISHED.
+        """
+        order = self.get_object()
+        
+        # 1. Idempotency: If already published and has artifact, return success
+        existing_report = Report.objects.filter(
+            order=order, status=ReportStatus.FINAL
+        ).order_by("-generated_at").first()
+        
+        if order.status == "PUBLISHED" and existing_report:
+            return Response({
+                "detail": "Report already published.",
+                "lab_number": order.lab_number,
+                "report_id": existing_report.id,
+                "pdf_url": existing_report.report_file.url
+            })
+
+        # 2. Check blockers
+        blockers = collect_report_blockers(order.id)
+        if blockers:
+            return Response(
+                {
+                    "code": "REPORT_BLOCKED",
+                    "message": "Report cannot be published.",
+                    "blocking_reasons": blockers
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 3. Generate PDF
+        try:
+            from django.core.files.base import ContentFile
+            # Use V2 generator from logic
+            pdf_bytes = generate_v2_report(order.id)
+            
+            with transaction.atomic():
+                # Create Report artifact
+                report = Report.objects.create(
+                    order=order,
+                    status=ReportStatus.FINAL,
+                    generated_by=request.user,
+                    template_name="default"
+                )
+                filename = f"report_{order.lab_number}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                report.report_file.save(filename, ContentFile(pdf_bytes))
+                
+                # Transition order status
+                if order.status != "PUBLISHED":
+                    transition_visit_state(order, "PUBLISHED", request.user, source="publish_action")
+                
+            return Response({
+                "detail": "Report published successfully.",
+                "lab_number": order.lab_number,
+                "report_id": report.id,
+                "pdf_url": report.report_file.url
+            })
+        except Exception as e:
+            logger.error(f"Failed to publish report for order {order.id}: {str(e)}", exc_info=True)
+            return Response(
+                {"detail": f"Generation failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class OrderItemViewSet(viewsets.ReadOnlyModelViewSet):

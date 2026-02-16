@@ -160,6 +160,32 @@ export default function VerificationQueuePage() {
     await bulkRejectMutation.mutateAsync({ resultIds: ids, reason });
   };
 
+  const publishMutation = useMutation({
+    mutationFn: (orderId: number) => orderApi.publishReport(orderId),
+    onSuccess: (response) => {
+      setNotice({ type: 'success', message: 'Report published successfully.' });
+      if (response.data.pdf_url) {
+        window.open(response.data.pdf_url, '_blank');
+      }
+      queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
+    },
+    onError: (err: any) => {
+      const data = err?.response?.data;
+      if (data?.code === 'REPORT_BLOCKED') {
+        const reasons = data.blocking_reasons.map((r: any) => r.detail).join(' • ');
+        setNotice({ type: 'error', message: `Publish Blocked: ${reasons}` });
+      } else {
+        setNotice({ type: 'error', message: data?.detail || 'Failed to publish report.' });
+      }
+    },
+  });
+
+  const handlePublishReport = async () => {
+    if (!selectedOrderInternalId) return;
+    if (!confirm('This will finalize the report and mark it as PUBLISHED. Continue?')) return;
+    await publishMutation.mutateAsync(selectedOrderInternalId);
+  };
+
 
   if (queueLoading) return <div className={styles.loading}>Loading queue...</div>;
   if (queueError) return <div className={styles.error}>Failed to load verification queue</div>;
@@ -214,7 +240,14 @@ export default function VerificationQueuePage() {
             </div>
             <div className={styles.headerActions}>
               <button className={`${styles.btn} ${styles.previewBtn}`} onClick={handlePreviewReport}>
-                Preview Report
+                Preview
+              </button>
+              <button
+                className={`${styles.btn} ${styles.publishBtn}`}
+                onClick={handlePublishReport}
+                disabled={publishMutation.isPending}
+              >
+                {publishMutation.isPending ? 'Publishing...' : 'Publish Report'}
               </button>
               <button className={`${styles.btn} ${styles.verifyAllBtn}`} onClick={handleVerifyAll}>
                 Verify All

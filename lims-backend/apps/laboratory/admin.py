@@ -25,17 +25,46 @@ class TestCategoryAdmin(admin.ModelAdmin):
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
     list_display = ("test_code", "test_name", "category", "price", "is_active")
-    list_filter = ("category", "is_active")
+    list_filter = ("category", "is_active", "print_group")
     search_fields = ("test_code", "test_name", "loinc_code")
+    fieldsets = (
+        (None, {"fields": ("test_code", "test_name", "category", "price", "is_active")}),
+        ("Sample & TAT", {"fields": ("sample_type", "sample_volume", "turnaround_time", "instructions")}),
+        ("Printing Rules", {
+            "fields": (
+                "print_group",
+                "print_priority",
+                "force_separate_page",
+                "omit_blank_parameters",
+                "print_if_any_result_present",
+                "footer_comments_static",
+            )
+        }),
+    )
     inlines = [TestParameterInline]
 
 
 @admin.register(TestPanel)
 class TestPanelAdmin(admin.ModelAdmin):
     list_display = ("panel_code", "panel_name", "category", "price", "is_active")
-    list_filter = ("category", "is_active")
+    list_filter = ("category", "is_active", "print_group")
     search_fields = ("panel_code", "panel_name")
     filter_horizontal = ("tests",)
+    fieldsets = (
+        (None, {"fields": ("panel_code", "panel_name", "category", "price", "is_active")}),
+        ("Composition", {"fields": ("tests", "description")}),
+        ("Sample & TAT", {"fields": ("sample_type", "sample_volume", "turnaround_time")}),
+        ("Printing Rules", {
+            "fields": (
+                "print_group",
+                "print_priority",
+                "force_separate_page",
+                "omit_blank_parameters",
+                "print_if_any_result_present",
+                "footer_comments_static",
+            )
+        }),
+    )
 
 
 @admin.register(TestParameter)
