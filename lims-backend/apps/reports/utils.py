@@ -329,7 +329,9 @@ def build_results_flowables(items, patient, styles, available_width, opts):
     for panel_name, panel_items in grouped.items():
         rows = []
         for item in panel_items:
-            results = item.results.all().order_by("test_parameter__display_order")
+            results = item.results.filter(
+                result_value__isnull=False, test_parameter__is_printable=True
+            ).order_by("test_parameter__display_order")
             for result in results:
                 param = result.test_parameter
                 test_label = safe_text(

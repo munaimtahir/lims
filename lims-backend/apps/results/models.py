@@ -41,7 +41,7 @@ class TestResult(models.Model):
     )
     test_parameter = models.ForeignKey(TestParameter, on_delete=models.PROTECT)
 
-    result_value = models.CharField(max_length=500)
+    result_value = models.CharField(max_length=500, null=True, blank=True)
 
     # Auto-calculated flag
     flag = models.CharField(max_length=20, choices=FLAG_CHOICES, default="")

@@ -11,20 +11,20 @@ from apps.orders.models import Order, OrderItem
 
 logger = logging.getLogger(__name__)
 
-PLACEHOLDER_VALUES = {"", "*", "-", "pending", "placeholder"}
+PLACEHOLDER_VALUES = {"-", "pending", "placeholder"}
 
 
 def _has_valid_result_value(result: TestResult) -> bool:
     """
     Check if result has a valid value.
-    If parameter is required, it must be non-empty/non-placeholder.
+    If parameter is required for verification, it must be non-empty/non-placeholder.
     If parameter is optional, empty/placeholder is considered 'ABSENT' (valid for skipping).
     """
-    value = (result.result_value or "").strip()
-    is_absent = not value or value.lower() in PLACEHOLDER_VALUES
+    value = result.result_value
+    is_absent = value is None or str(value).strip() == "" or str(value).lower() in PLACEHOLDER_VALUES
     
-    # If required, must be present
-    if result.test_parameter.is_required:
+    # If required for verification, must be present
+    if result.test_parameter.is_required_for_verification:
         return not is_absent
         
     # If optional, it's valid whether present or absent

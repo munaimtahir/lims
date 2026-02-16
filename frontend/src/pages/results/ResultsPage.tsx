@@ -194,7 +194,6 @@ const ResultWorklist = ({ onSelect }: { onSelect: (id: number) => void }) => {
 const useResultEntry = (orderItemId: number) => {
   const queryClient = useQueryClient();
   const [results, setResults] = useState<Record<number, string>>({});
-  const [remarks, setRemarks] = useState<Record<number, string>>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
@@ -222,50 +221,45 @@ const useResultEntry = (orderItemId: number) => {
   }, [orderItemId]);
 
   useEffect(() => {
-    if (existingResultsData?.data.results && !initializedRef.current) {
+    if (existingResultsData?.data.results) {
       const initialResults: Record<number, string> = {};
-      const initialRemarks: Record<number, string> = {};
       existingResultsData.data.results.forEach((r: TestResult) => {
-        const value = r.result_value === '*' ? '' : (r.result_value || '');
+        const value = r.result_value || '';
         initialResults[r.test_parameter] = value;
-        initialRemarks[r.test_parameter] = r.remarks || '';
       });
       const storedRaw = localStorage.getItem(draftStorageKey);
       if (storedRaw) {
         try {
-          const parsed = JSON.parse(storedRaw) as { results?: Record<number, string>; remarks?: Record<number, string> };
+          const parsed = JSON.parse(storedRaw) as { results?: Record<number, string> };
           setResults(parsed.results || initialResults);
-          setRemarks(parsed.remarks || initialRemarks);
           showToast('success', 'Recovered draft from local autosave.');
         } catch {
           setResults(initialResults);
-          setRemarks(initialRemarks);
         }
       } else {
         setResults(initialResults);
-        setRemarks(initialRemarks);
       }
-      lastSavedSnapshotRef.current = JSON.stringify({ results: initialResults, remarks: initialRemarks });
+      lastSavedSnapshotRef.current = JSON.stringify({ results: initialResults });
       initializedRef.current = true;
     }
   }, [existingResultsData, draftStorageKey]);
 
   useEffect(() => {
     if (!initializedRef.current) return;
-    const snapshot = JSON.stringify({ results, remarks });
+    const snapshot = JSON.stringify({ results });
     setHasUnsavedChanges(snapshot !== lastSavedSnapshotRef.current);
-  }, [results, remarks]);
+  }, [results]);
 
   useEffect(() => {
     if (!initializedRef.current) return;
     const intervalId = window.setInterval(() => {
-      const snapshot = JSON.stringify({ results, remarks });
+      const snapshot = JSON.stringify({ results });
       if (snapshot !== lastSavedSnapshotRef.current) {
         localStorage.setItem(draftStorageKey, snapshot);
       }
     }, 10000);
     return () => window.clearInterval(intervalId);
-  }, [results, remarks, draftStorageKey]);
+  }, [results, draftStorageKey]);
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -282,19 +276,19 @@ const useResultEntry = (orderItemId: number) => {
       const payload = resultsToSave.map(r => {
         const rawValue = (results[r.test_parameter] ?? '').toString();
         const trimmedValue = rawValue.trim();
-        const resultValue = trimmedValue === '' ? '*' : trimmedValue;
+        const resultValue = trimmedValue === '' ? null : trimmedValue;
         return {
           order_item: orderItemId,
           test_parameter: r.test_parameter,
           result_value: resultValue,
-          remarks: remarks[r.test_parameter] ?? '',
-        };
+          remarks: '',
+        } as any;
       });
-      return resultApi.bulkEntry(payload);
+      return resultApi.bulkEntry(payload as any);
     },
     onSuccess: () => {
       showToast('success', 'Results saved.');
-      lastSavedSnapshotRef.current = JSON.stringify({ results, remarks });
+      lastSavedSnapshotRef.current = JSON.stringify({ results });
       setHasUnsavedChanges(false);
       localStorage.removeItem(draftStorageKey);
       queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
@@ -332,15 +326,18 @@ const useResultEntry = (orderItemId: number) => {
     },
   });
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, result: TestResult, index: number, total: number) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number, total: number) => {
+    // Ctrl + S: Save
+    if (e.key === 's' && e.ctrlKey) {
+      e.preventDefault();
+      saveMutation.mutate(existingResultsData?.data.results || []);
+      return;
+    }
+
     if (e.key === 'Enter') {
       e.preventDefault();
       if (e.ctrlKey) {
         saveMutation.mutate(existingResultsData?.data.results || []);
-        return;
-      }
-      if (e.shiftKey) {
-        saveMutation.mutate([result]);
         return;
       }
 
@@ -356,8 +353,6 @@ const useResultEntry = (orderItemId: number) => {
   return {
     results,
     setResults,
-    remarks,
-    setRemarks,
     existingResultsData,
     isLoadingResults,
     isError,
@@ -379,8 +374,6 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
   const {
     results,
     setResults,
-    remarks,
-    setRemarks,
     existingResultsData,
     isLoadingResults,
     isError,
@@ -625,96 +618,96 @@ const ResultEntry = ({ orderItemId, onBack, onChangeItem }: { orderItemId: numbe
       </div>
 
       {activeTab === 'entry' ? (
-      <>
-      <div className={styles.stickyActionBar} style={{ top: '0', position: 'sticky', zIndex: 10, background: 'white', padding: '10px 0', borderBottom: '1px solid #e2e8f0', marginBottom: '16px' }}>
-        {!allVerified && (
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-            <button
-              onClick={() => saveMutation.mutate(resultItems)}
-              disabled={saveMutation.isPending || verifyMutation.isPending || anyLocked}
-              className={styles.saveButton}
-              title={anyLocked ? 'Editing disabled after verification/finalization' : undefined}
-            >
-              {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
-            </button>
-            <button
-              onClick={handleSaveAndVerify}
-              disabled={verifyDisabled || anyLocked}
-              className={`${styles.verifyMainButton} ${styles.saveButton}`}
-              title={anyLocked ? 'Already verified/finalized' : undefined}
-            >
-              {verifyMutation.isPending ? 'Verifying...' : 'Verify'}
-            </button>
+        <>
+          <div className={styles.stickyActionBar} style={{ top: '0', position: 'sticky', zIndex: 10, background: 'white', padding: '10px 0', borderBottom: '1px solid #e2e8f0', marginBottom: '16px' }}>
+            {!allVerified && (
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => saveMutation.mutate(resultItems)}
+                  disabled={saveMutation.isPending || verifyMutation.isPending || anyLocked}
+                  className={styles.saveButton}
+                  title={anyLocked ? 'Editing disabled after verification/finalization' : undefined}
+                >
+                  {saveMutation.isPending ? 'Saving...' : 'Save Draft'}
+                </button>
+                <button
+                  onClick={handleSaveAndVerify}
+                  disabled={verifyDisabled || anyLocked}
+                  className={`${styles.verifyMainButton} ${styles.saveButton}`}
+                  title={anyLocked ? 'Already verified/finalized' : undefined}
+                >
+                  {verifyMutation.isPending ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+            )}
+            {allVerified && (
+              <div style={{ padding: '8px', background: '#dcfce7', color: '#166534', borderRadius: '6px', textAlign: 'center', fontWeight: 'bold' }}>
+                All results verified
+              </div>
+            )}
           </div>
-        )}
-        {allVerified && (
-          <div style={{ padding: '8px', background: '#dcfce7', color: '#166534', borderRadius: '6px', textAlign: 'center', fontWeight: 'bold' }}>
-            All results verified
+
+          {
+            rejectedResults.length > 0 && (
+              <div className={styles.rejectionNotice}>
+                <strong>Returned for correction</strong>
+                <ul>
+                  {rejectedResults.map((result) => (
+                    <li key={result.id}>{result.remarks}</li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+
+          <div className={styles.form}>
+            {/* Actions moved to top */}
+
+            <div className={styles.tableContainer}>
+              <table className={styles.resultTable}>
+                <thead>
+                  <tr>
+                    <th style={{ width: '35%' }}>Test Parameter</th>
+                    <th style={{ width: '25%' }}>Result Value</th>
+                    <th style={{ width: '15%' }}>Unit</th>
+                    <th style={{ width: '25%' }}>Ref. Range</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resultItems.map((result: TestResult, index: number) => (
+                    <tr key={result.test_parameter}>
+                      <td>
+                        {result.parameter_name}
+                        {result.is_required_for_verification && (
+                          <span style={{ color: '#ef4444', marginLeft: '4px' }} title="Required for verification">*</span>
+                        )}
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          data-index={index}
+                          value={results[result.test_parameter] || ''}
+                          onChange={(e) => setResults(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
+                          onKeyDown={(e) => handleKeyDown(e, index, resultItems.length)}
+                          className={styles.resultInput}
+                          style={{
+                            borderColor: result.is_required_for_verification && !(results[result.test_parameter] || '').trim() ? '#fecaca' : undefined,
+                            borderWidth: result.is_required_for_verification && !(results[result.test_parameter] || '').trim() ? '2px' : undefined
+                          }}
+                          placeholder={result.is_required_for_verification ? 'Required...' : ''}
+                          disabled={['verified', 'final'].includes((result.status || '').toLowerCase())}
+                          title={['verified', 'final'].includes((result.status || '').toLowerCase()) ? 'Locked after verification/finalization' : undefined}
+                        />
+                      </td>
+                      <td>{result.unit}</td>
+                      <td>{result.reference_range}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
-
-      {
-        rejectedResults.length > 0 && (
-          <div className={styles.rejectionNotice}>
-            <strong>Returned for correction</strong>
-            <ul>
-              {rejectedResults.map((result) => (
-                <li key={result.id}>{result.remarks}</li>
-              ))}
-            </ul>
-          </div>
-        )
-      }
-
-      <div className={styles.form}>
-        {/* Actions moved to top */}
-
-        <div className={styles.tableContainer}>
-          <table className={styles.resultTable}>
-            <thead>
-              <tr>
-                <th>Test Parameter</th>
-                <th>Result Value</th>
-                <th>Unit</th>
-                <th>Remarks</th>
-                <th>Ref. Range</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resultItems.map((result: TestResult, index: number) => (
-                <tr key={result.test_parameter}>
-                  <td>{result.parameter_name}</td>
-                  <td>
-                    <input
-                      type="text"
-                      data-index={index}
-                      value={results[result.test_parameter] || ''}
-                      onChange={(e) => setResults(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
-                      onKeyDown={(e) => handleKeyDown(e, result, index, resultItems.length)}
-                      className={styles.resultInput}
-                      disabled={['verified', 'final'].includes((result.status || '').toLowerCase())}
-                      title={['verified', 'final'].includes((result.status || '').toLowerCase()) ? 'Locked after verification/finalization' : undefined}
-                    />
-                  </td>
-                  <td>{result.unit}</td>
-                  <td>
-                    <textarea
-                      className={styles.remarksInput}
-                      value={remarks[result.test_parameter] || ''}
-                      onChange={(e) => setRemarks(prev => ({ ...prev, [result.test_parameter]: e.target.value }))}
-                      disabled={['verified', 'final'].includes((result.status || '').toLowerCase())}
-                      title={['verified', 'final'].includes((result.status || '').toLowerCase()) ? 'Locked after verification/finalization' : undefined}
-                    />
-                  </td>
-                  <td>{result.reference_range}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      </>
+        </>
       ) : (
         <div className={styles.form}>
           {isAuditLoading ? (

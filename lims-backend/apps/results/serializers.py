@@ -47,9 +47,6 @@ class TestResultSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Convert status to lowercase for frontend compatibility."""
         data = super().to_representation(instance)
-        # Normalize placeholder empty values for frontend display
-        if data.get("result_value") == "*":
-            data["result_value"] = ""
         # Map backend status to frontend status
         status_map = {
             "DRAFT": "pending",
@@ -62,6 +59,10 @@ class TestResultSerializer(serializers.ModelSerializer):
             data["status"] = status_map.get(data["status"], data["status"].lower())
         return data
 
+    is_required_for_verification = serializers.BooleanField(
+        source="test_parameter.is_required_for_verification", read_only=True
+    )
+
     class Meta:
         model = TestResult
         fields = [
@@ -71,6 +72,7 @@ class TestResultSerializer(serializers.ModelSerializer):
             "parameter_name",
             "unit",
             "result_value",
+            "is_required_for_verification",
             "flag",
             "is_abnormal",
             "is_critical",
@@ -99,7 +101,7 @@ class TestResultSerializer(serializers.ModelSerializer):
         user = getattr(request, "user", None)
 
         new_status = attrs.get("status") or (instance.status if instance else "DRAFT")
-        result_value = attrs.get("result_value") or (instance.result_value if instance else "")
+        result_value = attrs.get("result_value", instance.result_value if instance else None)
 
         if instance:
             if new_status != instance.status:
@@ -107,15 +109,13 @@ class TestResultSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError("Invalid status transition.")
 
         if new_status in ["VERIFIED", "FINAL"]:
-            is_empty = not result_value or str(result_value).strip() in {"", "*"}
+            is_empty = result_value is None or str(result_value).strip() == ""
             
             # Check if parameter is required
             test_parameter = getattr(instance, "test_parameter", None)
-            # If creating a new instance, we might need to fetch it from attrs (not easily available here without DB hit)
-            # But usually we update existing results for verification.
             
             if is_empty and instance:
-                if instance.test_parameter.is_required:
+                if instance.test_parameter.is_required_for_verification:
                     raise serializers.ValidationError(
                         f"Result value is required for {instance.test_parameter.effective_parameter_name} before verification."
                     )

@@ -49,7 +49,7 @@ def generate_registration_number(center, dt=None):
     return reg_number
 
 
-def generate_tenant_mrn(tenant: Tenant, dt=None):
+def generate_tenant_mrn(tenant: "Tenant", dt=None):
     """
     Generate tenant-wide MRN.
 
@@ -72,7 +72,7 @@ def generate_tenant_mrn(tenant: Tenant, dt=None):
     return f"{tenant.code}-{year_suffix}-{serial:06d}"
 
 
-def generate_branch_order_id(tenant: Tenant, branch: Branch, dt=None):
+def generate_branch_order_id(tenant: "Tenant", branch: "Branch", dt=None):
     """Generate Order ID: BC-YYMMDD-#### per (tenant, branch, date)."""
     from apps.core.models import OrderIdSequence
     if dt is None:

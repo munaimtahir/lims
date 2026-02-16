@@ -5,6 +5,14 @@ from .models import Test, TestCategory, TestPanel, TestParameter
 
 class TestParameterInline(admin.TabularInline):
     model = TestParameter
+    fields = (
+        "parameter",
+        "display_order",
+        "is_required_for_verification",
+        "is_printable",
+        "value_source",
+        "default_value",
+    )
     extra = 1
 
 
@@ -28,3 +36,20 @@ class TestPanelAdmin(admin.ModelAdmin):
     list_filter = ("category", "is_active")
     search_fields = ("panel_code", "panel_name")
     filter_horizontal = ("tests",)
+
+
+@admin.register(TestParameter)
+class TestParameterAdmin(admin.ModelAdmin):
+    list_display = (
+        "test",
+        "parameter",
+        "display_order",
+        "is_required_for_verification",
+        "value_source",
+    )
+    list_filter = ("value_source", "is_required_for_verification", "is_printable")
+    search_fields = (
+        "test__test_name",
+        "parameter__name",
+        "parameter__short_name",
+    )

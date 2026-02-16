@@ -40,9 +40,10 @@ def get_orderitem_expected_parameters(order_item, patient) -> list[dict[str, Any
 
 
 @transaction.atomic
-def ensure_test_results(order_item) -> list[TestResult]:
+def ensure_order_item_results(order_item) -> list[TestResult]:
     """
     Ensure test result rows exist for an order item.
+    Also applies default values where result_value is NULL.
 
     Uses transaction.atomic() to prevent race conditions and ensure
     consistency when multiple requests process the same order_item concurrently.
@@ -54,13 +55,39 @@ def ensure_test_results(order_item) -> list[TestResult]:
         List of TestResult instances (created or existing)
     """
     patient = getattr(order_item.order, "patient", None)
-    expected = get_orderitem_expected_parameters(order_item, patient)
+    
+    # Prefetch test_parameters with their defaults to avoid N+1
+    # We need to know which parameters are expected.
+    # get_orderitem_expected_parameters already does some work but we need the TestParameter objects.
+    
+    tests = []
+    if order_item.test:
+        tests = [order_item.test]
+    elif order_item.panel:
+        tests = list(order_item.panel.tests.all())
+
     results = []
-    for item in expected:
-        result, _created = TestResult.objects.get_or_create(
-            order_item=order_item,
-            test_parameter_id=item["parameter_id"],
-            defaults={"result_value": "", "status": "DRAFT"},
-        )
-        results.append(result)
+    for test in tests:
+        # Use select_related to get default_value and other rule fields
+        mappings = test.test_parameters.select_related("parameter").all()
+        for mapping in mappings:
+            result, created = TestResult.objects.get_or_create(
+                order_item=order_item,
+                test_parameter=mapping,
+                defaults={
+                    "result_value": mapping.default_value if mapping.default_value else None,
+                    "status": "DRAFT",
+                },
+            )
+            
+            # If existed but was NULL, also check if we should apply default
+            if not created and result.result_value is None and mapping.default_value:
+                result.result_value = mapping.default_value
+                result.save(update_fields=["result_value"])
+            
+            results.append(result)
+            
     return results
+
+# Alias for compatibility
+ensure_test_results = ensure_order_item_results

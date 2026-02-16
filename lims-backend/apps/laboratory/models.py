@@ -164,8 +164,8 @@ class TestParameter(models.Model):
     )
     display_order = models.IntegerField(default=0)
     reportable = models.BooleanField(default=True)
-    is_required = models.BooleanField(default=False, help_text="If true, result value is mandatory for verification.")
-    is_required_for_verification = models.BooleanField(default=False, help_text="Explicit flag for verification blocking")
+    is_required = models.BooleanField(default=False, help_text="Legacy flag; use is_required_for_verification")
+    is_required_for_verification = models.BooleanField(default=True, help_text="If true, result value is mandatory for verification.")
 
     # Phase 3: Result Entry & Printing
     is_printable = models.BooleanField(default=True)
@@ -182,7 +182,6 @@ class TestParameter(models.Model):
         ("MANUAL", "Manual"),
         ("FORMULA", "Formula"),
         ("INSTRUMENT", "Instrument"),
-        ("MIXED", "Mixed"),
     ]
     value_source = models.CharField(max_length=20, choices=VALUE_SOURCE_CHOICES, default="MANUAL")
     

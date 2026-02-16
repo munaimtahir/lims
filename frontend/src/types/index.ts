@@ -185,6 +185,12 @@ export interface TestParameter {
   critical_high?: number;
   decimal_places: number;
   display_order: number;
+  is_required_for_verification: boolean;
+  is_printable: boolean;
+  default_value?: string;
+  value_source: 'MANUAL' | 'FORMULA' | 'INSTRUMENT';
+  formula_expression?: string;
+  allow_manual_override: boolean;
 }
 
 export interface LabTest {
@@ -320,7 +326,8 @@ export interface TestResult {
   test_parameter: number;
   parameter_name: string;
   unit: string;
-  result_value: string;
+  result_value: string | null;
+  is_required_for_verification: boolean;
   flag: ResultFlag;
   is_abnormal?: boolean;
   is_critical?: boolean;

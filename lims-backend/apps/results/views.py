@@ -26,10 +26,11 @@ from .filters import TestResultFilter
 from .models import TestResult
 from .serializers import TestResultSerializer
 from .services.expected_results import (
-    ensure_test_results,
+    ensure_order_item_results,
     get_orderitem_expected_parameters,
 )
 from .services.transitions import transition_result_state
+from .services.formulas import recompute_formulas_for_order_item
 from apps.audit.utils import emit_audit_event
 
 
@@ -160,20 +161,45 @@ class TestResultViewSet(viewsets.ModelViewSet):
         # We need F expression for comparison
         from django.db.models import F
 
-        # Count total parameters expected (Test or Panel)
-        # Count results entered/verified
-        # Count results in draft
+        # Annotate with parameter counts to determine completion status
         order_items_needing_results = (
             base.annotate(
-                # Calculate total parameters expected
-                # distinct=True is required because of multiple joins
+                # Count results that are verified or finalized (item is beyond entry phase)
+                verified_params=Count(
+                    "results",
+                    filter=Q(results__status__in=["VERIFIED", "FINAL"]),
+                    distinct=True
+                ),
+                
+                # Count total parameters that are required for verification
+                required_total=Count(
+                    "test__test_parameters",
+                    filter=Q(test__test_parameters__is_required_for_verification=True),
+                    distinct=True
+                ) + Count(
+                    "panel__tests__test_parameters",
+                    filter=Q(panel__tests__test_parameters__is_required_for_verification=True),
+                    distinct=True
+                ),
+
+                # Count required parameters that have a value
+                required_entered=Count(
+                    "results",
+                    filter=Q(
+                        results__test_parameter__is_required_for_verification=True,
+                        results__result_value__isnull=False
+                    ) & ~Q(results__result_value=""),
+                    distinct=True
+                ),
+
+                # Count total parameters expected (Test or Panel)
                 total_params=Count("test__test_parameters", distinct=True)
                 + Count("panel__tests__test_parameters", distinct=True),
                 
-                # Count results that move item towards completion (ENTERED or VERIFIED)
-                entered_params=Count(
+                # Count results entered (have a value)
+                entered_with_value=Count(
                     "results",
-                    filter=Q(results__status__in=["ENTERED", "VERIFIED", "FINAL"]),
+                    filter=Q(results__result_value__isnull=False) & ~Q(results__result_value=""),
                     distinct=True
                 ),
                 
@@ -187,8 +213,11 @@ class TestResultViewSet(viewsets.ModelViewSet):
             .filter(
                 # Keep visible if:
                 # 1. Has draft results (currently being worked on)
-                # 2. OR Total entered/verified is less than total expected parameters (incomplete)
-                Q(draft_params__gt=0) | Q(entered_params__lt=F("total_params"))
+                # 2. OR Has missing required parameters
+                # 3. OR Item is not fully verified
+                Q(draft_params__gt=0) | 
+                Q(required_entered__lt=F("required_total")) |
+                Q(verified_params__lt=F("total_params"))
             )
             .select_related("order", "order__patient", "test", "panel")
             .distinct()
@@ -344,7 +373,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
         """Ensure result rows exist for an order item."""
         order_item = self._get_order_item_from_request(request)
 
-        results = ensure_test_results(order_item)
+        results = ensure_order_item_results(order_item)
 
         # Reload results with all related data for serialization
         result_ids = [r.id for r in results]
@@ -474,9 +503,9 @@ class TestResultViewSet(viewsets.ModelViewSet):
             for result_data in results_data:
                 order_item_id = result_data.get("order_item")
                 test_parameter_id = result_data.get("test_parameter")
-                result_value = result_data.get("result_value", "")
-                if result_value is None or str(result_value).strip() == "":
-                    result_value = "*"
+                result_value = result_data.get("result_value")
+                if result_value is not None and str(result_value).strip() == "":
+                    result_value = None
 
                 if not order_item_id or not test_parameter_id:
                     errors.append(
@@ -563,6 +592,8 @@ class TestResultViewSet(viewsets.ModelViewSet):
             if modified_order_items:
                 from .services.transitions import update_order_item_status
                 for item in OrderItem.objects.filter(id__in=modified_order_items):
+                    # Recompute formulas BEFORE updating overall status
+                    recompute_formulas_for_order_item(item)
                     update_order_item_status(item)
 
         response_data = {
