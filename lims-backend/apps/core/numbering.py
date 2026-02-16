@@ -1,15 +1,7 @@
 from django.db import transaction
 from django.utils import timezone
 
-from apps.core.models import (
-    Branch,
-    CollectionCenter,
-    LabDailyCounter,
-    OrderIdSequence,
-    RegistrationCounter,
-    Tenant,
-    TenantMrnSequence,
-)
+from django.conf import settings
 
 
 def generate_registration_number(center, dt=None):
@@ -25,8 +17,15 @@ def generate_registration_number(center, dt=None):
     Returns:
         str: The generated registration number.
     """
+    from apps.core.models import CollectionCenter, RegistrationCounter
     if dt is None:
         dt = timezone.now()
+
+    if center is None:
+        # Fallback for when collection centers feature is disabled
+        center, _ = CollectionCenter.objects.get_or_create(
+            code="00", defaults={"name": "Head Office", "is_active": True}
+        )
 
     yymm = dt.strftime("%y%m")  # e.g., '2602'
 
@@ -56,6 +55,7 @@ def generate_tenant_mrn(tenant: Tenant, dt=None):
 
     Format: TENANTCODE-YY-###### (sequence resets annually per tenant).
     """
+    from apps.core.models import TenantMrnSequence
     if dt is None:
         dt = timezone.now()
 
@@ -74,6 +74,7 @@ def generate_tenant_mrn(tenant: Tenant, dt=None):
 
 def generate_branch_order_id(tenant: Tenant, branch: Branch, dt=None):
     """Generate Order ID: BC-YYMMDD-#### per (tenant, branch, date)."""
+    from apps.core.models import OrderIdSequence
     if dt is None:
         dt = timezone.now()
     date_part = dt.strftime("%y%m%d")
@@ -94,6 +95,7 @@ def generate_lab_number(center, dt=None):
     Returns:
         tuple: (lab_number_str, daily_serial_int)
     """
+    from apps.core.models import CollectionCenter, LabDailyCounter
     if dt is None:
         dt = timezone.now()
 
@@ -116,6 +118,12 @@ def generate_lab_number(center, dt=None):
     }
     month_letter = month_map[dt.month]
     dd = dt.strftime("%d")  # 01-31
+
+    if center is None:
+        # Fallback for when collection centers feature is disabled
+        center, _ = CollectionCenter.objects.get_or_create(
+            code="00", defaults={"name": "Head Office", "is_active": True}
+        )
 
     # Atomic increment
     with transaction.atomic():
