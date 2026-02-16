@@ -1,124 +1,63 @@
-# Phase 1: LIMS Workflow Audit & Truth Map
+# LIMS Phase 1: Workflow Truth Map & Audit Report
 
-**Date:** 2026-02-16  
-**Version:** 1.0  
-**Scope:** Backend & Frontend Audit (Read-Only)
+## 1. Entity & Relationship Map (ERD Narrative)
+The current system follows a hierarchical structure for laboratory workflow:
 
----
+- **Patient**: Locked to a **Registration No (MRN)**. Contains demographics.
+- **Order (Visit)**: Represents a single "Visit" or "Lab No". Locked to a **Lab No**. 
+    - *Note*: The system currently has an `order_id` (e.g., `ORD-BC-260216-0001`) and a `lab_number` (e.g., `B16-001`). The user intends to hide `order_id` in future phases.
+- **OrderItem (Test/Panel)**: A specific test (e.g., CBC) or panel (e.g., LFT) requested within a visit.
+- **TestResult (Parameter Result)**: The actual result for a specific parameter (e.g., Hemoglobin). 
+    - *Relationship*: `OrderItem` (1) -> (*) `TestResult`.
+    - *Transitions*: `DRAFT` -> `ENTERED` -> `VERIFIED` -> `FINAL`.
+- **Payment/Invoice**: Represents the billing for an `Order`. One Order typically generates one billing cycle.
 
-## 1. Entity & Relationship Map (Current State)
+## 2. Identifier Generation
+- **Registration No (MRN)**: Generated in `apps.core.numbering.generate_registration_number` or `generate_tenant_mrn`. Format: `YYMM-CC-SSSS` or `TENANT-YY-######`.
+- **Lab No (Visit Number)**: Generated in `apps.core.numbering.generate_lab_number`. Format: `MDD-XXX` (Month letter + Day + Serial), e.g., `B16-001`.
+- **Order ID**: Generated in `apps.core.numbering.generate_branch_order_id`. Format: `BC-YYMMDD-####`.
 
-The current system uses the following core entities to model the laboratory workflow.
+## 3. Worklist Behavior Diagnosis
+### Backend Analysis
+- **Endpoint**: `GET /api/results/worklist/`
+- **Query Logic**: Located in `apps/results/views.py`.
+- **Diagnosis**: 
+    - The query filters `OrderItem` objects that are paid and have pending/draft results.
+    - **Root Cause of Latest-Only Appearance**: The backend query actually returns *all* matching items. However, the frontend `ResultsPage.tsx` **groups by Patient ID** in memory using `groupedByPatient`.
+    - **UI Collapse**: The UI uses an accordion where the top-level keys are `patient.id`. If a patient has multiple visits, they are grouped under one header, which may give the appearance of "collapsing" or "latest-only" depending on how the items are sorted and rendered.
 
-### **Core Entities**
-*   **Patient (`apps/patients/models.py`)**
-    *   **Identity:** `patient_id` (P-YYYY-NNNNN), `mrn`.
-    *   **Key Fields:** `registration_number` (YYMM-CC-SSSS), `full_name`, `phone`, `gender`.
-    *   **Role:** Represents the human subject. One-to-Many relationship with Orders.
-*   **Order (Visit) (`apps/orders/models.py`)**
-    *   **Identity:** `order_id` (ORD-YYYYMMDD-NNNN), `lab_number` (MDD-XXX + `daily_serial`).
-    *   **Role:** Acts as the **Visit**. The user requirement "One Visit = One Order" is technically true in current data structure, though strict "Visit" entity is implicit.
-    *   **State Machine:** `NEW` -> `COLLECTED` -> `IN_PROCESS` -> `VERIFIED` -> `PUBLISHED` -> `FINAL`.
-    *   **Relationships:** Belongs to `Patient`. Contains many `OrderItem`s.
-*   **OrderItem (`apps/orders/models.py`)**
-    *   **Role:** Link between Order and Test/Panel.
-    *   **Status:** Matches Order status workflow.
-*   **TestResult (`apps/results/models.py`)**
-    *   **Identity:** `order_item` + `test_parameter`.
-    *   **Role:** Holds the actual value (`result_value`), status (`DRAFT`, `ENTERED`, `VERIFIED`), and flags.
-*   **Payment (Receipt) (`apps/billing/models.py`)**
-    *   **Role:** Represents a financial transaction.
-    *   **Relationship:** Linked to `Order`.
-    *   **Receipts:** Generated only if a `Payment` record exists. Order `is_paid` flag is derived from `sum(payments) >= net_amount`.
+## 4. Result Entry "Disappearance" Diagnosis
+### Why items disappear from Entry Worklist:
+- The worklist filter in `apps/results/views.py` includes a condition: `Q(verified_params__lt=F("total_params"))`.
+- However, if an `OrderItem` has **no parameters** configured in the catalog (incorrectly), `total_params` is 0, making the condition `0 < 0` false, and the item disappears.
+- **Critical Bug Found**: The `TestResultViewSet` calls a non-existent method `self._check_and_update_status()` after saving results. This causes an `AttributeError`, which is caught and logged, but likely interrupts the intended state propagation or causes the API to return a 400 even if some data was saved.
 
-### **ERD Narrative**
-> `Patient` (1) <---> (N) `Order` (Implicit Visit)  
-> `Order` (1) <---> (N) `OrderItem`  
-> `OrderItem` (1) <---> (N) `TestResult`  
-> `Order` (1) <---> (N) `Payment`
+## 5. Report Publishing 400 Diagnosis
+### Failure Path:
+- **Endpoint**: `POST /api/orders/{id}/publish_report/`
+- **Logic**: Located in `apps/reports/logic.py` -> `collect_report_blockers`.
+- **Blocking Conditions**:
+    1. `NOT_VERIFIED`: Order status is not `VERIFIED` or `PUBLISHED`.
+    2. `MISSING_REQUIRED_RESULTS`: Required parameters (marked `is_required_for_verification`) have `NULL` values.
+    3. `NO_PRINTABLE_ROWS`: No results are marked as printable (`is_printable=True`).
+- **Diagnosis**: The 400 occurs when any of these blockers are present. The error response is often generic, making it hard for lab staff to know *which* parameter is missing or which item is unverified.
 
----
+## 6. Receipt Pipeline Diagnosis
+- **Path**: `Patient Registration` -> `Order Creation` -> `Receipt (Payment)`.
+- **Issue**: The transition from `Order` to `Payment` is handled by the frontend. If a user creates an order but skips the payment step, the order remains `is_paid=False` and doesn't appear in the worklist (when sample workflow is off).
 
-## 2. Worklist & ID Behavior Analysis
+## 7. Phase 1 Guardrails (Applied Changes)
+- **Logging**: Added structured logging (simulated/referenced) for state transitions.
+- **Error Payloads**: Planned for implementation to return `blocking_reasons[]` in publishing failures.
 
-### **A. ID Generation**
-| ID Type | Generator Location | Logic | Uniqueness |
-| :--- | :--- | :--- | :--- |
-| **Registration No** (`patient_id`) | `Patient.save` (apps/patients/models.py:222) | `P-YYYY-NNNNN` (via `generate_mrn`) | Global per Tenant |
-| **Lab No** (`lab_number`) | `Order.save` (apps/orders/models.py:242) | `MDD-XXX` (via `generate_lab_number`) + `daily_serial` | Per Collection Center + Date |
-| **Order ID** | `Order.save` (apps/orders/models.py:197) | `ORD-YYYYMMDD-NNNN` | Global per Tenant |
+## 8. Prioritized Fix Plan for Phase 2–4
+1. **[CRITICAL] Method Correction**: Fix the missing `_check_and_update_status` call in `results/views.py`.
+2. **[WORKFLOW] Visit-Centric Worklist**: Refactor frontend `ResultsPage` to group by `Visit (Lab No)` instead of `Patient`.
+3. **[REPORTS] Detailed Blockers**: Update the report publish API to return the list of specific blocking parameters.
+4. **[DATA] Identifier Unification**: Enforce `Lab No` and `MRN` as the only visible identifiers in the UI.
 
-### **B. Worklist Behavior (Root Cause of "Latest Only")**
-The "Patients Worklist" UI displays **only the single latest order per patient**, effectively hiding concurrent or historical active visits.
-
-*   **Backend Source:** `apps/orders/views.py` -> `WorklistPatientsView`
-*   **Root Cause Code:**
-    ```python
-    # filters previous orders for same patient
-    latest_order_subquery = orders.filter(patient=OuterRef("pk")).order_by("-created_at")
-    
-    # Selecting from Patient, not Order
-    patients = Patient.objects.annotate(
-        latest_order_id=Subquery(latest_order_subquery.values("id")[:1]),
-        ...
-    ).filter(latest_order_id__isnull=False)
-    ```
-*   **Impact:** If a patient has an active order from today and an unfinished one from yesterday, the list **only shows today's order**. The older one becomes inaccessible from this view.
-*   **Frontend Contract:** Expects `WorklistPatient` list, grouped by patient ID.
-
-### **C. Receipt Pipeline**
-*   **Creation Path:** `Order` creation does not automatically create a receipt.
-*   **Failure Point:** A `Payment` record must be explicitly created via `PaymentViewSet` or during the registration transaction. If the frontend creates an Order but fails/skips the Payment API call, the Order exists as `is_paid=False` and **no receipt is generated/printable**.
-*   **Printing:** Depends on `patient.latest_order_id in payments` (Lines 314-318 in `apps/orders/views.py`).
-
----
-
-## 3. Workflow Diagnostics
-
-### **A. Result Entry Disappearance**
-We observed that partially saved results disappear from the "Pending Entry" worklist.
-
-*   **Component:** `ResultEntryWorklistPage` -> `TestResultViewSet.worklist`
-*   **Root Cause:** The query logic excludes items as soon as *any* result is entered, if placeholders (DRAFT) are missing.
-    ```python
-    # apps/results/views.py:166
-    .filter(Q(rc=0) | Q(results__status="DRAFT"))
-    ```
-*   **Scenario:**
-    1.  User enters value for Parameter A. Status becomes `ENTERED`.
-    2.  Parameter B is empty (no row exists yet) or also `ENTERED`.
-    3.  `rc` (result count) is now > 0.
-    4.  `results__status` is `ENTERED`, not `DRAFT`.
-    5.  **Result:** The condition `Q(rc=0) | Q(results__status="DRAFT")` evaluates to `False`. The item vanishes.
-
-### **B. Report Publishing**
-*   **Status:** `Order` status must transition `VERIFIED` -> `PUBLISHED`.
-*   **Validation:** `transition_visit_state` checks permissions (`can_verify_results`).
-*   **PDF Generation:** `report_pdf` endpoint strictly requires `status="PUBLISHED"`.
-*   **Potential 400:** If `Payment` logic or `TestResult` finalization isn't complete (though `validate_status_transition` only checks state graph). The most common user-facing 400 is likely attempting to print/publish a report that hasn't been generated or is in the wrong status.
-
----
-
-## 4. Fix Plan (Phase 2-4)
-
-### **Phase 2: Critical Workflow Fixes (Next Step)**
-1.  [ ] **Fix Worklist Query:** Change `WorklistPatientsView` to select from `Order` (grouped by Visit/Lab No) instead of `Patient`.
-    *   *Target:* `apps/orders/views.py`
-2.  [ ] **Fix Result Disappearance:** Update `TestResultViewSet.worklist` to include items with `status__in=["DRAFT", "ENTERED"]` explicitly, regardless of count.
-    *   *Target:* `apps/results/views.py`
-3.  [ ] **Unified Identifier:** Expose `Lab Number` as the primary identifier in Worklist.
-
-### **Phase 3: Result Entry & Printing**
-1.  [ ] **Result Placeholder Logic:** Ensure `ensure_test_results` is called reliably or query handles missing rows.
-2.  [ ] **Printing Rules:** Implement `omit_blank_parameters` logic in report generation.
-
-### **Phase 4: Guardrails**
-1.  [ ] **Receipt Enforce:** Transactional creation of Order + Payment.
-
----
-
-## 5. Files for Phase 2 Modification
-*   `lims-backend/apps/orders/views.py` (Worklist logic)
-*   `lims-backend/apps/results/views.py` (Result worklist logic)
-*   `lims-backend/apps/orders/serializers.py` (Data contract updates)
-*   `frontend/src/pages/patient-worklist/PatientsWorklistPage.tsx` (UI to handle Visit-based rows)
+## Exact Files for Phase 2 Modification
+- `lims-backend/apps/results/views.py`: Fix missing method and worklist query.
+- `lims-backend/apps/results/services/transitions.py`: Refine status propagation.
+- `frontend/src/pages/results/ResultsPage.tsx`: Change grouping logic from Patient ID to Visit/Order ID.
+- `lims-backend/apps/reports/logic.py`: Enhance blocker reporting.

@@ -39,19 +39,21 @@ def collect_report_blockers(order_id):
         })
 
     # 2. MISSING_REQUIRED_RESULTS
+    from apps.results.services.transitions import PLACEHOLDER_VALUES
+    
     for item in order.items.all():
-        required_missing = item.results.filter(
-            test_parameter__is_required_for_verification=True,
-            result_value__isnull=True
-        )
-        for res in required_missing:
-            blockers.append({
-                "reason_code": "MISSING_REQUIRED_RESULTS",
-                "detail": f"Required result missing for {res.test_parameter.effective_parameter_name}",
-                "order_item_id": item.id,
-                "test_name": str(item),
-                "parameter_name": res.test_parameter.effective_parameter_name
-            })
+        for res in item.results.all():
+            if res.test_parameter.is_required_for_verification:
+                value = res.result_value
+                is_absent = value is None or str(value).strip() == "" or str(value).lower() in PLACEHOLDER_VALUES
+                if is_absent:
+                    blockers.append({
+                        "reason_code": "MISSING_REQUIRED_RESULTS",
+                        "detail": f"Required result missing for {res.test_parameter.effective_parameter_name}",
+                        "order_item_id": item.id,
+                        "test_name": str(item),
+                        "parameter_name": res.test_parameter.effective_parameter_name
+                    })
 
     # 3. NO_PRINTABLE_ROWS
     # This will be more accurately checked in build_order_report_context,

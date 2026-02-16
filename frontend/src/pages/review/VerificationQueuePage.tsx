@@ -51,7 +51,13 @@ export default function VerificationQueuePage() {
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
     },
     onError: (err: any) => {
-      setNotice({ type: 'error', message: err?.response?.data?.detail || 'Failed to verify result.' });
+      const data = err?.response?.data;
+      if (data?.blocking_reasons) {
+        const reasons = data.blocking_reasons.map((r: any) => r.detail).join(' • ');
+        setNotice({ type: 'error', message: reasons });
+      } else {
+        setNotice({ type: 'error', message: data?.message || data?.detail || 'Failed to verify result.' });
+      }
     },
   });
 
@@ -63,7 +69,8 @@ export default function VerificationQueuePage() {
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
     },
     onError: (err: any) => {
-      setNotice({ type: 'error', message: err?.response?.data?.detail || 'Failed to return result.' });
+      const data = err?.response?.data;
+      setNotice({ type: 'error', message: data?.message || data?.detail || 'Failed to return result.' });
     },
   });
 
@@ -79,7 +86,13 @@ export default function VerificationQueuePage() {
       // For now, user controls navigation.
     },
     onError: (err: any) => {
-      setNotice({ type: 'error', message: err?.response?.data?.detail || 'Failed to verify results.' });
+      const data = err?.response?.data;
+      if (data?.blocking_reasons) {
+        const reasons = data.blocking_reasons.map((r: any) => r.detail).join(' • ');
+        setNotice({ type: 'error', message: reasons });
+      } else {
+        setNotice({ type: 'error', message: data?.message || data?.detail || 'Failed to verify results.' });
+      }
     },
   });
 

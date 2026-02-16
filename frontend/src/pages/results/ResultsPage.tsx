@@ -317,12 +317,15 @@ const useResultEntry = (orderItemId: number) => {
       queryClient.invalidateQueries({ queryKey: ['results', orderItemId] });
       queryClient.invalidateQueries({ queryKey: ['result-worklist'] });
     },
-    onError: (err: unknown) => {
-      const error = err as { response?: { data?: { error?: string; details?: string[] } } };
-      const errorData = error.response?.data;
-      const detailMessage = errorData?.details?.length ? errorData.details.join(' • ') : '';
-      const backendMessage = detailMessage || errorData?.error || 'An unexpected error occurred during verification.';
-      showToast('error', backendMessage);
+    onError: (err: any) => {
+      const errorData = err.response?.data;
+      if (errorData?.blocking_reasons) {
+        const detailMessage = errorData.blocking_reasons.map((r: any) => r.detail).join(' • ');
+        showToast('error', detailMessage);
+      } else {
+        const backendMessage = errorData?.message || errorData?.detail || errorData?.error || 'An unexpected error occurred during verification.';
+        showToast('error', backendMessage);
+      }
     },
   });
 

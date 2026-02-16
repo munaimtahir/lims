@@ -632,7 +632,8 @@ class TestResultViewSet(viewsets.ModelViewSet):
             try:
                 # Transition to ENTERED
                 transition_result_state(result, "ENTERED", request.user, source="api", reason=reason)
-                self._check_and_update_status(result.order_item, reverting=True)
+                from .services.transitions import update_order_item_status
+                update_order_item_status(result.order_item)
             except Exception as exc:
                 logger.error(
                     f"Result rejection failed for result {pk}: {str(exc)}",
@@ -667,7 +668,8 @@ class TestResultViewSet(viewsets.ModelViewSet):
             for result in results:
                 try:
                     transition_result_state(result, "ENTERED", request.user, source="api", reason=reason)
-                    self._check_and_update_status(result.order_item, reverting=True)
+                    from .services.transitions import update_order_item_status
+                    update_order_item_status(result.order_item)
                     success += 1
                 except Exception as exc:
                     errors.append(f"Result {result.id}: {str(exc)}")
@@ -690,7 +692,8 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
             try:
                 result = transition_result_state(result, "VERIFIED", request.user, source="api")
-                self._check_and_update_status(result.order_item)
+                from .services.transitions import update_order_item_status
+                update_order_item_status(result.order_item)
             except Exception as exc:
                 logger.error(
                     f"Result verification failed for result {pk}: {str(exc)}",
@@ -698,7 +701,16 @@ class TestResultViewSet(viewsets.ModelViewSet):
                     extra={"user": request.user.username, "result_id": pk},
                 )
                 return Response(
-                    {"detail": str(exc), "code": "verification_failed"},
+                    {
+                        "code": "VERIFICATION_FAILED",
+                        "message": str(exc),
+                        "blocking_reasons": [
+                            {
+                                "reason_code": getattr(exc, "default_code", "error"),
+                                "detail": str(exc)
+                            }
+                        ]
+                    },
                     status=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
                 )
 
@@ -729,15 +741,23 @@ class TestResultViewSet(viewsets.ModelViewSet):
             for result in results:
                 try:
                     transition_result_state(result, "VERIFIED", request.user, source="api")
-                    self._check_and_update_status(result.order_item)
+                    from .services.transitions import update_order_item_status
+                    update_order_item_status(result.order_item)
                     success += 1
                 except Exception as exc:
                     errors.append(f"Result {result.id}: {str(exc)}")
 
         if errors:
              return Response(
-                 {"detail": "Some results could not be verified.", "errors": errors, "processed": success},
-                 status=status.HTTP_409_CONFLICT,
+                 {
+                     "code": "VERIFICATION_BLOCKED",
+                     "message": "Some results could not be verified.",
+                     "blocking_reasons": [
+                         {"reason_code": "VERIFY_ERROR", "detail": e} for e in errors
+                     ],
+                     "processed": success
+                 },
+                 status=status.HTTP_400_BAD_REQUEST,
              )
         
         return Response({"detail": "Results verified successfully.", "processed": success})

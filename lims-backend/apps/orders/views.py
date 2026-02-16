@@ -102,6 +102,19 @@ class OrderViewSet(viewsets.ModelViewSet):
                 {"detail": "Update failed.", "code": "update_failed", "message": str(e)}
             )
 
+    def perform_create(self, serializer):
+        order = serializer.save(created_by=self.request.user)
+        logger.info(
+            f"Visit/Order created: {order.lab_number} for {order.patient.full_name} by {self.request.user.username}",
+            extra={
+                "order_id": order.order_id,
+                "lab_number": order.lab_number,
+                "patient_id": order.patient.id,
+                "user": self.request.user.username,
+                "tenant": user_tenant(self.request.user).id if self.request.user.is_authenticated else None
+            }
+        )
+
     def get_queryset(self):
         qs = super().get_queryset()
         tenant = user_tenant(self.request.user)
@@ -380,9 +393,13 @@ class WorklistOrdersView(APIView):
         # Query Orders directly (one row per order)
         orders = (
             Order.objects.select_related("patient")
-            .exclude(status__in=["FINAL", "CANCELLED"])
+            .exclude(status="FINAL")
             .order_by("-created_at")
         )
+        
+        # If no status filter is provided, also exclude CANCELLED to keep worklist clean
+        if not status_filter and not search:
+            orders = orders.exclude(status="CANCELLED")
 
         if date_from:
             orders = orders.filter(created_at__date__gte=date_from)
@@ -464,32 +481,28 @@ class WorklistOrdersView(APIView):
 
             results.append(
                 {
-                    "order_pk": order.id,
+                    "id": order.id,
                     "lab_number": order.lab_number or order.order_id,
                     "order_id": order.order_id,
-                    "patient_id": patient.id,
-                    "patient_mrn": patient.mrn or patient.patient_id,
-                    "patient_name": patient.get_full_name(),
-                    "mobile": patient.phone,
-                    "gender": patient.gender,
-                    "age_years": age_years,
-                    "age_months": patient.age_months,
-                    "age_days": patient.age_days,
-                    "created_at": order.created_at,
                     "status": order.status,
                     "current_status": current_status,
+                    "created_at": order.created_at,
                     "is_paid": order.is_paid,
                     "can_reprint_receipt": order.id in payments,
                     "can_reprint_report": can_reprint_report,
                     "receipt_pdf_url": receipt_pdf_url,
                     "report_pdf_url": report_pdf_url,
-                    
-                    # Backward compatibility keys
-                    "latest_order_id": order.id,
-                    "latest_order_number": order.lab_number or order.order_id,
-                    "latest_order_created_at": order.created_at,
-                    "receipt_url": receipt_pdf_url,
-                    "report_url": report_pdf_url,
+                    "patient": {
+                        "id": patient.id,
+                        "registration_number": patient.mrn or patient.patient_id,
+                        "full_name": patient.get_full_name(),
+                        "age": age_years,
+                        "gender": patient.gender,
+                        "phone": patient.phone,
+                        "age_years": age_years,
+                        "age_months": patient.age_months,
+                        "age_days": patient.age_days,
+                    },
                 }
             )
 

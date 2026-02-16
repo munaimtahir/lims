@@ -21,7 +21,7 @@ import type {
   ReferenceRangeCreateRequest,
   SystemSettings,
   TestParameter,
-  WorklistPatient,
+  WorklistOrder,
   PrintTemplate,
   CatalogImportSummary,
   CatalogAuditSummary,
@@ -686,8 +686,8 @@ export const printTemplateApi = {
  */
 
 export const worklistApi = {
-  listPatients: async (params?: Record<string, unknown>) => {
-    const response = await api.get<PaginatedResponse<WorklistPatient>>('worklist/patients/', { params });
+  listOrders: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<WorklistOrder>>('worklist/patients/', { params });
     return response.data;
   },
 };

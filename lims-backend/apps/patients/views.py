@@ -12,6 +12,9 @@ from rest_framework.response import Response
 
 from apps.core.export_utils import export_to_csv, export_to_excel
 from apps.core.authz import user_tenant
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .filters import PatientFilter
 from .models import Patient
@@ -113,6 +116,15 @@ class PatientViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         patient = serializer.save(created_by=request.user)
+        logger.info(
+            f"Patient registered: {patient.full_name} (MRN: {patient.mrn}) by {request.user.username}",
+            extra={
+                "patient_id": patient.id,
+                "mrn": patient.mrn,
+                "user": request.user.username,
+                "tenant": user_tenant(request.user).id if request.user.is_authenticated else None
+            }
+        )
 
         return Response(
             {

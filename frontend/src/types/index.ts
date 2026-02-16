@@ -631,31 +631,31 @@ export interface CatalogAuditSummary {
   panels_without_tests: { count: number; samples: unknown[] };
 }
 
-export interface WorklistPatient {
-  patient_id: number;
-  patient_name: string;
-  patient_mrn?: string;
-  mobile: string;
-  gender: string;
-  date_of_birth?: string;
-  age_years?: number;
-  age_months?: number;
-  age_days?: number;
-  order_pk?: number;
-  lab_number?: string;
-  latest_order_id: number;
-  latest_order_number: string;
-  latest_order_created_at: string;
-  status?: string;
+export interface WorklistOrder {
+  id: number;
+  lab_number: string;
+  order_id: string;
+  status: OrderStatus;
   current_status: string;
-  is_paid?: boolean;
+  created_at: string;
+  is_paid: boolean;
   can_reprint_receipt: boolean;
   can_reprint_report: boolean;
   receipt_pdf_url?: string;
   report_pdf_url?: string;
-  receipt_url?: string;
-  report_url?: string;
+  patient: {
+    id: number;
+    registration_number: string;
+    full_name: string;
+    age: number;
+    gender: string;
+    phone: string;
+    age_years: number;
+    age_months: number;
+    age_days: number;
+  };
 }
+
 export interface WorklistOrderItem {
   id: number;
   order: {

@@ -19,7 +19,7 @@ class MinimalPatientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Patient
-        fields = ["id", "full_name", "mrn", "age", "gender"]
+        fields = ["id", "full_name", "mrn", "age", "gender", "phone"]
 
 
 class MinimalOrderSerializer(serializers.ModelSerializer):
