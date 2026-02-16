@@ -49,8 +49,8 @@ class DashboardStatisticsViewSet(ViewSet):
 
         # Pending work
         pending_collections = Sample.objects.filter(status=SampleStatus.PENDING).count()
-        pending_results = TestResult.objects.filter(status="pending").count()
-        pending_verifications = TestResult.objects.filter(status="pending").count()
+        pending_results = TestResult.objects.filter(status="DRAFT").count()
+        pending_verifications = TestResult.objects.filter(status="ENTERED").count()
 
         # Order status breakdown
         order_status_breakdown = (

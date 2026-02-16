@@ -119,7 +119,7 @@ def order_with_results(
 ):
     """Create and return an order with results."""
     order = Order.objects.create(
-        patient=patient, ordered_by=admin_user, status="pending"
+        patient=patient, ordered_by=admin_user, status="NEW"
     )
     order_item = OrderItem.objects.create(
         order=order, test=test_instance, price=test_instance.price
