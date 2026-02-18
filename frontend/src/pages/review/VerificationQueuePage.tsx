@@ -25,7 +25,7 @@ export default function VerificationQueuePage() {
   }, [queueResponse]);
 
   // Fetch Details for Selected Order
-  const { data: detailData, isLoading: detailLoading, error: detailError } = useQuery({
+  const { data: detailData, isLoading: detailLoading } = useQuery({
     queryKey: ['verification-details', selectedOrderInternalId],
     queryFn: () => orderApi.getVerificationDetails(selectedOrderInternalId!),
     enabled: !!selectedOrderInternalId,
@@ -46,7 +46,6 @@ export default function VerificationQueuePage() {
 
   // Derived State for Navigation
   const currentIndex = queue.findIndex(o => o.order_internal_id === selectedOrderInternalId);
-  const currentOrder = currentIndex !== -1 ? queue[currentIndex] : null;
   const prevOrder = currentIndex > 0 ? queue[currentIndex - 1] : null;
   const nextOrder = currentIndex >= 0 && currentIndex < queue.length - 1 ? queue[currentIndex + 1] : null;
 

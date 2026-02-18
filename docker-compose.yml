@@ -81,7 +81,8 @@ services:
       # Django Settings
       DJANGO_SETTINGS_MODULE: config.settings.production
       SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
+      LIMS_ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
       DEBUG: "False"
 
       # Database Configuration
@@ -167,7 +168,8 @@ services:
       # Django Settings
       DJANGO_SETTINGS_MODULE: config.settings.production
       SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
+      LIMS_ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
 
       # Database Configuration
       DB_NAME: ${DB_NAME:-lims_db}
@@ -224,7 +226,8 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
+      LIMS_ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Define ALLOWED_HOSTS in .env.production (comma-separated domains and public IP)}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
       DB_NAME: ${DB_NAME:-lims_db}
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD}

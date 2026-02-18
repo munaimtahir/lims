@@ -275,8 +275,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                 "message": "Report cannot be downloaded.",
                 "blocking_reasons": blockers
             },
-            status=status.HTTP_400_BAD_REQUEST
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     @action(detail=True, methods=["get"], url_path="verification-details")
