@@ -256,29 +256,38 @@ class OrderSerializer(serializers.ModelSerializer):
             # We need to collect the items before the transaction is complete
             # because order.items.all() needs the transaction to be committed
             from apps.samples.models import Sample, SampleStatus
+            import logging
+
+            logger = logging.getLogger(__name__)
 
             # Refresh from DB to get all related order items
             order_items = OrderItem.objects.filter(order=order)
 
             for item in order_items:
-                # Determine sample type from test or panel
-                sample_type = "Blood"  # Default
-                if item.test:
-                    sample_type = item.test.sample_type or "Blood"
-                elif item.panel:
-                    # For panels, use panel's sample_type or first test's sample type
-                    sample_type = item.panel.sample_type or "Blood"
-                    if not sample_type or sample_type == "Blood":
-                        first_test = item.panel.tests.first()
-                        if first_test:
-                            sample_type = first_test.sample_type or "Blood"
+                try:
+                    # Determine sample type from test or panel
+                    sample_type = "Blood"  # Default
+                    if item.test:
+                        sample_type = item.test.sample_type or "Blood"
+                    elif item.panel:
+                        # For panels, use panel's sample_type or first test's sample type
+                        sample_type = item.panel.sample_type or "Blood"
+                        if not sample_type or sample_type == "Blood":
+                            first_test = item.panel.tests.first()
+                            if first_test:
+                                sample_type = first_test.sample_type or "Blood"
 
-                # Create sample for this order item
-                Sample.objects.create(
-                    order_item=item,
-                    sample_type=sample_type,
-                    status=SampleStatus.PENDING,
-                )
+                    # Create sample for this order item
+                    Sample.objects.create(
+                        order_item=item,
+                        sample_type=sample_type,
+                        status=SampleStatus.PENDING,
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to create sample for order item {item.id}: {str(e)}", exc_info=True)
+                    # Don't fail the entire order creation if sample creation fails
+                    # This allows the order to be created even if sample workflow has issues
+                    pass
 
             # If order was created with paid_amount, create a Payment so receipt is available
             from decimal import Decimal

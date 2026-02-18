@@ -1,5 +1,3 @@
-
-
 # Docker Compose configuration for LIMS application
 # Optimized for SSH-based deployment on remote servers
 #
@@ -69,12 +67,11 @@ services:
     build:
       context: ./lims-backend
       dockerfile: Dockerfile
-      
       # For production, use pull policy
       # pull: always
     container_name: lims_backend
     restart: unless-stopped
-    
+
     volumes:
       - static_files:/app/staticfiles
       - ./lims-backend/media:/app/media:rw
@@ -92,6 +89,7 @@ services:
       DB_NAME: ${DB_NAME:-lims_db}
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD}
+      LIMS_DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
 
@@ -156,11 +154,11 @@ services:
     build:
       context: ./lims-backend
       dockerfile: Dockerfile
-      
+
     container_name: lims_celery
     restart: unless-stopped
     command: celery -A config worker -l ${LOG_LEVEL:-INFO} --concurrency=4
-    
+
     volumes:
       - ./lims-backend/media:/app/media:rw
       - ./backups:/backups:rw
@@ -175,6 +173,7 @@ services:
       DB_NAME: ${DB_NAME:-lims_db}
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD}
+      LIMS_DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
 
@@ -229,6 +228,7 @@ services:
       DB_NAME: ${DB_NAME:-lims_db}
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD}
+      LIMS_DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
@@ -269,7 +269,7 @@ services:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1/}
     container_name: lims_frontend
     restart: unless-stopped
-    
+
     environment:
       # Frontend Environment Variables
       REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL:-/api/v1/}

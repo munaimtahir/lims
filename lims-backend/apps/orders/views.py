@@ -103,17 +103,26 @@ class OrderViewSet(viewsets.ModelViewSet):
             )
 
     def perform_create(self, serializer):
-        order = serializer.save(created_by=self.request.user)
-        logger.info(
-            f"Visit/Order created: {order.lab_number} for {order.patient.full_name} by {self.request.user.username}",
-            extra={
-                "order_id": order.order_id,
-                "lab_number": order.lab_number,
-                "patient_id": order.patient.id,
-                "user": self.request.user.username,
-                "tenant": user_tenant(self.request.user).id if self.request.user.is_authenticated else None
-            }
-        )
+        try:
+            # Serializer already sets ordered_by from request context, no need to pass it
+            order = serializer.save()
+            logger.info(
+                f"Visit/Order created: {order.lab_number} for {order.patient.full_name} by {self.request.user.username}",
+                extra={
+                    "order_id": order.order_id,
+                    "lab_number": order.lab_number,
+                    "patient_id": order.patient.id,
+                    "user": self.request.user.username,
+                    "tenant": user_tenant(self.request.user).id if self.request.user.is_authenticated else None
+                }
+            )
+        except Exception as e:
+            logger.error(
+                f"Failed to create order: {str(e)}",
+                exc_info=True,
+                extra={"user": self.request.user.username if self.request.user.is_authenticated else None}
+            )
+            raise
 
     def get_queryset(self):
         qs = super().get_queryset()
