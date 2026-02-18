@@ -594,7 +594,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
                 for item in OrderItem.objects.filter(id__in=modified_order_items):
                     # Recompute formulas BEFORE updating overall status
                     recompute_formulas_for_order_item(item)
-                    update_order_item_status(item)
+                    update_order_item_status(item, user=request.user)
 
         response_data = {
             "created": len(created_results),
@@ -632,8 +632,16 @@ class TestResultViewSet(viewsets.ModelViewSet):
             try:
                 # Transition to ENTERED
                 transition_result_state(result, "ENTERED", request.user, source="api", reason=reason)
-                from .services.transitions import update_order_item_status
-                update_order_item_status(result.order_item)
+                # transition_result_state handles update_order_item_status internally now with actor
+                # so we can remove strict manual call or ensure it propagates
+                # But looking at transition_result_state implementation, it calls update_order_item_status(..., user=actor)
+                # So we are good.
+                # However, original code called update_order_item_status(result.order_item) explicitly.
+                # transition_result_state does it too. Duplication is fine but let's trust transition_result_state.
+                # Or wait, checking transition_result_state code...
+                # Yes, I added update_order_item_status(locked.order_item, user=actor) at the end.
+                # So the explicit call here is redundant but harmless if we remove it.
+                # Let's remove it to avoid double logging/locking.
             except Exception as exc:
                 logger.error(
                     f"Result rejection failed for result {pk}: {str(exc)}",
@@ -668,8 +676,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
             for result in results:
                 try:
                     transition_result_state(result, "ENTERED", request.user, source="api", reason=reason)
-                    from .services.transitions import update_order_item_status
-                    update_order_item_status(result.order_item)
+                    # Implicitly updates order item & order via service
                     success += 1
                 except Exception as exc:
                     errors.append(f"Result {result.id}: {str(exc)}")
@@ -692,8 +699,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
 
             try:
                 result = transition_result_state(result, "VERIFIED", request.user, source="api")
-                from .services.transitions import update_order_item_status
-                update_order_item_status(result.order_item)
+                # Implicit update
             except Exception as exc:
                 logger.error(
                     f"Result verification failed for result {pk}: {str(exc)}",
@@ -741,8 +747,7 @@ class TestResultViewSet(viewsets.ModelViewSet):
             for result in results:
                 try:
                     transition_result_state(result, "VERIFIED", request.user, source="api")
-                    from .services.transitions import update_order_item_status
-                    update_order_item_status(result.order_item)
+                    # Implicit update
                     success += 1
                 except Exception as exc:
                     errors.append(f"Result {result.id}: {str(exc)}")

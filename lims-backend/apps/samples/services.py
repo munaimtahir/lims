@@ -202,6 +202,11 @@ def transition_sample_state(sample: Sample, target_state: str, actor, source: st
             metadata={"order_item_id": locked.order_item_id},
             source=source,
         )
+
+        if locked.order_item:
+            from apps.orders.workflow import OrderWorkflowService
+            OrderWorkflowService._recalculate_order_status(locked.order_item.order, actor)
+
         return locked
 
 

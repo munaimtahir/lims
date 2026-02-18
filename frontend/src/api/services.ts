@@ -32,6 +32,7 @@ import type {
   Branch,
   CollectionCenter,
   VerificationQueueOrder,
+  VerificationDetails,
 } from '../types';
 
 /**
@@ -245,6 +246,11 @@ export const orderApi = {
 
   getOrderItem: async (id: number) => {
     const response = await api.get<OrderItem>(`orders/order-items/${id}/`);
+    return response.data;
+  },
+
+  getVerificationDetails: async (id: number) => {
+    const response = await api.get<VerificationDetails>(`orders/orders/${id}/verification-details/`);
     return response.data;
   },
 

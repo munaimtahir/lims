@@ -62,6 +62,36 @@ class OrderItemSerializer(serializers.ModelSerializer):
         read_only_fields = ["price", "status"]
 
 
+class OrderItemVerificationSerializer(OrderItemSerializer):
+    """
+    Serializer for OrderItem with nested results for verification context.
+    """
+    results = serializers.SerializerMethodField()
+
+    class Meta(OrderItemSerializer.Meta):
+        fields = OrderItemSerializer.Meta.fields + ["results"]
+
+    def get_results(self, obj):
+        from apps.results.serializers import TestResultSerializer
+        # Return all results associated with this item
+        return TestResultSerializer(obj.results.all().order_by("test_parameter__display_order"), many=True).data
+
+
+class OrderVerificationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Order with full verification context (nested items + results).
+    """
+    items = OrderItemVerificationSerializer(many=True, read_only=True)
+    patient = MinimalPatientSerializer(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "id", "order_id", "lab_number", "patient", "priority", 
+            "status", "created_at", "items", "notes"
+        ]
+
+
 class OrderListSerializer(serializers.ModelSerializer):
     """
     Lightweight serializer for listing orders.

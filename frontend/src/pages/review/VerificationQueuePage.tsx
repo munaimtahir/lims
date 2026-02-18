@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { resultApi, reportApi, orderApi } from '../../api/services';
-import type { TestResult, VerificationQueueOrder } from '../../types';
+import type { TestResult, VerificationQueueOrder, VerificationDetails } from '../../types';
 import styles from './VerificationQueuePage.module.css';
 
 export default function VerificationQueuePage() {
@@ -25,16 +25,23 @@ export default function VerificationQueuePage() {
   }, [queueResponse]);
 
   // Fetch Details for Selected Order
-  const { data: detailData, isLoading: detailLoading } = useQuery({
-    queryKey: ['results', { order: selectedOrderInternalId }],
-    queryFn: () => resultApi.list({ order: selectedOrderInternalId }),
+  const { data: detailData, isLoading: detailLoading, error: detailError } = useQuery({
+    queryKey: ['verification-details', selectedOrderInternalId],
+    queryFn: () => orderApi.getVerificationDetails(selectedOrderInternalId!),
     enabled: !!selectedOrderInternalId,
   });
 
   const detailResults = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = detailData as any;
-    return (data?.results || data || []) as TestResult[];
+    if (!detailData) return [];
+    const order = detailData as VerificationDetails;
+    // Flatten results from items
+    return order.items.flatMap(item =>
+      item.results.map(r => ({
+        ...r,
+        order_item: item, // Attach parent item for context
+        // Ensure status mapping if needed? Backend serializer already maps.
+      }))
+    );
   }, [detailData]);
 
   // Derived State for Navigation
@@ -47,7 +54,7 @@ export default function VerificationQueuePage() {
   const verifyMutation = useMutation({
     mutationFn: (resultId: number) => resultApi.verify(resultId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['results'] });
+      queryClient.invalidateQueries({ queryKey: ['verification-details'] });
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
     },
     onError: (err: any) => {
@@ -65,7 +72,7 @@ export default function VerificationQueuePage() {
     mutationFn: ({ resultId, reason }: { resultId: number; reason: string }) =>
       resultApi.reject(resultId, reason),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['results'] });
+      queryClient.invalidateQueries({ queryKey: ['verification-details'] });
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
     },
     onError: (err: any) => {
@@ -77,7 +84,7 @@ export default function VerificationQueuePage() {
   const bulkVerifyMutation = useMutation({
     mutationFn: (resultIds: number[]) => resultApi.bulkVerify(resultIds),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['results'] });
+      queryClient.invalidateQueries({ queryKey: ['verification-details'] });
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
       setNotice({ type: 'success', message: 'Selected results verified successfully.' });
 
@@ -100,7 +107,7 @@ export default function VerificationQueuePage() {
     mutationFn: ({ resultIds, reason }: { resultIds: number[]; reason: string }) =>
       resultApi.bulkReject(resultIds, reason),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['results'] });
+      queryClient.invalidateQueries({ queryKey: ['verification-details'] });
       queryClient.invalidateQueries({ queryKey: ['verification-queue'] });
       setNotice({ type: 'success', message: 'Selected results returned to entry.' });
     },
@@ -242,13 +249,17 @@ export default function VerificationQueuePage() {
 
           <div className={styles.detailHeader}>
             <div>
-              <h2>{currentOrder?.patient_name || 'Patient'}</h2>
+              <h2>{detailData?.patient?.full_name || 'Patient'}</h2>
               <div className={styles.meta}>
-                <span className={styles.orderId}>{currentOrder?.lab_number || currentOrder?.order_id}</span>
+                <span className={styles.orderId}>{detailData?.lab_number || detailData?.order_id}</span>
                 <span className={styles.separator}>|</span>
-                <span>{currentOrder?.mrn}</span>
+                <span>{detailData?.patient?.mrn || 'No MRN'}</span>
                 <span className={styles.separator}>|</span>
-                <span className={styles.details}>{currentOrder?.details}</span>
+                <span className={styles.details}>{detailData?.patient?.age}y / {detailData?.patient?.gender}</span>
+                <span className={styles.separator}>|</span>
+                <span className={styles.details}>{detailData?.priority || 'Normal'}</span>
+                <span className={styles.separator}>|</span>
+                <span className={styles.statusBadge}>{detailData?.status}</span>
               </div>
             </div>
             <div className={styles.headerActions}>

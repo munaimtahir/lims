@@ -16,7 +16,9 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     zip \
     tar \
+    tar \
     gcc \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies (production set includes gunicorn/logging deps)
@@ -43,7 +45,7 @@ ARG UID=1000
 ARG GID=1000
 RUN groupadd -g $GID -o appuser
 RUN useradd -m -u $UID -g $GID -o -s /bin/bash appuser && chown -R appuser:appuser /app
-USER appuser
+# USER appuser - We prefer running as root to fix permissions in entrypoint, then drop privileges.
 
 # Expose port
 EXPOSE 8000

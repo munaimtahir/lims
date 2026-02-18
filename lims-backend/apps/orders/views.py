@@ -29,14 +29,17 @@ from apps.patients.models import Patient
 from apps.reports.models import Report, ReportStatus
 from apps.reports.logic import collect_report_blockers, build_order_report_context, build_page_plan, generate_v2_report
 from apps.orders.services import transition_visit_state
+from apps.orders.workflow import OrderWorkflowService
 
 from .filters import OrderFilter
 from .models import Dispatch, DispatchItem, DispatchStatus, Order, OrderItem
 from .serializers import (
     DispatchCreateSerializer,
     DispatchSerializer,
+    DispatchSerializer,
     OrderItemSerializer,
     OrderSerializer,
+    OrderVerificationSerializer,
 )
 
 
@@ -273,7 +276,18 @@ class OrderViewSet(viewsets.ModelViewSet):
                 "blocking_reasons": blockers
             },
             status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_400_BAD_REQUEST
         )
+
+    @action(detail=True, methods=["get"], url_path="verification-details")
+    def verification_details(self, request, pk=None):
+        """
+        Get full order details with nested items and results for verification UI.
+        Scoped strictly to this order.
+        """
+        order = self.get_object()
+        serializer = OrderVerificationSerializer(order, context={"request": request})
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], url_path="publish-report")
     def publish_report(self, request, pk=None):
@@ -643,5 +657,14 @@ class DispatchViewSet(viewsets.ModelViewSet):
         dispatch.received_at = now
         dispatch.received_by = request.user
         dispatch.save(update_fields=["status", "received_at", "received_by"])
+
+        # Recalculate order statuses via workflow service
+        for order_id in order_ids:
+            try:
+                order = Order.objects.get(pk=order_id)
+                OrderWorkflowService._recalculate_order_status(order, request.user)
+            except Exception as e:
+                logger.error(f"Failed to recalculate order {order_id} logic: {e}")
+
         serializer = DispatchSerializer(dispatch)
         return Response(serializer.data)

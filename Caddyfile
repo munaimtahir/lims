@@ -84,22 +84,16 @@
          }
      }
 
-     # Static files served from backend
-     handle /static/* {
-         reverse_proxy backend:8000 {
-             header_up Host {upstream_hostport}
-             # Set to https since host Caddy handles HTTPS termination
-             header_up X-Forwarded-Proto https
-         }
+     # Static files served directly (read-only volume from backend)
+     handle_path /static/* {
+         root * /srv/static
+         file_server
      }
 
-     # Media files served from backend
-     handle /media/* {
-         reverse_proxy backend:8000 {
-             header_up Host {upstream_hostport}
-             # Set to https since host Caddy handles HTTPS termination
-             header_up X-Forwarded-Proto https
-         }
+     # Media files served directly (read-only volume from backend)
+     handle_path /media/* {
+         root * /srv/media
+         file_server
      }
 
      # Health check endpoint

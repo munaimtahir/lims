@@ -366,6 +366,31 @@ export interface VerificationQueueOrder {
   items: VerificationQueueItem[];
 }
 
+export interface VerificationDetails {
+  id: number;
+  order_id: string;
+  lab_number?: string;
+  patient: {
+    id: number;
+    full_name: string;
+    mrn?: string;
+    age: number;
+    gender: string;
+    phone: string;
+  };
+  priority?: string;
+  status: OrderStatus;
+  created_at: string;
+  notes?: string;
+  items: Array<{
+    id: number;
+    test_name?: string;
+    panel_name?: string;
+    status: string;
+    results: TestResult[];
+  }>;
+}
+
 /**
  * Billing types
  */
