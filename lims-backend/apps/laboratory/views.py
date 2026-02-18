@@ -7,7 +7,12 @@ from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAdmin, IsManager
 
-from .catalog_io import export_catalog_workbook, import_catalog_from_excel
+from .catalog_io import (
+    IMPORT_LOGIC_VERSION,
+    IMPORT_LOGIC_FEATURES,
+    export_catalog_workbook,
+    import_catalog_from_excel,
+)
 from .models import (
     CatalogImportJob,
     Parameter,
@@ -37,6 +42,30 @@ class BulkImportViewSet(viewsets.ViewSet):
 
     permission_classes = [IsAdmin]
 
+    @action(detail=False, methods=["get"])
+    def version(self, request):
+        """Return the import logic version and features for deployment verification."""
+        import os
+        import sys
+        
+        return Response(
+            {
+                "version": IMPORT_LOGIC_VERSION,
+                "features": IMPORT_LOGIC_FEATURES,
+                "python_path": sys.executable,
+                "catalog_io_path": os.path.abspath(
+                    os.path.join(
+                        os.path.dirname(__file__), "catalog_io.py"
+                    )
+                ),
+                "catalog_io_exists": os.path.exists(
+                    os.path.join(
+                        os.path.dirname(__file__), "catalog_io.py"
+                    )
+                ),
+            }
+        )
+
     def create(self, request):
         """
         Import data from an uploaded Excel file.
@@ -64,12 +93,25 @@ class BulkImportViewSet(viewsets.ViewSet):
         dry_run = parse_bool(request.query_params.get("dry_run"), True)
 
         try:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(
+                f"Import request received: file={getattr(file, 'name', 'Unknown')}, "
+                f"strict={strict}, allow_defaults={allow_defaults}, mode={mode}, dry_run={dry_run}"
+            )
+            
             summary = import_catalog_from_excel(
                 file,
                 strict=strict,
                 allow_defaults=allow_defaults,
                 mode=mode,
                 dry_run=dry_run,
+            )
+            
+            logger.info(
+                f"Import completed: version={summary.get('version')}, "
+                f"errors={len(summary.get('errors', []))}, "
+                f"warnings={len(summary.get('warnings', []))}"
             )
 
             job = CatalogImportJob.objects.create(

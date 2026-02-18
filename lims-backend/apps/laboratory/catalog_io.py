@@ -3,6 +3,8 @@ Catalog import/export utilities with strict validation and deterministic output.
 """
 from __future__ import annotations
 
+import logging
+import os
 from copy import deepcopy
 from decimal import Decimal, InvalidOperation
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -19,6 +21,18 @@ from .models import (
     TestParameter,
     validate_parameter_id,
 )
+
+# Set up logger for import process
+logger = logging.getLogger(__name__)
+
+# Version tracking for deployment verification
+IMPORT_LOGIC_VERSION = "2.0.0"  # Updated for test_code matching logic
+IMPORT_LOGIC_FEATURES = [
+    "Match by test_id",
+    "Match by test_code + test_name",
+    "Partial field updates",
+    "Conflict detection",
+]
 
 SHEET_ORDER = [
     "Tests",
@@ -386,6 +400,20 @@ def import_catalog_from_excel(
     mode: str = "upsert",
     dry_run: bool = True,
 ) -> Dict[str, Any]:
+    """
+    Import catalog from Excel file with comprehensive logging.
+    
+    Version: {IMPORT_LOGIC_VERSION}
+    Features: {', '.join(IMPORT_LOGIC_FEATURES)}
+    """
+    logger.info("=" * 80)
+    logger.info(f"CATALOG IMPORT STARTED - Version {IMPORT_LOGIC_VERSION}")
+    logger.info(f"Features: {', '.join(IMPORT_LOGIC_FEATURES)}")
+    logger.info(f"Mode: {mode}, Dry-run: {dry_run}, Strict: {strict}, Allow-defaults: {allow_defaults}")
+    logger.info(f"Source file: {getattr(file, 'name', 'Unknown')}")
+    logger.info(f"Python path: {os.path.abspath(__file__)}")
+    logger.info("=" * 80)
+    
     if mode != "upsert":
         raise ValueError("Only mode='upsert' is supported")
 
@@ -393,6 +421,8 @@ def import_catalog_from_excel(
     errors: List[Dict[str, Any]] = []
     warnings: List[Dict[str, Any]] = []
     diff: List[Dict[str, Any]] = []
+    
+    logger.info(f"Workbook loaded. Sheets: {workbook.sheetnames}")
 
     summary = {
         "tests": {"created": 0, "updated": 0, "unchanged": 0},
@@ -406,6 +436,17 @@ def import_catalog_from_excel(
     existing_tests = {
         t.test_id: t for t in Test.objects.select_related("category").all()
     }
+    logger.info(f"Loaded {len(existing_tests)} existing tests from database")
+    
+    # Match by test_code so rows with same code (and optionally name) update existing record
+    existing_tests_by_code = {
+        t.test_code: t for t in Test.objects.select_related("category").all()
+    }
+    logger.info(f"Indexed {len(existing_tests_by_code)} tests by test_code for matching")
+    
+    # Map file test_id -> actual test_id when we match by test_code (for Mapping/ReferenceRanges)
+    file_test_id_to_actual: Dict[int, int] = {}
+    matches_by_code: List[Dict[str, Any]] = []  # Track matches by test_code for logging
     existing_params = {p.parameter_id: p for p in Parameter.objects.all()}
     existing_panels = {
         p.panel_code: p for p in TestPanel.objects.select_related("category").all()
@@ -427,6 +468,7 @@ def import_catalog_from_excel(
     }
 
     created_tests: Dict[int, Test] = {}
+    created_test_codes: Dict[str, int] = {}  # Track test_code -> test_id for conflict detection
     created_params: Dict[str, Parameter] = {}
     created_panels: Dict[str, TestPanel] = {}
     created_mappings: Dict[Tuple[int, str], TestParameter] = {}
@@ -638,8 +680,88 @@ def import_catalog_from_excel(
                 if raw_instructions is not None:
                     provided_fields.add("instructions")
 
+                # Match by test_id first; if not found, match by test_code (and test_name) so same test = update
+                incoming_test_code = incoming["test_code"]
+                incoming_test_name = incoming["test_name"]
+                file_test_id = test_id  # Keep original for logging
                 existing = existing_tests.get(test_id)
+                
+                if not existing and incoming_test_code:
+                    candidate = existing_tests_by_code.get(incoming_test_code)
+                    # Same test = same code and same name (per previous decision: matching = update)
+                    if candidate:
+                        if candidate.test_name == incoming_test_name:
+                            existing = candidate
+                            file_test_id_to_actual[file_test_id] = existing.test_id
+                            matches_by_code.append({
+                                "file_test_id": file_test_id,
+                                "file_test_code": incoming_test_code,
+                                "file_test_name": incoming_test_name,
+                                "matched_test_id": existing.test_id,
+                                "matched_test_code": existing.test_code,
+                                "matched_test_name": existing.test_name,
+                                "row": row_num,
+                            })
+                            logger.info(
+                                f"Tests row {row_num}: Matched by (test_code, test_name) - "
+                                f"file test_id={file_test_id} -> existing test_id={existing.test_id} "
+                                f"(code='{incoming_test_code}', name='{incoming_test_name}')"
+                            )
+                            # Use actual test_id for this row so downstream (diff, Mapping, etc.) is correct
+                            test_id = existing.test_id
+                        else:
+                            logger.warning(
+                                f"Tests row {row_num}: test_code '{incoming_test_code}' matches existing test_id={candidate.test_id} "
+                                f"but test_name differs: file='{incoming_test_name}' vs existing='{candidate.test_name}'. "
+                                f"Not treating as match - will attempt create (may conflict)."
+                            )
+                
+                if existing and file_test_id != test_id:
+                    logger.debug(f"Tests row {row_num}: Using matched test_id={test_id} (file had test_id={file_test_id})")
+                
                 if existing:
+                    # Check if test_code conflict exists (another test with same code but different ID)
+                    incoming_test_code = incoming["test_code"]
+                    if "test_code" in provided_fields and incoming_test_code != existing.test_code:
+                        # Check if another existing test already uses this code
+                        conflicting_test = None
+                        for tid, test in existing_tests.items():
+                            if tid != test_id and test.test_code == incoming_test_code:
+                                conflicting_test = test
+                                break
+                        
+                        # Also check against tests being created in this import
+                        if not conflicting_test and incoming_test_code in created_test_codes:
+                            conflicting_tid = created_test_codes[incoming_test_code]
+                            _add_issue(
+                                errors,
+                                "Tests",
+                                row_num,
+                                "test_code",
+                                f"test_code '{incoming_test_code}' is already used by test_id {conflicting_tid} in this import file. Cannot update test_id {test_id} to use this code.",
+                            )
+                            # Remove test_code from provided_fields so we don't try to update it
+                            provided_fields.discard("test_code")
+                            # Also remove from changes tracking
+                            incoming["test_code"] = existing.test_code
+                        elif conflicting_test:
+                            error_msg = (
+                                f"test_code '{incoming_test_code}' is already used by test_id {conflicting_test.test_id} "
+                                f"({conflicting_test.test_name}). Cannot update test_id {test_id} to use this code."
+                            )
+                            logger.error(f"Tests row {row_num}: {error_msg}")
+                            _add_issue(
+                                errors,
+                                "Tests",
+                                row_num,
+                                "test_code",
+                                error_msg,
+                            )
+                            # Remove test_code from provided_fields so we don't try to update it
+                            provided_fields.discard("test_code")
+                            # Also remove from changes tracking
+                            incoming["test_code"] = existing.test_code
+                    
                     # Only compare and update fields that were explicitly provided
                     fields_to_compare = [
                         "test_code",
@@ -669,6 +791,10 @@ def import_catalog_from_excel(
 
                     if changes:
                         summary["tests"]["updated"] += 1
+                        logger.info(
+                            f"Tests row {row_num}: Updating test_id={test_id} (test_code='{existing.test_code}') "
+                            f"with {len(changes)} field(s): {', '.join(changes.keys())}"
+                        )
                         _record_diff(diff, "Tests", str(test_id), "update", changes)
                         if not dry_run:
                             if "category_name" in provided_fields:
@@ -685,7 +811,47 @@ def import_catalog_from_excel(
                         summary["tests"]["unchanged"] += 1
                         _record_diff(diff, "Tests", str(test_id), "unchanged", {})
                 else:
+                    # Check if test_code is already used by another existing test
+                    incoming_test_code = incoming["test_code"]
+                    conflicting_test = None
+                    for tid, test in existing_tests.items():
+                        if test.test_code == incoming_test_code:
+                            conflicting_test = test
+                            break
+                    
+                    if conflicting_test:
+                        error_msg = (
+                            f"test_code '{incoming_test_code}' is already used by test_id {conflicting_test.test_id} "
+                            f"({conflicting_test.test_name}). Cannot create new test with test_id {test_id} using this code."
+                        )
+                        logger.error(f"Tests row {row_num}: {error_msg}")
+                        _add_issue(
+                            errors,
+                            "Tests",
+                            row_num,
+                            "test_code",
+                            error_msg,
+                        )
+                        continue
+                    
+                    # Also check against tests being created in this import
+                    if incoming_test_code in created_test_codes:
+                        conflicting_tid = created_test_codes[incoming_test_code]
+                        _add_issue(
+                            errors,
+                            "Tests",
+                            row_num,
+                            "test_code",
+                            f"test_code '{incoming_test_code}' is already used by test_id {conflicting_tid} in this import file. Cannot create duplicate.",
+                        )
+                        continue
+                    
+                    # No conflict found, proceed with creation
                     summary["tests"]["created"] += 1
+                    logger.info(
+                        f"Tests row {row_num}: Creating new test with test_id={test_id}, "
+                        f"test_code='{incoming_test_code}', test_name='{incoming_test_name}'"
+                    )
                     _record_diff(diff, "Tests", str(test_id), "create", incoming)
                     if not dry_run:
                         category, _ = TestCategory.objects.get_or_create(
@@ -701,9 +867,11 @@ def import_catalog_from_excel(
                             },
                         )
                         created_tests[test_id] = test
+                        created_test_codes[incoming_test_code] = test_id
                     else:
                         # In dry-run, track that this test would be created
                         created_tests[test_id] = True
+                        created_test_codes[incoming_test_code] = test_id
 
         # Parameters
         if "Parameters" in workbook.sheetnames:
@@ -1073,6 +1241,7 @@ def import_catalog_from_excel(
 
         # Mapping
         if "Mapping" in workbook.sheetnames:
+            logger.info("Processing Mapping sheet...")
             sheet = workbook["Mapping"]
             headers = get_headers(sheet)
             seen_pairs = set()
@@ -1083,6 +1252,13 @@ def import_catalog_from_excel(
                 raw_param_id = safe_get(row, headers, "parameter_id")
                 if test_id is None or raw_param_id is None:
                     continue
+                # Resolve file test_id to actual test_id when Tests row was matched by test_code
+                original_test_id = test_id
+                test_id = file_test_id_to_actual.get(test_id, test_id)
+                if original_test_id != test_id:
+                    logger.debug(
+                        f"Mapping row {row_num}: Resolved file test_id={original_test_id} -> actual test_id={test_id}"
+                    )
                 try:
                     param_id = _normalize_param_id(raw_param_id)
                 except Exception:
@@ -1206,6 +1382,13 @@ def import_catalog_from_excel(
                 test_id = to_int(safe_get(row, headers, "test_id"))
                 if panel_code is None or test_id is None:
                     continue
+                # Resolve file test_id to actual test_id when Tests row was matched by test_code
+                original_test_id = test_id
+                test_id = file_test_id_to_actual.get(test_id, test_id)
+                if original_test_id != test_id:
+                    logger.debug(
+                        f"PanelTests row {row_num}: Resolved file test_id={original_test_id} -> actual test_id={test_id}"
+                    )
                 panel_code = str(panel_code).strip()
                 key = (panel_code, test_id)
                 if key in seen_pairs:
@@ -1259,6 +1442,13 @@ def import_catalog_from_excel(
                 raw_param_id = safe_get(row, headers, "parameter_id")
                 if test_id is None or raw_param_id is None:
                     continue
+                # Resolve file test_id to actual test_id when Tests row was matched by test_code
+                original_test_id = test_id
+                test_id = file_test_id_to_actual.get(test_id, test_id)
+                if original_test_id != test_id:
+                    logger.debug(
+                        f"ReferenceRanges row {row_num}: Resolved file test_id={original_test_id} -> actual test_id={test_id}"
+                    )
                 try:
                     param_id = _normalize_param_id(raw_param_id)
                 except Exception:
@@ -1518,19 +1708,59 @@ def import_catalog_from_excel(
         )
     )
 
+    # Log summary
+    logger.info("=" * 80)
+    logger.info("CATALOG IMPORT SUMMARY")
+    logger.info(f"Version: {IMPORT_LOGIC_VERSION}")
+    logger.info(f"Dry-run: {dry_run}")
+    logger.info(f"Tests: {summary['tests']['created']} created, {summary['tests']['updated']} updated, {summary['tests']['unchanged']} unchanged")
+    logger.info(f"Parameters: {summary['parameters']['created']} created, {summary['parameters']['updated']} updated, {summary['parameters']['unchanged']} unchanged")
+    logger.info(f"Panels: {summary['panels']['created']} created, {summary['panels']['updated']} updated, {summary['panels']['unchanged']} unchanged")
+    logger.info(f"Mappings: {summary['mappings']['created']} created, {summary['mappings']['updated']} updated, {summary['mappings']['unchanged']} unchanged")
+    logger.info(f"ReferenceRanges: {summary['reference_ranges']['created']} created, {summary['reference_ranges']['updated']} updated, {summary['reference_ranges']['unchanged']} unchanged")
+    logger.info(f"Errors: {len(errors)}, Warnings: {len(warnings)}")
+    
+    if matches_by_code:
+        logger.info(f"Matched by test_code+test_name: {len(matches_by_code)} test(s)")
+        for match in matches_by_code:
+            logger.info(
+                f"  - Row {match['row']}: file test_id={match['file_test_id']} "
+                f"(code='{match['file_test_code']}', name='{match['file_test_name']}') "
+                f"-> existing test_id={match['matched_test_id']} "
+                f"(code='{match['matched_test_code']}', name='{match['matched_test_name']}')"
+            )
+    
+    if file_test_id_to_actual:
+        logger.info(f"Test ID mappings (file -> actual): {len(file_test_id_to_actual)} mapping(s)")
+        for file_id, actual_id in file_test_id_to_actual.items():
+            logger.info(f"  - test_id {file_id} -> {actual_id}")
+    
+    if errors:
+        logger.error(f"Import completed with {len(errors)} error(s):")
+        for error in errors[:10]:  # Log first 10 errors
+            logger.error(f"  {error.get('sheet')} row {error.get('row')}: {error.get('field')} - {error.get('message')}")
+        if len(errors) > 10:
+            logger.error(f"  ... and {len(errors) - 10} more error(s)")
+    
+    logger.info("=" * 80)
+
     # Serialize the response to ensure JSON compatibility (convert Decimals to strings)
-    return _serialize_for_json(
+    result = _serialize_for_json(
         {
             "dry_run": dry_run,
             "strict": strict,
             "allow_defaults": allow_defaults,
             "mode": mode,
+            "version": IMPORT_LOGIC_VERSION,
             "counts": summary,
             "errors": errors,
             "warnings": warnings,
             "diff": diff,
+            "matches_by_code": matches_by_code,
+            "test_id_mappings": file_test_id_to_actual,
         }
     )
+    return result
 
 
 def export_catalog_workbook():

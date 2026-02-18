@@ -212,6 +212,10 @@ validate_environment() {
     source "$ENV_FILE"
     set +a
     
+    # Normalize: accept LIMS_DB_PASSWORD / LIMS_ALLOWED_HOSTS for production
+    [ -n "$LIMS_DB_PASSWORD" ] && [ -z "$DB_PASSWORD" ] && DB_PASSWORD="$LIMS_DB_PASSWORD"
+    [ -n "$LIMS_ALLOWED_HOSTS" ] && [ -z "$ALLOWED_HOSTS" ] && ALLOWED_HOSTS="$LIMS_ALLOWED_HOSTS"
+    
     # Check required variables
     local missing_vars=()
     
@@ -222,13 +226,13 @@ validate_environment() {
     fi
     
     if [ -z "$DB_PASSWORD" ]; then
-        missing_vars+=("DB_PASSWORD")
+        missing_vars+=("DB_PASSWORD or LIMS_DB_PASSWORD")
     else
         log_success "DB_PASSWORD is configured"
     fi
     
     if [ -z "$ALLOWED_HOSTS" ]; then
-        missing_vars+=("ALLOWED_HOSTS")
+        missing_vars+=("ALLOWED_HOSTS or LIMS_ALLOWED_HOSTS")
     else
         log_success "ALLOWED_HOSTS: $ALLOWED_HOSTS"
     fi
