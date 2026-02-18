@@ -327,15 +327,20 @@ class OrderViewSet(viewsets.ModelViewSet):
             pdf_bytes = generate_v2_report(order.id)
             
             with transaction.atomic():
-                # Create Report artifact
+                # Create Report artifact as DRAFT first to allow file save
                 report = Report.objects.create(
                     order=order,
-                    status=ReportStatus.FINAL,
+                    status=ReportStatus.DRAFT,
                     generated_by=request.user,
                     template_name="default"
                 )
                 filename = f"report_{order.lab_number}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                # This triggers a save(), which is allowed for DRAFT
                 report.report_file.save(filename, ContentFile(pdf_bytes))
+                
+                # Now finalize the report
+                report.status = ReportStatus.FINAL
+                report.save(update_fields=["status"])
                 
                 # Transition order status
                 if order.status != "PUBLISHED":

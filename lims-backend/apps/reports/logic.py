@@ -32,10 +32,10 @@ def collect_report_blockers(order_id):
     blockers = []
 
     # 1. NOT_VERIFIED
-    if order.status not in ["VERIFIED", "PUBLISHED"]:
+    if order.status not in ["IN_PROCESS", "VERIFIED", "PUBLISHED"]:
         blockers.append({
             "reason_code": "NOT_VERIFIED",
-            "detail": f"Order status is {order.status}. Report generation starts at VERIFIED state."
+            "detail": f"Order status is {order.status}. Report generation allowed for IN_PROCESS, VERIFIED, or PUBLISHED states."
         })
 
     # 2. MISSING_REQUIRED_RESULTS
