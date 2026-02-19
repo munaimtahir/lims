@@ -1,0 +1,160 @@
+name: 🐞 Bug / Workflow Issue
+description: Log a functional, API, workflow, or system-level issue
+title: "[BUG] <short descriptive title>"
+labels: ["bug"]
+assignees: []
+body:
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How critical is this issue?
+      options:
+        - 🔴 Critical (Production down / Data integrity risk)
+        - 🟠 High (Workflow blocked)
+        - 🟡 Medium (Incorrect behavior but workaround exists)
+        - 🟢 Low (Cosmetic / Minor)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - DEV (local docker)
+        - STAGING
+        - PROD
+    validations:
+      required: true
+
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Affected Layer
+      options:
+        - Frontend (apps/web)
+        - API (apps/api)
+        - PDF Service (apps/pdf)
+        - Worker (apps/worker)
+        - Database (PostgreSQL/Prisma)
+        - Contracts (OpenAPI / packages/contracts)
+        - DevOps (Docker/Caddy/Infra)
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Issue Summary
+      description: Clear one-paragraph description of the problem
+      placeholder: |
+        Example:
+        After creating an encounter, status remains IN_PROGRESS
+        even after verification is completed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      placeholder: |
+        Describe what should have happened according to
+        workflow rules or system design.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual Behavior
+      placeholder: |
+        Describe what actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Register patient
+        2. Create encounter
+        3. Add test (Albumin)
+        4. Enter result
+        5. Verify
+        6. Observe status
+    validations:
+      required: true
+
+  - type: textarea
+    id: api_details
+    attributes:
+      label: API Details (if applicable)
+      description: Include endpoint, payload, response, HTTP status
+      placeholder: |
+        Endpoint:
+        POST /api/encounters
+
+        Request:
+        { ... }
+
+        Response:
+        { ... }
+
+        Status: 500
+
+  - type: textarea
+    id: contract_violation
+    attributes:
+      label: Contract Violation Check (OpenAPI)
+      description: Does this violate the OpenAPI contract?
+      placeholder: |
+        - Was SDK used?
+        - Does response match schema?
+        - Any mismatch in types?
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Paste backend logs, docker logs, browser console errors
+      render: shell
+
+  - type: textarea
+    id: db_state
+    attributes:
+      label: Database State (if relevant)
+      description: Any specific DB rows, status values, mismatched states?
+
+  - type: textarea
+    id: regression
+    attributes:
+      label: Regression Check
+      description: Did this work before? If yes, mention commit or branch.
+
+  - type: textarea
+    id: architecture_impact
+    attributes:
+      label: Architecture Impact
+      description: |
+        Does this affect:
+        - Global workflow state truth?
+        - Tenant isolation?
+        - PDF determinism?
+        - Contract-first rule?
+        - Data integrity?
+      placeholder: |
+        Example:
+        Order status stored in multiple places causing divergence.
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have verified this is not user error
+        - label: I have checked logs before reporting
+        - label: This does not involve ad-hoc payload bypassing SDK

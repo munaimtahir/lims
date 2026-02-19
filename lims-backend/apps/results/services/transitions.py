@@ -5,6 +5,7 @@ from django.utils import timezone
 import logging
 
 from apps.audit.utils import emit_audit_event
+from apps.audit.workflow_middleware import log_workflow_span
 from apps.core.state import BadPayloadError, InvalidTransitionError, PermissionDeniedError
 from apps.results.models import TestResult
 from apps.orders.models import Order, OrderItem
@@ -66,6 +67,17 @@ def update_order_item_status(order_item: OrderItem, user=None):
 
         if item.status != new_status:
             logger.info(f"Updating OrderItem {item.id} status: {item.status} -> {new_status}")
+            
+            # Log workflow span
+            log_workflow_span("update_order_item_status", {
+                "order_item_id": item.id,
+                "order_id": item.order.order_id,
+                "old_status": item.status,
+                "new_status": new_status,
+                "results_count": results.count(),
+                "verified_results": sum(1 for s in statuses if s in ["VERIFIED", "FINAL"]),
+            })
+            
             item.status = new_status
             item.save(update_fields=["status"])
         
