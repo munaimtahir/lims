@@ -71,6 +71,11 @@ class WorkflowAuditMiddleware(MiddlewareMixin):
         
         return response
     
+    def process_exception(self, request, exception):
+        """Ensure request ID context is cleared when an exception occurs."""
+        _request_id_context.set(None)
+        return None
+    
     def _should_trace(self, request):
         """Check if request should be traced."""
         path = request.path
