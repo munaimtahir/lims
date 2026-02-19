@@ -182,7 +182,6 @@ class OrderWorkflowService:
         return order
 
     @staticmethod
-    @staticmethod
     def _recalculate_order_status(order: Order, user):
         """
         Derive Order status from its children (Samples, Results).
