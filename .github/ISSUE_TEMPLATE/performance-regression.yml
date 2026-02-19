@@ -1,0 +1,156 @@
+name: 🐢 Performance Regression
+description: Report performance degradation (latency, throughput, memory/CPU, DB slowness, slow pages, slow PDFs)
+title: "[PERF] <short descriptive title>"
+labels: ["performance"]
+assignees: []
+body:
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - DEV (local docker)
+        - STAGING
+        - PROD
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Frontend page load / interaction
+        - API latency / throughput
+        - Database queries / migrations
+        - PDF rendering (apps/pdf)
+        - Worker jobs / queues
+        - Reverse proxy / networking (Caddy)
+        - Container resource usage (CPU/RAM/Disk)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - 🔴 Critical (timeouts / unusable)
+        - 🟠 High (workflow slowed significantly)
+        - 🟡 Medium (noticeable but usable)
+        - 🟢 Low (minor degradation)
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What got slower and where?
+      placeholder: |
+        Example:
+        Verification queue API went from ~200ms to ~2.5s p95 after commit abc123.
+    validations:
+      required: true
+
+  - type: textarea
+    id: baseline
+    attributes:
+      label: Baseline (Before)
+      description: Provide previous known-good measurements.
+      placeholder: |
+        - p50/p95 latency
+        - throughput (req/s)
+        - CPU/RAM
+        - PDF render time
+        - page load metrics (LCP/INP) if available
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current (After)
+      description: Provide current measurements using same method as baseline.
+      placeholder: |
+        - p50/p95 latency
+        - throughput (req/s)
+        - CPU/RAM
+        - PDF render time
+        - page load metrics (LCP/INP) if available
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce (Deterministic)
+      placeholder: |
+        1. Login as admin
+        2. Open Verification Queue
+        3. Filter: Today's orders
+        4. Observe load time and API timings
+    validations:
+      required: true
+
+  - type: textarea
+    id: suspected_change
+    attributes:
+      label: Suspected Change / Regression Window
+      description: What changed? Provide commits/PRs/branches if known.
+      placeholder: |
+        - Last known good: commit ...
+        - First bad: commit ...
+        - Related PR: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: profiling
+    attributes:
+      label: Evidence (Profiling / Logs / Metrics)
+      description: Paste key evidence: slow queries, flamegraphs, APM traces, docker stats, browser network timings.
+      render: shell
+      placeholder: |
+        - API timing logs
+        - DB EXPLAIN ANALYZE
+        - Prisma/Nest query logs
+        - dotnet PDF timings
+        - docker stats snapshot
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Is this global or tenant-specific / user-specific / dataset-specific?
+      placeholder: |
+        - Affects all tenants or one?
+        - Affects all orders or a subset?
+        - Correlated with large panels / many parameters?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria (Fix Target)
+      placeholder: |
+        Example:
+        - Verification queue p95 < 500ms on staging dataset (N=5k orders)
+        - No increase in DB CPU beyond 20%
+        - No contract changes required
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Quick Checks Completed
+      options:
+        - label: Compared baseline vs current using same method
+        - label: Captured at least one log/trace/screenshot as evidence
+        - label: Confirmed not caused by local network/VPN
+        - label: If frontend, checked browser console + network waterfall
