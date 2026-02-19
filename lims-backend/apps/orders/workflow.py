@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from apps.orders.models import Order, OrderItem
 from apps.results.models import TestResult
 from apps.samples.models import Sample, SampleStatus
+from apps.audit.workflow_middleware import log_workflow_span
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,12 +28,22 @@ class OrderWorkflowService:
             logger.info(f"Sample {sample_id} already received.")
             return sample
 
+        old_status = sample.status
         sample.status = SampleStatus.RECEIVED
         sample.received_at = timezone.now()
         sample.received_by = user
         if location:
             sample.current_branch = location
         sample.save()
+        
+        # Log workflow span
+        log_workflow_span("receive_sample", {
+            "sample_id": sample_id,
+            "old_status": old_status,
+            "new_status": "RECEIVED",
+            "user": user.username if user else None,
+            "location": location
+        })
         
         # Check parent order status
         # Note: Sample is linked to OrderItem, which is linked to Order
@@ -171,6 +182,7 @@ class OrderWorkflowService:
         return order
 
     @staticmethod
+    @staticmethod
     def _recalculate_order_status(order: Order, user):
         """
         Derive Order status from its children (Samples, Results).
@@ -229,6 +241,16 @@ class OrderWorkflowService:
                      target_status = "IN_PROCESS"
         
         if target_status != current_status:
+            # Log workflow span for status recalculation
+            log_workflow_span("recalculate_order_status", {
+                "order_id": order.order_id,
+                "old_status": current_status,
+                "new_status": target_status,
+                "samples_count": samples.count(),
+                "samples_received": samples.filter(status=SampleStatus.RECEIVED).count(),
+                "results_count": results.count(),
+                "results_verified": results.filter(status__in=["VERIFIED", "FINAL"]).count(),
+            })
             OrderWorkflowService._transition_order(order, target_status, user)
 
     @staticmethod
@@ -240,6 +262,15 @@ class OrderWorkflowService:
         order.validate_status_transition(order.status, new_status)
         
         logger.info(f"Transitioning Order {order.order_id}: {order.status} -> {new_status} by {user}")
+        
+        # Log workflow span
+        log_workflow_span("transition_order", {
+            "order_id": order.order_id,
+            "old_status": order.status,
+            "new_status": new_status,
+            "user": user.username if user else None,
+        })
+        
         order.status = new_status
         order.updated_at = timezone.now()
         # order.ordered_by = user # Keep original creator? Or last modifier? Model says ordered_by is creator.
