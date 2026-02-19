@@ -42,46 +42,60 @@ if 'apps.audit.middleware.AuditLoggingMiddleware' in MIDDLEWARE:
 AUDIT_EVIDENCE_DIR = os.path.join(BASE_DIR.parent, '_audit_evidence', 'workflow_audit')
 os.makedirs(AUDIT_EVIDENCE_DIR, exist_ok=True)
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'json': {
-            'format': '%(asctime)s %(name)s %(levelname)s %(message)s'
-        },
-        'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard',
-        },
-        'workflow_trace': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(AUDIT_EVIDENCE_DIR, 'RUNTIME_TRACE.jsonl'),
-            'formatter': 'json',
-        },
-    },
-    'loggers': {
-        'apps.audit.workflow_middleware': {
-            'handlers': ['workflow_trace', 'console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'apps.orders.workflow': {
-            'handlers': ['workflow_trace', 'console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'apps.results.services.transitions': {
-            'handlers': ['workflow_trace', 'console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-}
+# Extend base LOGGING configuration (if any) with audit-specific logging
+try:
+    _BASE_LOGGING = LOGGING  # from .base import *
+except NameError:
+    _BASE_LOGGING = {}
 
+LOGGING = dict(_BASE_LOGGING) if isinstance(_BASE_LOGGING, dict) else {}
+
+# Ensure minimal logging skeleton if base did not define LOGGING
+LOGGING.setdefault('version', 1)
+LOGGING.setdefault('disable_existing_loggers', False)
+
+# Merge/extend formatters, handlers, and loggers with audit-specific entries
+formatters = LOGGING.setdefault('formatters', {})
+handlers = LOGGING.setdefault('handlers', {})
+loggers = LOGGING.setdefault('loggers', {})
+
+formatters.update({
+    'json': {
+        'format': '%(asctime)s %(name)s %(levelname)s %(message)s'
+    },
+    'standard': {
+        'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+    },
+})
+
+handlers.update({
+    'console': {
+        'level': 'INFO',
+        'class': 'logging.StreamHandler',
+        'formatter': 'standard',
+    },
+    'workflow_trace': {
+        'level': 'INFO',
+        'class': 'logging.FileHandler',
+        'filename': os.path.join(AUDIT_EVIDENCE_DIR, 'RUNTIME_TRACE.jsonl'),
+        'formatter': 'json',
+    },
+})
+
+loggers.update({
+    'apps.audit.workflow_middleware': {
+        'handlers': ['workflow_trace', 'console'],
+        'level': 'INFO',
+        'propagate': False,
+    },
+    'apps.orders.workflow': {
+        'handlers': ['workflow_trace', 'console'],
+        'level': 'INFO',
+        'propagate': False,
+    },
+    'apps.results.services.transitions': {
+        'handlers': ['workflow_trace', 'console'],
+        'level': 'INFO',
+        'propagate': False,
+    },
+})
